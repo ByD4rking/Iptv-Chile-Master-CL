@@ -6,7 +6,7 @@ from pathlib import Path
 BASE = Path(__file__).parent
 
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
-SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD_V3.m3u"
+SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
 
 FUENTES = [
     "https://iptv-org.github.io/iptv/countries/mx.m3u",
