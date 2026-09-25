@@ -1,12 +1,39 @@
+# IPTV Chile Master
+# Copyright (C) 2026 ByD4rk
+#
+# Este programa está basado/modificado a partir de software
+# distribuido bajo la GNU General Public License v3.0.
+#
+# Este programa es software libre: puedes redistribuirlo y/o
+# modificarlo bajo los términos de la GNU General Public License
+# publicada por la Free Software Foundation, versión 3 o posterior.
+#
+# Este programa se distribuye con la esperanza de que sea útil,
+# pero SIN NINGUNA GARANTÍA.
+#
+# GNU GPL v3.0:
+# https://www.gnu.org/licenses/gpl-3.0.html
+
 import re
 import unicodedata
-import requests
 from pathlib import Path
+
+import requests
+
+
+# ============================================================
+# RUTAS
+# ============================================================
 
 BASE = Path(__file__).resolve().parent.parent
 
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
+
+
+# ============================================================
+# FUENTES EXTERNAS
+# ============================================================
 
 FUENTES = [
     "https://iptv-org.github.io/iptv/countries/mx.m3u",
@@ -39,15 +66,20 @@ FUENTES = [
 
 def normalizar(texto):
     texto = unicodedata.normalize("NFKD", texto)
+
     texto = "".join(
         c for c in texto
         if not unicodedata.combining(c)
     )
+
     return texto.lower().strip()
 
 
 def contiene(texto, palabras):
-    return any(p in texto for p in palabras)
+    return any(
+        palabra in texto
+        for palabra in palabras
+    )
 
 
 # ============================================================
@@ -59,13 +91,11 @@ def clasificar(grupo, nombre):
     g = normalizar(grupo)
     n = normalizar(nombre)
 
-    # Trabajamos con grupo + nombre
     texto = f"{g} {n}"
 
-    # ========================================================
+    # --------------------------------------------------------
     # ADULTOS
-    # MUY ESTRICTO PARA EVITAR FALSOS POSITIVOS
-    # ========================================================
+    # --------------------------------------------------------
 
     indicadores_adultos = [
         "pornografia",
@@ -84,29 +114,34 @@ def clasificar(grupo, nombre):
         "erotic",
     ]
 
-    # 18+ como etiqueta independiente
-    if re.search(r"(^|[\s:_-])18\+($|[\s:_-])", texto):
+    if re.search(
+        r"(^|[\s:_-])18\+($|[\s:_-])",
+        texto
+    ):
         return "ADULTOS"
 
-    if contiene(texto, indicadores_adultos):
+    if contiene(
+        texto,
+        indicadores_adultos
+    ):
         return "ADULTOS"
 
-    # ========================================================
+    # --------------------------------------------------------
     # ANIME
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "anime",
         "anime:",
         "japanese anime",
         "animacion japonesa",
-        "otaku"
+        "otaku",
     ]):
         return "ANIME"
 
-    # ========================================================
+    # --------------------------------------------------------
     # INFANTIL
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "kids",
@@ -121,13 +156,13 @@ def clasificar(grupo, nombre):
         "junior",
         "toons",
         "preschool",
-        "preescolar"
+        "preescolar",
     ]):
         return "INFANTIL"
 
-    # ========================================================
+    # --------------------------------------------------------
     # DEPORTES
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "sports",
@@ -150,13 +185,13 @@ def clasificar(grupo, nombre):
         "rugby",
         "boxing",
         "boxeo",
-        "golf"
+        "golf",
     ]):
         return "DEPORTES"
 
-    # ========================================================
+    # --------------------------------------------------------
     # NOTICIAS
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "news",
@@ -165,13 +200,13 @@ def clasificar(grupo, nombre):
         "noticia",
         "breaking news",
         "current affairs",
-        "actualidad"
+        "actualidad",
     ]):
         return "NOTICIAS"
 
-    # ========================================================
+    # --------------------------------------------------------
     # MÚSICA
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "music",
@@ -179,13 +214,13 @@ def clasificar(grupo, nombre):
         "musica",
         "musical",
         "musique",
-        "musica tv"
+        "musica tv",
     ]):
         return "MÚSICA"
 
-    # ========================================================
+    # --------------------------------------------------------
     # CINE
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "movie",
@@ -196,13 +231,13 @@ def clasificar(grupo, nombre):
         "cine",
         "cinema",
         "film",
-        "films"
+        "films",
     ]):
         return "CINE"
 
-    # ========================================================
+    # --------------------------------------------------------
     # SERIES
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "series",
@@ -210,26 +245,26 @@ def clasificar(grupo, nombre):
         "serie",
         "tv series",
         "shows",
-        "television series"
+        "television series",
     ]):
         return "SERIES"
 
-    # ========================================================
+    # --------------------------------------------------------
     # DOCUMENTALES
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "documentary",
         "documentaries",
         "documentary:",
         "documental",
-        "documentales"
+        "documentales",
     ]):
         return "DOCUMENTALES"
 
-    # ========================================================
+    # --------------------------------------------------------
     # CULTURA
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "culture",
@@ -243,51 +278,48 @@ def clasificar(grupo, nombre):
         "literature",
         "literatura",
         "books",
-        "libros"
+        "libros",
     ]):
         return "CULTURA"
 
-    # ========================================================
+    # --------------------------------------------------------
     # EDUCACIÓN
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "education",
         "educational",
         "educacion",
-        "educación",
         "educativo",
         "school",
         "universidad",
         "university",
-        "learning"
+        "learning",
     ]):
         return "EDUCACIÓN"
 
-    # ========================================================
+    # --------------------------------------------------------
     # TECNOLOGÍA
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "technology",
         "tech",
         "tecnologia",
-        "tecnología",
         "science",
         "ciencia",
         "computer",
-        "computers"
+        "computers",
     ]):
         return "TECNOLOGÍA"
 
-    # ========================================================
+    # --------------------------------------------------------
     # RELIGIÓN
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "religion",
         "religion:",
-        "religion ",
         "religiosa",
         "religioso",
         "cristian",
@@ -295,13 +327,13 @@ def clasificar(grupo, nombre):
         "church",
         "iglesia",
         "gospel",
-        "evangel"
+        "evangel",
     ]):
         return "RELIGIÓN"
 
-    # ========================================================
+    # --------------------------------------------------------
     # COCINA
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "cooking",
@@ -310,13 +342,13 @@ def clasificar(grupo, nombre):
         "culinaria",
         "food",
         "gastronomia",
-        "gastronomy"
+        "gastronomy",
     ]):
         return "COCINA"
 
-    # ========================================================
+    # --------------------------------------------------------
     # ESTILO DE VIDA
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "lifestyle",
@@ -328,13 +360,13 @@ def clasificar(grupo, nombre):
         "home",
         "hogar",
         "health",
-        "salud"
+        "salud",
     ]):
         return "ESTILO DE VIDA"
 
-    # ========================================================
+    # --------------------------------------------------------
     # ENTRETENIMIENTO
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "entertainment",
@@ -344,13 +376,13 @@ def clasificar(grupo, nombre):
         "reality",
         "talk show",
         "talkshow",
-        "showbiz"
+        "showbiz",
     ]):
         return "ENTRETENIMIENTO"
 
-    # ========================================================
+    # --------------------------------------------------------
     # PAÍSES
-    # ========================================================
+    # --------------------------------------------------------
 
     paises = [
         (["chile", " ch ", ":ch", "cl:"], "CHILE"),
@@ -365,7 +397,10 @@ def clasificar(grupo, nombre):
         (["paraguay"], "PARAGUAY"),
         (["brasil", "brazil"], "BRASIL"),
         (["espana", "españa", "spain"], "ESPAÑA"),
-        (["estados unidos", "united states", "usa"], "ESTADOS UNIDOS"),
+        (
+            ["estados unidos", "united states", "usa"],
+            "ESTADOS UNIDOS",
+        ),
         (["canada", "canadá"], "CANADÁ"),
         (["francia", "france"], "FRANCIA"),
         (["italia", "italy"], "ITALIA"),
@@ -376,12 +411,13 @@ def clasificar(grupo, nombre):
     ]
 
     for palabras, resultado in paises:
+
         if contiene(texto, palabras):
             return resultado
 
-    # ========================================================
+    # --------------------------------------------------------
     # REGIONES
-    # ========================================================
+    # --------------------------------------------------------
 
     if contiene(texto, [
         "latam",
@@ -390,7 +426,7 @@ def clasificar(grupo, nombre):
         "latinoamérica",
         "south america",
         "sudamerica",
-        "sudamérica"
+        "sudamérica",
     ]):
         return "LATINOAMÉRICA"
 
@@ -399,13 +435,9 @@ def clasificar(grupo, nombre):
         "internacional",
         "world",
         "worldwide",
-        "global"
+        "global",
     ]):
         return "INTERNACIONAL"
-
-    # ========================================================
-    # CUALQUIER COSA DESCONOCIDA
-    # ========================================================
 
     return "OTROS"
 
@@ -420,32 +452,39 @@ def descargar(url):
 
     try:
 
-        r = requests.get(
+        respuesta = requests.get(
             url,
             timeout=90,
             headers={
                 "User-Agent": "Mozilla/5.0"
-            }
+            },
         )
 
-        r.raise_for_status()
+        respuesta.raise_for_status()
 
-        texto = r.text
+        texto = respuesta.text
 
         if "#EXTINF" not in texto:
-            print("  -> No parece una M3U válida")
+
+            print(
+                "  -> No parece una M3U válida"
+            )
+
             return []
 
         return texto.splitlines()
 
-    except Exception as e:
+    except Exception as error:
 
-        print(f"  -> ERROR: {e}")
+        print(
+            f"  -> ERROR: {error}"
+        )
+
         return []
 
 
 # ============================================================
-# PROCESAR
+# PROCESAR CANALES
 # ============================================================
 
 def procesar(lineas, vistos):
@@ -464,10 +503,12 @@ def procesar(lineas, vistos):
 
         info = linea
 
-        # Buscar URL
         j = i + 1
 
-        while j < len(lineas) and not lineas[j].strip():
+        while (
+            j < len(lineas)
+            and not lineas[j].strip()
+        ):
             j += 1
 
         if j >= len(lineas):
@@ -475,12 +516,14 @@ def procesar(lineas, vistos):
 
         url = lineas[j].strip()
 
-        if not url.startswith(("http://", "https://")):
+        if not url.startswith(
+            ("http://", "https://")
+        ):
             i = j + 1
             continue
 
         # ----------------------------------------------------
-        # URL DUPLICADA
+        # EVITAR DUPLICADOS
         # ----------------------------------------------------
 
         if url in vistos:
@@ -494,12 +537,15 @@ def procesar(lineas, vistos):
         # ----------------------------------------------------
 
         if "," in info:
-            nombre = info.split(",", 1)[1].strip()
+            nombre = info.split(
+                ",",
+                1
+            )[1].strip()
         else:
             nombre = "Canal"
 
         # ----------------------------------------------------
-        # GROUP TITLE ORIGINAL
+        # GROUP TITLE
         # ----------------------------------------------------
 
         match = re.search(
@@ -523,7 +569,7 @@ def procesar(lineas, vistos):
         )
 
         # ----------------------------------------------------
-        # REEMPLAZAR GROUP-TITLE
+        # CAMBIAR GROUP TITLE
         # ----------------------------------------------------
 
         if re.search(
@@ -537,7 +583,7 @@ def procesar(lineas, vistos):
                 f'group-title="{nuevo_grupo}"',
                 info,
                 count=1,
-                flags=re.IGNORECASE
+                flags=re.IGNORECASE,
             )
 
         else:
@@ -545,7 +591,7 @@ def procesar(lineas, vistos):
             info = info.replace(
                 ",",
                 f' group-title="{nuevo_grupo}",',
-                1
+                1,
             )
 
         resultado.append(info)
@@ -566,14 +612,20 @@ def main():
     print("       IPTV CHILE MASTER - GOD BUILDER V3")
     print("=" * 70)
 
+    # --------------------------------------------------------
+    # COMPROBAR LISTA PRINCIPAL
+    # --------------------------------------------------------
+
     if not PRINCIPAL.exists():
 
         print()
         print("ERROR: No existe:")
         print(PRINCIPAL)
+        print()
 
-        input("\nPulsa Enter para cerrar...")
-        return
+        raise FileNotFoundError(
+            f"No existe la lista principal: {PRINCIPAL}"
+        )
 
     vistos = set()
 
@@ -583,16 +635,18 @@ def main():
     # LISTA PRINCIPAL
     # ========================================================
 
-    print("\n[1/2] Procesando lista principal...")
+    print(
+        "\n[1/2] Procesando lista principal..."
+    )
 
     principal = PRINCIPAL.read_text(
         encoding="utf-8",
-        errors="ignore"
+        errors="ignore",
     ).splitlines()
 
     datos = procesar(
         principal,
-        vistos
+        vistos,
     )
 
     final.extend(datos)
@@ -602,14 +656,16 @@ def main():
     )
 
     # ========================================================
-    # FUENTES
+    # FUENTES EXTERNAS
     # ========================================================
 
-    print("\n[2/2] Agregando fuentes externas...")
+    print(
+        "\n[2/2] Agregando fuentes externas..."
+    )
 
     for numero, fuente in enumerate(
         FUENTES,
-        1
+        1,
     ):
 
         print(
@@ -625,7 +681,7 @@ def main():
 
         datos = procesar(
             lineas,
-            vistos
+            vistos,
         )
 
         final.extend(datos)
@@ -637,12 +693,12 @@ def main():
         )
 
     # ========================================================
-    # GUARDAR V3
+    # GUARDAR
     # ========================================================
 
     SALIDA.write_text(
         "\n".join(final) + "\n",
-        encoding="utf-8"
+        encoding="utf-8",
     )
 
     print()
@@ -663,7 +719,10 @@ def main():
         f"{SALIDA.stat().st_size / 1024 / 1024:.2f} MB"
     )
 
-    input("\nPulsa Enter para cerrar...")
+    print()
+    print(
+        "Proceso terminado correctamente."
+    )
 
 
 if __name__ == "__main__":
