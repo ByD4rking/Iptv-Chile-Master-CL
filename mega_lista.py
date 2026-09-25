@@ -1,0 +1,670 @@
+import re
+import unicodedata
+import requests
+from pathlib import Path
+
+BASE = Path(__file__).parent
+
+PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD_V3.m3u"
+
+FUENTES = [
+    "https://iptv-org.github.io/iptv/countries/mx.m3u",
+    "https://iptv-org.github.io/iptv/index.m3u",
+    "https://iptv-org.github.io/iptv/countries/cl.m3u",
+    "https://iptv-org.github.io/iptv/regions/latam.m3u",
+    "https://iptv-org.github.io/iptv/regions/hispam.m3u",
+    "https://iptv-org.github.io/iptv/regions/lac.m3u",
+    "https://iptv-org.github.io/iptv/regions/southam.m3u",
+    "https://dearbulut.github.io/iptv/playlists/best.m3u",
+    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+    "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
+    "https://iptv-org.github.io/iptv/countries/us.m3u",
+    "https://iptv-org.github.io/iptv/index.country.m3u",
+    "https://dearbulut.github.io/iptv/playlists/online.m3u",
+    "https://raw.githubusercontent.com/freecasthub/public-iptv/main/playlist.m3u",
+    "https://iptv-org.github.io/iptv/regions/amer.m3u",
+    "https://iptv-org.github.io/iptv/languages/spa.m3u",
+    "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+    "https://iptv-org.github.io/iptv/index.category.m3u",
+    "https://iptv-org.github.io/iptv/categories/sports.m3u",
+    "https://m3u.cl/lista/CL.m3u",
+    "https://iptv-org.github.io/iptv/categories/series.m3u",
+]
+
+
+# ============================================================
+# UTILIDADES
+# ============================================================
+
+def normalizar(texto):
+    texto = unicodedata.normalize("NFKD", texto)
+    texto = "".join(
+        c for c in texto
+        if not unicodedata.combining(c)
+    )
+    return texto.lower().strip()
+
+
+def contiene(texto, palabras):
+    return any(p in texto for p in palabras)
+
+
+# ============================================================
+# CLASIFICADOR
+# ============================================================
+
+def clasificar(grupo, nombre):
+
+    g = normalizar(grupo)
+    n = normalizar(nombre)
+
+    # Trabajamos con grupo + nombre
+    texto = f"{g} {n}"
+
+    # ========================================================
+    # ADULTOS
+    # MUY ESTRICTO PARA EVITAR FALSOS POSITIVOS
+    # ========================================================
+
+    indicadores_adultos = [
+        "pornografia",
+        "pornographic",
+        "porn",
+        "xxx",
+        "sex channel",
+        "sexo explicito",
+        "explicit sex",
+        "adult only",
+        "adultos",
+        "adult channel",
+        "adult tv",
+        "erotic tv",
+        "erotica",
+        "erotic",
+    ]
+
+    # 18+ como etiqueta independiente
+    if re.search(r"(^|[\s:_-])18\+($|[\s:_-])", texto):
+        return "ADULTOS"
+
+    if contiene(texto, indicadores_adultos):
+        return "ADULTOS"
+
+    # ========================================================
+    # ANIME
+    # ========================================================
+
+    if contiene(texto, [
+        "anime",
+        "anime:",
+        "japanese anime",
+        "animacion japonesa",
+        "otaku"
+    ]):
+        return "ANIME"
+
+    # ========================================================
+    # INFANTIL
+    # ========================================================
+
+    if contiene(texto, [
+        "kids",
+        "kid:",
+        "children",
+        "child:",
+        "cartoon",
+        "cartoons",
+        "infantil",
+        "ninos",
+        "nina",
+        "junior",
+        "toons",
+        "preschool",
+        "preescolar"
+    ]):
+        return "INFANTIL"
+
+    # ========================================================
+    # DEPORTES
+    # ========================================================
+
+    if contiene(texto, [
+        "sports",
+        "sport:",
+        "sport ",
+        "deportes",
+        "deporte",
+        "football",
+        "soccer",
+        "futbol",
+        "basketball",
+        "basket",
+        "nba",
+        "tennis",
+        "tenis",
+        "baseball",
+        "beisbol",
+        "formula 1",
+        "motorsport",
+        "rugby",
+        "boxing",
+        "boxeo",
+        "golf"
+    ]):
+        return "DEPORTES"
+
+    # ========================================================
+    # NOTICIAS
+    # ========================================================
+
+    if contiene(texto, [
+        "news",
+        "news:",
+        "noticias",
+        "noticia",
+        "breaking news",
+        "current affairs",
+        "actualidad"
+    ]):
+        return "NOTICIAS"
+
+    # ========================================================
+    # MÚSICA
+    # ========================================================
+
+    if contiene(texto, [
+        "music",
+        "music:",
+        "musica",
+        "musical",
+        "musique",
+        "musica tv"
+    ]):
+        return "MÚSICA"
+
+    # ========================================================
+    # CINE
+    # ========================================================
+
+    if contiene(texto, [
+        "movie",
+        "movies",
+        "movie:",
+        "pelicula",
+        "peliculas",
+        "cine",
+        "cinema",
+        "film",
+        "films"
+    ]):
+        return "CINE"
+
+    # ========================================================
+    # SERIES
+    # ========================================================
+
+    if contiene(texto, [
+        "series",
+        "series:",
+        "serie",
+        "tv series",
+        "shows",
+        "television series"
+    ]):
+        return "SERIES"
+
+    # ========================================================
+    # DOCUMENTALES
+    # ========================================================
+
+    if contiene(texto, [
+        "documentary",
+        "documentaries",
+        "documentary:",
+        "documental",
+        "documentales"
+    ]):
+        return "DOCUMENTALES"
+
+    # ========================================================
+    # CULTURA
+    # ========================================================
+
+    if contiene(texto, [
+        "culture",
+        "culture:",
+        "cultura",
+        "arts",
+        "art:",
+        "arte",
+        "history",
+        "historia",
+        "literature",
+        "literatura",
+        "books",
+        "libros"
+    ]):
+        return "CULTURA"
+
+    # ========================================================
+    # EDUCACIÓN
+    # ========================================================
+
+    if contiene(texto, [
+        "education",
+        "educational",
+        "educacion",
+        "educación",
+        "educativo",
+        "school",
+        "universidad",
+        "university",
+        "learning"
+    ]):
+        return "EDUCACIÓN"
+
+    # ========================================================
+    # TECNOLOGÍA
+    # ========================================================
+
+    if contiene(texto, [
+        "technology",
+        "tech",
+        "tecnologia",
+        "tecnología",
+        "science",
+        "ciencia",
+        "computer",
+        "computers"
+    ]):
+        return "TECNOLOGÍA"
+
+    # ========================================================
+    # RELIGIÓN
+    # ========================================================
+
+    if contiene(texto, [
+        "religion",
+        "religion:",
+        "religion ",
+        "religiosa",
+        "religioso",
+        "cristian",
+        "christian",
+        "church",
+        "iglesia",
+        "gospel",
+        "evangel"
+    ]):
+        return "RELIGIÓN"
+
+    # ========================================================
+    # COCINA
+    # ========================================================
+
+    if contiene(texto, [
+        "cooking",
+        "cook",
+        "cocina",
+        "culinaria",
+        "food",
+        "gastronomia",
+        "gastronomy"
+    ]):
+        return "COCINA"
+
+    # ========================================================
+    # ESTILO DE VIDA
+    # ========================================================
+
+    if contiene(texto, [
+        "lifestyle",
+        "life style",
+        "estilo de vida",
+        "travel",
+        "viajes",
+        "viaje",
+        "home",
+        "hogar",
+        "health",
+        "salud"
+    ]):
+        return "ESTILO DE VIDA"
+
+    # ========================================================
+    # ENTRETENIMIENTO
+    # ========================================================
+
+    if contiene(texto, [
+        "entertainment",
+        "entretenimiento",
+        "variety",
+        "variedades",
+        "reality",
+        "talk show",
+        "talkshow",
+        "showbiz"
+    ]):
+        return "ENTRETENIMIENTO"
+
+    # ========================================================
+    # PAÍSES
+    # ========================================================
+
+    paises = [
+        (["chile", " ch ", ":ch", "cl:"], "CHILE"),
+        (["mexico", "méxico", " mexico:"], "MÉXICO"),
+        (["argentina"], "ARGENTINA"),
+        (["peru", "perú"], "PERÚ"),
+        (["colombia"], "COLOMBIA"),
+        (["ecuador"], "ECUADOR"),
+        (["bolivia"], "BOLIVIA"),
+        (["venezuela"], "VENEZUELA"),
+        (["uruguay"], "URUGUAY"),
+        (["paraguay"], "PARAGUAY"),
+        (["brasil", "brazil"], "BRASIL"),
+        (["espana", "españa", "spain"], "ESPAÑA"),
+        (["estados unidos", "united states", "usa"], "ESTADOS UNIDOS"),
+        (["canada", "canadá"], "CANADÁ"),
+        (["francia", "france"], "FRANCIA"),
+        (["italia", "italy"], "ITALIA"),
+        (["alemania", "germany"], "ALEMANIA"),
+        (["portugal"], "PORTUGAL"),
+        (["japon", "japón", "japan"], "JAPÓN"),
+        (["corea", "korea"], "COREA"),
+    ]
+
+    for palabras, resultado in paises:
+        if contiene(texto, palabras):
+            return resultado
+
+    # ========================================================
+    # REGIONES
+    # ========================================================
+
+    if contiene(texto, [
+        "latam",
+        "latin america",
+        "latinoamerica",
+        "latinoamérica",
+        "south america",
+        "sudamerica",
+        "sudamérica"
+    ]):
+        return "LATINOAMÉRICA"
+
+    if contiene(texto, [
+        "international",
+        "internacional",
+        "world",
+        "worldwide",
+        "global"
+    ]):
+        return "INTERNACIONAL"
+
+    # ========================================================
+    # CUALQUIER COSA DESCONOCIDA
+    # ========================================================
+
+    return "OTROS"
+
+
+# ============================================================
+# DESCARGAR
+# ============================================================
+
+def descargar(url):
+
+    print(f"Descargando: {url}")
+
+    try:
+
+        r = requests.get(
+            url,
+            timeout=90,
+            headers={
+                "User-Agent": "Mozilla/5.0"
+            }
+        )
+
+        r.raise_for_status()
+
+        texto = r.text
+
+        if "#EXTINF" not in texto:
+            print("  -> No parece una M3U válida")
+            return []
+
+        return texto.splitlines()
+
+    except Exception as e:
+
+        print(f"  -> ERROR: {e}")
+        return []
+
+
+# ============================================================
+# PROCESAR
+# ============================================================
+
+def procesar(lineas, vistos):
+
+    resultado = []
+
+    i = 0
+
+    while i < len(lineas):
+
+        linea = lineas[i].strip()
+
+        if not linea.startswith("#EXTINF"):
+            i += 1
+            continue
+
+        info = linea
+
+        # Buscar URL
+        j = i + 1
+
+        while j < len(lineas) and not lineas[j].strip():
+            j += 1
+
+        if j >= len(lineas):
+            break
+
+        url = lineas[j].strip()
+
+        if not url.startswith(("http://", "https://")):
+            i = j + 1
+            continue
+
+        # ----------------------------------------------------
+        # URL DUPLICADA
+        # ----------------------------------------------------
+
+        if url in vistos:
+            i = j + 1
+            continue
+
+        vistos.add(url)
+
+        # ----------------------------------------------------
+        # NOMBRE
+        # ----------------------------------------------------
+
+        if "," in info:
+            nombre = info.split(",", 1)[1].strip()
+        else:
+            nombre = "Canal"
+
+        # ----------------------------------------------------
+        # GROUP TITLE ORIGINAL
+        # ----------------------------------------------------
+
+        match = re.search(
+            r'group-title="([^"]*)"',
+            info,
+            re.IGNORECASE
+        )
+
+        if match:
+            grupo = match.group(1)
+        else:
+            grupo = ""
+
+        # ----------------------------------------------------
+        # CLASIFICAR
+        # ----------------------------------------------------
+
+        nuevo_grupo = clasificar(
+            grupo,
+            nombre
+        )
+
+        # ----------------------------------------------------
+        # REEMPLAZAR GROUP-TITLE
+        # ----------------------------------------------------
+
+        if re.search(
+            r'group-title="',
+            info,
+            re.IGNORECASE
+        ):
+
+            info = re.sub(
+                r'group-title="[^"]*"',
+                f'group-title="{nuevo_grupo}"',
+                info,
+                count=1,
+                flags=re.IGNORECASE
+            )
+
+        else:
+
+            info = info.replace(
+                ",",
+                f' group-title="{nuevo_grupo}",',
+                1
+            )
+
+        resultado.append(info)
+        resultado.append(url)
+
+        i = j + 1
+
+    return resultado
+
+
+# ============================================================
+# MAIN
+# ============================================================
+
+def main():
+
+    print("=" * 70)
+    print("       IPTV CHILE MASTER - GOD BUILDER V3")
+    print("=" * 70)
+
+    if not PRINCIPAL.exists():
+
+        print()
+        print("ERROR: No existe:")
+        print(PRINCIPAL)
+
+        input("\nPulsa Enter para cerrar...")
+        return
+
+    vistos = set()
+
+    final = ["#EXTM3U"]
+
+    # ========================================================
+    # LISTA PRINCIPAL
+    # ========================================================
+
+    print("\n[1/2] Procesando lista principal...")
+
+    principal = PRINCIPAL.read_text(
+        encoding="utf-8",
+        errors="ignore"
+    ).splitlines()
+
+    datos = procesar(
+        principal,
+        vistos
+    )
+
+    final.extend(datos)
+
+    print(
+        f"Canales iniciales: {len(vistos)}"
+    )
+
+    # ========================================================
+    # FUENTES
+    # ========================================================
+
+    print("\n[2/2] Agregando fuentes externas...")
+
+    for numero, fuente in enumerate(
+        FUENTES,
+        1
+    ):
+
+        print(
+            f"\n[{numero}/{len(FUENTES)}]"
+        )
+
+        lineas = descargar(fuente)
+
+        if not lineas:
+            continue
+
+        antes = len(vistos)
+
+        datos = procesar(
+            lineas,
+            vistos
+        )
+
+        final.extend(datos)
+
+        nuevos = len(vistos) - antes
+
+        print(
+            f" -> +{nuevos} canales nuevos"
+        )
+
+    # ========================================================
+    # GUARDAR V3
+    # ========================================================
+
+    SALIDA.write_text(
+        "\n".join(final) + "\n",
+        encoding="utf-8"
+    )
+
+    print()
+    print("=" * 70)
+    print("       LISTA GOD V3 TERMINADA")
+    print("=" * 70)
+
+    print(
+        f"Canales únicos: {len(vistos)}"
+    )
+
+    print(
+        f"Archivo: {SALIDA}"
+    )
+
+    print(
+        f"Tamaño: "
+        f"{SALIDA.stat().st_size / 1024 / 1024:.2f} MB"
+    )
+
+    input("\nPulsa Enter para cerrar...")
+
+
+if __name__ == "__main__":
+    main()
