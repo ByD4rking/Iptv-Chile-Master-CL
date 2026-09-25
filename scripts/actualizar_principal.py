@@ -18,7 +18,7 @@ import re
 import requests
 from pathlib import Path
 
-BASE = Path(__file__).parent
+BASE = Path(__file__).resolve().parent.parent
 
 # ============================================================
 # LISTA PRINCIPAL — NO CAMBIAR
