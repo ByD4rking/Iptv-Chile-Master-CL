@@ -12,7 +12,7 @@ def cargar():
 
     try:
         texto = ARCHIVO.read_text(
-            encoding="utf-8",
+            encoding="utf-8-sig",
             errors="ignore"
         ).strip()
 
