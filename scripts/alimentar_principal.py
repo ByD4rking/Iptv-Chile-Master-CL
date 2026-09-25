@@ -85,13 +85,13 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     texto = normalizar((categoria or "") + " " + (nombre or ""))
 
     # ========================================================
-    # CHILE: SIEMPRE CHILE TV
+    # CHILE: SIEMPRE CHILE
     # ========================================================
     if pais_fuente == "chile":
         for cat in categorias:
             if normalizar(cat) == "chile tv":
                 return cat
-        return "CHILE TV"
+        return "CHILE"
 
     # ========================================================
     # PLUTO ESPAÑA / MÉXICO
@@ -397,7 +397,7 @@ print()
 print("REGLAS:")
 print("  - No duplica URLs.")
 print("  - Respeta las categorías existentes.")
-print("  - Chile -> CHILE TV.")
+print("  - Chile -> CHILE.")
 print("  - Perú -> carpeta Perú existente.")
 print("  - Bolivia -> carpeta Bolivia existente.")
 print("  - Argentina -> carpeta Argentina existente.")
