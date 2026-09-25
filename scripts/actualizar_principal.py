@@ -15,41 +15,64 @@
 # https://www.gnu.org/licenses/gpl-3.0.html
 
 import re
-import requests
 from pathlib import Path
+
+import requests
+
+
+# ============================================================
+# RUTA BASE DEL REPOSITORIO
+# ============================================================
 
 BASE = Path(__file__).resolve().parent.parent
 
+
 # ============================================================
-# LISTA PRINCIPAL — NO CAMBIAR
+# LISTA PRINCIPAL
 # ============================================================
 
 ARCHIVO = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
+
 # ============================================================
-# LISTA EXTERNA
+# FUENTE EXTERNA
 # ============================================================
 
-FUENTE = "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
+FUENTE = (
+    "https://raw.githubusercontent.com/"
+    "JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
+)
 
+
+# ============================================================
+# DESCARGAR M3U
+# ============================================================
 
 def descargar(url):
     print("Descargando fuente externa...")
     print(url)
 
-    r = requests.get(
+    respuesta = requests.get(
         url,
         timeout=90,
-        headers={"User-Agent": "Mozilla/5.0"}
+        headers={
+            "User-Agent": "Mozilla/5.0"
+        }
     )
 
-    r.raise_for_status()
+    respuesta.raise_for_status()
 
-    if "#EXTINF" not in r.text:
-        raise Exception("La fuente no parece una M3U válida.")
+    if "#EXTINF" not in respuesta.text:
+        raise Exception(
+            "La fuente no parece una M3U válida."
+        )
 
-    return r.text.splitlines()
+    return respuesta.text.splitlines()
 
+
+# ============================================================
+# EXTRAER CANALES
+# ============================================================
 
 def extraer_canales(lineas):
     canales = []
@@ -82,21 +105,34 @@ def extraer_canales(lineas):
     return canales
 
 
+# ============================================================
+# OBTENER CATEGORÍA
+# ============================================================
+
 def obtener_categoria(info):
-    m = re.search(
+    coincidencia = re.search(
         r'group-title="([^"]*)"',
         info,
         re.IGNORECASE
     )
 
-    if m:
-        return m.group(1)
+    if coincidencia:
+        return coincidencia.group(1)
 
     return "OTROS"
 
 
+# ============================================================
+# CAMBIAR CATEGORÍA
+# ============================================================
+
 def cambiar_categoria(info, categoria):
-    if re.search(r'group-title="', info, re.IGNORECASE):
+
+    if re.search(
+        r'group-title="',
+        info,
+        re.IGNORECASE
+    ):
         return re.sub(
             r'group-title="[^"]*"',
             f'group-title="{categoria}"',
@@ -112,18 +148,30 @@ def cambiar_categoria(info, categoria):
     )
 
 
+# ============================================================
+# PROGRAMA PRINCIPAL
+# ============================================================
+
 def main():
 
     print("=" * 70)
     print(" IPTV CHILE MASTER - ACTUALIZAR LISTA PRINCIPAL")
     print("=" * 70)
 
+    # --------------------------------------------------------
+    # COMPROBAR LISTA PRINCIPAL
+    # --------------------------------------------------------
+
     if not ARCHIVO.exists():
+
         print()
         print("ERROR: No existe:")
         print(ARCHIVO)
-        input("\nPulsa Enter para cerrar...")
-        return
+        print()
+
+        raise FileNotFoundError(
+            f"No existe la lista principal: {ARCHIVO}"
+        )
 
     # --------------------------------------------------------
     # LEER LISTA PRINCIPAL
@@ -138,28 +186,39 @@ def main():
 
     lineas_principal = texto.splitlines()
 
-    canales_principal = extraer_canales(lineas_principal)
+    canales_principal = extraer_canales(
+        lineas_principal
+    )
 
     urls_existentes = {
-        url for info, url in canales_principal
+        url
+        for info, url in canales_principal
     }
 
-    print(f"Canales actuales: {len(canales_principal)}")
+    print(
+        f"Canales actuales: "
+        f"{len(canales_principal)}"
+    )
 
     # --------------------------------------------------------
-    # DESCARGAR IPTVSV
+    # DESCARGAR IPTV-SV
     # --------------------------------------------------------
 
     print("\n[2/4] Descargando IPTVSV...")
 
     lineas_externa = descargar(FUENTE)
 
-    canales_externos = extraer_canales(lineas_externa)
+    canales_externos = extraer_canales(
+        lineas_externa
+    )
 
-    print(f"Canales encontrados en IPTVSV: {len(canales_externos)}")
+    print(
+        f"Canales encontrados en IPTVSV: "
+        f"{len(canales_externos)}"
+    )
 
     # --------------------------------------------------------
-    # SOLO CANALES FALTANTES
+    # BUSCAR CANALES FALTANTES
     # --------------------------------------------------------
 
     print("\n[3/4] Buscando canales que faltan...")
@@ -168,13 +227,13 @@ def main():
 
     for info, url in canales_externos:
 
-        # Si la URL ya existe, NO SE TOCA
+        # Si la URL ya existe,
+        # no se modifica.
         if url in urls_existentes:
             continue
 
         categoria = obtener_categoria(info)
 
-        # Conservamos la categoría que trae la fuente
         info_nuevo = cambiar_categoria(
             info,
             categoria
@@ -186,39 +245,67 @@ def main():
 
         urls_existentes.add(url)
 
-    print(f"Canales nuevos encontrados: {len(nuevos)}")
+    print(
+        f"Canales nuevos encontrados: "
+        f"{len(nuevos)}"
+    )
 
     # --------------------------------------------------------
-    # AGREGAR SIN MODIFICAR LOS EXISTENTES
+    # AGREGAR CANALES NUEVOS
     # --------------------------------------------------------
 
-    print("\n[4/4] Agregando únicamente los canales faltantes...")
+    print(
+        "\n[4/4] Agregando únicamente "
+        "los canales faltantes..."
+    )
 
     if nuevos:
 
         with ARCHIVO.open(
             "a",
             encoding="utf-8"
-        ) as f:
+        ) as archivo:
 
-            f.write("\n")
+            archivo.write("\n")
 
             for info, url in nuevos:
-                f.write(info + "\n")
-                f.write(url + "\n")
+
+                archivo.write(
+                    info + "\n"
+                )
+
+                archivo.write(
+                    url + "\n"
+                )
 
     # --------------------------------------------------------
     # RESULTADO
     # --------------------------------------------------------
+
+    total = (
+        len(canales_principal)
+        + len(nuevos)
+    )
 
     print()
     print("=" * 70)
     print(" ACTUALIZACIÓN TERMINADA")
     print("=" * 70)
 
-    print(f"Canales anteriores: {len(canales_principal)}")
-    print(f"Canales agregados:  {len(nuevos)}")
-    print(f"Total aproximado:   {len(canales_principal) + len(nuevos)}")
+    print(
+        f"Canales anteriores: "
+        f"{len(canales_principal)}"
+    )
+
+    print(
+        f"Canales agregados:  "
+        f"{len(nuevos)}"
+    )
+
+    print(
+        f"Total aproximado:   "
+        f"{total}"
+    )
 
     print()
     print("Archivo actualizado:")
@@ -226,10 +313,17 @@ def main():
 
     print()
     print("URL RAW NO CAMBIA:")
-    print("IPTV-CHILE-MAESTRA_CORREGIDO.m3u")
+    print(
+        "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+    )
 
-    input("\nPulsa Enter para cerrar...")
+    print()
+    print("Proceso terminado correctamente.")
 
+
+# ============================================================
+# EJECUTAR
+# ============================================================
 
 if __name__ == "__main__":
     main()
