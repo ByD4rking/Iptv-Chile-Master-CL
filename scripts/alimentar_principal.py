@@ -350,7 +350,32 @@ for i, fuente in enumerate(FUENTES, 1):
 # ------------------------------------------------------------
 # GUARDAR
 # ------------------------------------------------------------
+
 if bloques_nuevos:
+    if not texto_principal.endswith("\n"):
+        texto_principal += "\n"
+
+    texto_principal += "\n".join(bloques_nuevos) + "\n"
+
+    PRINCIPAL.write_text(
+        texto_principal,
+        encoding="utf-8",
+        newline="\n"
+    )
+# ------------------------------------------------------------
+
+if bloques_nuevos:
+    if not texto_principal.endswith("\n"):
+        texto_principal += "\n"
+
+    texto_principal += "\n".join(bloques_nuevos) + "\n"
+
+    PRINCIPAL.write_text(
+        texto_principal,
+        encoding="utf-8",
+        newline="\n"
+    )
+# ------------------------------------------------------------
 # ------------------------------------------------------------
 # PROCESAR LISTAS LOCALES DE LA CARPETA CHILE
 # ------------------------------------------------------------
@@ -493,6 +518,10 @@ print("  - México -> carpeta México existente.")
 print("  - España -> carpeta España existente.")
 print("  - No crea una carpeta por cada fuente.")
 print("=" * 70)
+
+
+
+
 
 
 
