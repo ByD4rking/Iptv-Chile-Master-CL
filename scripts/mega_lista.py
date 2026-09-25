@@ -140,6 +140,34 @@ def contiene(texto, palabras):
     )
 
 
+def nombre_base_canal(nombre):
+    """
+    Obtiene el nombre base del canal.
+
+    Elimina solamente etiquetas [OPC.X] que hayan sido
+    generadas por este programa.
+
+    Ejemplo:
+
+        MEGA
+        MEGA [OPC.2]
+        MEGA [OPC.3]
+
+    Todos utilizan como base:
+
+        mega
+    """
+
+    nombre = re.sub(
+        r"\s*\[OPC\.\d+\]\s*$",
+        "",
+        nombre,
+        flags=re.IGNORECASE,
+    )
+
+    return normalizar(nombre)
+
+
 # ============================================================
 # CLASIFICADOR
 # ============================================================
@@ -503,7 +531,7 @@ def clasificar(grupo, nombre):
 def descargar(url):
 
     print("-" * 60)
-    print(f"Descargando:")
+    print("Descargando:")
     print(url)
 
     try:
@@ -543,7 +571,7 @@ def descargar(url):
 # PROCESAR CANALES
 # ============================================================
 
-def procesar(lineas, vistos):
+def procesar(lineas, vistos, canales):
 
     resultado = []
 
@@ -572,6 +600,10 @@ def procesar(lineas, vistos):
 
         url = lineas[j].strip()
 
+        # ----------------------------------------------------
+        # SOLO HTTP / HTTPS
+        # ----------------------------------------------------
+
         if not url.startswith(
             ("http://", "https://")
         ):
@@ -579,7 +611,7 @@ def procesar(lineas, vistos):
             continue
 
         # ----------------------------------------------------
-        # SIN URL DUPLICADAS
+        # MISMA URL = NO REPETIR
         # ----------------------------------------------------
 
         if url in vistos:
@@ -589,15 +621,18 @@ def procesar(lineas, vistos):
         vistos.add(url)
 
         # ----------------------------------------------------
-        # NOMBRE
+        # NOMBRE ORIGINAL
         # ----------------------------------------------------
 
         if "," in info:
+
             nombre = info.split(
                 ",",
                 1
             )[1].strip()
+
         else:
+
             nombre = "Canal"
 
         # ----------------------------------------------------
@@ -611,9 +646,57 @@ def procesar(lineas, vistos):
         )
 
         if match:
+
             grupo = match.group(1)
+
         else:
+
             grupo = ""
+
+        # ----------------------------------------------------
+        # NOMBRE BASE DEL CANAL
+        # ----------------------------------------------------
+
+        nombre_base = nombre_base_canal(
+            nombre
+        )
+
+        # ----------------------------------------------------
+        # NÚMERO DE OPCIÓN
+        # ----------------------------------------------------
+
+        numero_opcion = canales.get(
+            nombre_base,
+            0
+        ) + 1
+
+        canales[nombre_base] = numero_opcion
+
+        # ----------------------------------------------------
+        # CREAR NOMBRE DE SALIDA
+        # ----------------------------------------------------
+
+        if numero_opcion == 1:
+
+            nombre_final = nombre
+
+        else:
+
+            nombre_final = (
+                f"{nombre} [OPC.{numero_opcion}]"
+            )
+
+        # ----------------------------------------------------
+        # REEMPLAZAR NOMBRE EN EXTINF
+        # ----------------------------------------------------
+
+        if "," in info:
+
+            info = (
+                info.split(",", 1)[0]
+                + ","
+                + nombre_final
+            )
 
         # ----------------------------------------------------
         # CLASIFICAR
@@ -650,6 +733,10 @@ def procesar(lineas, vistos):
                 1,
             )
 
+        # ----------------------------------------------------
+        # AGREGAR RESULTADO
+        # ----------------------------------------------------
+
         resultado.append(info)
         resultado.append(url)
 
@@ -665,7 +752,7 @@ def procesar(lineas, vistos):
 def main():
 
     print("=" * 70)
-    print("       IPTV CHILE MASTER - GOD BUILDER V4")
+    print("       IPTV CHILE MASTER - GOD BUILDER V5")
     print("=" * 70)
 
     # --------------------------------------------------------
@@ -678,7 +765,15 @@ def main():
             f"No existe la lista principal:\n{PRINCIPAL}"
         )
 
+    # --------------------------------------------------------
+    # REGISTROS
+    # --------------------------------------------------------
+
+    # URLs ya utilizadas
     vistos = set()
+
+    # Cantidad de opciones por nombre de canal
+    canales = {}
 
     final = ["#EXTM3U"]
 
@@ -698,12 +793,13 @@ def main():
     datos = procesar(
         principal,
         vistos,
+        canales,
     )
 
     final.extend(datos)
 
     print(
-        f"Canales iniciales únicos: "
+        f"URLs únicas iniciales: "
         f"{len(vistos)}"
     )
 
@@ -728,9 +824,11 @@ def main():
         lineas = descargar(fuente)
 
         if not lineas:
+
             print(
                 "  -> Fuente omitida."
             )
+
             continue
 
         antes = len(vistos)
@@ -738,6 +836,7 @@ def main():
         datos = procesar(
             lineas,
             vistos,
+            canales,
         )
 
         final.extend(datos)
@@ -745,7 +844,7 @@ def main():
         nuevos = len(vistos) - antes
 
         print(
-            f"  -> Canales nuevos agregados: {nuevos}"
+            f"  -> URLs nuevas agregadas: {nuevos}"
         )
 
     # ========================================================
@@ -757,13 +856,27 @@ def main():
         encoding="utf-8",
     )
 
+    # ========================================================
+    # RESUMEN
+    # ========================================================
+
     print()
     print("=" * 70)
-    print("       LISTA GOD V4 TERMINADA")
+    print("       LISTA GOD V5 TERMINADA")
     print("=" * 70)
 
     print(
-        f"Canales únicos totales: {len(vistos)}"
+        f"URLs únicas totales: {len(vistos)}"
+    )
+
+    print(
+        f"Canales con alternativas: "
+        f"{sum(1 for cantidad in canales.values() if cantidad > 1)}"
+    )
+
+    print(
+        f"Máximo de opciones para un canal: "
+        f"{max(canales.values(), default=0)}"
     )
 
     print(
@@ -777,12 +890,34 @@ def main():
 
     print()
     print(
-        "Regla aplicada: una URL = un canal."
+        "Reglas aplicadas:"
     )
 
     print(
-        "Las fuentes externas solo agregan "
-        "URLs que todavía no existen."
+        "  1. Una misma URL no se repite."
+    )
+
+    print(
+        "  2. Una URL diferente del mismo canal "
+        "se conserva."
+    )
+
+    print(
+        "  3. La primera URL queda como opción principal."
+    )
+
+    print(
+        "  4. Las siguientes utilizan [OPC.2], "
+        "[OPC.3], [OPC.4], etc."
+    )
+
+    print(
+        "  5. La lista Principal se procesa primero."
+    )
+
+    print(
+        "  6. Las fuentes externas complementan "
+        "la lista."
     )
 
     print()
