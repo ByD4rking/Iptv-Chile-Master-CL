@@ -4,18 +4,6 @@ Colección y organización de listas IPTV M3U.
 
 ## 📺 Listas
 
-### 🔥 IPTV Chile Master GOD
-
-Mega lista creada a partir de diferentes listas IPTV públicas.
-
-Los canales se combinan, se eliminan URLs duplicadas y se reorganizan en categorías en español para mantener una estructura más limpia y fácil de usar.
-
-**Lista GOD:**
-
-https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_GOD.m3u
-
----
-
 ### 🇨🇱 IPTV Chile Master Original
 
 Lista principal original del proyecto.
@@ -23,6 +11,18 @@ Lista principal original del proyecto.
 **Lista Original:**
 
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u
+
+---
+
+### 🔥 IPTV Chile Master GOD
+
+Mega lista creada a partir de la lista principal y diferentes listas IPTV públicas.
+
+Los canales se combinan, se eliminan URLs duplicadas y se reorganizan en categorías en español para mantener una estructura más limpia y fácil de usar.
+
+**Lista GOD:**
+
+https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_GOD.m3u
 
 ---
 
