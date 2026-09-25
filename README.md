@@ -6,25 +6,29 @@ Colección y organización de listas IPTV M3U.
 
 ### 🔥 IPTV Chile Master GOD
 
-Mega lista creada combinando diferentes fuentes IPTV públicas, eliminando URLs duplicadas y organizando los canales por categorías.
+Mega lista creada a partir de diferentes listas IPTV públicas.
+
+Los canales se combinan, se eliminan URLs duplicadas y se reorganizan en categorías en español para mantener una estructura más limpia y fácil de usar.
 
 **Lista GOD:**
 
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_GOD.m3u
 
+---
+
 ### 🇨🇱 IPTV Chile Master Original
 
-Lista principal del proyecto.
+Lista principal original del proyecto.
 
 **Lista Original:**
 
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u
 
+---
+
 ## 📂 Categorías
 
-La lista GOD organiza los canales para evitar una cantidad excesiva de carpetas.
-
-Entre ellas:
+La lista GOD utiliza categorías simplificadas en español:
 
 - 🇨🇱 Chile
 - 🌎 Latinoamérica
@@ -41,35 +45,39 @@ Entre ellas:
 - 🎉 Entretenimiento
 - 🌍 Países
 
+---
+
 ## 🛠️ Generador
 
-El proyecto incluye `mega_lista.py`, utilizado para generar la lista GOD a partir de diferentes fuentes públicas.
+El archivo `mega_lista.py` permite generar la lista GOD utilizando las fuentes configuradas.
 
-El generador:
+El proceso:
 
-- Combina múltiples listas.
+- Combina diferentes listas IPTV públicas.
 - Elimina URLs duplicadas.
-- Organiza las categorías.
-- Conserva la lista original.
-- Genera una nueva lista GOD.
+- Reorganiza las categorías.
+- Utiliza nombres de categorías en español.
+- Genera la lista `IPTV-CHILE-MAESTRA_GOD.m3u`.
+
+---
 
 ## 📚 Fuentes
 
-La lista GOD se construye utilizando referencias provenientes de diferentes listas y proyectos IPTV disponibles públicamente en Internet.
+La lista GOD utiliza canales provenientes de diferentes listas IPTV públicas.
 
-Se mantienen las referencias y atribuciones correspondientes a sus respectivos autores, proyectos y proveedores cuando estas se encuentran disponibles.
+Los canales recopilados son reorganizados y agrupados para crear una lista más ordenada.
 
-Este proyecto no reclama propiedad sobre los canales, marcas, logos, streams o contenidos pertenecientes a terceros.
+Las fuentes originales, sus autores y sus respectivos contenidos mantienen sus créditos y derechos correspondientes.
+
+---
 
 ## ⚠️ Aviso
 
 La disponibilidad de los streams puede cambiar o dejar de funcionar en cualquier momento.
 
-Los derechos sobre los contenidos, canales, marcas y servicios corresponden a sus respectivos titulares.
+Los derechos sobre canales, programas, marcas, logos y contenidos pertenecen a sus respectivos titulares.
 
-IPTV Chile Master es un proyecto de recopilación y organización de referencias disponibles públicamente y no representa afiliación oficial con los proveedores o proyectos de terceros utilizados como fuentes.
-
-Si una fuente requiere ser retirada o modificada, puede solicitarse su revisión.
+IPTV Chile Master no reclama propiedad sobre contenido perteneciente a terceros.
 
 ---
 
