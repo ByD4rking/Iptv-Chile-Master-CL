@@ -1,4 +1,5 @@
-﻿from pathlib import Path
+﻿
+from pathlib import Path
 import re
 import unicodedata
 import requests
@@ -87,11 +88,9 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     # ========================================================
     # CHILE: SIEMPRE CHILE
     # ========================================================
-    if pais_fuente == "chile":
-        for cat in categorias:
-            if normalizar(cat) == "chile tv":
-                return cat
+        if pais_fuente == "chile":
         return "CHILE"
+
 
     # ========================================================
     # PLUTO ESPAÑA / MÉXICO
@@ -368,8 +367,108 @@ for i, fuente in enumerate(FUENTES, 1):
 # GUARDAR
 # ------------------------------------------------------------
 if bloques_nuevos:
+# ------------------------------------------------------------
+# PROCESAR LISTAS LOCALES DE LA CARPETA CHILE
+# ------------------------------------------------------------
+CARPETA_CHILE = BASE / "CHILE"
+
+if CARPETA_CHILE.exists():
+    listas_chile = sorted(
+        CARPETA_CHILE.glob("*.m3u")
+    )
+
+    print()
+    print("=" * 70)
+    print("LISTAS LOCALES DE CHILE")
+    print("=" * 70)
+
+    print(f"Carpeta: {CARPETA_CHILE}")
+    print(f"Listas encontradas: {len(listas_chile)}")
+
+    for lista_chile in listas_chile:
+
+        print()
+        print(f"[CHILE] {lista_chile.name}")
+
+        try:
+            texto_chile = lista_chile.read_text(
+                encoding="utf-8",
+                errors="replace"
+            )
+
+            canales_chile = parsear_m3u(texto_chile)
+
+            nuevos_chile = 0
+
+            for canal in canales_chile:
+
+                url = canal["url"].strip()
+
+                if url in urls_existentes:
+                    omitidos += 1
+                    continue
+
+                extinf = canal["extinf"]
+
+                if re.search(
+                    r'group-title="[^"]*"',
+                    extinf,
+                    re.I
+                ):
+                    extinf = re.sub(
+                        r'group-title="[^"]*"',
+                        'group-title="CHILE"',
+                        extinf,
+                        count=1,
+                        flags=re.I
+                    )
+                else:
+                    extinf = extinf.replace(
+                        "#EXTINF:",
+                        '#EXTINF:-1 group-title="CHILE"',
+                        1
+                    )
+
+                bloques_nuevos.append(
+                    extinf + "\n" + url
+                )
+
+                urls_existentes.add(url)
+
+                agregados += 1
+                nuevos_chile += 1
+
+            print(
+                f"  -> URLs nuevas agregadas: {nuevos_chile}"
+            )
+
+        except Exception as e:
+            errores += 1
+            print(f"  -> ERROR: {e}")
+
+else:
+    print()
+    print("No existe la carpeta CHILE.")
+
+
+# ------------------------------------------------------------
+# GUARDAR
+# ------------------------------------------------------------
+if bloques_nuevos:
 
     if not texto_principal.endswith("\n"):
+        texto_principal += "\n"
+
+    texto_principal += "\n".join(bloques_nuevos) + "\n"
+
+    PRINCIPAL.write_text(
+        texto_principal,
+        encoding="utf-8",
+        newline="\n"
+    )
+
+    
+if not texto_principal.endswith("\n"):
         texto_principal += "\n"
 
     texto_principal += "\n".join(bloques_nuevos) + "\n"

@@ -3,30 +3,51 @@ import re
 
 ARCHIVO = Path("IPTV-CHILE-MAESTRA_CORREGIDO.m3u")
 
-texto = ARCHIVO.read_text(encoding="utf-8", errors="replace")
 
-# Unificar todas las variantes de la categoría Chile.
-texto = re.sub(
-    r'group-title="CHILE TV"',
-    'group-title="CHILE"',
-    texto,
-    flags=re.IGNORECASE
-)
+def main():
+    if not ARCHIVO.exists():
+        raise FileNotFoundError(f"No existe: {ARCHIVO}")
 
-texto = re.sub(
-    r'group-title="CHILE"',
-    'group-title="CHILE"',
-    texto,
-    flags=re.IGNORECASE
-)
+    texto = ARCHIVO.read_text(
+        encoding="utf-8",
+        errors="replace"
+    )
 
-ARCHIVO.write_text(texto, encoding="utf-8", newline="\n")
+    # Todas las variantes de Chile terminan en una sola categoría.
+    texto = re.sub(
+        r'group-title="CHILE\s+TV"',
+        'group-title="CHILE"',
+        texto,
+        flags=re.IGNORECASE
+    )
 
-print("=" * 70)
-print("CATEGORÍA CHILE CORREGIDA")
-print("=" * 70)
-print("CHILE TV -> CHILE")
-print("CHILE    -> CHILE")
-print()
-print(f"Archivo: {ARCHIVO}")
-print("=" * 70)
+    texto = re.sub(
+        r'group-title="CHILE"',
+        'group-title="CHILE"',
+        texto,
+        flags=re.IGNORECASE
+    )
+
+    ARCHIVO.write_text(
+        texto,
+        encoding="utf-8",
+        newline="\n"
+    )
+
+    cantidad = len(
+        re.findall(
+            r'group-title="CHILE"',
+            texto,
+            flags=re.IGNORECASE
+        )
+    )
+
+    print("=" * 70)
+    print("CATEGORÍA CHILE CORREGIDA")
+    print("=" * 70)
+    print(f"Entradas CHILE: {cantidad}")
+    print("=" * 70)
+
+
+if __name__ == "__main__":
+    main()
