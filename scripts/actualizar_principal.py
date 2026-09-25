@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # IPTV Chile Master
 # Copyright (C) 2026 ByD4rk
 #
@@ -14,7 +16,9 @@
 # GNU GPL v3.0:
 # https://www.gnu.org/licenses/gpl-3.0.html
 
+
 import re
+import unicodedata
 from pathlib import Path
 
 import requests
@@ -35,13 +39,378 @@ ARCHIVO = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
 
 # ============================================================
-# FUENTE EXTERNA
+# FUENTES EXTERNAS
+# ============================================================
+#
+# "categoria" es la categoría que se utilizará cuando el canal
+# sea nuevo.
+#
+# Para Pluto TV se fuerza "Pluto TV" para que ambas fuentes
+# terminen en la misma categoría.
+#
+# XXX se fuerza a XXX.Adultos.Porno y se coloca al FINAL.
 # ============================================================
 
-FUENTE = (
-    "https://raw.githubusercontent.com/"
-    "JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
-)
+FUENTES = [
+    {
+        "url": "https://m3u.cl/lista/XXX.m3u",
+        "categoria": "XXX.Adultos.Porno",
+        "forzar_categoria": True,
+        "adultos": True,
+    },
+    {
+        "url": "https://m3u.cl/lista/religiosos.m3u",
+        "categoria": "Religiosos",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/musica.m3u",
+        "categoria": "Música",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/LATAM.m3u",
+        "categoria": "LATAM",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/VE.m3u",
+        "categoria": "Venezuela",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/DO.m3u",
+        "categoria": "República Dominicana",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/PE.m3u",
+        "categoria": "Perú",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/PY.m3u",
+        "categoria": "Paraguay",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/MX.m3u",
+        "categoria": "México",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/ES.m3u",
+        "categoria": "España",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/EC.m3u",
+        "categoria": "Ecuador",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/CR.m3u",
+        "categoria": "Costa Rica",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/CO.m3u",
+        "categoria": "Colombia",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/CL.m3u",
+        "categoria": "Chile",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/BR.m3u",
+        "categoria": "Brasil",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/BO.m3u",
+        "categoria": "Bolivia",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/AR.m3u",
+        "categoria": "Argentina",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+
+    # --------------------------------------------------------
+    # PLUTO TV
+    # --------------------------------------------------------
+
+    {
+        "url": (
+            "https://raw.githubusercontent.com/"
+            "JMigue85/IPTV-SV/refs/heads/main/PlutoTV.ES.m3u"
+        ),
+        "categoria": "Pluto TV",
+        "forzar_categoria": True,
+        "adultos": False,
+    },
+    {
+        "url": (
+            "https://raw.githubusercontent.com/"
+            "JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
+        ),
+        "categoria": "Pluto TV",
+        "forzar_categoria": True,
+        "adultos": False,
+    },
+
+    # --------------------------------------------------------
+    # LISTAS AGREGADAS / COMPLEMENTARIAS
+    # --------------------------------------------------------
+
+    {
+        "url": "https://m3u.cl/lista/total.m3u",
+        "categoria": "Total",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+    {
+        "url": "https://m3u.cl/lista/top.m3u",
+        "categoria": "TOP",
+        "forzar_categoria": False,
+        "adultos": False,
+    },
+]
+
+
+# ============================================================
+# CONFIGURACIÓN HTTP
+# ============================================================
+
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 "
+        "(Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 "
+        "(KHTML, like Gecko) "
+        "Chrome/131.0 Safari/537.36"
+    )
+}
+
+
+# ============================================================
+# NORMALIZAR TEXTO
+# ============================================================
+
+def normalizar_texto(texto):
+    """
+    Normaliza nombres para comparar canales.
+
+    Ejemplos:
+
+        Chile
+        CHILE
+        chile
+        Chile TV
+        chile-tv
+
+    se pueden comparar de forma más consistente.
+    """
+
+    if not texto:
+        return ""
+
+    texto = str(texto)
+
+    # Eliminar acentos.
+    texto = unicodedata.normalize(
+        "NFKD",
+        texto,
+    )
+
+    texto = "".join(
+        caracter
+        for caracter in texto
+        if not unicodedata.combining(caracter)
+    )
+
+    texto = texto.lower()
+
+    # Sustituir separadores por espacios.
+    texto = re.sub(
+        r"[_./\\|:+\-]+",
+        " ",
+        texto,
+    )
+
+    # Eliminar caracteres especiales.
+    texto = re.sub(
+        r"[^a-z0-9\s]",
+        " ",
+        texto,
+    )
+
+    # Espacios múltiples.
+    texto = re.sub(
+        r"\s+",
+        " ",
+        texto,
+    ).strip()
+
+    return texto
+
+
+# ============================================================
+# NORMALIZAR NOMBRE DE CANAL
+# ============================================================
+
+def normalizar_nombre_canal(nombre):
+    """
+    Normaliza nombres para detectar variantes evidentes.
+
+    No modifica el nombre que finalmente se escribe.
+    Solo se utiliza para comparar.
+    """
+
+    nombre = normalizar_texto(nombre)
+
+    # Palabras que normalmente son separadores descriptivos.
+    nombre = re.sub(
+        r"\bhd\b",
+        "",
+        nombre,
+    )
+
+    nombre = re.sub(
+        r"\bfhd\b",
+        "",
+        nombre,
+    )
+
+    nombre = re.sub(
+        r"\buhd\b",
+        "",
+        nombre,
+    )
+
+    nombre = re.sub(
+        r"\btv\b",
+        "",
+        nombre,
+    )
+
+    nombre = re.sub(
+        r"\btelevision\b",
+        "",
+        nombre,
+    )
+
+    nombre = re.sub(
+        r"\btelevisión\b",
+        "",
+        nombre,
+    )
+
+    nombre = re.sub(
+        r"\s+",
+        " ",
+        nombre,
+    ).strip()
+
+    return nombre
+
+
+# ============================================================
+# EXTRAER NOMBRE DEL EXTINF
+# ============================================================
+
+def extraer_nombre(info):
+    """
+    Intenta obtener el nombre visible del canal.
+
+    Primero busca tvg-name.
+    Si no existe, utiliza el texto después de la última coma.
+    """
+
+    coincidencia = re.search(
+        r'tvg-name="([^"]*)"',
+        info,
+        re.IGNORECASE,
+    )
+
+    if coincidencia:
+        nombre = coincidencia.group(1).strip()
+
+        if nombre:
+            return nombre
+
+    if "," in info:
+        return info.rsplit(",", 1)[1].strip()
+
+    return ""
+
+
+# ============================================================
+# OBTENER CATEGORÍA
+# ============================================================
+
+def obtener_categoria(info):
+    coincidencia = re.search(
+        r'group-title="([^"]*)"',
+        info,
+        re.IGNORECASE,
+    )
+
+    if coincidencia:
+        categoria = coincidencia.group(1).strip()
+
+        if categoria:
+            return categoria
+
+    return "OTROS"
+
+
+# ============================================================
+# CAMBIAR CATEGORÍA
+# ============================================================
+
+def cambiar_categoria(info, categoria):
+
+    if re.search(
+        r'group-title="',
+        info,
+        re.IGNORECASE,
+    ):
+        return re.sub(
+            r'group-title="[^"]*"',
+            f'group-title="{categoria}"',
+            info,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+
+    if "," in info:
+        return info.replace(
+            ",",
+            f' group-title="{categoria}",',
+            1,
+        )
+
+    return info
 
 
 # ============================================================
@@ -49,15 +418,16 @@ FUENTE = (
 # ============================================================
 
 def descargar(url):
-    print("Descargando fuente externa...")
+    print()
+    print("------------------------------------------------------------")
+    print("Descargando:")
     print(url)
+    print("------------------------------------------------------------")
 
     respuesta = requests.get(
         url,
         timeout=90,
-        headers={
-            "User-Agent": "Mozilla/5.0"
-        }
+        headers=HEADERS,
     )
 
     respuesta.raise_for_status()
@@ -75,21 +445,39 @@ def descargar(url):
 # ============================================================
 
 def extraer_canales(lineas):
+    """
+    Devuelve:
+
+        [
+            {
+                "info": "...",
+                "url": "...",
+                "nombre": "...",
+                "categoria": "..."
+            }
+        ]
+    """
+
     canales = []
 
     i = 0
 
     while i < len(lineas):
 
-        if not lineas[i].strip().startswith("#EXTINF"):
+        linea = lineas[i].strip()
+
+        if not linea.startswith("#EXTINF"):
             i += 1
             continue
 
-        info = lineas[i].strip()
+        info = linea
 
         j = i + 1
 
-        while j < len(lineas) and not lineas[j].strip():
+        while (
+            j < len(lineas)
+            and not lineas[j].strip()
+        ):
             j += 1
 
         if j >= len(lineas):
@@ -97,8 +485,21 @@ def extraer_canales(lineas):
 
         url = lineas[j].strip()
 
-        if url.startswith(("http://", "https://")):
-            canales.append((info, url))
+        if url.startswith(
+            (
+                "http://",
+                "https://",
+            )
+        ):
+
+            canales.append(
+                {
+                    "info": info,
+                    "url": url,
+                    "nombre": extraer_nombre(info),
+                    "categoria": obtener_categoria(info),
+                }
+            )
 
         i = j + 1
 
@@ -106,185 +507,550 @@ def extraer_canales(lineas):
 
 
 # ============================================================
-# OBTENER CATEGORÍA
+# COMPARAR CANALES
 # ============================================================
 
-def obtener_categoria(info):
-    coincidencia = re.search(
-        r'group-title="([^"]*)"',
-        info,
-        re.IGNORECASE
-    )
-
-    if coincidencia:
-        return coincidencia.group(1)
-
-    return "OTROS"
+def clave_canal(nombre):
+    return normalizar_nombre_canal(nombre)
 
 
 # ============================================================
-# CAMBIAR CATEGORÍA
+# CONSTRUIR ÍNDICE DE LA LISTA PRINCIPAL
 # ============================================================
 
-def cambiar_categoria(info, categoria):
+def construir_indices(canales):
+    """
+    Crea índices para:
 
-    if re.search(
-        r'group-title="',
-        info,
-        re.IGNORECASE
-    ):
-        return re.sub(
-            r'group-title="[^"]*"',
-            f'group-title="{categoria}"',
-            info,
-            count=1,
-            flags=re.IGNORECASE
+    1. URLs existentes.
+    2. Nombres normalizados.
+    3. Categorías existentes.
+    """
+
+    urls_existentes = set()
+
+    canales_por_nombre = {}
+
+    categorias = {}
+
+    for canal in canales:
+
+        url = canal["url"]
+        nombre = canal["nombre"]
+        categoria = canal["categoria"]
+
+        urls_existentes.add(url)
+
+        clave = clave_canal(nombre)
+
+        if clave:
+            canales_por_nombre.setdefault(
+                clave,
+                []
+            ).append(canal)
+
+        categoria_clave = normalizar_texto(
+            categoria
         )
 
-    return info.replace(
-        ",",
-        f' group-title="{categoria}",',
-        1
+        if categoria_clave:
+            categorias.setdefault(
+                categoria_clave,
+                categoria
+            )
+
+    return (
+        urls_existentes,
+        canales_por_nombre,
+        categorias,
     )
 
 
 # ============================================================
-# PROGRAMA PRINCIPAL
+# RESOLVER CATEGORÍA
 # ============================================================
 
-def main():
+def resolver_categoria(
+    canal,
+    fuente,
+):
+    """
+    Si la fuente tiene categoría forzada,
+    se utiliza esa.
 
-    print("=" * 70)
-    print(" IPTV CHILE MASTER - ACTUALIZAR LISTA PRINCIPAL")
-    print("=" * 70)
+    Si no, se intenta utilizar group-title
+    de la fuente.
 
-    # --------------------------------------------------------
-    # COMPROBAR LISTA PRINCIPAL
-    # --------------------------------------------------------
+    Si no existe, se utiliza la categoría
+    definida para la fuente.
+    """
+
+    if fuente.get("forzar_categoria"):
+        return fuente["categoria"]
+
+    categoria = canal.get(
+        "categoria",
+        "",
+    ).strip()
+
+    if categoria and categoria.upper() != "OTROS":
+        return categoria
+
+    return fuente["categoria"]
+
+
+# ============================================================
+# CREAR BLOQUE DE CANAL
+# ============================================================
+
+def crear_bloque(
+    canal,
+    categoria,
+):
+    info = cambiar_categoria(
+        canal["info"],
+        categoria,
+    )
+
+    return (
+        info,
+        canal["url"],
+    )
+
+
+# ============================================================
+# ACTUALIZAR LISTA
+# ============================================================
+
+def actualizar_lista():
+    print("=" * 70)
+    print(" IPTV CHILE MASTER - ACTUALIZACIÓN DE LISTA PRINCIPAL")
+    print("=" * 70)
 
     if not ARCHIVO.exists():
-
-        print()
-        print("ERROR: No existe:")
-        print(ARCHIVO)
-        print()
 
         raise FileNotFoundError(
             f"No existe la lista principal: {ARCHIVO}"
         )
 
     # --------------------------------------------------------
-    # LEER LISTA PRINCIPAL
+    # LEER LISTA ACTUAL
     # --------------------------------------------------------
 
-    print("\n[1/4] Leyendo lista principal...")
+    print()
+    print("[1/5] Leyendo lista principal...")
 
     texto = ARCHIVO.read_text(
         encoding="utf-8",
-        errors="ignore"
+        errors="ignore",
     )
 
-    lineas_principal = texto.splitlines()
+    lineas = texto.splitlines()
 
-    canales_principal = extraer_canales(
-        lineas_principal
+    canales_principales = extraer_canales(
+        lineas
     )
 
-    urls_existentes = {
-        url
-        for info, url in canales_principal
-    }
+    (
+        urls_existentes,
+        canales_por_nombre,
+        categorias_existentes,
+    ) = construir_indices(
+        canales_principales
+    )
 
     print(
         f"Canales actuales: "
-        f"{len(canales_principal)}"
-    )
-
-    # --------------------------------------------------------
-    # DESCARGAR IPTV-SV
-    # --------------------------------------------------------
-
-    print("\n[2/4] Descargando IPTVSV...")
-
-    lineas_externa = descargar(FUENTE)
-
-    canales_externos = extraer_canales(
-        lineas_externa
+        f"{len(canales_principales)}"
     )
 
     print(
-        f"Canales encontrados en IPTVSV: "
-        f"{len(canales_externos)}"
+        f"URLs únicas actuales: "
+        f"{len(urls_existentes)}"
     )
 
     # --------------------------------------------------------
-    # BUSCAR CANALES FALTANTES
+    # ACUMULADORES
     # --------------------------------------------------------
 
-    print("\n[3/4] Buscando canales que faltan...")
+    nuevos_normales = []
 
-    nuevos = []
+    nuevos_adultos = []
 
-    for info, url in canales_externos:
+    total_fuentes = 0
+    total_candidatos = 0
+    total_urls_duplicadas = 0
+    total_alternativas = 0
 
-        # Si la URL ya existe,
-        # no se modifica.
-        if url in urls_existentes:
+    nombres_nuevos = set()
+
+    # --------------------------------------------------------
+    # PROCESAR FUENTES
+    # --------------------------------------------------------
+
+    print()
+    print("[2/5] Procesando fuentes externas...")
+
+    for numero, fuente in enumerate(
+        FUENTES,
+        start=1,
+    ):
+
+        print()
+        print(
+            f"[FUENTE {numero}/{len(FUENTES)}]"
+        )
+
+        try:
+            lineas_externas = descargar(
+                fuente["url"]
+            )
+
+            canales_externos = extraer_canales(
+                lineas_externas
+            )
+
+        except Exception as error:
+
+            print(
+                f"[!] No se pudo procesar la fuente:"
+            )
+
+            print(
+                f"    {error}"
+            )
+
             continue
 
-        categoria = obtener_categoria(info)
+        total_fuentes += 1
 
-        info_nuevo = cambiar_categoria(
-            info,
+        print(
+            f"Canales encontrados: "
+            f"{len(canales_externos)}"
+        )
+
+        total_candidatos += len(
+            canales_externos
+        )
+
+        for canal in canales_externos:
+
+            url = canal["url"]
+            nombre = canal["nombre"]
+
+            # ------------------------------------------------
+            # URL EXACTAMENTE IGUAL
+            # ------------------------------------------------
+
+            if url in urls_existentes:
+
+                total_urls_duplicadas += 1
+
+                continue
+
+            clave = clave_canal(
+                nombre
+            )
+
+            categoria = resolver_categoria(
+                canal,
+                fuente,
+            )
+
+            # ------------------------------------------------
+            # CANAL YA EXISTENTE POR NOMBRE
+            # ------------------------------------------------
+            #
+            # La URL es diferente.
+            #
+            # Se agrega como alternativa.
+            #
+            # NO se mueve el canal existente.
+            # NO se cambia el canal existente.
+            # ------------------------------------------------
+
+            if clave and clave in canales_por_nombre:
+
+                info_nuevo = cambiar_categoria(
+                    canal["info"],
+                    categoria,
+                )
+
+                nuevo = {
+                    "info": info_nuevo,
+                    "url": url,
+                    "nombre": nombre,
+                    "categoria": categoria,
+                }
+
+                if fuente.get("adultos"):
+                    nuevos_adultos.append(
+                        nuevo
+                    )
+                else:
+                    nuevos_normales.append(
+                        nuevo
+                    )
+
+                urls_existentes.add(url)
+
+                canales_por_nombre.setdefault(
+                    clave,
+                    []
+                ).append(nuevo)
+
+                total_alternativas += 1
+
+                continue
+
+            # ------------------------------------------------
+            # CANAL REALMENTE NUEVO
+            # ------------------------------------------------
+
+            # Evitar que dos fuentes externas distintas
+            # introduzcan exactamente el mismo nombre
+            # en la misma ejecución.
+            #
+            # IMPORTANTE:
+            # la URL sigue siendo el identificador absoluto.
+            # ------------------------------------------------
+
+            if clave and clave in nombres_nuevos:
+
+                # Si el mismo canal ya fue incorporado
+                # durante esta ejecución con otra URL,
+                # también es una alternativa válida.
+                #
+                # Por tanto se agrega.
+                pass
+
+            info_nuevo = cambiar_categoria(
+                canal["info"],
+                categoria,
+            )
+
+            nuevo = {
+                "info": info_nuevo,
+                "url": url,
+                "nombre": nombre,
+                "categoria": categoria,
+            }
+
+            if fuente.get("adultos"):
+
+                nuevos_adultos.append(
+                    nuevo
+                )
+
+            else:
+
+                nuevos_normales.append(
+                    nuevo
+                )
+
+            urls_existentes.add(url)
+
+            if clave:
+                nombres_nuevos.add(
+                    clave
+                )
+
+                canales_por_nombre.setdefault(
+                    clave,
+                    []
+                ).append(nuevo)
+
+    # --------------------------------------------------------
+    # ELIMINAR DUPLICADOS INTERNOS
+    # --------------------------------------------------------
+    #
+    # Se conserva únicamente una entrada por URL.
+    # --------------------------------------------------------
+
+    def deduplicar_por_url(lista):
+
+        resultado = []
+        vistos = set()
+
+        for canal in lista:
+
+            url = canal["url"]
+
+            if url in vistos:
+                continue
+
+            vistos.add(url)
+            resultado.append(canal)
+
+        return resultado
+
+    nuevos_normales = deduplicar_por_url(
+        nuevos_normales
+    )
+
+    nuevos_adultos = deduplicar_por_url(
+        nuevos_adultos
+    )
+
+    # --------------------------------------------------------
+    # REVISAR CATEGORÍAS NUEVAS
+    # --------------------------------------------------------
+
+    print()
+    print("[3/5] Revisando categorías...")
+
+    categorias_nuevas = []
+
+    categorias_vistas = set(
+        categorias_existentes.keys()
+    )
+
+    for canal in (
+        nuevos_normales
+        + nuevos_adultos
+    ):
+
+        categoria = canal["categoria"]
+
+        clave_categoria = normalizar_texto(
             categoria
         )
 
-        nuevos.append(
-            (info_nuevo, url)
+        if (
+            clave_categoria
+            and clave_categoria
+            not in categorias_vistas
+        ):
+
+            categorias_vistas.add(
+                clave_categoria
+            )
+
+            categorias_nuevas.append(
+                categoria
+            )
+
+    if categorias_nuevas:
+
+        print(
+            "Categorías nuevas que se crearán:"
         )
 
-        urls_existentes.add(url)
+        for categoria in categorias_nuevas:
 
-    print(
-        f"Canales nuevos encontrados: "
-        f"{len(nuevos)}"
-    )
+            print(
+                f"    + {categoria}"
+            )
+
+    else:
+
+        print(
+            "No hay categorías nuevas."
+        )
 
     # --------------------------------------------------------
-    # AGREGAR CANALES NUEVOS
+    # CONSTRUIR NUEVOS BLOQUES
     # --------------------------------------------------------
 
-    print(
-        "\n[4/4] Agregando únicamente "
-        "los canales faltantes..."
-    )
+    print()
+    print("[4/5] Preparando canales nuevos...")
 
-    if nuevos:
+    # --------------------------------------------------------
+    # CANALES NORMALES
+    # --------------------------------------------------------
+
+    bloques_normales = []
+
+    for canal in nuevos_normales:
+
+        bloques_normales.append(
+            canal["info"]
+        )
+
+        bloques_normales.append(
+            canal["url"]
+        )
+
+    # --------------------------------------------------------
+    # XXX
+    # --------------------------------------------------------
+    #
+    # Siempre después de TODO lo demás.
+    # --------------------------------------------------------
+
+    bloques_adultos = []
+
+    for canal in nuevos_adultos:
+
+        bloques_adultos.append(
+            canal["info"]
+        )
+
+        bloques_adultos.append(
+            canal["url"]
+        )
+
+    # --------------------------------------------------------
+    # ESCRIBIR
+    # --------------------------------------------------------
+
+    print()
+    print("[5/5] Guardando lista actualizada...")
+
+    cambios = []
+
+    if bloques_normales:
+
+        cambios.extend(
+            bloques_normales
+        )
+
+    if bloques_adultos:
+
+        cambios.extend(
+            bloques_adultos
+        )
+
+    if cambios:
+
+        contenido_actual = ARCHIVO.read_text(
+            encoding="utf-8",
+            errors="ignore",
+        )
+
+        contenido_actual = contenido_actual.rstrip()
 
         with ARCHIVO.open(
-            "a",
-            encoding="utf-8"
+            "w",
+            encoding="utf-8",
+            newline="\n",
         ) as archivo:
 
-            archivo.write("\n")
+            archivo.write(
+                contenido_actual
+            )
 
-            for info, url in nuevos:
+            archivo.write(
+                "\n"
+            )
+
+            for linea in cambios:
 
                 archivo.write(
-                    info + "\n"
+                    linea
                 )
 
                 archivo.write(
-                    url + "\n"
+                    "\n"
                 )
 
     # --------------------------------------------------------
-    # RESULTADO
+    # RESULTADOS
     # --------------------------------------------------------
 
-    total = (
-        len(canales_principal)
-        + len(nuevos)
+    total_nuevos = (
+        len(nuevos_normales)
+        + len(nuevos_adultos)
     )
 
     print()
@@ -293,37 +1059,109 @@ def main():
     print("=" * 70)
 
     print(
-        f"Canales anteriores: "
-        f"{len(canales_principal)}"
+        f"Fuentes procesadas:       "
+        f"{total_fuentes}"
     )
 
     print(
-        f"Canales agregados:  "
-        f"{len(nuevos)}"
+        f"Candidatos encontrados:   "
+        f"{total_candidatos}"
     )
 
     print(
-        f"Total aproximado:   "
-        f"{total}"
+        f"URLs ya existentes:       "
+        f"{total_urls_duplicadas}"
     )
 
-    print()
-    print("Archivo actualizado:")
-    print(ARCHIVO)
-
-    print()
-    print("URL RAW NO CAMBIA:")
     print(
-        "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+        f"Alternativas agregadas:   "
+        f"{total_alternativas}"
+    )
+
+    print(
+        f"Canales nuevos normales:  "
+        f"{len(nuevos_normales)}"
+    )
+
+    print(
+        f"Canales XXX agregados:    "
+        f"{len(nuevos_adultos)}"
+    )
+
+    print(
+        f"Total agregado:           "
+        f"{total_nuevos}"
     )
 
     print()
-    print("Proceso terminado correctamente.")
+
+    if not cambios:
+
+        print(
+            "No había canales nuevos para agregar."
+        )
+
+    else:
+
+        print(
+            "Se agregaron los canales faltantes."
+        )
+
+    print()
+    print(
+        "Archivo actualizado:"
+    )
+
+    print(
+        ARCHIVO
+    )
+
+    print()
+    print(
+        "Los canales XXX.Adultos.Porno "
+        "se colocaron al final."
+    )
+
+    print()
+    print(
+        "Proceso terminado correctamente."
+    )
 
 
 # ============================================================
-# EJECUTAR
+# MAIN
 # ============================================================
+
+def main():
+
+    try:
+
+        actualizar_lista()
+
+    except requests.RequestException as error:
+
+        print()
+        print(
+            "[ERROR] Falló una conexión HTTP:"
+        )
+        print(
+            error
+        )
+
+        raise
+
+    except Exception as error:
+
+        print()
+        print(
+            "[ERROR]"
+        )
+        print(
+            error
+        )
+
+        raise
+
 
 if __name__ == "__main__":
     main()

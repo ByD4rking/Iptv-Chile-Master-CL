@@ -36,6 +36,11 @@ SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
 # ============================================================
 
 FUENTES = [
+
+    # --------------------------------------------------------
+    # FUENTES IPTV-ORG
+    # --------------------------------------------------------
+
     "https://iptv-org.github.io/iptv/countries/mx.m3u",
     "https://iptv-org.github.io/iptv/index.m3u",
     "https://iptv-org.github.io/iptv/countries/cl.m3u",
@@ -43,20 +48,72 @@ FUENTES = [
     "https://iptv-org.github.io/iptv/regions/hispam.m3u",
     "https://iptv-org.github.io/iptv/regions/lac.m3u",
     "https://iptv-org.github.io/iptv/regions/southam.m3u",
+
+    # --------------------------------------------------------
+    # OTRAS FUENTES
+    # --------------------------------------------------------
+
     "https://dearbulut.github.io/iptv/playlists/best.m3u",
+
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+
     "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
+
     "https://iptv-org.github.io/iptv/countries/us.m3u",
+
     "https://iptv-org.github.io/iptv/index.country.m3u",
+
     "https://dearbulut.github.io/iptv/playlists/online.m3u",
+
     "https://raw.githubusercontent.com/freecasthub/public-iptv/main/playlist.m3u",
+
     "https://iptv-org.github.io/iptv/regions/amer.m3u",
+
     "https://iptv-org.github.io/iptv/languages/spa.m3u",
+
     "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+
     "https://iptv-org.github.io/iptv/index.category.m3u",
+
     "https://iptv-org.github.io/iptv/categories/sports.m3u",
-    "https://m3u.cl/lista/CL.m3u",
+
     "https://iptv-org.github.io/iptv/categories/series.m3u",
+
+    # --------------------------------------------------------
+    # M3U.CL
+    # --------------------------------------------------------
+
+    "https://m3u.cl/lista/XXX.m3u",
+    "https://m3u.cl/lista/religiosos.m3u",
+    "https://m3u.cl/lista/musica.m3u",
+    "https://m3u.cl/lista/LATAM.m3u",
+    "https://m3u.cl/lista/VE.m3u",
+    "https://m3u.cl/lista/DO.m3u",
+    "https://m3u.cl/lista/PE.m3u",
+    "https://m3u.cl/lista/PY.m3u",
+    "https://m3u.cl/lista/MX.m3u",
+    "https://m3u.cl/lista/ES.m3u",
+    "https://m3u.cl/lista/EC.m3u",
+    "https://m3u.cl/lista/CR.m3u",
+    "https://m3u.cl/lista/CO.m3u",
+    "https://m3u.cl/lista/CL.m3u",
+    "https://m3u.cl/lista/BR.m3u",
+    "https://m3u.cl/lista/BO.m3u",
+    "https://m3u.cl/lista/AR.m3u",
+
+    # --------------------------------------------------------
+    # TOTAL Y TOP
+    # --------------------------------------------------------
+
+    "https://m3u.cl/lista/total.m3u",
+    "https://m3u.cl/lista/top.m3u",
+
+    # --------------------------------------------------------
+    # PLUTO TV
+    # --------------------------------------------------------
+
+    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.ES.m3u",
+    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
 ]
 
 
@@ -68,7 +125,8 @@ def normalizar(texto):
     texto = unicodedata.normalize("NFKD", texto)
 
     texto = "".join(
-        c for c in texto
+        c
+        for c in texto
         if not unicodedata.combining(c)
     )
 
@@ -120,10 +178,7 @@ def clasificar(grupo, nombre):
     ):
         return "ADULTOS"
 
-    if contiene(
-        texto,
-        indicadores_adultos
-    ):
+    if contiene(texto, indicadores_adultos):
         return "ADULTOS"
 
     # --------------------------------------------------------
@@ -411,7 +466,6 @@ def clasificar(grupo, nombre):
     ]
 
     for palabras, resultado in paises:
-
         if contiene(texto, palabras):
             return resultado
 
@@ -448,7 +502,9 @@ def clasificar(grupo, nombre):
 
 def descargar(url):
 
-    print(f"Descargando: {url}")
+    print("-" * 60)
+    print(f"Descargando:")
+    print(url)
 
     try:
 
@@ -467,7 +523,7 @@ def descargar(url):
         if "#EXTINF" not in texto:
 
             print(
-                "  -> No parece una M3U válida"
+                "  -> La fuente no contiene #EXTINF."
             )
 
             return []
@@ -523,7 +579,7 @@ def procesar(lineas, vistos):
             continue
 
         # ----------------------------------------------------
-        # EVITAR DUPLICADOS
+        # SIN URL DUPLICADAS
         # ----------------------------------------------------
 
         if url in vistos:
@@ -545,7 +601,7 @@ def procesar(lineas, vistos):
             nombre = "Canal"
 
         # ----------------------------------------------------
-        # GROUP TITLE
+        # GROUP TITLE ORIGINAL
         # ----------------------------------------------------
 
         match = re.search(
@@ -609,22 +665,17 @@ def procesar(lineas, vistos):
 def main():
 
     print("=" * 70)
-    print("       IPTV CHILE MASTER - GOD BUILDER V3")
+    print("       IPTV CHILE MASTER - GOD BUILDER V4")
     print("=" * 70)
 
     # --------------------------------------------------------
-    # COMPROBAR LISTA PRINCIPAL
+    # COMPROBAR PRINCIPAL
     # --------------------------------------------------------
 
     if not PRINCIPAL.exists():
 
-        print()
-        print("ERROR: No existe:")
-        print(PRINCIPAL)
-        print()
-
         raise FileNotFoundError(
-            f"No existe la lista principal: {PRINCIPAL}"
+            f"No existe la lista principal:\n{PRINCIPAL}"
         )
 
     vistos = set()
@@ -652,7 +703,8 @@ def main():
     final.extend(datos)
 
     print(
-        f"Canales iniciales: {len(vistos)}"
+        f"Canales iniciales únicos: "
+        f"{len(vistos)}"
     )
 
     # ========================================================
@@ -660,7 +712,7 @@ def main():
     # ========================================================
 
     print(
-        "\n[2/2] Agregando fuentes externas..."
+        "\n[2/2] Procesando fuentes externas..."
     )
 
     for numero, fuente in enumerate(
@@ -668,13 +720,17 @@ def main():
         1,
     ):
 
+        print()
         print(
-            f"\n[{numero}/{len(FUENTES)}]"
+            f"[FUENTE {numero}/{len(FUENTES)}]"
         )
 
         lineas = descargar(fuente)
 
         if not lineas:
+            print(
+                "  -> Fuente omitida."
+            )
             continue
 
         antes = len(vistos)
@@ -689,7 +745,7 @@ def main():
         nuevos = len(vistos) - antes
 
         print(
-            f" -> +{nuevos} canales nuevos"
+            f"  -> Canales nuevos agregados: {nuevos}"
         )
 
     # ========================================================
@@ -703,15 +759,15 @@ def main():
 
     print()
     print("=" * 70)
-    print("       LISTA GOD V3 TERMINADA")
+    print("       LISTA GOD V4 TERMINADA")
     print("=" * 70)
 
     print(
-        f"Canales únicos: {len(vistos)}"
+        f"Canales únicos totales: {len(vistos)}"
     )
 
     print(
-        f"Archivo: {SALIDA}"
+        f"Archivo generado:\n{SALIDA}"
     )
 
     print(
@@ -721,9 +777,23 @@ def main():
 
     print()
     print(
+        "Regla aplicada: una URL = un canal."
+    )
+
+    print(
+        "Las fuentes externas solo agregan "
+        "URLs que todavía no existen."
+    )
+
+    print()
+    print(
         "Proceso terminado correctamente."
     )
 
+
+# ============================================================
+# EJECUTAR
+# ============================================================
 
 if __name__ == "__main__":
     main()
