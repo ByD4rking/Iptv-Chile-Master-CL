@@ -7,12 +7,10 @@ def buscar_categoria_principal(
     categorias_existentes,
 ):
     """
-    Devuelve ÚNICAMENTE la categoría destino del país.
-
-    Reglas:
+    Devuelve la categoría destino del país.
 
     CHILE:
-        CL.m3u -> CHILE TV
+        Siempre -> CHILE TV
 
     Nunca:
         CHILE
@@ -35,14 +33,10 @@ def buscar_categoria_principal(
 
         for categoria in categorias_existentes.values():
 
-            if (
-                normalizar_texto(categoria)
-                == "chile tv"
-            ):
+            if normalizar_texto(categoria) == "chile tv":
                 return categoria
 
-        # Si todavía no existe, el llamador debe crear
-        # exactamente CHILE TV.
+        # Si todavía no existe, el llamador creará CHILE TV.
         return None
 
     # ========================================================
@@ -174,14 +168,12 @@ def resolver_categoria(
     """
     Determina la categoría FINAL.
 
-    REGLAS:
+    Reglas:
 
     - CL.m3u -> CHILE TV
-    - Nunca crear/usar CHILE
-    - Nunca modificar CHILE TV Y RADIO
-    - Cada país va a SU propia categoría.
-    - Pluto -> PLUTO TV
-    - IPTVSV -> según categoría del canal.
+    - Nunca usar CHILE
+    - Nunca usar CHILE TV Y RADIO para CL.m3u
+    - Cada país va a su categoría correspondiente.
     """
 
     categoria_fuente = canal.get(
@@ -200,12 +192,9 @@ def resolver_categoria(
 
     if fuente.get("forzar_categoria"):
 
-        categoria_forzada = (
-            categoria_configurada
-        )
+        categoria_forzada = categoria_configurada
 
-        # Seguridad absoluta:
-        # ninguna fuente puede terminar creando CHILE.
+        # Seguridad: nunca permitir CHILE.
         if (
             normalizar_texto(categoria_forzada)
             == "chile"
@@ -233,19 +222,16 @@ def resolver_categoria(
 
     if pais == "chile":
 
-        categoria_chile = (
-            buscar_categoria_principal(
-                "chile",
-                categorias_existentes,
-            )
-        )
-
-        if categoria_chile:
-            return categoria_chile
-
         # IMPORTANTE:
-        # si no existe, se crea CHILE TV,
-        # nunca CHILE.
+        # Chile tiene destino fijo.
+        #
+        # NO devolver:
+        #   CHILE
+        #   CHILE TV Y RADIO
+        #
+        # SIEMPRE:
+        #   CHILE TV
+
         return "CHILE TV"
 
     # ========================================================
@@ -264,8 +250,8 @@ def resolver_categoria(
         if categoria_principal:
             return categoria_principal
 
-        # Si todavía no existe la carpeta del país,
-        # se utiliza el nombre configurado por la fuente.
+        # Si todavía no existe la categoría,
+        # utiliza la categoría configurada.
         return categoria_para_pais
 
     # ========================================================
