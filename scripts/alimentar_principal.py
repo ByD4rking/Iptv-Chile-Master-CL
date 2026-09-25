@@ -477,7 +477,8 @@ if bloques_nuevos:
     )
 
     
-if not texto_principal.endswith("\n"):
+if bloques_nuevos:
+    if not texto_principal.endswith("\n"):
         texto_principal += "\n"
 
     texto_principal += "\n".join(bloques_nuevos) + "\n"
@@ -518,6 +519,7 @@ print("  - México -> carpeta México existente.")
 print("  - España -> carpeta España existente.")
 print("  - No crea una carpeta por cada fuente.")
 print("=" * 70)
+
 
 
 
