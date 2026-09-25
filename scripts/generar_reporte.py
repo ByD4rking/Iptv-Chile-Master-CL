@@ -7,7 +7,7 @@ Además registra cada comprobación en:
     scripts/aprendizaje.json
 
 Uso:
-    py scripts\generar_reporte.py IPTV-CHILE-MAESTRA_CORREGIDO.m3u
+    py scripts/generar_reporte.py IPTV-CHILE-MAESTRA_CORREGIDO.m3u
 """
 
 import argparse
