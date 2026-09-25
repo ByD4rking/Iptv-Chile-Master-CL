@@ -7,7 +7,6 @@ import requests
 BASE = Path(__file__).resolve().parent.parent
 
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
-BACKUP = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u.backup_alimentar"
 
 FUENTES = [
     "https://m3u.cl/lista/XXX.m3u",
@@ -27,8 +26,6 @@ FUENTES = [
     "https://m3u.cl/lista/BR.m3u",
     "https://m3u.cl/lista/BO.m3u",
     "https://m3u.cl/lista/AR.m3u",
-    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.ES.m3u",
-    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
     "https://m3u.cl/lista/total.m3u",
     "https://m3u.cl/lista/top.m3u",
@@ -88,22 +85,8 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     # ========================================================
     # CHILE: SIEMPRE CHILE
     # ========================================================
-        if pais_fuente == "chile":
-        return "CHILE"
+    if pais_fuente == "chile":`r`n        return "CHILE"
 
-
-    # ========================================================
-    # PLUTO ESPAÑA / MÉXICO
-    # ========================================================
-    if "plutotv.es" in texto or "pluto tv es" in texto:
-        for cat in categorias:
-            if normalizar(cat) == "pluto":
-                return cat
-
-    if "plutotv.mx" in texto or "pluto tv mx" in texto:
-        for cat in categorias:
-            if normalizar(cat) == "pluto":
-                return cat
 
     # ========================================================
     # PAÍS EXPLÍCITO
@@ -509,3 +492,4 @@ print("  - México -> carpeta México existente.")
 print("  - España -> carpeta España existente.")
 print("  - No crea una carpeta por cada fuente.")
 print("=" * 70)
+
