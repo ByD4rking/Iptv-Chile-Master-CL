@@ -3,7 +3,6 @@ name: Actualizar IPTV Chile Master
 on:
   schedule:
     - cron: "0 6,18 * * *"
-
   workflow_dispatch:
 
 permissions:
@@ -14,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
@@ -36,10 +34,9 @@ jobs:
         run: |
           python scripts/mega_lista.py
 
-      - name: Generar reporte
+      - name: Generar reporte y actualizar aprendizaje
         run: |
           python scripts/generar_reporte.py \
-            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
             --salida REPORTE.md
 
       - name: Guardar cambios
@@ -52,6 +49,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No hay cambios."
           else
-            git commit -m "Actualización automática de IPTV"
+            git commit -m "Actualizacion automatica de IPTV"
             git push
           fi
