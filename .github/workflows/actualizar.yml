@@ -1,55 +1,152 @@
-﻿name: Actualizar IPTV Chile Master
+﻿name: Actualizar y verificar listas IPTV
 
 on:
   schedule:
-    - cron: "0 6,18 * * *"
-
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: actualizar-listas
+  cancel-in-progress: false
+
 jobs:
   actualizar:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
-
       - name: Descargar repositorio
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Instalar dependencias
         run: |
           python -m pip install --upgrade pip
-          pip install -r scripts/requirements.txt
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
       - name: Actualizar lista principal
         run: |
-          python scripts/actualizar_principal.py
+          python scripts/alimentar_principal.py
+
+      - name: Unificar categoría CHILE
+        run: |
+          python scripts/unificar_chile.py
 
       - name: Generar lista GOD
         run: |
           python scripts/mega_lista.py
 
-      - name: Generar reporte y actualizar aprendizaje
+      - name: Validar archivos M3U
         run: |
-          python scripts/generar_reporte.py --salida REPORTE.md
+          set -e
+
+          for archivo in \
+            "IPTV-CHILE-MAESTRA_CORREGIDO.m3u" \
+            "IPTV-CHILE-MAESTRA_GOD.m3u"
+          do
+            echo "========================================"
+            echo "Validando: $archivo"
+            echo "========================================"
+
+            if [ ! -f "$archivo" ]; then
+              echo "ERROR: No existe $archivo"
+              exit 1
+            fi
+
+            if [ ! -s "$archivo" ]; then
+              echo "ERROR: $archivo está vacío"
+              exit 1
+            fi
+
+            if ! head -n 1 "$archivo" | grep -q "#EXTM3U"; then
+              echo "ERROR: $archivo no parece un M3U válido"
+              exit 1
+            fi
+
+            CANALES=$(grep -c "^#EXTINF" "$archivo" || true)
+
+            echo "Canales encontrados: $CANALES"
+
+            if [ "$CANALES" -eq 0 ]; then
+              echo "ERROR: $archivo no contiene canales"
+              exit 1
+            fi
+          done
+
+          echo "Las dos listas M3U son válidas."
+
+      - name: Verificar listas IPTV
+        run: |
+          python scripts/generar_reporte.py \
+            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            IPTV-CHILE-MAESTRA_GOD.m3u \
+            --hilos 50 \
+            --timeout 6 \
+            --max-por-servidor 1 \
+            --reintentos 1 \
+            --espera-reintento 1
+
+      - name: Comprobar resultado de verificación
+        run: |
+          set -e
+
+          if [ ! -f "REPORTE.md" ]; then
+            echo "ERROR: No se generó REPORTE.md"
+            exit 1
+          fi
+
+          echo "Reporte generado correctamente."
+
+          echo ""
+          echo "========== RESUMEN =========="
+
+          for archivo in \
+            "IPTV-CHILE-MAESTRA_CORREGIDO.m3u" \
+            "IPTV-CHILE-MAESTRA_GOD.m3u"
+          do
+            CANALES=$(grep -c "^#EXTINF" "$archivo" || true)
+            echo "$archivo -> $CANALES canales"
+          done
+
+          echo ""
+          echo "Verificación completada."
 
       - name: Guardar cambios
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add .
+          git add \
+            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            IPTV-CHILE-MAESTRA_GOD.m3u \
+            REPORTE.md \
+            scripts/aprendizaje.json
 
           if git diff --cached --quiet; then
-            echo "No hay cambios."
-          else
-            git commit -m "Actualizacion automatica de IPTV"
-            git push
+            echo "No hay cambios nuevos."
+            exit 0
           fi
+
+          git commit -m "Actualización y verificación automática IPTV"
+
+          git pull --rebase origin main
+          git push origin main
+
+      - name: Resumen final
+        run: |
+          echo "=========================================="
+          echo " ACTUALIZACIÓN IPTV COMPLETADA"
+          echo "=========================================="
+          echo "Las listas fueron generadas y verificadas."
+          echo "El resultado fue guardado en GitHub."
