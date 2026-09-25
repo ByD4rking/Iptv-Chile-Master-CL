@@ -85,7 +85,8 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     # ========================================================
     # CHILE: SIEMPRE CHILE
     # ========================================================
-    if pais_fuente == "chile":`r`n        return "CHILE"
+    if pais_fuente == "chile":
+        return "CHILE"
 
 
     # ========================================================
@@ -492,4 +493,6 @@ print("  - México -> carpeta México existente.")
 print("  - España -> carpeta España existente.")
 print("  - No crea una carpeta por cada fuente.")
 print("=" * 70)
+
+
 
