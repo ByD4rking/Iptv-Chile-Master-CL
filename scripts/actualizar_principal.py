@@ -1,127 +1,5 @@
 # ============================================================
-# FUENTES EXTERNAS
-# ============================================================
-
-FUENTES = [
-    {
-        "url": "https://m3u.cl/lista/XXX.m3u",
-        "categoria": "XXX.Adultos.Porno",
-        "forzar_categoria": True,
-    },
-    {
-        "url": "https://m3u.cl/lista/religiosos.m3u",
-        "categoria": "Religiosos",
-        "forzar_categoria": True,
-    },
-    {
-        "url": "https://m3u.cl/lista/musica.m3u",
-        "categoria": "Música",
-        "forzar_categoria": True,
-    },
-    {
-        "url": "https://m3u.cl/lista/LATAM.m3u",
-        "categoria": "LATAM",
-        "forzar_categoria": True,
-    },
-
-    # --------------------------------------------------------
-    # PAÍSES
-    # --------------------------------------------------------
-
-    {
-        "url": "https://m3u.cl/lista/VE.m3u",
-        "categoria": "Venezuela",
-    },
-    {
-        "url": "https://m3u.cl/lista/DO.m3u",
-        "categoria": "República Dominicana",
-    },
-    {
-        "url": "https://m3u.cl/lista/PE.m3u",
-        "categoria": "Perú",
-    },
-    {
-        "url": "https://m3u.cl/lista/PY.m3u",
-        "categoria": "Paraguay",
-    },
-    {
-        "url": "https://m3u.cl/lista/MX.m3u",
-        "categoria": "México",
-    },
-    {
-        "url": "https://m3u.cl/lista/ES.m3u",
-        "categoria": "España",
-    },
-    {
-        "url": "https://m3u.cl/lista/EC.m3u",
-        "categoria": "Ecuador",
-    },
-    {
-        "url": "https://m3u.cl/lista/CR.m3u",
-        "categoria": "Costa Rica",
-    },
-    {
-        "url": "https://m3u.cl/lista/CO.m3u",
-        "categoria": "Colombia",
-    },
-    {
-        "url": "https://m3u.cl/lista/CL.m3u",
-        "categoria": "Chile",
-    },
-    {
-        "url": "https://m3u.cl/lista/BR.m3u",
-        "categoria": "Brasil",
-    },
-    {
-        "url": "https://m3u.cl/lista/BO.m3u",
-        "categoria": "Bolivia",
-    },
-    {
-        "url": "https://m3u.cl/lista/AR.m3u",
-        "categoria": "Argentina",
-    },
-
-    # --------------------------------------------------------
-    # PLUTO TV
-    # --------------------------------------------------------
-
-    {
-        "url": (
-            "https://raw.githubusercontent.com/"
-            "JMigue85/IPTV-SV/refs/heads/main/"
-            "PlutoTV.ES.m3u"
-        ),
-        "categoria": "PLUTO TV",
-        "forzar_categoria": True,
-    },
-    {
-        "url": (
-            "https://raw.githubusercontent.com/"
-            "JMigue85/IPTV-SV/refs/heads/main/"
-            "PlutoTV.MX.m3u"
-        ),
-        "categoria": "PLUTO TV",
-        "forzar_categoria": True,
-    },
-
-    # --------------------------------------------------------
-    # IPTVSV
-    # --------------------------------------------------------
-
-    {
-        "url": (
-            "https://raw.githubusercontent.com/"
-            "JMigue85/IPTV-SV/refs/heads/main/"
-            "IPTVSV.m3u"
-        ),
-        "categoria": "OTROS",
-        "forzar_categoria": False,
-    },
-]
-
-
-# ============================================================
-# BUSCAR CATEGORÍA DEL PAÍS
+# BUSCAR CATEGORÍA DEL PAÍS EN LA PRINCIPAL
 # ============================================================
 
 def buscar_categoria_principal(
@@ -129,27 +7,29 @@ def buscar_categoria_principal(
     categorias_existentes,
 ):
     """
-    Busca la categoría correspondiente al país.
+    Devuelve ÚNICAMENTE la categoría destino del país.
 
-    REGLA ESPECIAL:
+    Reglas:
 
-        Chile -> CHILE TV
+    CHILE:
+        CL.m3u -> CHILE TV
 
-    Nunca utiliza:
-
+    Nunca:
         CHILE
         CHILE TV Y RADIO
 
-    Para los demás países busca la categoría del país
-    existente en la lista principal.
+    Resto:
+        Busca la categoría correspondiente al país.
     """
 
     if not pais:
         return None
 
-    # --------------------------------------------------------
+    pais = normalizar_texto(pais)
+
+    # ========================================================
     # CHILE
-    # --------------------------------------------------------
+    # ========================================================
 
     if pais == "chile":
 
@@ -161,28 +41,41 @@ def buscar_categoria_principal(
             ):
                 return categoria
 
+        # Si todavía no existe, el llamador debe crear
+        # exactamente CHILE TV.
         return None
 
-    # --------------------------------------------------------
+    # ========================================================
     # RESTO DE PAÍSES
-    # --------------------------------------------------------
+    # ========================================================
 
     alias = PAISES.get(
         pais,
         set(),
     )
 
+    alias_normalizados = {
+        normalizar_texto(x)
+        for x in alias
+    }
+
+    # --------------------------------------------------------
     # Coincidencia exacta
+    # --------------------------------------------------------
+
     for categoria in categorias_existentes.values():
 
         categoria_normalizada = normalizar_texto(
             categoria
         )
 
-        if categoria_normalizada in alias:
+        if categoria_normalizada in alias_normalizados:
             return categoria
 
+    # --------------------------------------------------------
     # Coincidencia por palabras
+    # --------------------------------------------------------
+
     for categoria in categorias_existentes.values():
 
         categoria_normalizada = normalizar_texto(
@@ -192,6 +85,7 @@ def buscar_categoria_principal(
         palabras = categoria_normalizada.split()
 
         if pais == "peru":
+
             if (
                 "peru" in palabras
                 and "radio" not in palabras
@@ -199,14 +93,17 @@ def buscar_categoria_principal(
                 return categoria
 
         elif pais == "bolivia":
+
             if "bolivia" in palabras:
                 return categoria
 
         elif pais == "argentina":
+
             if "argentina" in palabras:
                 return categoria
 
         elif pais == "brasil":
+
             if (
                 "brasil" in palabras
                 or "brazil" in palabras
@@ -214,26 +111,32 @@ def buscar_categoria_principal(
                 return categoria
 
         elif pais == "colombia":
+
             if "colombia" in palabras:
                 return categoria
 
         elif pais == "ecuador":
+
             if "ecuador" in palabras:
                 return categoria
 
         elif pais == "venezuela":
+
             if "venezuela" in palabras:
                 return categoria
 
         elif pais == "paraguay":
+
             if "paraguay" in palabras:
                 return categoria
 
         elif pais == "mexico":
+
             if "mexico" in palabras:
                 return categoria
 
         elif pais == "espana":
+
             if (
                 "espana" in palabras
                 or "spain" in palabras
@@ -241,6 +144,7 @@ def buscar_categoria_principal(
                 return categoria
 
         elif pais == "costa rica":
+
             if (
                 "costa" in palabras
                 and "rica" in palabras
@@ -248,6 +152,7 @@ def buscar_categoria_principal(
                 return categoria
 
         elif pais == "republica dominicana":
+
             if (
                 "republica" in palabras
                 and "dominicana" in palabras
@@ -267,19 +172,16 @@ def resolver_categoria(
     categorias_existentes,
 ):
     """
-    Determina la categoría FINAL donde debe colocarse
-    el canal.
+    Determina la categoría FINAL.
 
     REGLAS:
 
-    1. Chile -> CHILE TV.
-    2. Nunca utilizar CHILE.
-    3. Nunca utilizar CHILE TV Y RADIO.
-    4. Argentina -> categoría ARGENTINA.
-    5. Bolivia -> categoría BOLIVIA.
-    6. Etc.
-    7. PlutoTV -> PLUTO TV.
-    8. IPTVSV -> según la categoría del canal.
+    - CL.m3u -> CHILE TV
+    - Nunca crear/usar CHILE
+    - Nunca modificar CHILE TV Y RADIO
+    - Cada país va a SU propia categoría.
+    - Pluto -> PLUTO TV
+    - IPTVSV -> según categoría del canal.
     """
 
     categoria_fuente = canal.get(
@@ -292,25 +194,29 @@ def resolver_categoria(
         "OTROS",
     ).strip()
 
-    # --------------------------------------------------------
-    # CATEGORÍA FORZADA
-    # --------------------------------------------------------
+    # ========================================================
+    # FUENTE FORZADA
+    # ========================================================
 
     if fuente.get("forzar_categoria"):
 
-        # Nunca permitir que una fuente forzada
-        # cree accidentalmente CHILE.
+        categoria_forzada = (
+            categoria_configurada
+        )
+
+        # Seguridad absoluta:
+        # ninguna fuente puede terminar creando CHILE.
         if (
-            normalizar_texto(categoria_configurada)
+            normalizar_texto(categoria_forzada)
             == "chile"
         ):
             return "CHILE TV"
 
-        return categoria_configurada
+        return categoria_forzada
 
-    # --------------------------------------------------------
-    # IPTVSV / FUENTES QUE SE CLASIFICAN POR CANAL
-    # --------------------------------------------------------
+    # ========================================================
+    # CATEGORÍA DEL CANAL
+    # ========================================================
 
     categoria_para_pais = (
         categoria_fuente
@@ -321,27 +227,30 @@ def resolver_categoria(
         categoria_para_pais
     )
 
-    # --------------------------------------------------------
+    # ========================================================
     # CHILE
-    # --------------------------------------------------------
+    # ========================================================
 
     if pais == "chile":
 
-        categoria_chile_tv = (
+        categoria_chile = (
             buscar_categoria_principal(
                 "chile",
                 categorias_existentes,
             )
         )
 
-        if categoria_chile_tv:
-            return categoria_chile_tv
+        if categoria_chile:
+            return categoria_chile
 
+        # IMPORTANTE:
+        # si no existe, se crea CHILE TV,
+        # nunca CHILE.
         return "CHILE TV"
 
-    # --------------------------------------------------------
-    # PAÍS
-    # --------------------------------------------------------
+    # ========================================================
+    # RESTO DE PAÍSES
+    # ========================================================
 
     if pais:
 
@@ -355,13 +264,13 @@ def resolver_categoria(
         if categoria_principal:
             return categoria_principal
 
-        # Si la categoría del país todavía no existe,
-        # utiliza la categoría indicada por la fuente.
+        # Si todavía no existe la carpeta del país,
+        # se utiliza el nombre configurado por la fuente.
         return categoria_para_pais
 
-    # --------------------------------------------------------
+    # ========================================================
     # CATEGORÍA NORMAL
-    # --------------------------------------------------------
+    # ========================================================
 
     if (
         categoria_fuente
