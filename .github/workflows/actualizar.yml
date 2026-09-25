@@ -1,8 +1,9 @@
-name: Actualizar IPTV Chile Master
+﻿name: Actualizar IPTV Chile Master
 
 on:
   schedule:
     - cron: "0 6,18 * * *"
+
   workflow_dispatch:
 
 permissions:
@@ -13,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Descargar repositorio
         uses: actions/checkout@v4
 
@@ -36,8 +38,7 @@ jobs:
 
       - name: Generar reporte y actualizar aprendizaje
         run: |
-          python scripts/generar_reporte.py \
-            --salida REPORTE.md
+          python scripts/generar_reporte.py --salida REPORTE.md
 
       - name: Guardar cambios
         run: |
