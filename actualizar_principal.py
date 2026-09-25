@@ -1,3 +1,19 @@
+# IPTV Chile Master
+# Copyright (C) 2026 ByD4rk
+#
+# Este programa está basado/modificado a partir de software
+# distribuido bajo la GNU General Public License v3.0.
+#
+# Este programa es software libre: puedes redistribuirlo y/o
+# modificarlo bajo los términos de la GNU General Public License
+# publicada por la Free Software Foundation, versión 3 o posterior.
+#
+# Este programa se distribuye con la esperanza de que sea útil,
+# pero SIN NINGUNA GARANTÍA.
+#
+# GNU GPL v3.0:
+# https://www.gnu.org/licenses/gpl-3.0.html
+
 import re
 import requests
 from pathlib import Path
