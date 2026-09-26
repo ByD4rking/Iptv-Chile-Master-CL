@@ -114,6 +114,22 @@ FUENTES = [
 
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.ES.m3u",
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_all.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_us.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_ca.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_gb.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_fr.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_de.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_es.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_it.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_mx.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_br.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_ar.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_cl.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_no.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_se.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_dk.m3u",
+
 ]
 
 
