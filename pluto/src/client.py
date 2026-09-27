@@ -12,7 +12,7 @@ import requests
 BOOT_URL = "https://boot.pluto.tv/v4/start"
 CHANNELS_URL = "https://service-channels.clusters.pluto.tv/v2/guide/channels"
 
-APP_VERSION = "8.0.0-111b2b9dc00bd0bea9030b30662159ed9e7c8bc6"
+APP_VERSION = "8.1.0"
 
 # Pluto regional/audio preference.
 # MX is the primary region; the language list is sent in preference order
@@ -29,8 +29,11 @@ PLUTO_LANGUAGE_PREFERENCES = (
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/122.0.0.0 Safari/537.36"
+    "Chrome/133.0.0.0 Safari/537.36"
 )
+
+REQUEST_TIMEOUT = (10, 45)
+MAX_RETRIES = 3
 
 
 class PlutoClient:
@@ -38,13 +41,33 @@ class PlutoClient:
     def __init__(self) -> None:
         self.session = requests.Session()
 
+        # Reintentos cortos para fallos transitorios de Pluto/GitHub Actions.
+        # No cambia el contenido de la lista; solo evita perder una ejecución
+        # por un timeout o un 5xx puntual.
+        from requests.adapters import HTTPAdapter
+        from urllib3.util.retry import Retry
+
+        retry = Retry(
+            total=MAX_RETRIES,
+            connect=MAX_RETRIES,
+            read=MAX_RETRIES,
+            status=MAX_RETRIES,
+            backoff_factor=1.0,
+            status_forcelist=(429, 500, 502, 503, 504),
+            allowed_methods=frozenset({"GET"}),
+            respect_retry_after_header=True,
+        )
+        adapter = HTTPAdapter(max_retries=retry)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
+
         self.session.headers.update(
             {
                 "User-Agent": USER_AGENT,
                 "Accept": "*/*",
                 "Origin": "https://pluto.tv",
                 "Referer": "https://pluto.tv/",
-                "Accept-Language": "es-MX,es-419,es;q=0.9,en;q=0.1",
+                "Accept-Language": "es-MX,es-419,es;q=0.9,es;q=0.8,en;q=0.1",
             }
         )
 
@@ -101,7 +124,7 @@ class PlutoClient:
         params = {
             "appName": "web",
             "appVersion": APP_VERSION,
-            "deviceVersion": "122.0.0",
+            "deviceVersion": "133.0.0",
             "deviceModel": "web",
             "deviceMake": "chrome",
             "deviceType": "web",
@@ -120,7 +143,7 @@ class PlutoClient:
         response = self.session.get(
             BOOT_URL,
             params=params,
-            timeout=30,
+            timeout=REQUEST_TIMEOUT,
         )
 
         response.raise_for_status()
@@ -205,7 +228,7 @@ class PlutoClient:
             CHANNELS_URL,
             params=params,
             headers=headers,
-            timeout=30,
+            timeout=REQUEST_TIMEOUT,
         )
 
         # Si la sesión expiró entre boot y channels,
@@ -221,7 +244,7 @@ class PlutoClient:
                 CHANNELS_URL,
                 params=params,
                 headers=headers,
-                timeout=30,
+                timeout=REQUEST_TIMEOUT,
             )
 
         response.raise_for_status()
@@ -281,6 +304,7 @@ class PlutoClient:
             f"&country={PLUTO_COUNTRY}"
             f"&marketingRegion={PLUTO_MARKETING_REGION}"
             f"&preferredLanguage={self.active_language}"
+            f"&quality=720p"
         )
 
         return url
