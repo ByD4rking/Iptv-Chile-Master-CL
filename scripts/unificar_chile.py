@@ -24,7 +24,7 @@ def main():
     )
 
     texto = re.sub(
-        r'group-title="CHILE TV"',
+        r'group-title="CHILE\s+TV"',
         'group-title="CHILE TV"',
         texto,
         flags=re.IGNORECASE
