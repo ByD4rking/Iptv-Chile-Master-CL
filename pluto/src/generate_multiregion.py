@@ -56,6 +56,51 @@ REFERENCE_CATEGORY_MAP = {
     "investigation": "Investigación",
     "investigación": "Investigación",
     "paranormal": "Zona Paranormal",
+    "westerns": "Cine",
+    "western": "Cine",
+    "true crime": "Investigación",
+    "crime drama": "Series",
+    "sci-fi + fantasy": "Cine",
+    "drama": "Series",
+    "movies": "Cine",
+    "south park": "South Park",
+    "comedy": "Comedia",
+    "kids": "Infantil",
+    "kids en français": "Infantil",
+    "local news": "Noticias",
+    "news + opinion": "Noticias",
+    "game shows": "Competencia",
+    "classic tv comedy": "Comedia",
+    "home + food": "Estilo De Vida",
+    "daytime & talk shows": "Entretenimiento",
+    "classic tv": "Retro",
+    "competition reality": "Competencia",
+    "sports": "Deportes",
+    "documentary + science": "Curiosidad",
+    "reality": "Reality",
+    "music": "Música",
+    "mtv": "Música",
+    "mtv en pluto tv": "Música",
+    "natureza": "Curiosidad",
+    "nature": "Curiosidad",
+    "curiosidades": "Curiosidad",
+    "investigação": "Investigación",
+    "esportes": "Deportes",
+    "comédia": "Comedia",
+    "filmes": "Cine",
+    "retrô": "Retro",
+    "infantil": "Infantil",
+    "jornada nas estrelas": "Series",
+    "mistérios e sobrenatural": "Zona Paranormal",
+    "séries": "Series",
+    "nickelodeon": "Infantil",
+    "tv brasileira": "Entretenimiento",
+    "mtv vma 2026": "Música",
+    "policiacas": "Investigación",
+    "crimen y misterio": "Investigación",
+    "cultura": "Curiosidad",
+    "ciencia ficción": "Cine",
+    "nuevo en pluto tv": "Entretenimiento",
 }
 
 
@@ -136,6 +181,12 @@ def apply_reference_metadata(
     for channel in channels:
         ref = metadata.get(channel.get("id", ""))
         if not ref:
+            # Some regional Pluto IDs can change. Fall back to a unique normalized name match.
+            name = re.sub(r"\\s+", " ", str(channel.get("name") or "").strip().lower())
+            candidates = [m for m in metadata.values() if re.sub(r"\\s+", " ", str(m.get("reference_name") or "").strip().lower()) == name]
+            if len(candidates) == 1:
+                ref = candidates[0]
+        if not ref:
             continue
 
         matched += 1
@@ -214,7 +265,7 @@ def channel_to_m3u(channel: dict, region: Region) -> str:
     channel_id = esc(channel.get("id"))
     name = esc(channel.get("name"))
     stream = esc(channel.get("stream"))
-    logo = esc(channel.get("logo"))
+    logo = esc(channel.get("logo")) or f"https://images.pluto.tv/channels/{channel_id}/colorLogoPNG.png"
     group = esc(channel.get("category")) or "Otros"
 
     if not channel_id or not name or not valid_stream(stream):
