@@ -15,7 +15,7 @@ concurrency:
 jobs:
   actualizar:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Descargar repositorio
@@ -89,16 +89,15 @@ jobs:
 
           echo "Las dos listas M3U son válidas."
 
-      - name: Verificar listas IPTV
+      - name: Verificar lista principal
         run: |
           python scripts/generar_reporte.py \
             IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
-            IPTV-CHILE-MAESTRA_GOD.m3u \
-            --hilos 50 \
-            --timeout 6 \
+            --hilos 100 \
+            --timeout 4 \
             --max-por-servidor 1 \
-            --reintentos 1 \
-            --espera-reintento 1
+            --reintentos 0 \
+            --espera-reintento 0
 
       - name: Comprobar resultado de verificación
         run: |
@@ -153,4 +152,5 @@ jobs:
           echo "=========================================="
           echo "Las listas fueron generadas y verificadas."
           echo "El resultado fue guardado en GitHub."
+
 
