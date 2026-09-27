@@ -987,6 +987,145 @@ def insertar_bloques(lineas, bloques):
         resultado[posicion:posicion] = insertar
     return resultado
 
+PAISES_ORDEN_FINAL = {
+    "peru", "bolivia", "argentina", "brasil", "brazil", "colombia",
+    "ecuador", "venezuela", "paraguay", "mexico", "espana", "spain",
+    "costa rica", "republica dominicana", "el salvador", "guatemala",
+    "honduras", "nicaragua", "panama", "cuba", "puerto rico", "uruguay",
+}
+
+def ordenar_y_normalizar_carpetas(lineas):
+    """
+    Ordena y normaliza las carpetas de la principal sin cambiar URLs.
+
+    Reglas:
+      - CHILE TV queda primero.
+      - CHILE TV Y RADIO queda inmediatamente después.
+      - INFANTIL e INFANTILES se unifican en INFANTILES.
+      - TEEN se unifica en INFANTILES.
+      - NOTICIAS se unifica en INFORMATIVOS.
+      - CNN queda al principio de INFORMATIVOS.
+      - Las carpetas de países quedan al final.
+      - XXX+18 queda después de todas las carpetas de países, como último.
+      - Dentro de cada carpeta se conserva el orden actual de sus canales.
+    """
+    bloques = []
+    prefijo = []
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+
+        inicio = i
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#"):
+            j += 1
+
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            bloques.append({
+                "extinf": extinf,
+                "nombre": extraer_nombre(extinf),
+                "categoria": extraer_categoria(extinf),
+                "lineas": lineas[inicio:j + 1],
+                "orden": len(bloques),
+            })
+            i = j + 1
+        else:
+            prefijo.extend(lineas[inicio:j])
+            i = j
+
+    categorias = []
+    grupos = {}
+    cambios = {
+        "infantil_a_infantiles": 0,
+        "teen_a_infantiles": 0,
+        "noticias_a_informativos": 0,
+        "cnn_priorizados": 0,
+    }
+
+    # Determinar primero las categorías canónicas existentes.
+    cat_infantiles = next(
+        (b["categoria"] for b in bloques
+         if normalizar(b["categoria"]) == "infantiles"),
+        "INFANTILES",
+    )
+    cat_informativos = next(
+        (b["categoria"] for b in bloques
+         if normalizar(b["categoria"]) == "informativos"),
+        "INFORMATIVOS",
+    )
+
+    for b in bloques:
+        cat_norm = normalizar(b["categoria"])
+        destino = b["categoria"]
+
+        if cat_norm in {"infantil", "infantiles", "teen"}:
+            destino = cat_infantiles
+            if cat_norm == "infantil":
+                cambios["infantil_a_infantiles"] += 1
+            elif cat_norm == "teen":
+                cambios["teen_a_infantiles"] += 1
+
+        elif cat_norm == "noticias":
+            destino = cat_informativos
+            cambios["noticias_a_informativos"] += 1
+
+        if destino != b["categoria"]:
+            b["extinf"] = reemplazar_categoria(b["extinf"], destino)
+            b["lineas"][0] = b["extinf"]
+            b["categoria"] = destino
+
+        clave = normalizar(destino)
+        if clave not in grupos:
+            grupos[clave] = {
+                "categoria": destino,
+                "bloques": [],
+                "primera_orden": b["orden"],
+            }
+            categorias.append(clave)
+        grupos[clave]["bloques"].append(b)
+
+    # CNN primero dentro de INFORMATIVOS, manteniendo el orden relativo del resto.
+    info_key = normalizar(cat_informativos)
+    if info_key in grupos:
+        info = grupos[info_key]["bloques"]
+        cnn = [b for b in info if re.search(r"\bcnn\b", normalizar(b["nombre"]))]
+        resto = [b for b in info if b not in cnn]
+        if cnn:
+            grupos[info_key]["bloques"] = cnn + resto
+            cambios["cnn_priorizados"] = len(cnn)
+
+    def prioridad(cat_key, primera_orden):
+        if cat_key == "chile tv":
+            return (0, 0)
+        if cat_key == "chile tv y radio":
+            return (0, 1)
+        if cat_key in {"total", "otros"}:
+            return (90, primera_orden)
+        if cat_key in PAISES_ORDEN_FINAL:
+            return (100, primera_orden)
+        if cat_key in {"xxx", "xxx+18"} or cat_key.startswith("xxx"):
+            return (110, primera_orden)
+        return (10, primera_orden)
+
+    grupos_ordenados = sorted(
+        grupos.values(),
+        key=lambda g: prioridad(normalizar(g["categoria"]), g["primera_orden"]),
+    )
+
+    salida = list(prefijo)
+    for grupo in grupos_ordenados:
+        for b in grupo["bloques"]:
+            salida.extend(b["lineas"])
+
+    return salida, cambios
+
+
 def main():
     print("=" * 72)
     print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
@@ -1177,11 +1316,12 @@ def main():
             errores += 1
             print(f"  -> ERROR: {e}")
 
-    # 3) Insertar nuevos canales sin mover los existentes.
-    if bloques_nuevos:
-        lineas = insertar_bloques(lineas, bloques_nuevos)
+    # 6) Orden final de carpetas y unificación de categorías equivalentes.
+    # Esta etapa no cambia URLs ni elimina canales; solo corrige group-title
+    # y la posición de las carpetas/canales.
+    lineas, orden_carpetas = ordenar_y_normalizar_carpetas(lineas)
 
-    # 4) Validación final de URLs duplicadas globales.
+    # 7) Validación final de URLs duplicadas globales.
     vistos = set()
     duplicados_finales = 0
     for linea in lineas:
@@ -1224,6 +1364,10 @@ def main():
     print(f"Duplicados finales detectados:      {duplicados_finales}")
     print(f"Fuentes con error:                  {errores}")
     print(f"Canales finales:                    {total_final}")
+    print(f"Infantil -> INFANTILES:              {orden_carpetas['infantil_a_infantiles']}")
+    print(f"Teen -> INFANTILES:                  {orden_carpetas['teen_a_infantiles']}")
+    print(f"Noticias -> INFORMATIVOS:             {orden_carpetas['noticias_a_informativos']}")
+    print(f"CNN priorizados en INFORMATIVOS:      {orden_carpetas['cnn_priorizados']}")
 
     if limpieza["movidos_por_categoria"]:
         print("\nTOTAL/OTROS movidos por categoría:")
