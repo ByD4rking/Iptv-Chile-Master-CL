@@ -19,6 +19,13 @@ APP_VERSION = "8.1.0"
 # so Pluto can fall back from Mexican Spanish to LATAM/base Spanish.
 PLUTO_COUNTRY = "MX"
 PLUTO_MARKETING_REGION = "MX"
+
+# Pluto decide parte de la disponibilidad regional según la IP de origen.
+# Usamos la misma IP regional de México empleada por clientes públicos de
+# referencia; no sustituye nuestros canales, solo ayuda a que el backend
+# entregue el perfil regional correcto.
+PLUTO_X_FORWARDED_FOR = "200.68.128.83"
+
 PLUTO_LANGUAGE_PREFERENCES = (
     "es",
     "es-419",
@@ -67,7 +74,8 @@ class PlutoClient:
                 "Accept": "*/*",
                 "Origin": "https://pluto.tv",
                 "Referer": "https://pluto.tv/",
-                "Accept-Language": "es-MX,es-419,es;q=0.9,es;q=0.8,en;q=0.1",
+                "Accept-Language": "es-MX,es-419,es;q=0.9,en;q=0.1",
+                "X-Forwarded-For": PLUTO_X_FORWARDED_FOR,
             }
         )
 
