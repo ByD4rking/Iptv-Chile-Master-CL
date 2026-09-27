@@ -256,6 +256,10 @@ def determinar_destino_pluto(categoria, nombre, categorias):
     Decide dónde va un canal Pluto respetando primero la carpeta declarada
     por Pluto y luego la temática de esa carpeta.
 
+    Excepción fija: Pluto TV Brazil es contenido en portugués y va
+    exclusivamente a la carpeta-país Brasil, nunca a una carpeta temática
+    de la lista en español.
+
     Prioridad:
       1) Si la carpeta de Pluto coincide con una carpeta existente, usarla.
       2) Si la carpeta/nombre indica una temática (ANIME, INFANTILES, CINE,
@@ -269,6 +273,14 @@ def determinar_destino_pluto(categoria, nombre, categorias):
     """
     categoria = (categoria or "").strip()
     nombre = (nombre or "").strip()
+    texto = normalizar(f"{categoria} {nombre}")
+
+    # Pluto TV Brazil: exclusivamente carpeta-país Brasil.
+    if re.search(r"\b(pluto\s*tv\s*)?(brazil|brasil)\b", texto):
+        destino_brasil = buscar_categoria_existente("Brasil", categorias)
+        if destino_brasil:
+            return destino_brasil
+        return "Brasil"
 
     # Si Pluto ya declara exactamente una carpeta que existe en la
     # principal (por ejemplo "PLUTO TV"), respetamos esa carpeta.
