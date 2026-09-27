@@ -42,6 +42,7 @@ jobs:
           python src/playlist.py
 
       - name: Verificar playlist
+           - name: Verificar playlist
         run: |
           test -s pluto/output/playlists/pluto.m3u
           grep -q '^#EXTM3U' pluto/output/playlists/pluto.m3u
@@ -50,21 +51,22 @@ jobs:
           wc -l pluto/output/playlists/pluto.m3u
 
       - name: Publicar cambios
-  run: |
-    git config user.name "github-actions[bot]"
-    git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-    git add pluto/output/playlists/pluto.m3u
+          git add pluto/output/playlists/pluto.m3u
 
-    if git diff --cached --quiet; then
-      echo "No hay cambios en la playlist."
-      exit 0
-    fi
+          if git diff --cached --quiet; then
+            echo "No hay cambios en la playlist."
+            exit 0
+          fi
 
-    git commit -m "Actualizar playlist Pluto TV"
+          git commit -m "Actualizar playlist Pluto TV"
 
-    git fetch origin main
-    git rebase origin/main
+          git fetch origin main
+          git rebase origin/main
 
-    git push origin HEAD:main
+          git push origin HEAD:main
+
 
