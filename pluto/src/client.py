@@ -13,6 +13,7 @@ import requests
 
 BOOT_URL = "https://boot.pluto.tv/v4/start"
 CHANNELS_URL = "https://service-channels.clusters.pluto.tv/v2/guide/channels"
+LEGACY_CHANNELS_URL = "https://api.pluto.tv/v2/channels.json"
 
 APP_VERSION = "8.1.0"
 
@@ -305,9 +306,64 @@ class PlutoClient:
 
             channels = fallback_channels
 
+        # Último respaldo para US: la API legacy de Pluto sigue siendo
+        # una vía de catálogo útil cuando service-channels entrega 0.
+        # Los streams siguen construyéndose con nuestro token/stitcher actual.
+        if not channels and self.region.code == "us":
+            legacy_headers = {
+                "Accept": "application/json",
+                "Origin": "https://pluto.tv",
+                "Referer": "https://pluto.tv/",
+                "User-Agent": USER_AGENT,
+                "X-Forwarded-For": self.region.forwarded_ip,
+            }
+            legacy_params = {
+                "sid": str(uuid.uuid4()),
+                "deviceId": self.client_id,
+            }
+
+            legacy = self.session.get(
+                LEGACY_CHANNELS_URL,
+                params=legacy_params,
+                headers=legacy_headers,
+                timeout=REQUEST_TIMEOUT,
+            )
+            legacy.raise_for_status()
+            legacy_data = legacy.json()
+
+            if isinstance(legacy_data, list):
+                converted = []
+                for item in legacy_data:
+                    channel_id = item.get("id") or item.get("_id")
+                    if not channel_id:
+                        continue
+
+                    logo = item.get("logo")
+                    if isinstance(logo, dict):
+                        logo = logo.get("path", "")
+                    if not logo:
+                        logo = item.get("colorLogoPNG", {})
+                        if isinstance(logo, dict):
+                            logo = logo.get("path", "")
+
+                    converted.append({
+                        "id": channel_id,
+                        "name": item.get("name", ""),
+                        "slug": item.get("slug", ""),
+                        "description": item.get("description", item.get("summary", "")),
+                        "number": item.get("number"),
+                        "category": item.get("category"),
+                        "country": item.get("country"),
+                        "region": item.get("region"),
+                        "language": item.get("language"),
+                        "logo": logo or "",
+                    })
+
+                channels = converted
+
         if not channels:
             raise RuntimeError(
-                f"{self.region.code.upper()}: Pluto devolvió 0 canales."
+                f"{self.region.code.upper()}: Pluto devolvió 0 canales tras todos los intentos."
             )
 
         return channels
