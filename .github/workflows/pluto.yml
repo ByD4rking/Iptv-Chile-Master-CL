@@ -46,10 +46,10 @@ jobs:
         run: |
           set -e
           for file in cl mx ar br es us all; do
-            test -s "pluto/output/playlists/pluto_\$file.m3u"
-            grep -q '^#EXTM3U' "pluto/output/playlists/pluto_\$file.m3u"
-            echo "pluto_\$file.m3u:"
-            grep -c '^#EXTINF:' "pluto/output/playlists/pluto_\$file.m3u"
+            test -s "pluto/output/playlists/pluto_$file.m3u"
+            grep -q '^#EXTM3U' "pluto/output/playlists/pluto_$file.m3u"
+            echo "pluto_$file.m3u:"
+            grep -c '^#EXTINF:' "pluto/output/playlists/pluto_$file.m3u"
           done
 
           test -s pluto/output/playlists/pluto.m3u
