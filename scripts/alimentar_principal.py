@@ -801,6 +801,27 @@ def main():
     categorias = categorias_de_lineas(lineas)
     urls_globales = mapa_urls_principal(lineas)
 
+    # IDs Pluto ya presentes en la principal. Se usan además de la URL para
+    # impedir que una misma señal Pluto entre varias veces con URLs regionales
+    # distintas.
+    ids_pluto_globales = set()
+    i_pluto = 0
+    while i_pluto < len(lineas):
+        if lineas[i_pluto].startswith("#EXTINF"):
+            extinf_pluto = lineas[i_pluto]
+            j_pluto = i_pluto + 1
+            while j_pluto < len(lineas) and lineas[j_pluto].startswith("#"):
+                j_pluto += 1
+            if j_pluto < len(lineas) and url_es_valida(lineas[j_pluto].strip()):
+                url_pluto = lineas[j_pluto].strip()
+                if es_url_pluto(url_pluto):
+                    identidad = identidad_pluto(extinf_pluto, url_pluto)
+                    if identidad:
+                        ids_pluto_globales.add(identidad)
+                i_pluto = j_pluto + 1
+                continue
+        i_pluto += 1
+
     bloques_nuevos = []
     agregados_normales = 0
     agregados_pluto = 0
@@ -880,7 +901,14 @@ def main():
                     sin_categoria += 1
                     continue
 
+                identidad = identidad_pluto(canal.get("extinf", ""), canal.get("url", ""))
+                if identidad and identidad in ids_pluto_globales:
+                    omitidos_duplicados += 1
+                    continue
+
                 if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
+                    if identidad:
+                        ids_pluto_globales.add(identidad)
                     agregados_pluto += 1
                     nuevos += 1
                 else:
