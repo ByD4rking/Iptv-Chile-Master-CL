@@ -286,44 +286,74 @@ def mapa_urls_principal(lineas):
     return urls
 
 def limpiar_pluto_antiguo(lineas, session):
-    urls_antiguas = set()
+    """
+    Elimina SOLO entradas de la principal que coincidan con una entrada
+    conocida de las fuentes Pluto antiguas.
+
+    La coincidencia usa URL + nombre normalizado. Esto evita borrar por
+    accidente un canal no-Pluto que comparta una URL con una fuente antigua.
+    Las fuentes propias se cargan después, por lo que sus URLs pueden entrar
+    de nuevo como reemplazo estable.
+    """
+    firmas_antiguas = defaultdict(set)
     errores = 0
+    fuentes_ok = 0
+
     for fuente in FUENTES_PLUTO_ANTIGUAS:
         try:
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
-            for canal in parsear_m3u(r.text):
-                urls_antiguas.add(canal["url"].strip())
+            canales = parsear_m3u(r.text)
+            fuentes_ok += 1
+            for canal in canales:
+                url = canal["url"].strip()
+                nombre = normalizar(canal.get("nombre", ""))
+                if url and nombre:
+                    firmas_antiguas[url].add(nombre)
         except Exception as e:
             errores += 1
             print(f"  -> No se pudo consultar Pluto antiguo: {fuente} :: {e}")
 
-    if not urls_antiguas:
+    if not firmas_antiguas:
+        print("  -> No se obtuvo ninguna firma de Pluto antiguo; no se elimina nada.")
         return lineas, 0, errores
 
     salida = []
     eliminados = 0
     i = 0
+
     while i < len(lineas):
         if lineas[i].startswith("#EXTINF"):
-            bloque = [lineas[i]]
+            extinf = lineas[i]
+            nombre = normalizar(extraer_nombre(extinf))
+            bloque = [extinf]
             j = i + 1
+
             while j < len(lineas) and lineas[j].startswith("#"):
                 bloque.append(lineas[j])
                 j += 1
+
             if j < len(lineas) and url_es_valida(lineas[j].strip()):
-                bloque.append(lineas[j])
                 url = lineas[j].strip()
+                bloque.append(url)
                 j += 1
-                if url in urls_antiguas:
+
+                if nombre in firmas_antiguas.get(url, set()):
                     eliminados += 1
                     i = j
                     continue
+
                 salida.extend(bloque)
                 i = j
                 continue
+
         salida.append(lineas[i])
         i += 1
+
+    print(
+        f"  -> Fuentes Pluto antiguas consultadas correctamente: "
+        f"{fuentes_ok}/{len(FUENTES_PLUTO_ANTIGUAS)}"
+    )
     return salida, eliminados, errores
 
 def limpiar_total_otros_y_sin_nombre(lineas):
