@@ -27,9 +27,9 @@ PLUTO_MARKETING_REGION = "MX"
 PLUTO_X_FORWARDED_FOR = "200.68.128.83"
 
 PLUTO_LANGUAGE_PREFERENCES = (
-    "es",
-    "es-419",
     "es-MX",
+    "es-419",
+    "es",
 )
 
 
@@ -221,6 +221,7 @@ class PlutoClient:
             "Origin": "https://pluto.tv",
             "Referer": "https://pluto.tv/",
             "Accept-Language": "es-MX,es-419,es;q=0.9,en;q=0.1",
+            "X-Forwarded-For": PLUTO_X_FORWARDED_FOR,
         }
 
         params = {
