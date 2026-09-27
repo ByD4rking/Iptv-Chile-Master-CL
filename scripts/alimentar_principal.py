@@ -70,6 +70,10 @@ FUENTES_PLUTO_ANTIGUAS = [
 ]
 
 PAIS_POR_FUENTE = {
+    "/XXX.m3u": "xxx",
+    "/religiosos.m3u": "religiosos",
+    "/musica.m3u": "musica",
+    "/LATAM.m3u": "latam",
     "/CL.m3u": "chile",
     "/PE.m3u": "peru",
     "/PY.m3u": "paraguay",
@@ -188,6 +192,27 @@ def encontrar_categoria_tematica(texto, categorias):
 
 def determinar_destino(categoria, nombre, pais_fuente, categorias):
     texto = normalizar(f"{categoria or ''} {nombre or ''}")
+
+    # Reglas fijas de M3U.CL: estas fuentes tienen destino propio.
+    if pais_fuente == "xxx":
+        return buscar_categoria_existente("XXX+18", categorias) or "XXX+18"
+
+    if pais_fuente == "religiosos":
+        return (
+            buscar_categoria_existente("RELIGIOSOS", categorias)
+            or buscar_categoria_existente("RELIGIOSOS", categorias)
+            or "RELIGIOSOS"
+        )
+
+    if pais_fuente == "musica":
+        return buscar_categoria_existente("MÚSICA", categorias) or "MÚSICA"
+
+    if pais_fuente == "latam":
+        return (
+            buscar_categoria_existente("LATAM", categorias)
+            or buscar_categoria_existente("LATINOAMÉRICA", categorias)
+            or "LATAM"
+        )
 
     if pais_fuente == "chile":
         return buscar_categoria_existente("CHILE TV", categorias) or "CHILE TV"
