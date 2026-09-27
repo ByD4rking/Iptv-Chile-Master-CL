@@ -572,7 +572,7 @@ def determinar_destino_pluto(
     # --------------------------------------------------------
 
     if re.search(
-        r"\b(entretenimiento|entertainment|reto)\b",
+        r"\b(entretenimiento|entertainment|reto|reality|realities|concurso|concursos|programa|programas)\b",
         texto
     ):
 
@@ -1456,4 +1456,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
