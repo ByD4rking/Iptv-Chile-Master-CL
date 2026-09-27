@@ -40,7 +40,11 @@ jobs:
 
       - name: Validar sintaxis de scripts
         run: |
-          python -m py_compile             scripts/alimentar_principal.py             scripts/unificar_chile.py             scripts/mega_lista.py             scripts/generar_reporte.py
+          python -m py_compile \
+            scripts/alimentar_principal.py \
+            scripts/unificar_chile.py \
+            scripts/mega_lista.py \
+            scripts/generar_reporte.py
 
       - name: Actualizar lista principal
         run: |
