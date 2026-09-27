@@ -30,7 +30,7 @@ FUENTES = [
     "https://m3u.cl/lista/BR.m3u",
     "https://m3u.cl/lista/BO.m3u",
     "https://m3u.cl/lista/AR.m3u",
-    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+    FUENTE_IPTVSV,
     "https://m3u.cl/lista/total.m3u",
     "https://m3u.cl/lista/top.m3u",
 ]
@@ -60,6 +60,8 @@ FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO + [
 
 # Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
 # eliminan de la principal antes de incorporar nuestras listas.
+FUENTE_IPTVSV = "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
+
 FUENTES_PLUTO_ANTIGUAS = [
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_all.m3u",
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_us.m3u",
@@ -200,6 +202,54 @@ def encontrar_categoria_tematica(texto, categorias):
             if destino:
                 return destino
     return None
+
+PAISES_GENERICO_IPTVSV = {
+    "peru", "bolivia", "argentina", "brasil", "colombia", "ecuador",
+    "venezuela", "paraguay", "mexico", "espana", "costa rica",
+    "republica dominicana", "chile", "el salvador", "guatemala", "honduras",
+    "nicaragua", "panama", "cuba", "puerto rico", "uruguay"
+}
+
+
+def es_fuente_iptvsv(fuente):
+    return fuente == FUENTE_IPTVSV
+
+
+def es_categoria_pais_generica_iptvsv(categoria):
+    c = normalizar(categoria)
+    return c in PAISES_GENERICO_IPTVSV or bool(re.match(r"^(el )?(salvador|guatemala|honduras|nicaragua|panama|cuba|puerto rico|uruguay)$", c))
+
+
+def determinar_destino_iptvsv(categoria, nombre, categorias):
+    """Reglas especiales para IPTV-SV; no hereda las reglas de Pluto."""
+    categoria = (categoria or "").strip()
+    nombre = (nombre or "").strip()
+    c_norm = normalizar(categoria)
+
+    # La carpeta especial de países sí se respeta si viene declarada por la fuente.
+    if "tv mas importantes de cada pais" in c_norm:
+        return buscar_categoria_existente(categoria, categorias) or buscar_categoria_existente(
+            "TV MÁS IMPORTANTES DE CADA PAÍS", categorias
+        ) or "TV MÁS IMPORTANTES DE CADA PAÍS"
+
+    # Si IPTV-SV declara una carpeta que ya existe en la principal, usarla.
+    exacta = buscar_categoria_existente(categoria, categorias)
+    if exacta and not es_categoria_pais_generica_iptvsv(categoria):
+        return exacta
+
+    # No crear ni alimentar carpetas-país genéricas desde IPTV-SV.
+    if es_categoria_pais_generica_iptvsv(categoria):
+        return None
+
+    destino = encontrar_categoria_tematica(f"{categoria} {nombre}", categorias)
+    if destino:
+        return destino
+
+    # Solo se permite crear una categoría declarada no-país y útil.
+    if categoria and c_norm not in {"total", "otros"}:
+        return categoria
+    return None
+
 
 def determinar_destino(categoria, nombre, pais_fuente, categorias):
     texto = normalizar(f"{categoria or ''} {nombre or ''}")
@@ -854,15 +904,27 @@ def main():
                  if clave.lower() in fuente.lower()),
                 None,
             )
+            fuente_es_iptvsv = es_fuente_iptvsv(fuente)
 
             nuevos = 0
+            omitidos_regla_especial = 0
             for canal in canales:
-                destino = determinar_destino(
-                    canal.get("categoria", ""),
-                    canal.get("nombre", ""),
-                    pais_fuente,
-                    categorias,
-                )
+                if fuente_es_iptvsv:
+                    destino = determinar_destino_iptvsv(
+                        canal.get("categoria", ""),
+                        canal.get("nombre", ""),
+                        categorias,
+                    )
+                    if destino is None:
+                        omitidos_regla_especial += 1
+                        continue
+                else:
+                    destino = determinar_destino(
+                        canal.get("categoria", ""),
+                        canal.get("nombre", ""),
+                        pais_fuente,
+                        categorias,
+                    )
 
                 # Si no existe una categoría equivalente, se permite
                 # crearla usando la categoría declarada por la fuente.
@@ -877,6 +939,8 @@ def main():
                 else:
                     omitidos_duplicados += 1
             print(f"  -> nuevos: {nuevos}")
+            if fuente_es_iptvsv and omitidos_regla_especial:
+                print(f"  -> IPTVSV omitidos por regla especial (país genérico): {omitidos_regla_especial}")
         except Exception as e:
             errores += 1
             print(f"  -> ERROR: {e}")
@@ -984,8 +1048,9 @@ def main():
 
     print("\nREGLAS ACTIVAS:")
     print("  - La principal conserva su orden existente.")
-    print("  - IPTVSV.m3u y demás fuentes son complementarias.")
-    print("  - Dedupe global por URL.")
+    print("  - IPTVSV.m3u usa reglas propias y NO hereda ninguna regla de Pluto.")
+    print("  - IPTVSV: no crea/alimenta carpetas-país genéricas; se respetan solo excepciones explícitas.")
+    print("  - Dedupe global por URL para todas las fuentes; IPTVSV no usa dedupe por channel ID de Pluto.")
     print("  - Pluto: una sola entrada por channel ID global; mismo nombre con ID distinto se conserva.")
     print("  - No se eliminan canales existentes salvo limpieza explícita:")
     print("      * Pluto antiguo")
