@@ -14,6 +14,18 @@ CHANNELS_URL = "https://service-channels.clusters.pluto.tv/v2/guide/channels"
 
 APP_VERSION = "8.0.0-111b2b9dc00bd0bea9030b30662159ed9e7c8bc6"
 
+# Pluto regional/audio preference.
+# MX is the primary region; the language list is sent in preference order
+# so Pluto can fall back from Mexican Spanish to LATAM/base Spanish.
+PLUTO_COUNTRY = "MX"
+PLUTO_MARKETING_REGION = "MX"
+PLUTO_LANGUAGE_PREFERENCES = (
+    "es-MX",
+    "es-419",
+    "es",
+)
+
+
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -32,6 +44,7 @@ class PlutoClient:
                 "Accept": "*/*",
                 "Origin": "https://pluto.tv",
                 "Referer": "https://pluto.tv/",
+                "Accept-Language": "es-MX,es-419,es;q=0.9,en;q=0.1",
             }
         )
 
@@ -42,6 +55,8 @@ class PlutoClient:
         self.session_token: str | None = None
         self.stitcher_url: str | None = None
         self.stitcher_params: str = ""
+        self.active_country = PLUTO_COUNTRY
+        self.active_language = PLUTO_LANGUAGE_PREFERENCES[0]
         self.token_expiry: int = 0
 
     @staticmethod
@@ -95,6 +110,11 @@ class PlutoClient:
             "serverSideAds": "false",
             "drmCapabilities": "widevine:L3",
             "blockingMode": "",
+            # Force Pluto to build the session for Mexico and prefer
+            # Mexican/Latin-American Spanish audio.
+            "country": PLUTO_COUNTRY,
+            "marketingRegion": PLUTO_MARKETING_REGION,
+            "preferredLanguage": self.active_language,
         }
 
         response = self.session.get(
@@ -169,6 +189,7 @@ class PlutoClient:
             ),
             "Origin": "https://pluto.tv",
             "Referer": "https://pluto.tv/",
+            "Accept-Language": "es-MX,es-419,es;q=0.9,en;q=0.1",
         }
 
         params = {
@@ -176,6 +197,8 @@ class PlutoClient:
             "offset": "0",
             "limit": "1000",
             "sort": "number:asc",
+            "country": PLUTO_COUNTRY,
+            "region": PLUTO_MARKETING_REGION,
         }
 
         response = self.session.get(
@@ -251,6 +274,14 @@ class PlutoClient:
             url += (
                 f"&{self.stitcher_params}"
             )
+
+        # Keep the language preference explicit even if Pluto's boot response
+        # does not echo it into stitcherParams.
+        url += (
+            f"&country={PLUTO_COUNTRY}"
+            f"&marketingRegion={PLUTO_MARKETING_REGION}"
+            f"&preferredLanguage={self.active_language}"
+        )
 
         return url
 
