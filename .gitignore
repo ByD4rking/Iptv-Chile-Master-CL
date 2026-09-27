@@ -1,4 +1,14 @@
-﻿__pycache__/
-*.pyc
-*.pyo
-*.pyd
+﻿# Python
+__pycache__/
+*.py[cod]
+
+# Archivos temporales
+*.bak
+*.log
+
+# Datos locales / sesión
+pluto/config/client.json
+pluto/config/*.local.json
+
+# Cachés
+.cache/
