@@ -198,11 +198,7 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
         return buscar_categoria_existente("XXX+18", categorias) or "XXX+18"
 
     if pais_fuente == "religiosos":
-        return (
-            buscar_categoria_existente("RELIGIOSOS", categorias)
-            or buscar_categoria_existente("RELIGIOSOS", categorias)
-            or "RELIGIOSOS"
-        )
+        return buscar_categoria_existente("RELIGIOSOS", categorias) or "RELIGIOSOS"
 
     if pais_fuente == "musica":
         return buscar_categoria_existente("MÚSICA", categorias) or "MÚSICA"
