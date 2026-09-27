@@ -1,4 +1,4 @@
-﻿name: Pluto TV - Actualizar canales
+name: Pluto TV - Actualizar listas regionales
 
 on:
   push:
@@ -36,22 +36,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Actualizar canales
+      - name: Generar listas Pluto por región
         working-directory: pluto
         run: |
-          python src/channels.py
+          python src/generate_multiregion.py
 
-      - name: Generar playlist
-        working-directory: pluto
+      - name: Verificar listas
         run: |
-          python src/playlist.py
+          set -e
+          for file in cl mx ar br es us all; do
+            test -s "pluto/output/playlists/pluto_\$file.m3u"
+            grep -q '^#EXTM3U' "pluto/output/playlists/pluto_\$file.m3u"
+            echo "pluto_\$file.m3u:"
+            grep -c '^#EXTINF:' "pluto/output/playlists/pluto_\$file.m3u"
+          done
 
-      - name: Verificar playlist
-        run: |
           test -s pluto/output/playlists/pluto.m3u
           grep -q '^#EXTM3U' pluto/output/playlists/pluto.m3u
-          echo "Playlist generada:"
-          wc -l pluto/output/playlists/pluto.m3u
 
       - name: Publicar cambios
         run: |
@@ -59,11 +60,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add pluto/output/playlists/pluto.m3u
+          git add pluto/output/playlists/pluto_*.m3u
 
           if git diff --cached --quiet; then
-            echo "No hay cambios en la playlist."
+            echo "No hay cambios en las playlists."
             exit 0
           fi
 
-          git commit -m "Actualizar playlist Pluto TV"
+          git commit -m "Actualizar playlists Pluto TV regionales"
           git push origin HEAD:main
