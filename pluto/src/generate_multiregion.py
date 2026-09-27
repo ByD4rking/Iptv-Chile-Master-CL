@@ -414,7 +414,7 @@ def build_latam() -> Path:
 
     output = PLAYLIST_DIR / "pluto_latam.m3u"
     tmp = output.with_suffix(".m3u.tmp")
-    tmp.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
+    tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
     tmp.replace(output)
 
     print(
@@ -487,6 +487,7 @@ def main() -> None:
             results[code] = (0, False)
 
     build_all()
+    build_latam()
 
     print()
     print("RESUMEN")
