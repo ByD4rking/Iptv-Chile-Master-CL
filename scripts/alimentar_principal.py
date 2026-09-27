@@ -39,6 +39,8 @@ FUENTES = [
 # PLUTO: SOLO NUESTRAS LISTAS
 # Las URLs antiguas de Pluto se sustituyen por las listas propias al actualizar la principal.
 # ============================================================
+# Estas son las listas Pluto que alimentan la PRINCIPAL.
+# US y ALL NO se agregan aquí: pertenecen a la lista GOD.
 FUENTES_PLUTO = [
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
@@ -46,8 +48,13 @@ FUENTES_PLUTO = [
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
+]
+
+# Catálogo adicional SOLO para reemplazar enlaces Pluto de terceros.
+# Estas fuentes no se agregan como canales a la principal.
+FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO + [
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_all.m3u",
 ]
 
@@ -312,7 +319,7 @@ def cargar_catalogo_pluto_propio(session):
     por_region = defaultdict(dict)
     errores = 0
 
-    for fuente in FUENTES_PLUTO:
+    for fuente in FUENTES_PLUTO_CATALOGO:
         try:
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
