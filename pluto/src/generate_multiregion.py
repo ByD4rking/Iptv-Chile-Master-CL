@@ -117,7 +117,7 @@ def normalize_reference_category(reference_group: str, channel: dict) -> str:
 
     # If the reference uses a combined/unknown folder, fall back to the same
     # semantic classifier used for channels, based on name/description/source category.
-    return channel.get("category") or "Otros"
+    return channel.get("category") or "Entretenimiento"
 
 
 def fetch_reference_metadata(region: Region) -> tuple[dict[str, dict], dict[str, int], dict[str, int]]:
@@ -271,7 +271,7 @@ def channel_to_m3u(channel: dict, region: Region) -> str:
     name = esc(channel.get("name"))
     stream = esc(channel.get("stream"))
     logo = esc(channel.get("logo")) or f"https://images.pluto.tv/channels/{channel_id}/colorLogoPNG.png"
-    group = esc(channel.get("category")) or "Otros"
+    group = esc(channel.get("category")) or "Entretenimiento"
 
     if not channel_id or not name or not valid_stream(stream):
         return ""
