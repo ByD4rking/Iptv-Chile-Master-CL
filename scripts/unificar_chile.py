@@ -13,17 +13,19 @@ def main():
         errors="replace"
     )
 
-    # Todas las variantes de Chile terminan en una sola categoría.
+    # La categoría oficial de Chile en la principal es CHILE TV.
+    # Este paso NO crea/recrea ninguna categoría eliminada y solo
+    # normaliza variantes antiguas de Chile hacia CHILE TV.
     texto = re.sub(
         r'group-title="CHILE\s+TV"',
-        'group-title="CHILE"',
+        'group-title="CHILE TV"',
         texto,
         flags=re.IGNORECASE
     )
 
     texto = re.sub(
-        r'group-title="CHILE"',
-        'group-title="CHILE"',
+        r'group-title="CHILE TV"',
+        'group-title="CHILE TV"',
         texto,
         flags=re.IGNORECASE
     )
@@ -45,7 +47,7 @@ def main():
     print("=" * 70)
     print("CATEGORÍA CHILE CORREGIDA")
     print("=" * 70)
-    print(f"Entradas CHILE: {cantidad}")
+    print(f"Entradas CHILE TV: {cantidad}")
     print("=" * 70)
 
 
