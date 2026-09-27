@@ -1,6 +1,9 @@
 ﻿name: Actualizar y verificar listas IPTV
 
 on:
+  push:
+    paths:
+      - "pluto/output/playlists/**"
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
