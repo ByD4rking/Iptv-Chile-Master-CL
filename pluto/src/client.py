@@ -6,6 +6,8 @@ import time
 import uuid
 from typing import Any
 
+from regions import Region
+
 import requests
 
 
@@ -45,7 +47,8 @@ MAX_RETRIES = 3
 
 class PlutoClient:
 
-    def __init__(self) -> None:
+    def __init__(self, region: Region) -> None:
+        self.region = region
         self.session = requests.Session()
 
         # Reintentos cortos para fallos transitorios de Pluto/GitHub Actions.
@@ -74,8 +77,8 @@ class PlutoClient:
                 "Accept": "*/*",
                 "Origin": "https://pluto.tv",
                 "Referer": "https://pluto.tv/",
-                "Accept-Language": "es-MX,es-419,es;q=0.9,en;q=0.1",
-                "X-Forwarded-For": PLUTO_X_FORWARDED_FOR,
+                "Accept-Language": f"{region.language},es-419,es,en;q=0.1",
+                "X-Forwarded-For": region.forwarded_ip,
             }
         )
 
@@ -86,8 +89,8 @@ class PlutoClient:
         self.session_token: str | None = None
         self.stitcher_url: str | None = None
         self.stitcher_params: str = ""
-        self.active_country = PLUTO_COUNTRY
-        self.active_language = PLUTO_LANGUAGE_PREFERENCES[0]
+        self.active_country = region.country
+        self.active_language = region.language
         self.token_expiry: int = 0
 
     @staticmethod
@@ -143,8 +146,8 @@ class PlutoClient:
             "blockingMode": "",
             # Force Pluto to build the session for Mexico and prefer
             # Mexican/Latin-American Spanish audio.
-            "country": PLUTO_COUNTRY,
-            "marketingRegion": PLUTO_MARKETING_REGION,
+            "country": self.region.country,
+            "marketingRegion": self.region.marketing_region,
             "preferredLanguage": self.active_language,
         }
 
@@ -220,8 +223,8 @@ class PlutoClient:
             ),
             "Origin": "https://pluto.tv",
             "Referer": "https://pluto.tv/",
-            "Accept-Language": "es-MX,es-419,es;q=0.9,en;q=0.1",
-            "X-Forwarded-For": PLUTO_X_FORWARDED_FOR,
+            "Accept-Language": f"{self.region.language},es-419,es,en;q=0.1",
+            "X-Forwarded-For": self.region.forwarded_ip,
         }
 
         params = {
@@ -229,8 +232,8 @@ class PlutoClient:
             "offset": "0",
             "limit": "1000",
             "sort": "number:asc",
-            "country": PLUTO_COUNTRY,
-            "region": PLUTO_MARKETING_REGION,
+            "country": self.region.country,
+            "region": self.region.marketing_region,
         }
 
         response = self.session.get(
@@ -309,11 +312,12 @@ class PlutoClient:
 
         # Keep the language preference explicit even if Pluto's boot response
         # does not echo it into stitcherParams.
+        # Do not force a lower quality. Pluto can return 720p, 1080p or higher
+        # depending on the channel and manifest available for this region.
         url += (
-            f"&country={PLUTO_COUNTRY}"
-            f"&marketingRegion={PLUTO_MARKETING_REGION}"
+            f"&country={self.region.country}"
+            f"&marketingRegion={self.region.marketing_region}"
             f"&preferredLanguage={self.active_language}"
-            f"&quality=720p"
         )
 
         return url
@@ -321,7 +325,8 @@ class PlutoClient:
 
 if __name__ == "__main__":
 
-    client = PlutoClient()
+    from regions import get_region
+    client = PlutoClient(get_region("mx"))
 
     print(
         "Inicializando sesión Pluto..."
