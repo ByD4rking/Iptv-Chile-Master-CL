@@ -20,9 +20,9 @@ APP_VERSION = "8.0.0-111b2b9dc00bd0bea9030b30662159ed9e7c8bc6"
 PLUTO_COUNTRY = "MX"
 PLUTO_MARKETING_REGION = "MX"
 PLUTO_LANGUAGE_PREFERENCES = (
-    "es-MX",
-    "es-419",
     "es",
+    "es-419",
+    "es-MX",
 )
 
 
