@@ -322,6 +322,64 @@ def mapa_urls_principal(lineas):
             urls.add(linea.strip())
     return urls
 
+def identidad_pluto(extinf, url):
+    """
+    Identidad estable de un canal Pluto:
+      1) tvg-id, cuando existe;
+      2) channel ID embebido en la URL;
+      3) sin ID, no se fuerza deduplicación por nombre.
+    Esto permite conservar canales con el mismo nombre pero IDs Pluto
+    realmente distintos, y eliminar copias regionales del mismo canal.
+    """
+    m_id = re.search(r'tvg-id="([^"]+)"', extinf or "", re.I)
+    if m_id and m_id.group(1).strip():
+        return "id:" + m_id.group(1).strip().lower()
+    cid = extraer_pluto_id(url)
+    return "id:" + cid if cid else ""
+
+def deduplicar_pluto_existente(lineas):
+    """
+    Después de reemplazar terceros por nuestras URLs, elimina copias
+    repetidas del mismo canal Pluto por ID. La primera aparición se conserva
+    para respetar el orden de la principal.
+    """
+    salida = []
+    ids_vistos = set()
+    eliminados = 0
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+
+        extinf = lineas[i]
+        bloque = [extinf]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#"):
+            bloque.append(lineas[j])
+            j += 1
+
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            url = lineas[j].strip()
+            bloque.append(url)
+            j += 1
+
+            if es_url_pluto(url):
+                identidad = identidad_pluto(extinf, url)
+                if identidad:
+                    if identidad in ids_vistos:
+                        eliminados += 1
+                        i = j
+                        continue
+                    ids_vistos.add(identidad)
+
+        salida.extend(bloque)
+        i = j
+
+    return salida, eliminados
+
 def extraer_pluto_id(url):
     """Obtiene el channel ID de una URL Pluto, sin depender del dominio."""
     m = re.search(r"/channel[s]?/([a-f0-9]{20,})", url or "", re.I)
@@ -732,7 +790,12 @@ def main():
     )
     pluto_errores = pluto_reemplazo.get("eliminados_sin_reemplazo", 0)
 
-    # 2) Limpieza de TOTAL, OTROS y categoría vacía.
+    # 2) Pluto: una sola entrada por channel ID en toda la principal.
+    # Conserva la primera aparición y elimina copias regionales del mismo
+    # canal, aunque tengan URLs Pluto distintas.
+    lineas, pluto_duplicados_existentes = deduplicar_pluto_existente(lineas)
+
+    # 3) Limpieza de TOTAL, OTROS y categoría vacía.
     lineas, limpieza = limpiar_total_otros_y_sin_nombre(lineas)
 
     categorias = categorias_de_lineas(lineas)
@@ -863,6 +926,7 @@ def main():
     print(f"Pluto terceros reemplazados:         {pluto_reemplazo["reemplazados"]}")
     print(f"Pluto terceros sin reemplazo:        {pluto_reemplazo["eliminados_sin_reemplazo"]}")
     print(f"Pluto ya propios conservados:        {pluto_reemplazo["ya_propios"]}")
+    print(f"Pluto duplicados por channel ID:      {pluto_duplicados_existentes}")
     print(f"Sin categoría eliminados:           {limpieza['sin_nombre_eliminados']}")
     print(f"TOTAL/OTROS duplicados eliminados:  {limpieza['total_otros_duplicados_eliminados']}")
     print(f"TOTAL/OTROS reclasificados:          {limpieza['total_otros_movidos']}")
@@ -882,6 +946,7 @@ def main():
     print("  - La principal conserva su orden existente.")
     print("  - IPTVSV.m3u y demás fuentes son complementarias.")
     print("  - Dedupe global por URL.")
+    print("  - Pluto: una sola entrada por channel ID global; mismo nombre con ID distinto se conserva.")
     print("  - No se eliminan canales existentes salvo limpieza explícita:")
     print("      * Pluto antiguo")
     print("      * categoría sin nombre")
