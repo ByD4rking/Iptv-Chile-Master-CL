@@ -45,7 +45,7 @@ jobs:
       - name: Verificar listas
         run: |
           set -e
-          for file in cl mx ar br es us all; do
+          for file in cl mx ar br es us latam all; do
             test -s "pluto/output/playlists/pluto_$file.m3u"
             grep -q '^#EXTM3U' "pluto/output/playlists/pluto_$file.m3u"
             echo "pluto_$file.m3u:"
