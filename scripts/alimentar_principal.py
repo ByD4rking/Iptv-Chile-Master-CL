@@ -37,6 +37,7 @@ FUENTES = [
 
 # ============================================================
 # PLUTO: SOLO NUESTRAS LISTAS
+# Las URLs antiguas de Pluto se sustituyen por las listas propias al actualizar la principal.
 # ============================================================
 FUENTES_PLUTO = [
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto.m3u",
