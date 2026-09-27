@@ -52,6 +52,23 @@ jobs:
             grep -c '^#EXTINF:' "pluto/output/playlists/pluto_$file.m3u"
           done
 
+          python - <<'PY'
+          import re
+          from collections import Counter
+          for code in ("us", "all"):
+              path = f"pluto/output/playlists/pluto_{code}.m3u"
+              text = open(path, encoding="utf-8-sig").read()
+              groups = Counter(
+                  m.group(1)
+                  for line in text.splitlines()
+                  if line.startswith("#EXTINF:")
+                  for m in [re.search(r'group-title="([^"]*)"', line)]
+                  if m
+              )
+              print(f"[{code.upper()}] CATEGORIAS:", dict(groups))
+              assert groups.get("Otros", 0) == 0, f"{code.upper()}: quedan canales en Otros"
+          PY
+
           test -s pluto/output/playlists/pluto.m3u
           grep -q '^#EXTM3U' pluto/output/playlists/pluto.m3u
 
