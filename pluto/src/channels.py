@@ -12,7 +12,7 @@ OUTPUT_DIR = BASE_DIR / "output"
 
 
 GROUPS = (
-    "Anime & Gaming",
+    "Anime",
     "Comedia",
     "Competencia",
     "Curiosidad",
@@ -24,7 +24,7 @@ GROUPS = (
     "Música",
     "Noticias",
     "Novelas",
-    "Películas",
+    "Cine",
     "Reality",
     "Retro",
     "Series",
@@ -37,7 +37,7 @@ GROUPS = (
 KEYWORDS = {
     "South Park": ("south park",),
     "Zona Paranormal": ("paranormal", "misterio", "ghost", "fantasma", "terror", "haunted", "exorc"),
-    "Anime & Gaming": ("anime", "animax", "gaming", "game", "videojuego", "tokusato", "naruto", "pokemon", "dragon ball"),
+    "Anime": ("anime", "animax", "tokusato", "naruto", "pokemon", "dragon ball", "one piece", "bleach", "my hero", "jujutsu", "gaming", "game", "videojuego"),
     "Infantil": ("infantil", "kids", "kid", "baby", "nick", "nickelodeon", "nick jr", "disney junior", "cartoon", "bob esponja", "spongebob", "paw patrol", "peppa"),
     "Deportes": ("deporte", "sport", "futbol", "fútbol", "football", "soccer", "nba", "nfl", "mlb", "ufc", "tennis", "tenis", "golf", "box", "wrestling", "lucha"),
     "Noticias": ("noticia", "news", "cnn", "reuters", "24 horas", "teleSUR", "telesur"),
@@ -48,7 +48,7 @@ KEYWORDS = {
     "Comedia": ("comedia", "comedy", "laugh", "simpson", "chavo", "chespirito", "just for laughs", "south park"),
     "Retro": ("retro", "classic", "clásico", "vintage", "old", "años 80", "años 90"),
     "Teen": ("teen", "adolesc", "youth", "young"),
-    "Películas": ("película", "peliculas", "movie", "movies", "cine", "film", "acción", "accion", "thriller", "western", "sci-fi"),
+    "Cine": ("película", "peliculas", "movie", "movies", "cine", "film", "acción", "accion", "thriller", "western", "sci-fi"),
     "Investigación": ("investigación", "investigacion", "investigation", "crime", "crimen", "forensic", "forense", "detective"),
     "Curiosidad": ("curios", "amazing", "wonders", "science", "ciencia", "history", "historia"),
     "Estilo De Vida": ("lifestyle", "estilo de vida", "cocina", "cooking", "food", "comida", "viaje", "travel", "hogar", "home", "fashion", "moda"),
