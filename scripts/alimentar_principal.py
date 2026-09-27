@@ -7,6 +7,9 @@ from collections import defaultdict
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
+# Fuente especial IPTV-SV. NO hereda las reglas de Pluto.
+FUENTE_IPTVSV = "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
+
 # ============================================================
 # FUENTES NORMALES / COLABORADORAS
 # ============================================================
@@ -60,8 +63,6 @@ FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO + [
 
 # Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
 # eliminan de la principal antes de incorporar nuestras listas.
-FUENTE_IPTVSV = "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
-
 FUENTES_PLUTO_ANTIGUAS = [
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_all.m3u",
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_us.m3u",
