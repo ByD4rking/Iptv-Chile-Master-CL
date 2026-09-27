@@ -400,6 +400,95 @@ def identidad_pluto(extinf, url):
     cid = extraer_pluto_id(url)
     return "id:" + cid if cid else ""
 
+def reclasificar_pluto_existente(lineas, session):
+    """
+    Revisa TODOS los Pluto que ya están en la principal y sincroniza su
+    carpeta con la categoría declarada por nuestras listas Pluto propias.
+
+    Esto corrige el caso en que un canal Pluto ya existía en la principal
+    bajo una carpeta genérica (por ejemplo RETRO/COMPETENCIA/otra) pero la
+    fuente oficial propia lo declara en una carpeta temática concreta.
+
+    No cambia URL, nombre, logo ni otros metadatos: solo group-title.
+    No elimina canales.
+    """
+    categorias_fuente = {}
+    errores = 0
+
+    for fuente in FUENTES_PLUTO:
+        try:
+            r = session.get(fuente, timeout=30)
+            r.raise_for_status()
+            for canal in parsear_m3u(r.text):
+                identidad = identidad_pluto(
+                    canal.get("extinf", ""),
+                    canal.get("url", ""),
+                )
+                categoria = (canal.get("categoria") or "").strip()
+                if identidad and categoria:
+                    categorias_fuente.setdefault(identidad, categoria)
+        except Exception as e:
+            errores += 1
+            print(f"  -> No se pudo consultar Pluto para sincronizar carpetas: {fuente} :: {e}")
+
+    categorias_actuales = categorias_de_lineas(lineas)
+    salida = []
+    movidos = 0
+    por_categoria = defaultdict(int)
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+
+        extinf = lineas[i]
+        bloque = [extinf]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#"):
+            bloque.append(lineas[j])
+            j += 1
+
+        if j >= len(lineas) or not url_es_valida(lineas[j].strip()):
+            salida.extend(bloque)
+            i = j
+            continue
+
+        url = lineas[j].strip()
+        bloque.append(url)
+        j += 1
+
+        if not es_url_pluto(url):
+            salida.extend(bloque)
+            i = j
+            continue
+
+        identidad = identidad_pluto(extinf, url)
+        categoria_fuente = categorias_fuente.get(identidad)
+        if not categoria_fuente:
+            salida.extend(bloque)
+            i = j
+            continue
+
+        destino = buscar_categoria_existente(categoria_fuente, categorias_actuales)
+        if not destino:
+            destino = categoria_fuente
+
+        categoria_actual = extraer_categoria(extinf)
+        if normalizar(categoria_actual) != normalizar(destino):
+            bloque[0] = reemplazar_categoria(extinf, destino)
+            movidos += 1
+            por_categoria[destino] += 1
+            if not any(normalizar(c) == normalizar(destino) for c in categorias_actuales):
+                categorias_actuales.append(destino)
+
+        salida.extend(bloque)
+        i = j
+
+    return salida, movidos, errores, dict(por_categoria)
+
+
 def deduplicar_pluto_existente(lineas):
     """
     Después de reemplazar terceros por nuestras URLs, elimina copias
@@ -926,10 +1015,15 @@ def main():
     )
     pluto_errores = pluto_reemplazo.get("eliminados_sin_reemplazo", 0)
 
-    # 2) Pluto: una sola entrada por channel ID en toda la principal.
-    # Conserva la primera aparición y elimina copias regionales del mismo
-    # canal, aunque tengan URLs Pluto distintas.
-    lineas, pluto_duplicados_existentes = deduplicar_pluto_existente(lineas)
+    # 2) Pluto: sincronizar las carpetas de los canales que YA estaban
+    # en la principal con la categoría declarada por nuestras fuentes.
+    # Solo cambia group-title; no elimina ni cambia URLs.
+    (
+        lineas,
+        pluto_reubicados,
+        pluto_reubicados_errores,
+        pluto_reubicados_por_categoria,
+    ) = reclasificar_pluto_existente(lineas, session)
 
     # 3) Pluto Brasil: corregir también las entradas que ya existían.
     # La regla aplica a TODO Pluto Brasil, no solo a los canales nuevos.
@@ -938,7 +1032,12 @@ def main():
         session,
     )
 
-    # 4) Limpieza de TOTAL, OTROS y categoría vacía.
+    # 4) Pluto: una sola entrada por channel ID en toda la principal.
+    # Conserva la primera aparición y elimina copias regionales del mismo
+    # canal, aunque tengan URLs Pluto distintas.
+    lineas, pluto_duplicados_existentes = deduplicar_pluto_existente(lineas)
+
+    # 5) Limpieza de TOTAL, OTROS y categoría vacía.
     lineas, limpieza = limpiar_total_otros_y_sin_nombre(lineas)
 
     categorias = categorias_de_lineas(lineas)
@@ -1111,6 +1210,8 @@ def main():
     print(f"Pluto terceros reemplazados:         {pluto_reemplazo["reemplazados"]}")
     print(f"Pluto terceros sin reemplazo:        {pluto_reemplazo["eliminados_sin_reemplazo"]}")
     print(f"Pluto ya propios conservados:        {pluto_reemplazo["ya_propios"]}")
+    print(f"Pluto reubicados por categoría:        {pluto_reubicados}")
+    print(f"Errores sincronizando carpetas Pluto:   {pluto_reubicados_errores}")
     print(f"Pluto duplicados por channel ID:      {pluto_duplicados_existentes}")
     print(f"Pluto Brasil movidos a carpeta Brasil: {pluto_brasil_movidos}")
     print(f"Errores al revisar Pluto Brasil:       {pluto_brasil_errores}")
@@ -1134,6 +1235,10 @@ def main():
     print("  - IPTVSV.m3u usa reglas propias y NO hereda ninguna regla de Pluto.")
     print("  - IPTVSV: no crea/alimenta carpetas-país genéricas; se respetan solo excepciones explícitas.")
     print("  - Dedupe global por URL para todas las fuentes; IPTVSV no usa dedupe por channel ID de Pluto.")
+    print("  - Pluto: las carpetas existentes se sincronizan con la categoría de la fuente propia.")
+    if pluto_reubicados_por_categoria:
+        for cat, cantidad in sorted(pluto_reubicados_por_categoria.items()):
+            print(f"      * {cat}: {cantidad} canales reubicados")
     print("  - Pluto: una sola entrada por channel ID global; mismo nombre con ID distinto se conserva.")
     print("  - No se eliminan canales existentes salvo limpieza explícita:")
     print("      * Pluto antiguo")
