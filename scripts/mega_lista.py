@@ -25,10 +25,12 @@ import requests
 # RUTAS
 # ============================================================
 
-BASE = Path(__file__).resolve().parent.parent
+BASE = Path(__file__).resolve().parent
 
-PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
+
 SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
+
 
 
 # ============================================================
@@ -38,7 +40,7 @@ SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
 FUENTES = [
 
     # --------------------------------------------------------
-    # FUENTES IPTV-ORG
+    # IPTV-ORG
     # --------------------------------------------------------
 
     "https://iptv-org.github.io/iptv/countries/mx.m3u",
@@ -54,29 +56,17 @@ FUENTES = [
     # --------------------------------------------------------
 
     "https://dearbulut.github.io/iptv/playlists/best.m3u",
-
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
-
     "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
-
     "https://iptv-org.github.io/iptv/countries/us.m3u",
-
     "https://iptv-org.github.io/iptv/index.country.m3u",
-
     "https://dearbulut.github.io/iptv/playlists/online.m3u",
-
     "https://raw.githubusercontent.com/freecasthub/public-iptv/main/playlist.m3u",
-
     "https://iptv-org.github.io/iptv/regions/amer.m3u",
-
     "https://iptv-org.github.io/iptv/languages/spa.m3u",
-
     "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
-
     "https://iptv-org.github.io/iptv/index.category.m3u",
-
     "https://iptv-org.github.io/iptv/categories/sports.m3u",
-
     "https://iptv-org.github.io/iptv/categories/series.m3u",
 
     # --------------------------------------------------------
@@ -102,7 +92,7 @@ FUENTES = [
     "https://m3u.cl/lista/AR.m3u",
 
     # --------------------------------------------------------
-    # TOTAL Y TOP
+    # TOTAL / TOP
     # --------------------------------------------------------
 
     "https://m3u.cl/lista/total.m3u",
@@ -114,6 +104,7 @@ FUENTES = [
 
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.ES.m3u",
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
+
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_all.m3u",
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_us.m3u",
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_ca.m3u",
@@ -129,8 +120,49 @@ FUENTES = [
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_no.m3u",
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_se.m3u",
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_dk.m3u",
-
 ]
+
+
+# ============================================================
+# MAPAS
+# ============================================================
+
+PAISES = {
+    "ve": "VENEZUELA",
+    "do": "REPÚBLICA DOMINICANA",
+    "pe": "PERÚ",
+    "py": "PARAGUAY",
+    "mx": "MÉXICO",
+    "es": "ESPAÑA",
+    "ec": "ECUADOR",
+    "cr": "COSTA RICA",
+    "co": "COLOMBIA",
+    "cl": "CHILE",
+    "br": "BRASIL",
+    "bo": "BOLIVIA",
+    "ar": "ARGENTINA",
+    "us": "ESTADOS UNIDOS",
+    "ca": "CANADÁ",
+    "gb": "REINO UNIDO",
+    "fr": "FRANCIA",
+    "de": "ALEMANIA",
+    "it": "ITALIA",
+    "no": "NORUEGA",
+    "se": "SUECIA",
+    "dk": "DINAMARCA",
+}
+
+
+# ============================================================
+# ÚNICAS EXCEPCIONES PLUTO
+# ============================================================
+
+PLUTO_ESPECIALES = {
+    "es": "ESPAÑA",
+    "mx": "MÉXICO",
+    "cl": "CHILE",
+    "ar": "ARGENTINA",
+}
 
 
 # ============================================================
@@ -138,7 +170,10 @@ FUENTES = [
 # ============================================================
 
 def normalizar(texto):
-    texto = unicodedata.normalize("NFKD", texto)
+    texto = unicodedata.normalize(
+        "NFKD",
+        texto or "",
+    )
 
     texto = "".join(
         c
@@ -157,35 +192,149 @@ def contiene(texto, palabras):
 
 
 def nombre_base_canal(nombre):
-    """
-    Obtiene el nombre base del canal.
-
-    Elimina solamente etiquetas [OPC.X] que hayan sido
-    generadas por este programa.
-
-    Ejemplo:
-
-        MEGA
-        MEGA [OPC.2]
-        MEGA [OPC.3]
-
-    Todos utilizan como base:
-
-        mega
-    """
-
-    nombre = re.sub(
-        r"\s*\[OPC\.\d+\]\s*$",
-        "",
-        nombre,
-        flags=re.IGNORECASE,
+    return normalizar(
+        re.sub(
+            r"\s*\[OPC\.\d+\]\s*$",
+            "",
+            nombre or "",
+            flags=re.IGNORECASE,
+        )
     )
 
-    return normalizar(nombre)
+
+def obtener_nombre_archivo(url):
+    return Path(
+        url.split("?", 1)[0]
+    ).name.lower()
 
 
 # ============================================================
-# CLASIFICADOR
+# DETECTAR PAÍS DE FUENTE
+# ============================================================
+
+def detectar_codigo_pais_desde_fuente(url):
+
+    nombre = obtener_nombre_archivo(url)
+
+    # --------------------------------------------------------
+    # pluto_de.m3u
+    # pluto_es.m3u
+    # --------------------------------------------------------
+
+    match = re.match(
+        r"pluto[_-]([a-z]{2})\.m3u$",
+        nombre,
+        re.IGNORECASE,
+    )
+
+    if match:
+        return match.group(1).lower()
+
+    # --------------------------------------------------------
+    # PlutoTV.ES.m3u
+    # PlutoTV.MX.m3u
+    # --------------------------------------------------------
+
+    match = re.match(
+        r"plutotv\.([a-z]{2})\.m3u$",
+        nombre,
+        re.IGNORECASE,
+    )
+
+    if match:
+        return match.group(1).lower()
+
+    # --------------------------------------------------------
+    # ES.m3u / CL.m3u / BR.m3u...
+    # --------------------------------------------------------
+
+    match = re.match(
+        r"([a-z]{2})\.m3u$",
+        nombre,
+        re.IGNORECASE,
+    )
+
+    if match:
+        codigo = match.group(1).lower()
+
+        if codigo in PAISES:
+            return codigo
+
+    return None
+
+
+def es_fuente_pluto(url):
+
+    nombre = obtener_nombre_archivo(url)
+
+    return (
+        nombre.startswith("pluto_")
+        or nombre.startswith("plutotv.")
+        or nombre == "pluto_all.m3u"
+        or "pluto" in nombre
+    )
+
+
+# ============================================================
+# DESCARGAR
+# ============================================================
+
+def descargar(url):
+
+    print("-" * 60)
+    print("Descargando:")
+    print(url)
+
+    try:
+
+        respuesta = requests.get(
+            url,
+            timeout=90,
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "*/*",
+            },
+        )
+
+        respuesta.raise_for_status()
+
+        texto = respuesta.text
+
+        if "#EXTINF" not in texto:
+
+            print(
+                "  -> La fuente no contiene #EXTINF."
+            )
+
+            return []
+
+        lineas = texto.splitlines()
+
+        print(
+            f"  -> Líneas descargadas: {len(lineas)}"
+        )
+
+        return lineas
+
+    except requests.RequestException as error:
+
+        print(
+            f"  -> ERROR HTTP/DESCARGA: {error}"
+        )
+
+        return []
+
+    except Exception as error:
+
+        print(
+            f"  -> ERROR: {error}"
+        )
+
+        return []
+
+
+# ============================================================
+# CLASIFICADOR TEMÁTICO
 # ============================================================
 
 def clasificar(grupo, nombre):
@@ -197,33 +346,15 @@ def clasificar(grupo, nombre):
 
     # --------------------------------------------------------
     # ADULTOS
+    #
+    # IMPORTANTE:
+    # Ya NO existe una carpeta general ADULTOS.
+    #
+    # El contenido adulto solamente entra mediante:
+    # XXX.m3u -> XXX.+18.ADULTO
+    #
+    # Por eso NO se clasifica automáticamente por nombre.
     # --------------------------------------------------------
-
-    indicadores_adultos = [
-        "pornografia",
-        "pornographic",
-        "porn",
-        "xxx",
-        "sex channel",
-        "sexo explicito",
-        "explicit sex",
-        "adult only",
-        "adultos",
-        "adult channel",
-        "adult tv",
-        "erotic tv",
-        "erotica",
-        "erotic",
-    ]
-
-    if re.search(
-        r"(^|[\s:_-])18\+($|[\s:_-])",
-        texto
-    ):
-        return "ADULTOS"
-
-    if contiene(texto, indicadores_adultos):
-        return "ADULTOS"
 
     # --------------------------------------------------------
     # ANIME
@@ -231,10 +362,15 @@ def clasificar(grupo, nombre):
 
     if contiene(texto, [
         "anime",
-        "anime:",
         "japanese anime",
         "animacion japonesa",
         "otaku",
+        "one piece",
+        "naruto",
+        "pokemon",
+        "yu-gi-oh",
+        "yu gi oh",
+        "dragon ball",
     ]):
         return "ANIME"
 
@@ -251,11 +387,17 @@ def clasificar(grupo, nombre):
         "cartoons",
         "infantil",
         "ninos",
+        "niños",
         "nina",
+        "niña",
         "junior",
         "toons",
         "preschool",
         "preescolar",
+        "baby shark",
+        "pitufos",
+        "rugrats",
+        "popeye",
     ]):
         return "INFANTIL"
 
@@ -300,6 +442,7 @@ def clasificar(grupo, nombre):
         "breaking news",
         "current affairs",
         "actualidad",
+        "euronews",
     ]):
         return "NOTICIAS"
 
@@ -476,6 +619,8 @@ def clasificar(grupo, nombre):
         "talk show",
         "talkshow",
         "showbiz",
+        "competition",
+        "competencia",
     ]):
         return "ENTRETENIMIENTO"
 
@@ -496,10 +641,7 @@ def clasificar(grupo, nombre):
         (["paraguay"], "PARAGUAY"),
         (["brasil", "brazil"], "BRASIL"),
         (["espana", "españa", "spain"], "ESPAÑA"),
-        (
-            ["estados unidos", "united states", "usa"],
-            "ESTADOS UNIDOS",
-        ),
+        (["estados unidos", "united states", "usa"], "ESTADOS UNIDOS"),
         (["canada", "canadá"], "CANADÁ"),
         (["francia", "france"], "FRANCIA"),
         (["italia", "italy"], "ITALIA"),
@@ -507,9 +649,14 @@ def clasificar(grupo, nombre):
         (["portugal"], "PORTUGAL"),
         (["japon", "japón", "japan"], "JAPÓN"),
         (["corea", "korea"], "COREA"),
+        (["reino unido", "united kingdom"], "REINO UNIDO"),
+        (["noruega", "norway"], "NORUEGA"),
+        (["suecia", "sweden"], "SUECIA"),
+        (["dinamarca", "denmark"], "DINAMARCA"),
     ]
 
     for palabras, resultado in paises:
+
         if contiene(texto, palabras):
             return resultado
 
@@ -541,55 +688,12 @@ def clasificar(grupo, nombre):
 
 
 # ============================================================
-# DESCARGAR
+# EXTRAER ENTRADAS
 # ============================================================
 
-def descargar(url):
+def extraer_entradas(lineas):
 
-    print("-" * 60)
-    print("Descargando:")
-    print(url)
-
-    try:
-
-        respuesta = requests.get(
-            url,
-            timeout=90,
-            headers={
-                "User-Agent": "Mozilla/5.0"
-            },
-        )
-
-        respuesta.raise_for_status()
-
-        texto = respuesta.text
-
-        if "#EXTINF" not in texto:
-
-            print(
-                "  -> La fuente no contiene #EXTINF."
-            )
-
-            return []
-
-        return texto.splitlines()
-
-    except Exception as error:
-
-        print(
-            f"  -> ERROR: {error}"
-        )
-
-        return []
-
-
-# ============================================================
-# PROCESAR CANALES
-# ============================================================
-
-def procesar(lineas, vistos, canales):
-
-    resultado = []
+    entradas = []
 
     i = 0
 
@@ -616,147 +720,653 @@ def procesar(lineas, vistos, canales):
 
         url = lineas[j].strip()
 
-        # ----------------------------------------------------
-        # SOLO HTTP / HTTPS
-        # ----------------------------------------------------
-
         if not url.startswith(
             ("http://", "https://")
         ):
             i = j + 1
             continue
 
+        entradas.append(
+            (info, url)
+        )
+
+        i = j + 1
+
+    return entradas
+
+
+# ============================================================
+# GRUPOS PARA CADA FUENTE
+# ============================================================
+
+def grupos_para_fuente(
+    fuente,
+    info,
+    nombre,
+):
+
+    archivo = obtener_nombre_archivo(
+        fuente
+    )
+
+    codigo = detectar_codigo_pais_desde_fuente(
+        fuente
+    )
+
+    # ========================================================
+    # XXX
+    # ========================================================
+
+    if archivo == "xxx.m3u":
+        return ["XXX.+18.ADULTO"]
+
+    # ========================================================
+    # RELIGIOSOS
+    # ========================================================
+
+    if archivo == "religiosos.m3u":
+        return ["RELIGIÓN"]
+
+    # ========================================================
+    # MÚSICA
+    # ========================================================
+
+    if archivo == "musica.m3u":
+        return ["MÚSICA"]
+
+    # ========================================================
+    # LATAM
+    # ========================================================
+
+    if archivo == "latam.m3u":
+        return ["LATINOAMÉRICA"]
+
+    # ========================================================
+    # M3U.CL POR PAÍS
+    # ========================================================
+
+    if (
+        "m3u.cl/lista/" in fuente.lower()
+        and codigo in PAISES
+    ):
+        return [PAISES[codigo]]
+
+    # ========================================================
+    # PLUTO
+    # ========================================================
+
+    if es_fuente_pluto(fuente):
+
         # ----------------------------------------------------
-        # MISMA URL = NO REPETIR
+        # PLUTO ES / MX / CL / AR
+        #
+        # ÚNICOS que pueden aparecer en:
+        #
+        # PLUTO TV
+        # PAÍS
+        # TEMÁTICA
         # ----------------------------------------------------
 
-        if url in vistos:
-            i = j + 1
+        if codigo in PLUTO_ESPECIALES:
+
+            pais = PLUTO_ESPECIALES[codigo]
+
+            grupo_original = ""
+
+            if "group-title=" in info.lower():
+
+                match = re.search(
+                    r'group-title="([^"]*)"',
+                    info,
+                    re.IGNORECASE,
+                )
+
+                if match:
+                    grupo_original = match.group(1)
+
+            tematica = clasificar(
+                grupo_original,
+                nombre,
+            )
+
+            grupos = [
+                "PLUTO TV",
+                pais,
+            ]
+
+            if (
+                tematica
+                and tematica not in grupos
+                and tematica != "OTROS"
+            ):
+                grupos.append(tematica)
+
+            return grupos
+
+        # ----------------------------------------------------
+        # TODOS LOS DEMÁS PLUTO
+        #
+        # SOLO VAN A SU PAÍS.
+        #
+        # NO PLUTO TV.
+        # NO TEMÁTICA.
+        # ----------------------------------------------------
+
+        if codigo in PAISES:
+
+            return [PAISES[codigo]]
+
+        # ----------------------------------------------------
+        # PLUTO ALL
+        #
+        # Intenta encontrar país en metadata/nombre.
+        # ----------------------------------------------------
+
+        if archivo == "pluto_all.m3u":
+
+            grupo_original = ""
+
+            if "group-title=" in info.lower():
+
+                match = re.search(
+                    r'group-title="([^"]*)"',
+                    info,
+                    re.IGNORECASE,
+                )
+
+                if match:
+                    grupo_original = match.group(1)
+
+            texto = normalizar(
+                f"{grupo_original} {nombre}"
+            )
+
+            detecciones = [
+
+                ([
+                    "germany",
+                    "alemania",
+                    "deutschland",
+                ], "ALEMANIA"),
+
+                ([
+                    "france",
+                    "francia",
+                ], "FRANCIA"),
+
+                ([
+                    "italy",
+                    "italia",
+                ], "ITALIA"),
+
+                ([
+                    "spain",
+                    "españa",
+                    "espana",
+                ], "ESPAÑA"),
+
+                ([
+                    "mexico",
+                    "méxico",
+                ], "MÉXICO"),
+
+                ([
+                    "argentina",
+                ], "ARGENTINA"),
+
+                ([
+                    "chile",
+                ], "CHILE"),
+
+                ([
+                    "brazil",
+                    "brasil",
+                ], "BRASIL"),
+
+                ([
+                    "canada",
+                    "canadá",
+                ], "CANADÁ"),
+
+                ([
+                    "united states",
+                    "usa",
+                    "united states of america",
+                ], "ESTADOS UNIDOS"),
+
+                ([
+                    "united kingdom",
+                    "uk",
+                    "britain",
+                    "england",
+                ], "REINO UNIDO"),
+
+                ([
+                    "norway",
+                    "noruega",
+                ], "NORUEGA"),
+
+                ([
+                    "sweden",
+                    "suecia",
+                ], "SUECIA"),
+
+                ([
+                    "denmark",
+                    "dinamarca",
+                ], "DINAMARCA"),
+            ]
+
+            for palabras, pais in detecciones:
+
+                if contiene(
+                    texto,
+                    palabras,
+                ):
+                    return [pais]
+
+            return ["OTROS"]
+
+    # ========================================================
+    # FUENTES GENERALES
+    # ========================================================
+
+    grupo_original = ""
+
+    if "group-title=" in info.lower():
+
+        match = re.search(
+            r'group-title="([^"]*)"',
+            info,
+            re.IGNORECASE,
+        )
+
+        if match:
+            grupo_original = match.group(1)
+
+    tematica = clasificar(
+        grupo_original,
+        nombre,
+    )
+
+    return [tematica]
+
+
+# ============================================================
+# AGREGAR A GRUPO
+# ============================================================
+
+def agregar_a_grupo(
+    grupos,
+    grupo,
+    info,
+    url,
+    vistos_por_grupo,
+    canales_por_grupo,
+):
+
+    if not grupo:
+        grupo = "OTROS"
+
+    # --------------------------------------------------------
+    # URL DUPLICADA DENTRO DE ESTA CARPETA
+    # --------------------------------------------------------
+
+    if grupo not in vistos_por_grupo:
+        vistos_por_grupo[grupo] = set()
+
+    if url in vistos_por_grupo[grupo]:
+        return False
+
+    vistos_por_grupo[grupo].add(url)
+
+    # --------------------------------------------------------
+    # NOMBRE
+    # --------------------------------------------------------
+
+    if "," in info:
+        nombre = info.split(
+            ",",
+            1,
+        )[1].strip()
+
+    else:
+        nombre = "Canal"
+
+    base = nombre_base_canal(
+        nombre
+    )
+
+    if grupo not in canales_por_grupo:
+        canales_por_grupo[grupo] = {}
+
+    numero = (
+        canales_por_grupo[grupo].get(
+            base,
+            0,
+        )
+        + 1
+    )
+
+    canales_por_grupo[grupo][base] = numero
+
+    if numero == 1:
+        nombre_final = nombre
+
+    else:
+        nombre_final = (
+            f"{nombre} [OPC.{numero}]"
+        )
+
+    # --------------------------------------------------------
+    # REEMPLAZAR NOMBRE
+    # --------------------------------------------------------
+
+    if "," in info:
+
+        info = (
+            info.split(",", 1)[0]
+            + ","
+            + nombre_final
+        )
+
+    # --------------------------------------------------------
+    # GROUP TITLE
+    # --------------------------------------------------------
+
+    if re.search(
+        r'group-title="',
+        info,
+        re.IGNORECASE,
+    ):
+
+        info = re.sub(
+            r'group-title="[^"]*"',
+            f'group-title="{grupo}"',
+            info,
+            count=1,
+            flags=re.IGNORECASE,
+        )
+
+    else:
+
+        info = info.replace(
+            ",",
+            f' group-title="{grupo}",',
+            1,
+        )
+
+    # --------------------------------------------------------
+    # AGREGAR
+    # --------------------------------------------------------
+
+    if grupo not in grupos:
+        grupos[grupo] = []
+
+    grupos[grupo].append(info)
+    grupos[grupo].append(url)
+
+    return True
+
+
+# ============================================================
+# PROCESAR FUENTE
+# ============================================================
+
+def procesar_fuente(
+    fuente,
+    lineas,
+    grupos,
+    vistos_por_grupo,
+    canales_por_grupo,
+):
+
+    nuevas = 0
+
+    entradas = extraer_entradas(
+        lineas
+    )
+
+    for info, url in entradas:
+
+        if "," in info:
+            nombre = info.split(
+                ",",
+                1,
+            )[1].strip()
+
+        else:
+            nombre = "Canal"
+
+        destinos = grupos_para_fuente(
+            fuente,
+            info,
+            nombre,
+        )
+
+        for destino in destinos:
+
+            if agregar_a_grupo(
+                grupos,
+                destino,
+                info,
+                url,
+                vistos_por_grupo,
+                canales_por_grupo,
+            ):
+
+                nuevas += 1
+
+    return nuevas
+
+
+# ============================================================
+# ORDEN DE GRUPOS
+# ============================================================
+
+ORDEN_GRUPOS = [
+
+    # --------------------------------------------------------
+    # PLUTO
+    # --------------------------------------------------------
+
+    "PLUTO TV",
+
+    # --------------------------------------------------------
+    # LATINOAMÉRICA
+    # --------------------------------------------------------
+
+    "ARGENTINA",
+    "BOLIVIA",
+    "BRASIL",
+    "CHILE",
+    "COLOMBIA",
+    "COSTA RICA",
+    "ECUADOR",
+    "ESPAÑA",
+    "MÉXICO",
+    "PARAGUAY",
+    "PERÚ",
+    "REPÚBLICA DOMINICANA",
+    "URUGUAY",
+    "VENEZUELA",
+
+    # --------------------------------------------------------
+    # RESTO DEL MUNDO
+    # --------------------------------------------------------
+
+    "ESTADOS UNIDOS",
+    "CANADÁ",
+    "REINO UNIDO",
+    "FRANCIA",
+    "ALEMANIA",
+    "ITALIA",
+    "NORUEGA",
+    "SUECIA",
+    "DINAMARCA",
+    "PORTUGAL",
+    "JAPÓN",
+    "COREA",
+
+    # --------------------------------------------------------
+    # REGIONES
+    # --------------------------------------------------------
+
+    "LATINOAMÉRICA",
+    "INTERNACIONAL",
+
+    # --------------------------------------------------------
+    # TEMÁTICAS
+    # --------------------------------------------------------
+
+    "ANIME",
+    "INFANTIL",
+    "DEPORTES",
+    "NOTICIAS",
+    "MÚSICA",
+    "CINE",
+    "SERIES",
+    "DOCUMENTALES",
+    "CULTURA",
+    "EDUCACIÓN",
+    "TECNOLOGÍA",
+    "RELIGIÓN",
+    "COCINA",
+    "ESTILO DE VIDA",
+    "ENTRETENIMIENTO",
+    "OTROS",
+
+    # --------------------------------------------------------
+    # XXX SIEMPRE AL FINAL
+    # --------------------------------------------------------
+
+    "XXX.+18.ADULTO",
+]
+
+
+# ============================================================
+# ORDENAR GRUPOS
+# ============================================================
+
+def ordenar_grupos(grupos):
+
+    posicion = {
+        grupo: i
+        for i, grupo in enumerate(
+            ORDEN_GRUPOS
+        )
+    }
+
+    def clave(grupo):
+
+        if grupo == "XXX.+18.ADULTO":
+            return (
+                999999,
+                grupo,
+            )
+
+        return (
+            posicion.get(
+                grupo,
+                500,
+            ),
+            grupo,
+        )
+
+    return sorted(
+        grupos.keys(),
+        key=clave,
+    )
+
+
+# ============================================================
+# SOUTH PARK AL FINAL DE ANIME
+#
+# IMPORTANTE:
+# South Park SOLO llegará aquí si previamente fue clasificado
+# dentro de ANIME por la temática de la fuente.
+#
+# Ya NO se fuerza South Park -> ANIME.
+# ============================================================
+
+def ordenar_anime(contenido):
+
+    bloques = []
+
+    i = 0
+
+    while i < len(contenido):
+
+        if not contenido[i].startswith(
+            "#EXTINF"
+        ):
+            i += 1
             continue
 
-        vistos.add(url)
+        if i + 1 >= len(contenido):
+            break
 
-        # ----------------------------------------------------
-        # NOMBRE ORIGINAL
-        # ----------------------------------------------------
+        info = contenido[i]
+        url = contenido[i + 1]
+
+        nombre = ""
 
         if "," in info:
 
             nombre = info.split(
                 ",",
-                1
-            )[1].strip()
+                1,
+            )[1]
 
-        else:
-
-            nombre = "Canal"
-
-        # ----------------------------------------------------
-        # GROUP TITLE ORIGINAL
-        # ----------------------------------------------------
-
-        match = re.search(
-            r'group-title="([^"]*)"',
-            info,
-            re.IGNORECASE
-        )
-
-        if match:
-
-            grupo = match.group(1)
-
-        else:
-
-            grupo = ""
-
-        # ----------------------------------------------------
-        # NOMBRE BASE DEL CANAL
-        # ----------------------------------------------------
-
-        nombre_base = nombre_base_canal(
+        if normalizar(
             nombre
-        )
-
-        # ----------------------------------------------------
-        # NÚMERO DE OPCIÓN
-        # ----------------------------------------------------
-
-        numero_opcion = canales.get(
-            nombre_base,
-            0
-        ) + 1
-
-        canales[nombre_base] = numero_opcion
-
-        # ----------------------------------------------------
-        # CREAR NOMBRE DE SALIDA
-        # ----------------------------------------------------
-
-        if numero_opcion == 1:
-
-            nombre_final = nombre
-
-        else:
-
-            nombre_final = (
-                f"{nombre} [OPC.{numero_opcion}]"
-            )
-
-        # ----------------------------------------------------
-        # REEMPLAZAR NOMBRE EN EXTINF
-        # ----------------------------------------------------
-
-        if "," in info:
-
-            info = (
-                info.split(",", 1)[0]
-                + ","
-                + nombre_final
-            )
-
-        # ----------------------------------------------------
-        # CLASIFICAR
-        # ----------------------------------------------------
-
-        nuevo_grupo = clasificar(
-            grupo,
-            nombre
-        )
-
-        # ----------------------------------------------------
-        # CAMBIAR GROUP TITLE
-        # ----------------------------------------------------
-
-        if re.search(
-            r'group-title="',
-            info,
-            re.IGNORECASE
+        ).startswith(
+            "south park"
         ):
 
-            info = re.sub(
-                r'group-title="[^"]*"',
-                f'group-title="{nuevo_grupo}"',
-                info,
-                count=1,
-                flags=re.IGNORECASE,
+            bloques.append(
+                (
+                    "south",
+                    [
+                        info,
+                        url,
+                    ],
+                )
             )
 
         else:
 
-            info = info.replace(
-                ",",
-                f' group-title="{nuevo_grupo}",',
-                1,
+            bloques.append(
+                (
+                    "normal",
+                    [
+                        info,
+                        url,
+                    ],
+                )
             )
 
-        # ----------------------------------------------------
-        # AGREGAR RESULTADO
-        # ----------------------------------------------------
+        i += 2
 
-        resultado.append(info)
-        resultado.append(url)
+    normales = [
+        bloque
+        for tipo, bloque in bloques
+        if tipo == "normal"
+    ]
 
-        i = j + 1
+    south = [
+        bloque
+        for tipo, bloque in bloques
+        if tipo == "south"
+    ]
+
+    resultado = []
+
+    for bloque in normales:
+        resultado.extend(bloque)
+
+    for bloque in south:
+        resultado.extend(bloque)
 
     return resultado
 
@@ -767,9 +1377,21 @@ def procesar(lineas, vistos, canales):
 
 def main():
 
-    print("=" * 70)
-    print("       IPTV CHILE MASTER - GOD BUILDER V5")
-    print("=" * 70)
+    print("=" * 75)
+    print(
+        "       IPTV CHILE MASTER - GOD BUILDER V8"
+    )
+    print("=" * 75)
+
+    print()
+    print("IMPORTANTE:")
+    print(
+        "El archivo GOD original NO será reemplazado."
+    )
+    print(
+        f"Se generará:\n{SALIDA}"
+    )
+    print()
 
     # --------------------------------------------------------
     # COMPROBAR PRINCIPAL
@@ -782,50 +1404,76 @@ def main():
         )
 
     # --------------------------------------------------------
-    # REGISTROS
+    # ESTRUCTURAS
     # --------------------------------------------------------
 
-    # URLs ya utilizadas
-    vistos = set()
+    grupos = {}
 
-    # Cantidad de opciones por nombre de canal
-    canales = {}
+    # URL por carpeta
+    vistos_por_grupo = {}
 
-    final = ["#EXTM3U"]
+    # OPC.X por carpeta
+    canales_por_grupo = {}
 
     # ========================================================
     # LISTA PRINCIPAL
     # ========================================================
 
+    print("=" * 75)
     print(
-        "\n[1/2] Procesando lista principal..."
+        "[1] PROCESANDO LISTA PRINCIPAL"
     )
+    print("=" * 75)
 
     principal = PRINCIPAL.read_text(
         encoding="utf-8",
-        errors="ignore",
+        errors="replace",
     ).splitlines()
 
-    datos = procesar(
-        principal,
-        vistos,
-        canales,
+    entradas_principal = extraer_entradas(
+        principal
     )
 
-    final.extend(datos)
+    print(
+        f"  -> Entradas encontradas: "
+        f"{len(entradas_principal)}"
+    )
+
+    antes = sum(
+        len(v)
+        for v in vistos_por_grupo.values()
+    )
+
+    nuevas_principal = procesar_fuente(
+        "IPTV-CHILE-MAESTRA_CORREGIDO.m3u",
+        principal,
+        grupos,
+        vistos_por_grupo,
+        canales_por_grupo,
+    )
+
+    despues = sum(
+        len(v)
+        for v in vistos_por_grupo.values()
+    )
 
     print(
-        f"URLs únicas iniciales: "
-        f"{len(vistos)}"
+        f"URLs agregadas desde principal: "
+        f"{despues - antes}"
     )
 
     # ========================================================
     # FUENTES EXTERNAS
     # ========================================================
 
+    print()
+    print("=" * 75)
     print(
-        "\n[2/2] Procesando fuentes externas..."
+        "[2] PROCESANDO FUENTES EXTERNAS"
     )
+    print("=" * 75)
+
+    total_nuevas = 0
 
     for numero, fuente in enumerate(
         FUENTES,
@@ -836,8 +1484,12 @@ def main():
         print(
             f"[FUENTE {numero}/{len(FUENTES)}]"
         )
+        print(fuente)
+        print("-" * 60)
 
-        lineas = descargar(fuente)
+        lineas = descargar(
+            fuente
+        )
 
         if not lineas:
 
@@ -847,21 +1499,108 @@ def main():
 
             continue
 
-        antes = len(vistos)
-
-        datos = procesar(
-            lineas,
-            vistos,
-            canales,
+        antes_total = sum(
+            len(v)
+            for v in vistos_por_grupo.values()
         )
 
-        final.extend(datos)
+        nuevas = procesar_fuente(
+            fuente,
+            lineas,
+            grupos,
+            vistos_por_grupo,
+            canales_por_grupo,
+        )
 
-        nuevos = len(vistos) - antes
+        despues_total = sum(
+            len(v)
+            for v in vistos_por_grupo.values()
+        )
+
+        incremento = (
+            despues_total
+            - antes_total
+        )
+
+        total_nuevas += incremento
 
         print(
-            f"  -> URLs nuevas agregadas: {nuevos}"
+            f"  -> Entradas agregadas: "
+            f"{nuevas}"
         )
+
+        print(
+            f"  -> URLs físicas nuevas en grupos: "
+            f"{incremento}"
+        )
+
+    # ========================================================
+    # CONSTRUIR SALIDA
+    # ========================================================
+
+    print()
+    print("=" * 75)
+    print(
+        "[3] GENERANDO NUEVA LISTA"
+    )
+    print("=" * 75)
+
+    final = [
+        "#EXTM3U"
+    ]
+
+    grupos_ordenados = ordenar_grupos(
+        grupos
+    )
+
+    total_entradas = 0
+    total_urls = 0
+    total_opciones = 0
+
+    # --------------------------------------------------------
+    # ESCRIBIR GRUPOS
+    # --------------------------------------------------------
+
+    for grupo in grupos_ordenados:
+
+        contenido = grupos[grupo]
+
+        if grupo == "ANIME":
+
+            contenido = ordenar_anime(
+                contenido
+            )
+
+        final.extend(
+            contenido
+        )
+
+        cantidad = sum(
+            1
+            for linea in contenido
+            if linea.startswith(
+                "#EXTINF"
+            )
+        )
+
+        total_entradas += cantidad
+        total_urls += cantidad
+
+    # --------------------------------------------------------
+    # CONTAR OPCIONES
+    # --------------------------------------------------------
+
+    for grupo, canales in (
+        canales_por_grupo.items()
+    ):
+
+        for cantidad in canales.values():
+
+            if cantidad > 1:
+
+                total_opciones += (
+                    cantidad - 1
+                )
 
     # ========================================================
     # GUARDAR
@@ -870,29 +1609,51 @@ def main():
     SALIDA.write_text(
         "\n".join(final) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
 
     # ========================================================
     # RESUMEN
     # ========================================================
 
+    urls_unicas_globales = set()
+
+    for urls in vistos_por_grupo.values():
+
+        urls_unicas_globales.update(
+            urls
+        )
+
     print()
-    print("=" * 70)
-    print("       LISTA GOD V5 TERMINADA")
-    print("=" * 70)
+    print("=" * 75)
+    print(
+        "       LISTA GOD V8 TERMINADA"
+    )
+    print("=" * 75)
 
     print(
-        f"URLs únicas totales: {len(vistos)}"
+        f"Entradas finales: "
+        f"{total_entradas}"
     )
 
     print(
-        f"Canales con alternativas: "
-        f"{sum(1 for cantidad in canales.values() if cantidad > 1)}"
+        f"URLs únicas globales: "
+        f"{len(urls_unicas_globales)}"
     )
 
     print(
-        f"Máximo de opciones para un canal: "
-        f"{max(canales.values(), default=0)}"
+        f"URLs físicas finales: "
+        f"{total_urls}"
+    )
+
+    print(
+        f"Alternativas [OPC.X]: "
+        f"{total_opciones}"
+    )
+
+    print(
+        f"Grupos finales: "
+        f"{len(grupos_ordenados)}"
     )
 
     print(
@@ -904,36 +1665,118 @@ def main():
         f"{SALIDA.stat().st_size / 1024 / 1024:.2f} MB"
     )
 
+    # ========================================================
+    # REGLAS
+    # ========================================================
+
     print()
+    print("=" * 75)
     print(
-        "Reglas aplicadas:"
+        "REGLAS APLICADAS"
+    )
+    print("=" * 75)
+
+    print(
+        "1. La lista principal se procesa primero."
     )
 
     print(
-        "  1. Una misma URL no se repite."
+        "2. La URL idéntica no se repite dentro "
+        "de una misma carpeta."
     )
 
     print(
-        "  2. Una URL diferente del mismo canal "
-        "se conserva."
+        "3. Una URL diferente del mismo canal "
+        "se conserva como alternativa."
     )
 
     print(
-        "  3. La primera URL queda como opción principal."
+        "4. [OPC.2], [OPC.3], etc. se calculan "
+        "por carpeta."
     )
 
     print(
-        "  4. Las siguientes utilizan [OPC.2], "
-        "[OPC.3], [OPC.4], etc."
+        "5. Las listas M3U.CL por país van "
+        "directamente a su país."
     )
 
     print(
-        "  5. La lista Principal se procesa primero."
+        "6. XXX.m3u se convierte en "
+        "XXX.+18.ADULTO."
     )
 
     print(
-        "  6. Las fuentes externas complementan "
-        "la lista."
+        "7. XXX.+18.ADULTO queda SIEMPRE "
+        "como último grupo."
+    )
+
+    print(
+        "8. Pluto ES/MX/CL/AR puede aparecer "
+        "en PLUTO TV + país + temática."
+    )
+
+    print(
+        "9. Pluto DE/FR/IT/GB/US/CA/BR/NO/SE/DK "
+        "va SOLAMENTE a su país."
+    )
+
+    print(
+        "10. Los Pluto que van solamente a su país "
+        "NO se agregan a PLUTO TV."
+    )
+
+    print(
+        "11. Si un Pluto tiene una URL repetida "
+        "dentro de ese país, se omite."
+    )
+
+    print(
+        "12. Si un Pluto tiene una URL diferente "
+        "para el mismo canal, se conserva como "
+        "alternativa [OPC.X]."
+    )
+
+    print(
+        "13. Una URL puede existir en varias carpetas "
+        "cuando las reglas lo permiten."
+    )
+
+    print(
+        "14. South Park NO se fuerza a ANIME por "
+        "el nombre del canal."
+    )
+
+    print(
+        "15. Si South Park pertenece a una fuente "
+        "clasificada como ANIME, queda al final "
+        "de ANIME."
+    )
+
+    print(
+        "16. Popeye y contenido infantil reconocido "
+        "van a INFANTIL."
+    )
+
+    print(
+        "17. Competition/Competencia va a "
+        "ENTRETENIMIENTO."
+    )
+
+    print(
+        "18. No se crea la carpeta general ADULTOS."
+    )
+
+    print(
+        "19. El contenido de XXX.m3u se mantiene "
+        "exclusivamente en XXX.+18.ADULTO."
+    )
+
+    print(
+        "20. La salida se escribe en UTF-8."
+    )
+
+    print(
+        "21. El GOD original NO se reemplaza."
     )
 
     print()
