@@ -253,7 +253,8 @@ def classify_channel(channel: dict) -> str:
     if "series" in raw:
         return "Series"
 
-    return "Otros"
+    # Todo canal debe quedar en una categoría útil; Otros no se usa como cajón de sastre.
+    return "Entretenimiento"
 
 
 def normalize_channel(client: PlutoClient, channel: dict) -> dict:
