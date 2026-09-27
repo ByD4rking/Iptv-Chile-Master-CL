@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - "pluto/output/playlists/**"
+      - "scripts/alimentar_principal.py"
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
