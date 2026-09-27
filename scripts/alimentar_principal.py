@@ -252,8 +252,34 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     return encontrar_categoria_tematica(texto, categorias)
 
 def determinar_destino_pluto(categoria, nombre, categorias):
+    """
+    Decide dónde va un canal Pluto respetando primero la carpeta declarada
+    por Pluto y luego la temática de esa carpeta.
+
+    Prioridad:
+      1) Si la carpeta de Pluto coincide con una carpeta existente, usarla.
+      2) Si la carpeta/nombre indica una temática (ANIME, INFANTILES, CINE,
+         etc.), usar la carpeta temática existente.
+      3) Si no hay coincidencia, el llamador conserva la categoría original
+         de Pluto y la agrega al final.
+
+    La deduplicación se hace globalmente por URL, por lo que:
+      - tres Pokémon Pluto con tres URLs distintas => entran los 3;
+      - la misma URL repetida en otra lista => entra solo 1.
+    """
+    categoria = (categoria or "").strip()
+    nombre = (nombre or "").strip()
+
+    # Si Pluto ya declara exactamente una carpeta que existe en la
+    # principal (por ejemplo "PLUTO TV"), respetamos esa carpeta.
+    exacta = buscar_categoria_existente(categoria, categorias)
+    if exacta:
+        return exacta
+
+    # Si declara una temática (por ejemplo "Anime" o "Pluto TV - Anime"),
+    # continúa la misma lógica temática de la principal.
     return encontrar_categoria_tematica(
-        f"{categoria or ''} {nombre or ''}",
+        f"{categoria} {nombre}",
         categorias,
     )
 
