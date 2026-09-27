@@ -1,6 +1,11 @@
 ﻿name: Pluto TV - Actualizar canales
 
 on:
+  push:
+    paths:
+      - "pluto/src/**"
+      - "pluto/requirements.txt"
+      - ".github/workflows/pluto.yml"
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
