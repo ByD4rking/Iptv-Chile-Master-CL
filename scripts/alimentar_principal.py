@@ -300,14 +300,14 @@ def limpiar_pluto_antiguo(lineas, session):
 
 def limpiar_total_otros_y_sin_nombre(lineas):
     """
-    Revisa TOTAL, OTROS y entradas sin group-title.
+    Revisa TOTAL, OTROS y entradas sin group-title sin destruir
+    cabeceras ni metadatos M3U.
     - Entradas sin categoría: se eliminan.
     - TOTAL/OTROS duplicados por URL en otra categoría: se eliminan.
-    - Únicos: se reclasifican a una categoría existente cuando es posible.
-    - Si no se puede clasificar, se conserva en OTROS para no perder contenido.
+    - Únicos: se reclasifican cuando existe una categoría clara.
+    - Si no se puede clasificar, se conserva en OTROS.
     """
     categorias = categorias_de_lineas(lineas)
-    indices_por_url = defaultdict(list)
     bloques = []
     i = 0
 
@@ -315,25 +315,25 @@ def limpiar_total_otros_y_sin_nombre(lineas):
         if not lineas[i].startswith("#EXTINF"):
             i += 1
             continue
+
+        inicio = i
         extinf = lineas[i]
         categoria = extraer_categoria(extinf)
         nombre = extraer_nombre(extinf)
+
         j = i + 1
-        extras = []
         while j < len(lineas) and lineas[j].startswith("#"):
-            extras.append(lineas[j])
             j += 1
+
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
-            url = lineas[j].strip()
             bloques.append({
-                "start": i,
+                "start": inicio,
                 "end": j + 1,
-                "lines": [extinf] + extras + [lineas[j]],
+                "extinf": extinf,
                 "categoria": categoria,
                 "nombre": nombre,
-                "url": url,
+                "url": lineas[j].strip(),
             })
-            indices_por_url[url].append(len(bloques) - 1)
             i = j + 1
         else:
             i += 1
@@ -343,30 +343,32 @@ def limpiar_total_otros_y_sin_nombre(lineas):
         if b["categoria"]:
             categorias_por_url[b["url"]].add(normalizar(b["categoria"]))
 
+    eliminar_urls = set()
     reemplazos = {}
-    eliminar = set()
-    movidos = defaultdict(int)
-    duplicados_eliminados = 0
     sin_nombre_eliminados = 0
+    duplicados_eliminados = 0
+    movidos = defaultdict(int)
 
     for idx, b in enumerate(bloques):
         cat = normalizar(b["categoria"])
+
         if not b["categoria"]:
-            eliminar.add(idx)
+            eliminar_urls.add(idx)
             sin_nombre_eliminados += 1
             continue
+
         if cat not in {"total", "otros"}:
             continue
-        if len(categorias_por_url[b["url"]]) > 0:
-            # Si existe fuera de TOTAL/OTROS, es un duplicado.
-            otras = {
-                x for x in categorias_por_url[b["url"]]
-                if x not in {"total", "otros"}
-            }
-            if otras:
-                eliminar.add(idx)
-                duplicados_eliminados += 1
-                continue
+
+        otras = {
+            x for x in categorias_por_url[b["url"]]
+            if x not in {"total", "otros"}
+        }
+
+        if otras:
+            eliminar_urls.add(idx)
+            duplicados_eliminados += 1
+            continue
 
         destino = determinar_destino(
             b["categoria"],
@@ -374,20 +376,45 @@ def limpiar_total_otros_y_sin_nombre(lineas):
             None,
             categorias,
         )
+
         if destino and normalizar(destino) not in {"total", "otros"}:
             reemplazos[idx] = destino
             movidos[destino] += 1
 
     salida = []
-    for idx, b in enumerate(bloques):
-        if idx in eliminar:
+    bloque_idx = 0
+    i = 0
+
+    while i < len(lineas):
+        if (
+            bloque_idx < len(bloques)
+            and i == bloques[bloque_idx]["start"]
+        ):
+            b = bloques[bloque_idx]
+            idx = bloque_idx
+            bloque_idx += 1
+
+            if idx in eliminar_urls:
+                i = b["end"]
+                continue
+
+            if idx in reemplazos:
+                salida.append(
+                    reemplazar_categoria(
+                        b["extinf"],
+                        reemplazos[idx],
+                    )
+                )
+                i = b["start"] + 1
+                continue
+
+            # Bloque sin cambios: copiarlo exactamente.
+            salida.extend(lineas[b["start"]:b["end"]])
+            i = b["end"]
             continue
-        if idx in reemplazos:
-            lines = list(b["lines"])
-            lines[0] = reemplazar_categoria(lines[0], reemplazos[idx])
-            salida.extend(lines)
-        else:
-            salida.extend(b["lines"])
+
+        salida.append(lineas[i])
+        i += 1
 
     return salida, {
         "sin_nombre_eliminados": sin_nombre_eliminados,
