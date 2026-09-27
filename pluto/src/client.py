@@ -4,6 +4,7 @@ import base64
 import json
 import time
 import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from regions import Region
@@ -14,6 +15,7 @@ import requests
 BOOT_URL = "https://boot.pluto.tv/v4/start"
 CHANNELS_URL = "https://service-channels.clusters.pluto.tv/v2/guide/channels"
 LEGACY_CHANNELS_URL = "https://api.pluto.tv/v2/channels.json"
+LEGACY_GUIDE_URL = "https://api.pluto.tv/v2/channels"
 
 APP_VERSION = "8.1.0"
 
@@ -305,6 +307,57 @@ class PlutoClient:
                 )
 
             channels = fallback_channels
+
+        # Para US, Pluto también expone el lineup actual mediante la API
+        # legacy /v2/channels. Esta vía devuelve el catálogo y EPG de la región
+        # usando X-Forwarded-For; los streams se construyen con nuestra
+        # sesión/stitcher actual.
+        if not channels and self.region.code == "us":
+            now = datetime.now(timezone.utc).replace(microsecond=0)
+            stop = now + timedelta(hours=24)
+            guide_params = {
+                "start": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "stop": stop.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "sid": str(uuid.uuid4()),
+                "deviceId": self.client_id,
+            }
+            guide_headers = {
+                "Accept": "application/json",
+                "Origin": "https://pluto.tv",
+                "Referer": "https://pluto.tv/",
+                "User-Agent": USER_AGENT,
+                "X-Forwarded-For": self.region.forwarded_ip,
+            }
+            guide = self.session.get(
+                LEGACY_GUIDE_URL,
+                params=guide_params,
+                headers=guide_headers,
+                timeout=REQUEST_TIMEOUT,
+            )
+            guide.raise_for_status()
+            guide_data = guide.json()
+            if isinstance(guide_data, list):
+                converted = []
+                for item in guide_data:
+                    channel_id = item.get("_id") or item.get("id")
+                    if not channel_id:
+                        continue
+                    logo = item.get("colorLogoPNG", {})
+                    if isinstance(logo, dict):
+                        logo = logo.get("path", "")
+                    converted.append({
+                        "id": channel_id,
+                        "name": item.get("name", ""),
+                        "slug": item.get("slug", ""),
+                        "description": item.get("description", item.get("summary", "")),
+                        "number": item.get("number"),
+                        "category": item.get("category", ""),
+                        "country": item.get("country", "US"),
+                        "region": item.get("region", "US"),
+                        "language": item.get("language", "en-US"),
+                        "logo": logo or "",
+                    })
+                channels = converted
 
         # Último respaldo para US: la API legacy de Pluto sigue siendo
         # una vía de catálogo útil cuando service-channels entrega 0.
