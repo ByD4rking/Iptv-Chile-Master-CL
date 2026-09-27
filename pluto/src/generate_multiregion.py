@@ -367,6 +367,64 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     return playlist_path, new_count, True
 
 
+def build_latam() -> Path:
+    """Build a Spanish-speaking Latin America aggregate from verified regional lists.
+
+    This is an aggregate playlist, not a claim that Pluto exposes a separate
+    official LATAM market. It uses only the regional playlists we already
+    generate and deduplicates by tvg-id (falling back to stream URL).
+    """
+    PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
+
+    source_codes = ("mx", "cl", "ar")
+    lines = ["#EXTM3U"]
+    seen = set()
+    source_counts = {}
+
+    for code in source_codes:
+        path = PLAYLIST_DIR / f"pluto_{code}.m3u"
+        if not path.exists():
+            source_counts[code] = 0
+            continue
+
+        text = path.read_text(encoding="utf-8-sig")
+        chunks = re.split(r"(?=^#EXTINF:)", text, flags=re.MULTILINE)
+        added_from_source = 0
+
+        for chunk in chunks:
+            if not chunk.startswith("#EXTINF:"):
+                continue
+            lines_chunk = chunk.strip().splitlines()
+            if len(lines_chunk) < 2:
+                continue
+
+            match = re.search(r'tvg-id="([^\"]+)"', lines_chunk[0])
+            key = match.group(1) if match else lines_chunk[1].strip()
+            if key in seen:
+                continue
+
+            lines.extend(lines_chunk[:2])
+            seen.add(key)
+            added_from_source += 1
+
+        source_counts[code] = added_from_source
+
+    if not seen:
+        raise RuntimeError("LATAM: no hay canales regionales válidos para construir la lista.")
+
+    output = PLAYLIST_DIR / "pluto_latam.m3u"
+    tmp = output.with_suffix(".m3u.tmp")
+    tmp.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
+    tmp.replace(output)
+
+    print(
+        f"[LATAM] {len(seen)} canales únicos -> {output} "
+        f"(MX: {source_counts.get('mx', 0)}, CL: {source_counts.get('cl', 0)}, "
+        f"AR: {source_counts.get('ar', 0)})"
+    )
+    return output
+
+
 def build_all() -> Path:
     PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
 
