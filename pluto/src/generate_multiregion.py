@@ -195,12 +195,8 @@ def build_all() -> Path:
     tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
     tmp.replace(output)
 
-    # Backward compatibility: pluto.m3u remains the MX-compatible legacy entry.
-    mx = PLAYLIST_DIR / "pluto_mx.m3u"
-    legacy = PLAYLIST_DIR / "pluto.m3u"
-    if mx.exists():
-        legacy.write_text(mx.read_text(encoding="utf-8-sig"), encoding="utf-8")
-
+    # Do not overwrite the existing legacy pluto.m3u automatically.
+    # Regional playlists are additive; the legacy list remains untouched.
     print(f"[ALL] {total} canales únicos -> {output}")
     return output
 
