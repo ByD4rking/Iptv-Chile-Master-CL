@@ -47,7 +47,11 @@ MAX_RETRIES = 3
 
 class PlutoClient:
 
-    def __init__(self, region: Region) -> None:
+    def __init__(self, region: Region | None = None) -> None:
+        if region is None:
+            from regions import get_region
+            region = get_region("mx")
+
         self.region = region
         self.session = requests.Session()
 
