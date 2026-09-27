@@ -26,6 +26,50 @@ REFERENCE_BASE = "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/plu
 REFERENCE_TIMEOUT = 30
 
 
+REFERENCE_CATEGORY_MAP = {
+    "anime & gaming": "Anime",
+    "anime": "Anime",
+    "gaming": "Anime",
+    "entertainment": "Entretenimiento",
+    "entretenimiento": "Entretenimiento",
+    "movies": "Cine",
+    "movie": "Cine",
+    "peliculas": "Cine",
+    "películas": "Cine",
+    "cine": "Cine",
+    "kids": "Infantil",
+    "infantil": "Infantil",
+    "sports": "Deportes",
+    "deportes": "Deportes",
+    "news": "Noticias",
+    "noticias": "Noticias",
+    "music": "Música",
+    "música": "Música",
+    "series": "Series",
+    "comedy": "Comedia",
+    "comedia": "Comedia",
+    "reality": "Reality",
+    "retro": "Retro",
+    "teen": "Teen",
+    "telenovelas": "Novelas",
+    "novelas": "Novelas",
+    "investigation": "Investigación",
+    "investigación": "Investigación",
+    "paranormal": "Zona Paranormal",
+}
+
+
+def normalize_reference_category(reference_group: str, channel: dict) -> str:
+    raw = re.sub(r"\s+", " ", str(reference_group or "").strip().lower())
+    mapped = REFERENCE_CATEGORY_MAP.get(raw)
+    if mapped:
+        return mapped
+
+    # If the reference uses a combined/unknown folder, fall back to the same
+    # semantic classifier used for channels, based on name/description/source category.
+    return channel.get("category") or "Otros"
+
+
 def fetch_reference_metadata(region: Region) -> tuple[dict[str, dict], dict[str, int], dict[str, int]]:
     """Read BuddyChewChew's playlist and return id -> metadata plus group/channel order."""
     url = REFERENCE_BASE.format(code=region.code)
@@ -96,8 +140,12 @@ def apply_reference_metadata(
 
         matched += 1
 
-        # Use the reference repository's group/folder when the channel exists there.
-        channel["category"] = ref["category"]
+        # Use the reference only as a semantic hint. Normalize its folders into
+        # our canonical Spanish categories instead of copying arbitrary names.
+        channel["category"] = normalize_reference_category(
+            ref.get("category", ""),
+            channel,
+        )
         channel["reference_group_order"] = group_order.get(ref["category"], 999999)
         channel["reference_channel_order"] = channel_order.get(channel.get("id", ""), 999999)
 
