@@ -127,7 +127,12 @@ def parsear_m3u(texto):
                 "extinf": linea,
                 "nombre": extraer_nombre(linea),
                 "categoria": extraer_categoria(linea),
+                "extras": [],
             }
+        elif linea.startswith("#") and actual:
+            # Conserva metadatos del canal fuente, por ejemplo
+            # #EXTVLCOPT, #KODIPROP, #EXTGRP u otras directivas.
+            actual["extras"].append(linea)
         elif not linea.startswith("#") and url_es_valida(linea) and actual:
             actual["url"] = linea
             resultado.append(actual)
@@ -221,10 +226,12 @@ def determinar_destino_pluto(categoria, nombre, categorias):
     )
 
 def construir_bloque(canal, destino):
-    return [
+    bloque = [
         reemplazar_categoria(canal["extinf"], destino),
-        canal["url"].strip(),
     ]
+    bloque.extend(canal.get("extras", []))
+    bloque.append(canal["url"].strip())
+    return bloque
 
 def encontrar_rango_categoria(lineas, categoria):
     objetivo = normalizar(categoria)
