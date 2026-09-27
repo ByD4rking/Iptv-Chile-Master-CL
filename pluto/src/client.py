@@ -232,13 +232,13 @@ class PlutoClient:
             "X-Forwarded-For": self.region.forwarded_ip,
         }
 
+        # La API determina la región mediante la sesión/token y los
+        # headers. No forzamos country/region en la query.
         params = {
             "channelIds": "",
             "offset": "0",
             "limit": "1000",
             "sort": "number:asc",
-            "country": self.region.country,
-            "region": self.region.marketing_region,
         }
 
         response = self.session.get(
@@ -273,6 +273,41 @@ class PlutoClient:
         if not isinstance(channels, list):
             raise RuntimeError(
                 "Respuesta de canales inválida."
+            )
+
+        # Pluto puede responder 200 con catálogo vacío. US tiene un
+        # segundo intento sin el X-Forwarded-For regional.
+        if not channels and self.region.code == "us":
+            fallback_headers = dict(headers)
+            fallback_headers.pop("X-Forwarded-For", None)
+
+            self.boot()
+
+            fallback_headers["Authorization"] = (
+                f"Bearer {self.session_token}"
+            )
+
+            fallback = self.session.get(
+                CHANNELS_URL,
+                params=params,
+                headers=fallback_headers,
+                timeout=REQUEST_TIMEOUT,
+            )
+            fallback.raise_for_status()
+
+            fallback_data = fallback.json()
+            fallback_channels = fallback_data.get("data", [])
+
+            if not isinstance(fallback_channels, list):
+                raise RuntimeError(
+                    "Respuesta de canales US inválida."
+                )
+
+            channels = fallback_channels
+
+        if not channels:
+            raise RuntimeError(
+                f"{self.region.code.upper()}: Pluto devolvió 0 canales."
             )
 
         return channels
