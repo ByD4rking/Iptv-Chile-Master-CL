@@ -19,13 +19,18 @@ REGIONAL_DATA_DIR = OUTPUT_DIR / "regional"
 # empty/very-low responses that commonly happen during transient API failures.
 MIN_PREVIOUS_RATIO = 0.50
 
+# No maximum channel count: every valid channel returned by Pluto is eligible.
+
+
 
 def fetch_region(region: Region) -> list[dict]:
     client = PlutoClient(region)
     print(f"[{region.code.upper()}] Obteniendo canales...")
     raw = client.get_channels()
+    print(f"[{region.code.upper()}] Canales devueltos por Pluto: {len(raw)}")
 
     normalized = []
+    rejected = 0
     seen_ids = set()
 
     for channel in raw:
@@ -37,8 +42,10 @@ def fetch_region(region: Region) -> list[dict]:
             normalized.append(item)
             seen_ids.add(channel_id)
         except Exception as exc:
+            rejected += 1
             print(f"[{region.code.upper()}] No se pudo procesar {channel_id}: {exc}")
 
+    print(f"[{region.code.upper()}] Canales válidos incorporables: {len(normalized)}; rechazados: {rejected}")
     return normalized
 
 
