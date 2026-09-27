@@ -46,6 +46,9 @@ FUENTES_PLUTO = [
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_all.m3u",
 ]
 
 # Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
@@ -285,6 +288,152 @@ def mapa_urls_principal(lineas):
         if url_es_valida(linea.strip()):
             urls.add(linea.strip())
     return urls
+
+def extraer_pluto_id(url):
+    """Obtiene el channel ID de una URL Pluto, sin depender del dominio."""
+    m = re.search(r"/channel[s]?/([a-f0-9]{20,})", url or "", re.I)
+    return m.group(1).lower() if m else ""
+
+
+def es_url_pluto(url):
+    """Detecta URLs de streaming Pluto sin considerar el dominio."""
+    u = (url or "").lower()
+    return (
+        "pluto.tv" in u
+        or ("stitcher" in u and "pluto" in u)
+        or ("pluto" in u and ("/channel/" in u or "/channels/" in u))
+    )
+
+
+def cargar_catalogo_pluto_propio(session):
+    """Carga exclusivamente nuestras playlists Pluto e indexa por ID y nombre."""
+    por_id = {}
+    por_nombre = {}
+    por_region = defaultdict(dict)
+    errores = 0
+
+    for fuente in FUENTES_PLUTO:
+        try:
+            r = session.get(fuente, timeout=30)
+            r.raise_for_status()
+            canales = parsear_m3u(r.text)
+            m_region = re.search(r"pluto_([a-z]+)\.m3u$", fuente)
+            region = m_region.group(1) if m_region else "all"
+
+            for canal in canales:
+                url = canal["url"].strip()
+                if not url:
+                    continue
+                cid = extraer_pluto_id(url)
+                m_id = re.search(r'tvg-id="([^"]+)"', canal["extinf"], re.I)
+                if m_id:
+                    cid = m_id.group(1).strip().lower()
+                nombre = normalizar(canal.get("nombre", ""))
+                if cid:
+                    por_id[cid] = canal
+                    por_region[region][cid] = canal
+                if nombre:
+                    por_nombre[nombre] = canal
+        except Exception as e:
+            errores += 1
+            print(f"  -> No se pudo cargar Pluto propio: {fuente} :: {e}")
+
+    return por_id, por_nombre, por_region, errores
+
+
+def reemplazar_pluto_tercero_por_propio(lineas, session):
+    """
+    Reemplaza SOLO entradas Pluto que no usan una URL de nuestras playlists.
+
+    Prioridad:
+      1) región indicada por country= en la URL antigua;
+      2) channel ID en nuestra lista regional;
+      3) channel ID en catálogo global;
+      4) nombre normalizado como respaldo.
+
+    Si una URL Pluto de terceros no tiene correspondencia propia, se elimina.
+    Todo lo que no sea Pluto se conserva exactamente.
+    """
+    por_id, por_nombre, por_region, errores_catalogo = cargar_catalogo_pluto_propio(session)
+
+    propias = {canal["url"].strip() for canal in por_id.values()}
+    salida = []
+    reemplazados = 0
+    eliminados_sin_reemplazo = 0
+    ya_propios = 0
+    no_pluto = 0
+
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+
+        extinf = lineas[i]
+        nombre = extraer_nombre(extinf)
+        bloque = [extinf]
+        j = i + 1
+
+        while j < len(lineas) and lineas[j].startswith("#"):
+            bloque.append(lineas[j])
+            j += 1
+
+        if j >= len(lineas) or not url_es_valida(lineas[j].strip()):
+            salida.extend(bloque)
+            i = j
+            continue
+
+        url = lineas[j].strip()
+        bloque.append(url)
+        j += 1
+
+        if not es_url_pluto(url):
+            salida.extend(bloque)
+            no_pluto += 1
+            i = j
+            continue
+
+        if url in propias:
+            salida.extend(bloque)
+            ya_propios += 1
+            i = j
+            continue
+
+        cid = extraer_pluto_id(url)
+        m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+        if m_id:
+            cid = m_id.group(1).strip().lower()
+
+        country = re.search(r'(?:[?&])country=([A-Za-z]{2})', url, re.I)
+        region = country.group(1).lower() if country else ""
+
+        reemplazo = None
+        if cid and region in por_region:
+            reemplazo = por_region[region].get(cid)
+        if reemplazo is None and cid:
+            reemplazo = por_id.get(cid)
+        if reemplazo is None:
+            reemplazo = por_nombre.get(normalizar(nombre))
+
+        if reemplazo is None:
+            eliminados_sin_reemplazo += 1
+            i = j
+            continue
+
+        salida.extend(bloque[:-1])
+        salida.append(reemplazo["url"].strip())
+        reemplazados += 1
+        i = j
+
+    return salida, {
+        "reemplazados": reemplazados,
+        "eliminados_sin_reemplazo": eliminados_sin_reemplazo,
+        "ya_propios": ya_propios,
+        "no_pluto": no_pluto,
+        "errores_catalogo": errores_catalogo,
+    }
+
 
 def limpiar_pluto_antiguo(lineas, session):
     """
@@ -541,8 +690,10 @@ def main():
 
     total_inicial = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
-    # 1) Limpieza independiente de Pluto antiguo.
-    lineas, pluto_eliminados, pluto_errores = limpiar_pluto_antiguo(
+    # 1) Pluto: sustituir automáticamente cualquier enlace de terceros
+    # por nuestra URL vigente. Solo se elimina un Pluto tercero cuando no
+    # existe reemplazo propio; los canales no-Pluto no se tocan.
+    lineas, pluto_reemplazo, pluto_errores = reemplazar_pluto_tercero_por_propio(
         lineas,
         session,
     )
@@ -675,7 +826,9 @@ def main():
     print("RESUMEN")
     print("=" * 72)
     print(f"Canales iniciales:                 {total_inicial}")
-    print(f"Pluto antiguo eliminado:            {pluto_eliminados}")
+    print(f"Pluto terceros reemplazados:         {pluto_reemplazo["reemplazados"]}")
+    print(f"Pluto terceros sin reemplazo:        {pluto_reemplazo["eliminados_sin_reemplazo"]}")
+    print(f"Pluto ya propios conservados:        {pluto_reemplazo["ya_propios"]}")
     print(f"Sin categoría eliminados:           {limpieza['sin_nombre_eliminados']}")
     print(f"TOTAL/OTROS duplicados eliminados:  {limpieza['total_otros_duplicados_eliminados']}")
     print(f"TOTAL/OTROS reclasificados:          {limpieza['total_otros_movidos']}")
