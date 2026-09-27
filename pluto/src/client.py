@@ -146,6 +146,7 @@ class PlutoClient:
             "clientID": self.client_id,
             "clientModelNumber": "1.0.0",
             "serverSideAds": "false",
+            "features": "multiAudio",
             "drmCapabilities": "widevine:L3",
             "blockingMode": "",
             # Force Pluto to build the session for Mexico and prefer
@@ -322,6 +323,7 @@ class PlutoClient:
             f"&country={self.region.country}"
             f"&marketingRegion={self.region.marketing_region}"
             f"&preferredLanguage={self.active_language}"
+            f"&quality=1080p"
         )
 
         return url
