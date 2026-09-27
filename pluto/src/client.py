@@ -152,12 +152,20 @@ class PlutoClient:
             "features": "multiAudio",
             "drmCapabilities": "widevine:L3",
             "blockingMode": "",
-            # Force Pluto to build the session for Mexico and prefer
-            # Mexican/Latin-American Spanish audio.
-            "country": self.region.country,
-            "marketingRegion": self.region.marketing_region,
-            "preferredLanguage": self.active_language,
         }
+
+        # Pluto's current web clients select the market primarily from the
+        # forwarded regional address. For US, do not also force country/
+        # marketingRegion in the boot query: that combination can produce a
+        # valid session but an empty service-channels catalogue.
+        if self.region.code != "us":
+            params.update(
+                {
+                    "country": self.region.country,
+                    "marketingRegion": self.region.marketing_region,
+                    "preferredLanguage": self.active_language,
+                }
+            )
 
         response = self.session.get(
             BOOT_URL,
@@ -216,6 +224,102 @@ class PlutoClient:
             return
 
         self.boot()
+
+    def _get_us_legacy_channels(self) -> list[dict]:
+        """Fetch the US live lineup from Pluto's legacy live-guide API."""
+        now = datetime.now(timezone.utc).replace(
+            minute=0, second=0, microsecond=0
+        )
+        windows = (
+            (now, now + timedelta(hours=24)),
+            (now, now + timedelta(hours=48)),
+        )
+
+        for start, stop in windows:
+            params = {
+                "start": start.strftime("%Y-%m-%d %H:00:00.000+0000"),
+                "stop": stop.strftime("%Y-%m-%d %H:00:00.000+0000"),
+                "sid": uuid.uuid4().hex,
+                "deviceId": uuid.uuid4().hex,
+            }
+            headers = {
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+                "Authorization": f"Bearer {self.session_token}",
+                "Origin": "https://pluto.tv",
+                "Referer": "https://pluto.tv/",
+                "User-Agent": USER_AGENT,
+                "X-Forwarded-For": self.region.forwarded_ip,
+            }
+
+            response = self.session.get(
+                LEGACY_GUIDE_URL,
+                params=params,
+                headers=headers,
+                timeout=REQUEST_TIMEOUT,
+            )
+
+            if response.status_code in (401, 403):
+                self.boot()
+                headers["Authorization"] = f"Bearer {self.session_token}"
+                response = self.session.get(
+                    LEGACY_GUIDE_URL,
+                    params=params,
+                    headers=headers,
+                    timeout=REQUEST_TIMEOUT,
+                )
+
+            if not response.ok:
+                continue
+
+            try:
+                data = response.json()
+            except ValueError:
+                continue
+
+            if not isinstance(data, list):
+                continue
+
+            converted = []
+            for item in data:
+                channel_id = item.get("_id") or item.get("id")
+                if not channel_id:
+                    continue
+
+                logo = item.get("colorLogoPNG", {})
+                if isinstance(logo, dict):
+                    logo = logo.get("path", "")
+                if not logo:
+                    logo = item.get("logo", {})
+                    if isinstance(logo, dict):
+                        logo = logo.get("path", "")
+
+                converted.append(
+                    {
+                        "id": channel_id,
+                        "name": item.get("name", ""),
+                        "slug": item.get("slug", ""),
+                        "description": item.get(
+                            "description",
+                            item.get("summary", ""),
+                        ),
+                        "number": item.get("number"),
+                        "category": item.get("category", ""),
+                        "country": item.get("country", "US"),
+                        "region": item.get("region", "US"),
+                        "language": item.get("language", "en-US"),
+                        "logo": logo or "",
+                    }
+                )
+
+            if converted:
+                print(
+                    f"[US] API legacy /v2/channels: "
+                    f"{len(converted)} canales "
+                    f"({params['start']} -> {params['stop']})"
+                )
+                return converted
+
+        return []
 
     def get_channels(self) -> list[dict]:
         """
@@ -308,56 +412,11 @@ class PlutoClient:
 
             channels = fallback_channels
 
-        # Para US, Pluto también expone el lineup actual mediante la API
-        # legacy /v2/channels. Esta vía devuelve el catálogo y EPG de la región
-        # usando X-Forwarded-For; los streams se construyen con nuestra
-        # sesión/stitcher actual.
+        # US: use the legacy live-guide API before channels.json.
+        # This is the route used by current Pluto clients when
+        # service-channels has no data.
         if not channels and self.region.code == "us":
-            now = datetime.now(timezone.utc).replace(microsecond=0)
-            stop = now + timedelta(hours=24)
-            guide_params = {
-                "start": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "stop": stop.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "sid": str(uuid.uuid4()),
-                "deviceId": self.client_id,
-            }
-            guide_headers = {
-                "Accept": "application/json",
-                "Origin": "https://pluto.tv",
-                "Referer": "https://pluto.tv/",
-                "User-Agent": USER_AGENT,
-                "X-Forwarded-For": self.region.forwarded_ip,
-            }
-            guide = self.session.get(
-                LEGACY_GUIDE_URL,
-                params=guide_params,
-                headers=guide_headers,
-                timeout=REQUEST_TIMEOUT,
-            )
-            guide.raise_for_status()
-            guide_data = guide.json()
-            if isinstance(guide_data, list):
-                converted = []
-                for item in guide_data:
-                    channel_id = item.get("_id") or item.get("id")
-                    if not channel_id:
-                        continue
-                    logo = item.get("colorLogoPNG", {})
-                    if isinstance(logo, dict):
-                        logo = logo.get("path", "")
-                    converted.append({
-                        "id": channel_id,
-                        "name": item.get("name", ""),
-                        "slug": item.get("slug", ""),
-                        "description": item.get("description", item.get("summary", "")),
-                        "number": item.get("number"),
-                        "category": item.get("category", ""),
-                        "country": item.get("country", "US"),
-                        "region": item.get("region", "US"),
-                        "language": item.get("language", "en-US"),
-                        "logo": logo or "",
-                    })
-                channels = converted
+            channels = self._get_us_legacy_channels()
 
         # Último respaldo para US: la API legacy de Pluto sigue siendo
         # una vía de catálogo útil cuando service-channels entrega 0.
