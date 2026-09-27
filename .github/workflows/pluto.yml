@@ -42,11 +42,9 @@ jobs:
           python src/playlist.py
 
       - name: Verificar playlist
-           - name: Verificar playlist
         run: |
           test -s pluto/output/playlists/pluto.m3u
           grep -q '^#EXTM3U' pluto/output/playlists/pluto.m3u
-
           echo "Playlist generada:"
           wc -l pluto/output/playlists/pluto.m3u
 
@@ -68,5 +66,3 @@ jobs:
           git rebase origin/main
 
           git push origin HEAD:main
-
-
