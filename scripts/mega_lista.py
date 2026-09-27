@@ -1,15 +1,15 @@
-# IPTV Chile Master
+﻿# IPTV Chile Master
 # Copyright (C) 2026 ByD4rk
 #
-# Este programa está basado/modificado a partir de software
+# Este programa estÃ¡ basado/modificado a partir de software
 # distribuido bajo la GNU General Public License v3.0.
 #
 # Este programa es software libre: puedes redistribuirlo y/o
-# modificarlo bajo los términos de la GNU General Public License
-# publicada por la Free Software Foundation, versión 3 o posterior.
+# modificarlo bajo los tÃ©rminos de la GNU General Public License
+# publicada por la Free Software Foundation, versiÃ³n 3 o posterior.
 #
-# Este programa se distribuye con la esperanza de que sea útil,
-# pero SIN NINGUNA GARANTÍA.
+# Este programa se distribuye con la esperanza de que sea Ãºtil,
+# pero SIN NINGUNA GARANTÃA.
 #
 # GNU GPL v3.0:
 # https://www.gnu.org/licenses/gpl-3.0.html
@@ -25,7 +25,7 @@ import requests
 # RUTAS
 # ============================================================
 
-BASE = Path(__file__).resolve().parent
+BASE = Path(__file__).resolve().parent.parent
 
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
 
@@ -129,11 +129,11 @@ FUENTES = [
 
 PAISES = {
     "ve": "VENEZUELA",
-    "do": "REPÚBLICA DOMINICANA",
-    "pe": "PERÚ",
+    "do": "REPÃšBLICA DOMINICANA",
+    "pe": "PERÃš",
     "py": "PARAGUAY",
-    "mx": "MÉXICO",
-    "es": "ESPAÑA",
+    "mx": "MÃ‰XICO",
+    "es": "ESPAÃ‘A",
     "ec": "ECUADOR",
     "cr": "COSTA RICA",
     "co": "COLOMBIA",
@@ -142,7 +142,7 @@ PAISES = {
     "bo": "BOLIVIA",
     "ar": "ARGENTINA",
     "us": "ESTADOS UNIDOS",
-    "ca": "CANADÁ",
+    "ca": "CANADÃ",
     "gb": "REINO UNIDO",
     "fr": "FRANCIA",
     "de": "ALEMANIA",
@@ -154,12 +154,12 @@ PAISES = {
 
 
 # ============================================================
-# ÚNICAS EXCEPCIONES PLUTO
+# ÃšNICAS EXCEPCIONES PLUTO
 # ============================================================
 
 PLUTO_ESPECIALES = {
-    "es": "ESPAÑA",
-    "mx": "MÉXICO",
+    "es": "ESPAÃ‘A",
+    "mx": "MÃ‰XICO",
     "cl": "CHILE",
     "ar": "ARGENTINA",
 }
@@ -209,7 +209,7 @@ def obtener_nombre_archivo(url):
 
 
 # ============================================================
-# DETECTAR PAÍS DE FUENTE
+# DETECTAR PAÃS DE FUENTE
 # ============================================================
 
 def detectar_codigo_pais_desde_fuente(url):
@@ -311,7 +311,7 @@ def descargar(url):
         lineas = texto.splitlines()
 
         print(
-            f"  -> Líneas descargadas: {len(lineas)}"
+            f"  -> LÃ­neas descargadas: {len(lineas)}"
         )
 
         return lineas
@@ -334,7 +334,7 @@ def descargar(url):
 
 
 # ============================================================
-# CLASIFICADOR TEMÁTICO
+# CLASIFICADOR TEMÃTICO
 # ============================================================
 
 def clasificar(grupo, nombre):
@@ -353,7 +353,7 @@ def clasificar(grupo, nombre):
     # El contenido adulto solamente entra mediante:
     # XXX.m3u -> XXX.+18.ADULTO
     #
-    # Por eso NO se clasifica automáticamente por nombre.
+    # Por eso NO se clasifica automÃ¡ticamente por nombre.
     # --------------------------------------------------------
 
     # --------------------------------------------------------
@@ -387,9 +387,9 @@ def clasificar(grupo, nombre):
         "cartoons",
         "infantil",
         "ninos",
-        "niños",
+        "niÃ±os",
         "nina",
-        "niña",
+        "niÃ±a",
         "junior",
         "toons",
         "preschool",
@@ -447,7 +447,7 @@ def clasificar(grupo, nombre):
         return "NOTICIAS"
 
     # --------------------------------------------------------
-    # MÚSICA
+    # MÃšSICA
     # --------------------------------------------------------
 
     if contiene(texto, [
@@ -458,7 +458,7 @@ def clasificar(grupo, nombre):
         "musique",
         "musica tv",
     ]):
-        return "MÚSICA"
+        return "MÃšSICA"
 
     # --------------------------------------------------------
     # CINE
@@ -525,7 +525,7 @@ def clasificar(grupo, nombre):
         return "CULTURA"
 
     # --------------------------------------------------------
-    # EDUCACIÓN
+    # EDUCACIÃ“N
     # --------------------------------------------------------
 
     if contiene(texto, [
@@ -538,10 +538,10 @@ def clasificar(grupo, nombre):
         "university",
         "learning",
     ]):
-        return "EDUCACIÓN"
+        return "EDUCACIÃ“N"
 
     # --------------------------------------------------------
-    # TECNOLOGÍA
+    # TECNOLOGÃA
     # --------------------------------------------------------
 
     if contiene(texto, [
@@ -553,10 +553,10 @@ def clasificar(grupo, nombre):
         "computer",
         "computers",
     ]):
-        return "TECNOLOGÍA"
+        return "TECNOLOGÃA"
 
     # --------------------------------------------------------
-    # RELIGIÓN
+    # RELIGIÃ“N
     # --------------------------------------------------------
 
     if contiene(texto, [
@@ -571,7 +571,7 @@ def clasificar(grupo, nombre):
         "gospel",
         "evangel",
     ]):
-        return "RELIGIÓN"
+        return "RELIGIÃ“N"
 
     # --------------------------------------------------------
     # COCINA
@@ -625,14 +625,14 @@ def clasificar(grupo, nombre):
         return "ENTRETENIMIENTO"
 
     # --------------------------------------------------------
-    # PAÍSES
+    # PAÃSES
     # --------------------------------------------------------
 
     paises = [
         (["chile", " ch ", ":ch", "cl:"], "CHILE"),
-        (["mexico", "méxico", " mexico:"], "MÉXICO"),
+        (["mexico", "mÃ©xico", " mexico:"], "MÃ‰XICO"),
         (["argentina"], "ARGENTINA"),
-        (["peru", "perú"], "PERÚ"),
+        (["peru", "perÃº"], "PERÃš"),
         (["colombia"], "COLOMBIA"),
         (["ecuador"], "ECUADOR"),
         (["bolivia"], "BOLIVIA"),
@@ -640,14 +640,14 @@ def clasificar(grupo, nombre):
         (["uruguay"], "URUGUAY"),
         (["paraguay"], "PARAGUAY"),
         (["brasil", "brazil"], "BRASIL"),
-        (["espana", "españa", "spain"], "ESPAÑA"),
+        (["espana", "espaÃ±a", "spain"], "ESPAÃ‘A"),
         (["estados unidos", "united states", "usa"], "ESTADOS UNIDOS"),
-        (["canada", "canadá"], "CANADÁ"),
+        (["canada", "canadÃ¡"], "CANADÃ"),
         (["francia", "france"], "FRANCIA"),
         (["italia", "italy"], "ITALIA"),
         (["alemania", "germany"], "ALEMANIA"),
         (["portugal"], "PORTUGAL"),
-        (["japon", "japón", "japan"], "JAPÓN"),
+        (["japon", "japÃ³n", "japan"], "JAPÃ“N"),
         (["corea", "korea"], "COREA"),
         (["reino unido", "united kingdom"], "REINO UNIDO"),
         (["noruega", "norway"], "NORUEGA"),
@@ -668,12 +668,12 @@ def clasificar(grupo, nombre):
         "latam",
         "latin america",
         "latinoamerica",
-        "latinoamérica",
+        "latinoamÃ©rica",
         "south america",
         "sudamerica",
-        "sudamérica",
+        "sudamÃ©rica",
     ]):
-        return "LATINOAMÉRICA"
+        return "LATINOAMÃ‰RICA"
 
     if contiene(texto, [
         "international",
@@ -765,24 +765,24 @@ def grupos_para_fuente(
     # ========================================================
 
     if archivo == "religiosos.m3u":
-        return ["RELIGIÓN"]
+        return ["RELIGIÃ“N"]
 
     # ========================================================
-    # MÚSICA
+    # MÃšSICA
     # ========================================================
 
     if archivo == "musica.m3u":
-        return ["MÚSICA"]
+        return ["MÃšSICA"]
 
     # ========================================================
     # LATAM
     # ========================================================
 
     if archivo == "latam.m3u":
-        return ["LATINOAMÉRICA"]
+        return ["LATINOAMÃ‰RICA"]
 
     # ========================================================
-    # M3U.CL POR PAÍS
+    # M3U.CL POR PAÃS
     # ========================================================
 
     if (
@@ -800,11 +800,11 @@ def grupos_para_fuente(
         # ----------------------------------------------------
         # PLUTO ES / MX / CL / AR
         #
-        # ÚNICOS que pueden aparecer en:
+        # ÃšNICOS que pueden aparecer en:
         #
         # PLUTO TV
-        # PAÍS
-        # TEMÁTICA
+        # PAÃS
+        # TEMÃTICA
         # ----------------------------------------------------
 
         if codigo in PLUTO_ESPECIALES:
@@ -844,12 +844,12 @@ def grupos_para_fuente(
             return grupos
 
         # ----------------------------------------------------
-        # TODOS LOS DEMÁS PLUTO
+        # TODOS LOS DEMÃS PLUTO
         #
-        # SOLO VAN A SU PAÍS.
+        # SOLO VAN A SU PAÃS.
         #
         # NO PLUTO TV.
-        # NO TEMÁTICA.
+        # NO TEMÃTICA.
         # ----------------------------------------------------
 
         if codigo in PAISES:
@@ -859,7 +859,7 @@ def grupos_para_fuente(
         # ----------------------------------------------------
         # PLUTO ALL
         #
-        # Intenta encontrar país en metadata/nombre.
+        # Intenta encontrar paÃ­s en metadata/nombre.
         # ----------------------------------------------------
 
         if archivo == "pluto_all.m3u":
@@ -901,14 +901,14 @@ def grupos_para_fuente(
 
                 ([
                     "spain",
-                    "españa",
+                    "espaÃ±a",
                     "espana",
-                ], "ESPAÑA"),
+                ], "ESPAÃ‘A"),
 
                 ([
                     "mexico",
-                    "méxico",
-                ], "MÉXICO"),
+                    "mÃ©xico",
+                ], "MÃ‰XICO"),
 
                 ([
                     "argentina",
@@ -925,8 +925,8 @@ def grupos_para_fuente(
 
                 ([
                     "canada",
-                    "canadá",
-                ], "CANADÁ"),
+                    "canadÃ¡",
+                ], "CANADÃ"),
 
                 ([
                     "united states",
@@ -1173,7 +1173,7 @@ ORDEN_GRUPOS = [
     "PLUTO TV",
 
     # --------------------------------------------------------
-    # LATINOAMÉRICA
+    # LATINOAMÃ‰RICA
     # --------------------------------------------------------
 
     "ARGENTINA",
@@ -1183,11 +1183,11 @@ ORDEN_GRUPOS = [
     "COLOMBIA",
     "COSTA RICA",
     "ECUADOR",
-    "ESPAÑA",
-    "MÉXICO",
+    "ESPAÃ‘A",
+    "MÃ‰XICO",
     "PARAGUAY",
-    "PERÚ",
-    "REPÚBLICA DOMINICANA",
+    "PERÃš",
+    "REPÃšBLICA DOMINICANA",
     "URUGUAY",
     "VENEZUELA",
 
@@ -1196,7 +1196,7 @@ ORDEN_GRUPOS = [
     # --------------------------------------------------------
 
     "ESTADOS UNIDOS",
-    "CANADÁ",
+    "CANADÃ",
     "REINO UNIDO",
     "FRANCIA",
     "ALEMANIA",
@@ -1205,32 +1205,32 @@ ORDEN_GRUPOS = [
     "SUECIA",
     "DINAMARCA",
     "PORTUGAL",
-    "JAPÓN",
+    "JAPÃ“N",
     "COREA",
 
     # --------------------------------------------------------
     # REGIONES
     # --------------------------------------------------------
 
-    "LATINOAMÉRICA",
+    "LATINOAMÃ‰RICA",
     "INTERNACIONAL",
 
     # --------------------------------------------------------
-    # TEMÁTICAS
+    # TEMÃTICAS
     # --------------------------------------------------------
 
     "ANIME",
     "INFANTIL",
     "DEPORTES",
     "NOTICIAS",
-    "MÚSICA",
+    "MÃšSICA",
     "CINE",
     "SERIES",
     "DOCUMENTALES",
     "CULTURA",
-    "EDUCACIÓN",
-    "TECNOLOGÍA",
-    "RELIGIÓN",
+    "EDUCACIÃ“N",
+    "TECNOLOGÃA",
+    "RELIGIÃ“N",
     "COCINA",
     "ESTILO DE VIDA",
     "ENTRETENIMIENTO",
@@ -1283,8 +1283,8 @@ def ordenar_grupos(grupos):
 # SOUTH PARK AL FINAL DE ANIME
 #
 # IMPORTANTE:
-# South Park SOLO llegará aquí si previamente fue clasificado
-# dentro de ANIME por la temática de la fuente.
+# South Park SOLO llegarÃ¡ aquÃ­ si previamente fue clasificado
+# dentro de ANIME por la temÃ¡tica de la fuente.
 #
 # Ya NO se fuerza South Park -> ANIME.
 # ============================================================
@@ -1386,10 +1386,10 @@ def main():
     print()
     print("IMPORTANTE:")
     print(
-        "El archivo GOD original NO será reemplazado."
+        "El archivo GOD original NO serÃ¡ reemplazado."
     )
     print(
-        f"Se generará:\n{SALIDA}"
+        f"Se generarÃ¡:\n{SALIDA}"
     )
     print()
 
@@ -1530,7 +1530,7 @@ def main():
         )
 
         print(
-            f"  -> URLs físicas nuevas en grupos: "
+            f"  -> URLs fÃ­sicas nuevas en grupos: "
             f"{incremento}"
         )
 
@@ -1637,12 +1637,12 @@ def main():
     )
 
     print(
-        f"URLs únicas globales: "
+        f"URLs Ãºnicas globales: "
         f"{len(urls_unicas_globales)}"
     )
 
     print(
-        f"URLs físicas finales: "
+        f"URLs fÃ­sicas finales: "
         f"{total_urls}"
     )
 
@@ -1661,7 +1661,7 @@ def main():
     )
 
     print(
-        f"Tamaño: "
+        f"TamaÃ±o: "
         f"{SALIDA.stat().st_size / 1024 / 1024:.2f} MB"
     )
 
@@ -1681,7 +1681,7 @@ def main():
     )
 
     print(
-        "2. La URL idéntica no se repite dentro "
+        "2. La URL idÃ©ntica no se repite dentro "
         "de una misma carpeta."
     )
 
@@ -1696,8 +1696,8 @@ def main():
     )
 
     print(
-        "5. Las listas M3U.CL por país van "
-        "directamente a su país."
+        "5. Las listas M3U.CL por paÃ­s van "
+        "directamente a su paÃ­s."
     )
 
     print(
@@ -1707,27 +1707,27 @@ def main():
 
     print(
         "7. XXX.+18.ADULTO queda SIEMPRE "
-        "como último grupo."
+        "como Ãºltimo grupo."
     )
 
     print(
         "8. Pluto ES/MX/CL/AR puede aparecer "
-        "en PLUTO TV + país + temática."
+        "en PLUTO TV + paÃ­s + temÃ¡tica."
     )
 
     print(
         "9. Pluto DE/FR/IT/GB/US/CA/BR/NO/SE/DK "
-        "va SOLAMENTE a su país."
+        "va SOLAMENTE a su paÃ­s."
     )
 
     print(
-        "10. Los Pluto que van solamente a su país "
+        "10. Los Pluto que van solamente a su paÃ­s "
         "NO se agregan a PLUTO TV."
     )
 
     print(
         "11. Si un Pluto tiene una URL repetida "
-        "dentro de ese país, se omite."
+        "dentro de ese paÃ­s, se omite."
     )
 
     print(
@@ -1791,3 +1791,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
