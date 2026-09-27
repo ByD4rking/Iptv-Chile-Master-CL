@@ -443,6 +443,79 @@ def deduplicar_pluto_existente(lineas):
 
     return salida, eliminados
 
+def mover_pluto_brasil_a_brasil(lineas, session):
+    """
+    Corrige también los canales Pluto Brasil que YA estaban en la principal.
+
+    La regla no se limita a los canales nuevos: identifica los IDs presentes
+    en nuestra playlist oficial pluto_br.m3u y mueve esas entradas a Brasil.
+    También reconoce URLs Pluto con country=BR o metadatos que indiquen Brasil.
+    No cambia URL, nombre, logo ni ningún otro dato del canal; solo group-title.
+    """
+    fuente_br = "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u"
+    ids_br = set()
+    errores = 0
+
+    try:
+        r = session.get(fuente_br, timeout=30)
+        r.raise_for_status()
+        for canal in parsear_m3u(r.text):
+            identidad = identidad_pluto(canal.get("extinf", ""), canal.get("url", ""))
+            if identidad:
+                ids_br.add(identidad)
+    except Exception as e:
+        errores += 1
+        print(f"  -> No se pudo cargar pluto_br para corregir carpeta Brasil: {e}")
+
+    categorias = categorias_de_lineas(lineas)
+    destino_brasil = buscar_categoria_existente("Brasil", categorias) or "Brasil"
+    salida = []
+    movidos = 0
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+
+        extinf = lineas[i]
+        bloque = [extinf]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#"):
+            bloque.append(lineas[j])
+            j += 1
+
+        if j >= len(lineas) or not url_es_valida(lineas[j].strip()):
+            salida.extend(bloque)
+            i = j
+            continue
+
+        url = lineas[j].strip()
+        bloque.append(url)
+        j += 1
+
+        if not es_url_pluto(url):
+            salida.extend(bloque)
+            i = j
+            continue
+
+        identidad = identidad_pluto(extinf, url)
+        texto = normalizar(f"{extraer_categoria(extinf) or ''} {extraer_nombre(extinf) or ''} {url}")
+        es_br = bool(identidad and identidad in ids_br)
+        es_br = es_br or bool(re.search(r"(?:[?&])country=br(?:&|$)", url, re.I))
+        es_br = es_br or bool(re.search(r"\\b(brazil|brasil)\\b", texto))
+
+        if es_br and normalizar(extraer_categoria(extinf) or "") != normalizar(destino_brasil):
+            bloque[0] = reemplazar_categoria(extinf, destino_brasil)
+            movidos += 1
+
+        salida.extend(bloque)
+        i = j
+
+    return salida, movidos, errores
+
+
 def extraer_pluto_id(url):
     """Obtiene el channel ID de una URL Pluto, sin depender del dominio."""
     m = re.search(r"/channel[s]?/([a-f0-9]{20,})", url or "", re.I)
@@ -858,7 +931,14 @@ def main():
     # canal, aunque tengan URLs Pluto distintas.
     lineas, pluto_duplicados_existentes = deduplicar_pluto_existente(lineas)
 
-    # 3) Limpieza de TOTAL, OTROS y categoría vacía.
+    # 3) Pluto Brasil: corregir también las entradas que ya existían.
+    # La regla aplica a TODO Pluto Brasil, no solo a los canales nuevos.
+    lineas, pluto_brasil_movidos, pluto_brasil_errores = mover_pluto_brasil_a_brasil(
+        lineas,
+        session,
+    )
+
+    # 4) Limpieza de TOTAL, OTROS y categoría vacía.
     lineas, limpieza = limpiar_total_otros_y_sin_nombre(lineas)
 
     categorias = categorias_de_lineas(lineas)
@@ -1032,6 +1112,8 @@ def main():
     print(f"Pluto terceros sin reemplazo:        {pluto_reemplazo["eliminados_sin_reemplazo"]}")
     print(f"Pluto ya propios conservados:        {pluto_reemplazo["ya_propios"]}")
     print(f"Pluto duplicados por channel ID:      {pluto_duplicados_existentes}")
+    print(f"Pluto Brasil movidos a carpeta Brasil: {pluto_brasil_movidos}")
+    print(f"Errores al revisar Pluto Brasil:       {pluto_brasil_errores}")
     print(f"Sin categoría eliminados:           {limpieza['sin_nombre_eliminados']}")
     print(f"TOTAL/OTROS duplicados eliminados:  {limpieza['total_otros_duplicados_eliminados']}")
     print(f"TOTAL/OTROS reclasificados:          {limpieza['total_otros_movidos']}")
