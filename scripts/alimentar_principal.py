@@ -1,18 +1,17 @@
-﻿from pathlib import Path
+from pathlib import Path
 import re
 import unicodedata
 import requests
-
+from collections import defaultdict
 
 BASE = Path(__file__).resolve().parent.parent
-
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
-
 # ============================================================
-# FUENTES NORMALES
+# FUENTES NORMALES / COLABORADORAS
 # ============================================================
-
+# La principal manda. Estas fuentes SOLO complementan.
+# Nunca se reconstruye ni se reordena la principal.
 FUENTES = [
     "https://m3u.cl/lista/XXX.m3u",
     "https://m3u.cl/lista/religiosos.m3u",
@@ -36,19 +35,39 @@ FUENTES = [
     "https://m3u.cl/lista/top.m3u",
 ]
 
-
 # ============================================================
-# FUENTES PLUTO
+# PLUTO: SOLO NUESTRAS LISTAS
 # ============================================================
-
 FUENTES_PLUTO = [
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+]
+
+# Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
+# eliminan de la principal antes de incorporar nuestras listas.
+FUENTES_PLUTO_ANTIGUAS = [
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_all.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_us.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_ca.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_gb.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_fr.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_de.m3u",
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_es.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_ar.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_it.m3u",
     "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_mx.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_br.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_ar.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_cl.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_no.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_se.m3u",
+    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_dk.m3u",
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.ES.m3u",
     "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
 ]
-
 
 PAIS_POR_FUENTE = {
     "/CL.m3u": "chile",
@@ -66,7 +85,6 @@ PAIS_POR_FUENTE = {
     "/DO.m3u": "republica dominicana",
 }
 
-
 CATEGORIAS_PAIS = {
     "peru": "Perú",
     "bolivia": "Bolivia",
@@ -82,969 +100,396 @@ CATEGORIAS_PAIS = {
     "republica dominicana": "República Dominicana",
 }
 
-
-# ============================================================
-# NORMALIZAR
-# ============================================================
-
 def normalizar(s):
     s = unicodedata.normalize("NFD", s or "")
-
-    s = "".join(
-        c for c in s
-        if unicodedata.category(c) != "Mn"
-    )
-
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
     return re.sub(r"\s+", " ", s.lower()).strip()
 
-
-# ============================================================
-# PAIS DE FUENTE
-# ============================================================
-
-def pais_de_fuente(url):
-    url_normalizada = url.lower()
-
-    for clave, pais in PAIS_POR_FUENTE.items():
-
-        if clave.lower() in url_normalizada:
-            return pais
-
-    return None
-
-
-# ============================================================
-# EXTRAER CATEGORIA
-# ============================================================
+def url_es_valida(url):
+    return bool(re.match(r"^https?://", url.strip(), re.I))
 
 def extraer_categoria(linea):
-
-    m = re.search(
-        r'group-title="([^"]*)"',
-        linea,
-        re.I
-    )
-
-    if m:
-        return m.group(1).strip()
-
-    return ""
-
-
-# ============================================================
-# EXTRAER NOMBRE
-# ============================================================
+    m = re.search(r'group-title="([^"]*)"', linea, re.I)
+    return m.group(1).strip() if m else ""
 
 def extraer_nombre(linea):
-
-    if "," in linea:
-        return linea.split(",", 1)[1].strip()
-
-    return ""
-
-
-# ============================================================
-# URL VALIDA
-# ============================================================
-
-def url_es_valida(url):
-
-    return bool(
-        re.match(
-            r"^https?://",
-            url.strip(),
-            re.I
-        )
-    )
-
-
-# ============================================================
-# PARSEAR M3U
-# ============================================================
+    return linea.split(",", 1)[1].strip() if "," in linea else ""
 
 def parsear_m3u(texto):
-
     resultado = []
     actual = None
-
     for linea in texto.splitlines():
-
         linea = linea.strip()
-
         if not linea:
             continue
-
         if linea.startswith("#EXTINF"):
-
             actual = {
                 "extinf": linea,
                 "nombre": extraer_nombre(linea),
                 "categoria": extraer_categoria(linea),
             }
-
-        elif (
-            not linea.startswith("#")
-            and url_es_valida(linea)
-        ):
-
-            if actual:
-
-                actual["url"] = linea
-
-                resultado.append(actual)
-
-                actual = None
-
+        elif not linea.startswith("#") and url_es_valida(linea) and actual:
+            actual["url"] = linea
+            resultado.append(actual)
+            actual = None
     return resultado
 
-
-# ============================================================
-# REEMPLAZAR CATEGORIA
-# ============================================================
-
 def reemplazar_categoria(extinf, destino):
-
-    if re.search(
-        r'group-title="[^"]*"',
-        extinf,
-        re.I
-    ):
-
+    if re.search(r'group-title="[^"]*"', extinf, re.I):
         return re.sub(
             r'group-title="[^"]*"',
             f'group-title="{destino}"',
             extinf,
             count=1,
-            flags=re.I
+            flags=re.I,
         )
-
     return extinf.replace(
         "#EXTINF:",
         f'#EXTINF:-1 group-title="{destino}"',
-        1
+        1,
     )
-
-
-# ============================================================
-# BUSCAR CATEGORIA EXISTENTE
-#
-# IMPORTANTE:
-# Se conserva el nombre EXACTO de la principal.
-#
-# Ejemplo:
-# Principal: "Perú"
-# Pluto/fuente: "PERU"
-#
-# Resultado: "Perú"
-# ============================================================
 
 def buscar_categoria_existente(nombre, categorias):
-
     objetivo = normalizar(nombre)
-
     if not objetivo:
         return None
-
     for categoria in categorias:
-
         if normalizar(categoria) == objetivo:
             return categoria
-
     return None
 
+def encontrar_categoria_tematica(texto, categorias):
+    texto = normalizar(texto)
+    reglas = [
+        ("ANIME", [r"\banime\b"]),
+        ("INFANTILES", [r"\b(infantil|infantiles|kids|kid|teen|nick)\b"]),
+        ("DEPORTES", [r"\b(deporte|deportes|sport|sports|futbol|football)\b"]),
+        ("MUSICA", [r"\b(musica|music)\b"]),
+        ("CINE", [r"\b(cine|peliculas|pelicula|movies|movie|films?)\b"]),
+        ("SERIES", [r"\b(series|serie)\b"]),
+        ("ENTRETENIMIENTO", [r"\b(entretenimiento|entertainment|reto|reality|realities|concurso|concursos|programa|programas)\b"]),
+        ("COMEDIA", [r"\b(comedia|comedy)\b"]),
+        ("RELIGIOSOS", [r"\b(religioso|religiosos|religion)\b"]),
+        ("DOCUMENTALES", [r"\b(documental|documentales|documentary)\b"]),
+        ("INFORMATIVOS", [r"\b(noticias|noticia|informativos|news)\b"]),
+        ("GENERAL", [r"\bgeneral\b"]),
+    ]
+    for candidato, patrones in reglas:
+        if any(re.search(p, texto) for p in patrones):
+            destino = buscar_categoria_existente(candidato, categorias)
+            if destino:
+                return destino
+    return None
 
-# ============================================================
-# DETERMINAR DESTINO FUENTES NORMALES
-#
-# ESTA ES LA LOGICA ORIGINAL.
-# ============================================================
-
-def determinar_destino(
-    categoria,
-    nombre,
-    pais_fuente,
-    categorias
-):
-
-    texto = normalizar(
-        f"{categoria or ''} {nombre or ''}"
-    )
-
-    # --------------------------------------------------------
-    # CHILE
-    # --------------------------------------------------------
+def determinar_destino(categoria, nombre, pais_fuente, categorias):
+    texto = normalizar(f"{categoria or ''} {nombre or ''}")
 
     if pais_fuente == "chile":
-
-        categoria_chile = buscar_categoria_existente(
-            "CHILE",
-            categorias
-        )
-
-        if categoria_chile:
-            return categoria_chile
-
-        return "CHILE"
-
-    # --------------------------------------------------------
-    # PAIS DETERMINADO POR LA FUENTE
-    # --------------------------------------------------------
+        return buscar_categoria_existente("CHILE TV", categorias) or "CHILE TV"
 
     if pais_fuente in CATEGORIAS_PAIS:
-
-        categoria_pais = CATEGORIAS_PAIS[pais_fuente]
-
-        encontrada = buscar_categoria_existente(
-            categoria_pais,
-            categorias
-        )
-
-        if encontrada:
-            return encontrada
-
-    # --------------------------------------------------------
-    # PAIS DETECTADO POR NOMBRE/CATEGORIA
-    # --------------------------------------------------------
-
-    aliases = {
-
-        "peru": ["peru"],
-
-        "bolivia": ["bolivia"],
-
-        "argentina": ["argentina"],
-
-        "brasil": [
-            "brasil",
-            "brazil",
-        ],
-
-        "colombia": ["colombia"],
-
-        "ecuador": ["ecuador"],
-
-        "venezuela": ["venezuela"],
-
-        "paraguay": ["paraguay"],
-
-        "mexico": ["mexico"],
-
-        "espana": [
-            "espana",
-            "spain",
-        ],
-
-        "costa rica": [
-            "costa rica",
-        ],
-
-        "republica dominicana": [
-            "republica dominicana",
-            "dominican republic",
-        ],
-    }
-
-    for pais, nombres in aliases.items():
-
-        if any(
-            normalizar(alias) in texto
-            for alias in nombres
-        ):
-
-            categoria_pais = CATEGORIAS_PAIS[pais]
-
-            encontrada = buscar_categoria_existente(
-                categoria_pais,
-                categorias
-            )
-
-            if encontrada:
-                return encontrada
-
-    # --------------------------------------------------------
-    # CATEGORIAS TEMATICAS EXISTENTES
-    # --------------------------------------------------------
-
-    equivalencias = [
-
-        ("anime", [
-            "anime",
-        ]),
-
-        ("comedia", [
-            "comedia",
-        ]),
-
-        ("general", [
-            "general",
-        ]),
-
-        ("deportes", [
-            "deportes",
-            "sport",
-        ]),
-
-        ("musica", [
-            "musica",
-            "music",
-        ]),
-
-        ("religiosos", [
-            "religioso",
-            "religiosos",
-        ]),
-
-        ("cine", [
-            "cine",
-            "peliculas",
-        ]),
-
-        ("series", [
-            "series",
-        ]),
-
-        ("infantiles", [
-            "infantil",
-            "infantiles",
-        ]),
-
-        ("informativos", [
-            "noticias",
-            "informativos",
-        ]),
-
-        ("documentales", [
-            "documentales",
-        ]),
-    ]
-
-    for palabra, aliases_categoria in equivalencias:
-
-        if any(
-            alias in texto
-            for alias in aliases_categoria
-        ):
-
-            for categoria_existente in categorias:
-
-                categoria_normalizada = normalizar(
-                    categoria_existente
-                )
-
-                if any(
-                    alias in categoria_normalizada
-                    for alias in aliases_categoria
-                ):
-
-                    return categoria_existente
-
-    return None
-
-
-# ============================================================
-# DETERMINAR DESTINO PLUTO
-#
-# Pluto NO utiliza el pais de la fuente.
-#
-# Se analiza categoria + nombre.
-# ============================================================
-
-def determinar_destino_pluto(
-    categoria,
-    nombre,
-    categorias
-):
-
-    texto = normalizar(
-        f"{categoria or ''} {nombre or ''}"
-    )
-
-    # --------------------------------------------------------
-    # ANIME
-    # --------------------------------------------------------
-
-    if re.search(r"\banime\b", texto):
-
-        destino = buscar_categoria_existente(
-            "ANIME",
-            categorias
-        )
-
+        destino = buscar_categoria_existente(CATEGORIAS_PAIS[pais_fuente], categorias)
         if destino:
             return destino
 
-    # --------------------------------------------------------
-    # INFANTIL
-    #
-    # Teen / Kids / Infantil
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(teen|kids|kid|infantil|infantiles)\b",
-        texto
-    ):
-
-        for candidato in [
-            "INFANTILES",
-            "INFANTIL",
-        ]:
-
-            destino = buscar_categoria_existente(
-                candidato,
-                categorias
-            )
-
+    aliases = {
+        "peru": ["peru"],
+        "bolivia": ["bolivia"],
+        "argentina": ["argentina"],
+        "brasil": ["brasil", "brazil"],
+        "colombia": ["colombia"],
+        "ecuador": ["ecuador"],
+        "venezuela": ["venezuela"],
+        "paraguay": ["paraguay"],
+        "mexico": ["mexico"],
+        "espana": ["espana", "spain"],
+        "costa rica": ["costa rica"],
+        "republica dominicana": ["republica dominicana", "dominican republic"],
+    }
+    for pais, nombres in aliases.items():
+        if any(normalizar(alias) in texto for alias in nombres):
+            destino = buscar_categoria_existente(CATEGORIAS_PAIS[pais], categorias)
             if destino:
                 return destino
 
-    # --------------------------------------------------------
-    # DEPORTES
-    # --------------------------------------------------------
+    return encontrar_categoria_tematica(texto, categorias)
 
-    if re.search(
-        r"\b(deporte|deportes|sport|sports)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "DEPORTES",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    # --------------------------------------------------------
-    # MUSICA
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(musica|music)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "MUSICA",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    # --------------------------------------------------------
-    # CINE
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(cine|peliculas|pelicula|movies|movie)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "CINE",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    # --------------------------------------------------------
-    # SERIES
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(series|serie)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "SERIES",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    # --------------------------------------------------------
-    # ENTRETENIMIENTO
-    #
-    # Reto incluido explícitamente.
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(entretenimiento|entertainment|reto|reality|realities|concurso|concursos|programa|programas)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "ENTRETENIMIENTO",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    # --------------------------------------------------------
-    # COMEDIA
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(comedia|comedy)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "COMEDIA",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    # --------------------------------------------------------
-    # RELIGIOSOS
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(religioso|religiosos|religion)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "RELIGIOSOS",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    # --------------------------------------------------------
-    # DOCUMENTALES
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(documental|documentales|documentary)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "DOCUMENTALES",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    # --------------------------------------------------------
-    # INFORMATIVOS
-    # --------------------------------------------------------
-
-    if re.search(
-        r"\b(noticias|noticia|informativos|news)\b",
-        texto
-    ):
-
-        destino = buscar_categoria_existente(
-            "INFORMATIVOS",
-            categorias
-        )
-
-        if destino:
-            return destino
-
-    return None
-
-
-# ============================================================
-# OBTENER BLOQUES DE CATEGORIAS
-#
-# Se utiliza para insertar Pluto dentro de la categoría
-# correspondiente sin mover los canales existentes.
-# ============================================================
-
-def encontrar_rango_categoria(lineas, categoria):
-
-    categoria_normalizada = normalizar(categoria)
-
-    inicio = None
-    fin = None
-
-    for i, linea in enumerate(lineas):
-
-        if not linea.startswith("#EXTINF"):
-            continue
-
-        categoria_linea = extraer_categoria(linea)
-
-        if normalizar(categoria_linea) == categoria_normalizada:
-
-            if inicio is None:
-                inicio = i
-
-            fin = i
-
-        elif inicio is not None:
-            break
-
-    if inicio is None:
-        return None
-
-    return inicio, fin
-
-
-# ============================================================
-# CONSTRUIR BLOQUE
-# ============================================================
-
-def construir_bloque(canal, destino):
-
-    extinf = reemplazar_categoria(
-        canal["extinf"],
-        destino
+def determinar_destino_pluto(categoria, nombre, categorias):
+    return encontrar_categoria_tematica(
+        f"{categoria or ''} {nombre or ''}",
+        categorias,
     )
 
+def construir_bloque(canal, destino):
     return [
-        extinf,
+        reemplazar_categoria(canal["extinf"], destino),
         canal["url"].strip(),
     ]
 
+def encontrar_rango_categoria(lineas, categoria):
+    objetivo = normalizar(categoria)
+    inicio = fin = None
+    for i, linea in enumerate(lineas):
+        if not linea.startswith("#EXTINF"):
+            continue
+        cat = normalizar(extraer_categoria(linea))
+        if cat == objetivo:
+            if inicio is None:
+                inicio = i
+            fin = i
+        elif inicio is not None:
+            break
+    return (inicio, fin) if inicio is not None else None
 
-# ============================================================
-# AGREGAR FUENTE NORMAL
-#
-# Para las fuentes normales:
-#
-# - país -> carpeta
-# - duplicado dentro de la categoría destino
-# - se permite la misma URL en otra categoría
-# ============================================================
-
-def agregar_canal_normal(
-    canal,
-    destino,
-    urls_por_categoria,
-    bloques_nuevos
-):
-
-    url = canal["url"].strip()
-
-    categoria_key = normalizar(destino)
-
-    if url in urls_por_categoria.get(
-        categoria_key,
-        set()
-    ):
-
-        return False
-
-    bloque = construir_bloque(
-        canal,
-        destino
-    )
-
-    bloques_nuevos.append({
-        "tipo": "normal",
-        "categoria": destino,
-        "bloque": bloque,
-    })
-
-    urls_por_categoria.setdefault(
-        categoria_key,
-        set()
-    ).add(url)
-
-    return True
-
-
-# ============================================================
-# AGREGAR PLUTO
-# ============================================================
-
-def agregar_canal_pluto(
-    canal,
-    destino,
-    urls_por_categoria,
-    bloques_pluto
-):
-
-    url = canal["url"].strip()
-
-    categoria_key = normalizar(destino)
-
-    if url in urls_por_categoria.get(
-        categoria_key,
-        set()
-    ):
-
-        return False
-
-    bloque = construir_bloque(
-        canal,
-        destino
-    )
-
-    bloques_pluto.append({
-        "categoria": destino,
-        "bloque": bloque,
-    })
-
-    urls_por_categoria.setdefault(
-        categoria_key,
-        set()
-    ).add(url)
-
-    return True
-
-
-# ============================================================
-# INSERTAR BLOQUES EN LA PRINCIPAL
-#
-# Los canales existentes NO se modifican.
-#
-# Los nuevos se insertan dentro de su categoría.
-# ============================================================
-
-def insertar_bloques_en_principal(
-    lineas,
-    bloques_nuevos,
-    categorias
-):
-
-    if not bloques_nuevos:
-        return lineas
-
-    resultado = list(lineas)
-
-    # --------------------------------------------------------
-    # Agrupar por categoría manteniendo el orden de llegada
-    # --------------------------------------------------------
-
-    agrupados = {}
-
-    for item in bloques_nuevos:
-
-        categoria = item["categoria"]
-
-        clave = normalizar(categoria)
-
-        agrupados.setdefault(
-            clave,
-            {
-                "categoria": categoria,
-                "bloques": [],
-            }
-        )
-
-        agrupados[clave]["bloques"].append(
-            item["bloque"]
-        )
-
-    # --------------------------------------------------------
-    # Insertar de atrás hacia adelante.
-    #
-    # Esto evita que las posiciones cambien mientras
-    # recorremos la lista.
-    # --------------------------------------------------------
-
-    posiciones = []
-
-    for clave, datos in agrupados.items():
-
-        rango = encontrar_rango_categoria(
-            resultado,
-            datos["categoria"]
-        )
-
-        if rango:
-
-            inicio, fin = rango
-
-            posiciones.append(
-                (
-                    fin + 1,
-                    datos["bloques"]
-                )
-            )
-
-    posiciones.sort(
-        key=lambda x: x[0],
-        reverse=True
-    )
-
-    for posicion, bloques in posiciones:
-
-        insertar = []
-
-        for bloque in bloques:
-
-            insertar.extend(bloque)
-
-        resultado[
-            posicion:posicion
-        ] = insertar
-
-    return resultado
-
-
-# ============================================================
-# MAIN
-# ============================================================
-
-def main():
-
-    print("=" * 70)
-    print("       ALIMENTADOR DE LISTA PRINCIPAL")
-    print("=" * 70)
-
-    if not PRINCIPAL.exists():
-
-        print("ERROR: no existe:")
-        print(PRINCIPAL)
-
-        raise SystemExit(1)
-
-    # --------------------------------------------------------
-    # LEER PRINCIPAL
-    # --------------------------------------------------------
-
-    texto_principal = PRINCIPAL.read_text(
-        encoding="utf-8",
-        errors="replace"
-    )
-
-    lineas_principal = texto_principal.splitlines()
-
-    # --------------------------------------------------------
-    # CATEGORIAS EXISTENTES
-    # --------------------------------------------------------
-
+def categorias_de_lineas(lineas):
     categorias = []
-
-    for linea in lineas_principal:
-
+    for linea in lineas:
         if linea.startswith("#EXTINF"):
+            cat = extraer_categoria(linea)
+            if cat and not any(normalizar(cat) == normalizar(x) for x in categorias):
+                categorias.append(cat)
+    return categorias
 
-            categoria = extraer_categoria(linea)
+def mapa_urls_principal(lineas):
+    urls = set()
+    for linea in lineas:
+        if url_es_valida(linea.strip()):
+            urls.add(linea.strip())
+    return urls
 
-            if categoria:
-
-                if not any(
-                    normalizar(categoria)
-                    == normalizar(c)
-                    for c in categorias
-                ):
-
-                    categorias.append(categoria)
-
-    print()
-    print(
-        f"Categorías detectadas: {len(categorias)}"
-    )
-
-    # --------------------------------------------------------
-    # URLS POR CATEGORIA
-    #
-    # IMPORTANTE:
-    # La misma URL puede existir en diferentes categorías.
-    # --------------------------------------------------------
-
-    urls_por_categoria = {}
-
-    categoria_actual = None
-
-    for linea in lineas_principal:
-
-        linea_limpia = linea.strip()
-
-        if linea_limpia.startswith("#EXTINF"):
-
-            categoria_actual = extraer_categoria(
-                linea_limpia
-            )
-
-        elif url_es_valida(linea_limpia):
-
-            if categoria_actual:
-
-                clave = normalizar(
-                    categoria_actual
-                )
-
-                urls_por_categoria.setdefault(
-                    clave,
-                    set()
-                ).add(
-                    linea_limpia
-                )
-
-    # --------------------------------------------------------
-    # BLOQUES NUEVOS
-    # --------------------------------------------------------
-
-    bloques_normales = []
-
-    bloques_pluto = []
-
-    agregados = 0
-    omitidos = 0
+def limpiar_pluto_antiguo(lineas, session):
+    urls_antiguas = set()
     errores = 0
-
-    # --------------------------------------------------------
-    # SESSION HTTP
-    # --------------------------------------------------------
-
-    session = requests.Session()
-
-    session.headers.update({
-        "User-Agent": "Mozilla/5.0"
-    })
-
-    # ========================================================
-    # FUENTES NORMALES
-    # ========================================================
-
-    for i, fuente in enumerate(
-        FUENTES,
-        1
-    ):
-
-        print()
-        print(
-            f"[FUENTE {i}/{len(FUENTES)}]"
-        )
-
-        print("-" * 60)
-        print(fuente)
-
+    for fuente in FUENTES_PLUTO_ANTIGUAS:
         try:
+            r = session.get(fuente, timeout=30)
+            r.raise_for_status()
+            for canal in parsear_m3u(r.text):
+                urls_antiguas.add(canal["url"].strip())
+        except Exception as e:
+            errores += 1
+            print(f"  -> No se pudo consultar Pluto antiguo: {fuente} :: {e}")
 
-            respuesta = session.get(
-                fuente,
-                timeout=30
-            )
+    if not urls_antiguas:
+        return lineas, 0, errores
 
-            respuesta.raise_for_status()
+    salida = []
+    eliminados = 0
+    i = 0
+    while i < len(lineas):
+        if lineas[i].startswith("#EXTINF"):
+            bloque = [lineas[i]]
+            j = i + 1
+            while j < len(lineas) and lineas[j].startswith("#"):
+                bloque.append(lineas[j])
+                j += 1
+            if j < len(lineas) and url_es_valida(lineas[j].strip()):
+                bloque.append(lineas[j])
+                url = lineas[j].strip()
+                j += 1
+                if url in urls_antiguas:
+                    eliminados += 1
+                    i = j
+                    continue
+                salida.extend(bloque)
+                i = j
+                continue
+        salida.append(lineas[i])
+        i += 1
+    return salida, eliminados, errores
 
-            canales = parsear_m3u(
-                respuesta.text
-            )
+def limpiar_total_otros_y_sin_nombre(lineas):
+    """
+    Revisa TOTAL, OTROS y entradas sin group-title.
+    - Entradas sin categoría: se eliminan.
+    - TOTAL/OTROS duplicados por URL en otra categoría: se eliminan.
+    - Únicos: se reclasifican a una categoría existente cuando es posible.
+    - Si no se puede clasificar, se conserva en OTROS para no perder contenido.
+    """
+    categorias = categorias_de_lineas(lineas)
+    indices_por_url = defaultdict(list)
+    bloques = []
+    i = 0
 
-            if not canales:
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        extinf = lineas[i]
+        categoria = extraer_categoria(extinf)
+        nombre = extraer_nombre(extinf)
+        j = i + 1
+        extras = []
+        while j < len(lineas) and lineas[j].startswith("#"):
+            extras.append(lineas[j])
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            url = lineas[j].strip()
+            bloques.append({
+                "start": i,
+                "end": j + 1,
+                "lines": [extinf] + extras + [lineas[j]],
+                "categoria": categoria,
+                "nombre": nombre,
+                "url": url,
+            })
+            indices_por_url[url].append(len(bloques) - 1)
+            i = j + 1
+        else:
+            i += 1
 
-                print(
-                    "  -> Sin canales #EXTINF."
-                )
+    categorias_por_url = defaultdict(set)
+    for b in bloques:
+        if b["categoria"]:
+            categorias_por_url[b["url"]].add(normalizar(b["categoria"]))
 
+    reemplazos = {}
+    eliminar = set()
+    movidos = defaultdict(int)
+    duplicados_eliminados = 0
+    sin_nombre_eliminados = 0
+
+    for idx, b in enumerate(bloques):
+        cat = normalizar(b["categoria"])
+        if not b["categoria"]:
+            eliminar.add(idx)
+            sin_nombre_eliminados += 1
+            continue
+        if cat not in {"total", "otros"}:
+            continue
+        if len(categorias_por_url[b["url"]]) > 0:
+            # Si existe fuera de TOTAL/OTROS, es un duplicado.
+            otras = {
+                x for x in categorias_por_url[b["url"]]
+                if x not in {"total", "otros"}
+            }
+            if otras:
+                eliminar.add(idx)
+                duplicados_eliminados += 1
                 continue
 
-            pais_fuente = pais_de_fuente(
-                fuente
+        destino = determinar_destino(
+            b["categoria"],
+            b["nombre"],
+            None,
+            categorias,
+        )
+        if destino and normalizar(destino) not in {"total", "otros"}:
+            reemplazos[idx] = destino
+            movidos[destino] += 1
+
+    salida = []
+    for idx, b in enumerate(bloques):
+        if idx in eliminar:
+            continue
+        if idx in reemplazos:
+            lines = list(b["lines"])
+            lines[0] = reemplazar_categoria(lines[0], reemplazos[idx])
+            salida.extend(lines)
+        else:
+            salida.extend(b["lines"])
+
+    return salida, {
+        "sin_nombre_eliminados": sin_nombre_eliminados,
+        "total_otros_duplicados_eliminados": duplicados_eliminados,
+        "total_otros_movidos": sum(movidos.values()),
+        "movidos_por_categoria": dict(movidos),
+    }
+
+def agregar_bloque(canal, destino, urls_globales, bloques):
+    url = canal["url"].strip()
+    if url in urls_globales:
+        return False
+    bloques.append({
+        "categoria": destino,
+        "bloque": construir_bloque(canal, destino),
+    })
+    urls_globales.add(url)
+    return True
+
+def insertar_bloques(lineas, bloques):
+    if not bloques:
+        return lineas
+    resultado = list(lineas)
+    agrupados = {}
+    for item in bloques:
+        clave = normalizar(item["categoria"])
+        agrupados.setdefault(clave, {
+            "categoria": item["categoria"],
+            "bloques": [],
+        })
+        agrupados[clave]["bloques"].append(item["bloque"])
+
+    posiciones = []
+    for datos in agrupados.values():
+        rango = encontrar_rango_categoria(resultado, datos["categoria"])
+        if rango:
+            posiciones.append((rango[1] + 1, datos["bloques"]))
+        else:
+            # Categoría nueva: se crea al final, sin tocar el orden existente.
+            posiciones.append((len(resultado), datos["bloques"]))
+
+    for posicion, bloques_cat in sorted(posiciones, key=lambda x: x[0], reverse=True):
+        insertar = []
+        for bloque in bloques_cat:
+            insertar.extend(bloque)
+        resultado[posicion:posicion] = insertar
+    return resultado
+
+def main():
+    print("=" * 72)
+    print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
+    print("=" * 72)
+
+    if not PRINCIPAL.exists():
+        print(f"ERROR: no existe: {PRINCIPAL}")
+        raise SystemExit(1)
+
+    session = requests.Session()
+    session.headers.update({"User-Agent": "Mozilla/5.0"})
+
+    lineas = PRINCIPAL.read_text(
+        encoding="utf-8",
+        errors="replace",
+    ).splitlines()
+
+    total_inicial = sum(1 for x in lineas if x.startswith("#EXTINF"))
+
+    # 1) Limpieza independiente de Pluto antiguo.
+    lineas, pluto_eliminados, pluto_errores = limpiar_pluto_antiguo(
+        lineas,
+        session,
+    )
+
+    # 2) Limpieza de TOTAL, OTROS y categoría vacía.
+    lineas, limpieza = limpiar_total_otros_y_sin_nombre(lineas)
+
+    categorias = categorias_de_lineas(lineas)
+    urls_globales = mapa_urls_principal(lineas)
+
+    bloques_nuevos = []
+    agregados_normales = 0
+    agregados_pluto = 0
+    omitidos_duplicados = 0
+    errores = pluto_errores
+
+    # --------------------------------------------------------
+    # FUENTES COLABORADORAS
+    # --------------------------------------------------------
+    for i, fuente in enumerate(FUENTES, 1):
+        print(f"\n[FUENTE {i}/{len(FUENTES)}] {fuente}")
+        try:
+            r = session.get(fuente, timeout=30)
+            r.raise_for_status()
+            canales = parsear_m3u(r.text)
+            pais_fuente = next(
+                (pais for clave, pais in PAIS_POR_FUENTE.items()
+                 if clave.lower() in fuente.lower()),
+                None,
             )
 
-            nuevos_fuente = 0
-
+            nuevos = 0
             for canal in canales:
-
                 destino = determinar_destino(
                     canal.get("categoria", ""),
                     canal.get("nombre", ""),
@@ -1052,409 +497,128 @@ def main():
                     categorias,
                 )
 
-                # ------------------------------------------------
-                # Si no se pudo determinar una categoría,
-                # conservar la lógica original.
-                # ------------------------------------------------
-
+                # Si no existe una categoría equivalente, se permite
+                # crearla usando la categoría declarada por la fuente.
                 if not destino:
-
-                    destino = canal.get(
-                        "categoria",
-                        ""
-                    ).strip()
-
-                if not destino:
-
+                    destino = canal.get("categoria", "").strip()
+                if not destino or normalizar(destino) in {"total", "otros"}:
                     destino = "OTROS"
 
-                if agregar_canal_normal(
-                    canal,
-                    destino,
-                    urls_por_categoria,
-                    bloques_normales
-                ):
-
-                    agregados += 1
-                    nuevos_fuente += 1
-
+                if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
+                    agregados_normales += 1
+                    nuevos += 1
                 else:
-
-                    omitidos += 1
-
-            print(
-                f"  -> URLs nuevas agregadas: "
-                f"{nuevos_fuente}"
-            )
-
+                    omitidos_duplicados += 1
+            print(f"  -> nuevos: {nuevos}")
         except Exception as e:
-
             errores += 1
+            print(f"  -> ERROR: {e}")
 
-            print(
-                f"  -> ERROR: {e}"
-            )
+    # --------------------------------------------------------
+    # PLUTO: proceso independiente.
+    # --------------------------------------------------------
+    print("\n" + "=" * 72)
+    print("PLUTO — SOLO FUENTES PROPIAS")
+    print("=" * 72)
 
-    # ========================================================
-    # LISTAS LOCALES DE CHILE
-    # ========================================================
-
-    CARPETA_CHILE = BASE / "CHILE"
-
-    if CARPETA_CHILE.exists():
-
-        listas_chile = sorted(
-            CARPETA_CHILE.glob("*.m3u")
-        )
-
-        print()
-        print("=" * 70)
-        print("LISTAS LOCALES DE CHILE")
-        print("=" * 70)
-
-        print(
-            f"Carpeta: {CARPETA_CHILE}"
-        )
-
-        print(
-            f"Listas encontradas: "
-            f"{len(listas_chile)}"
-        )
-
-        for lista_chile in listas_chile:
-
-            print()
-            print(
-                f"[CHILE] "
-                f"{lista_chile.name}"
-            )
-
-            try:
-
-                texto_chile = lista_chile.read_text(
-                    encoding="utf-8",
-                    errors="replace"
-                )
-
-                canales_chile = parsear_m3u(
-                    texto_chile
-                )
-
-                nuevos_chile = 0
-
-                for canal in canales_chile:
-
-                    destino = determinar_destino(
-                        canal.get("categoria", ""),
-                        canal.get("nombre", ""),
-                        "chile",
-                        categorias,
-                    )
-
-                    if not destino:
-
-                        destino = "CHILE"
-
-                    if agregar_canal_normal(
-                        canal,
-                        destino,
-                        urls_por_categoria,
-                        bloques_normales
-                    ):
-
-                        agregados += 1
-                        nuevos_chile += 1
-
-                    else:
-
-                        omitidos += 1
-
-                print(
-                    f"  -> URLs nuevas agregadas: "
-                    f"{nuevos_chile}"
-                )
-
-            except Exception as e:
-
-                errores += 1
-
-                print(
-                    f"  -> ERROR: {e}"
-                )
-
-    else:
-
-        print()
-        print(
-            "No existe la carpeta CHILE."
-        )
-
-    # ========================================================
-    # PROCESAR PLUTO
-    # ========================================================
-
-    print()
-    print("=" * 70)
-    print("LISTAS PLUTO")
-    print("=" * 70)
-
-    for i, fuente in enumerate(
-        FUENTES_PLUTO,
-        1
-    ):
-
-        print()
-        print(
-            f"[PLUTO {i}/{len(FUENTES_PLUTO)}]"
-        )
-
-        print("-" * 60)
-        print(fuente)
-
+    for i, fuente in enumerate(FUENTES_PLUTO, 1):
+        print(f"\n[PLUTO {i}/{len(FUENTES_PLUTO)}] {fuente}")
         try:
-
-            respuesta = session.get(
-                fuente,
-                timeout=30
-            )
-
-            respuesta.raise_for_status()
-
-            canales = parsear_m3u(
-                respuesta.text
-            )
-
-            if not canales:
-
-                print(
-                    "  -> Sin canales #EXTINF."
-                )
-
-                continue
-
-            nuevos_pluto = 0
+            r = session.get(fuente, timeout=30)
+            r.raise_for_status()
+            canales = parsear_m3u(r.text)
+            nuevos = 0
             sin_categoria = 0
 
             for canal in canales:
-
                 destino = determinar_destino_pluto(
                     canal.get("categoria", ""),
                     canal.get("nombre", ""),
-                    categorias
+                    categorias,
                 )
-
-                # ------------------------------------------------
-                # Pluto SOLO entra si encontramos una categoría
-                # existente en la principal.
-                #
-                # NO crear OTROS para Pluto.
-                # ------------------------------------------------
 
                 if not destino:
+                    # Pluto puede crear una categoría temática nueva
+                    # si la fuente declara una categoría útil.
+                    destino = canal.get("categoria", "").strip()
 
+                if not destino:
                     sin_categoria += 1
-
-                    print(
-                        "  -> Pluto sin categoría: "
-                        f"{canal.get('nombre', '')}"
-                    )
-
                     continue
 
-                if agregar_canal_pluto(
-                    canal,
-                    destino,
-                    urls_por_categoria,
-                    bloques_pluto
-                ):
-
-                    agregados += 1
-                    nuevos_pluto += 1
-
+                if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
+                    agregados_pluto += 1
+                    nuevos += 1
                 else:
+                    omitidos_duplicados += 1
 
-                    omitidos += 1
-
-            print(
-                f"  -> Pluto nuevos: "
-                f"{nuevos_pluto}"
-            )
-
+            print(f"  -> nuevos: {nuevos}")
             if sin_categoria:
-
-                print(
-                    f"  -> Pluto sin clasificar: "
-                    f"{sin_categoria}"
-                )
-
+                print(f"  -> sin categoría: {sin_categoria}")
         except Exception as e:
-
             errores += 1
+            print(f"  -> ERROR: {e}")
 
-            print(
-                f"  -> ERROR: {e}"
-            )
+    # 3) Insertar nuevos canales sin mover los existentes.
+    if bloques_nuevos:
+        lineas = insertar_bloques(lineas, bloques_nuevos)
 
-    # ========================================================
-    # INSERTAR TODO EN LAS CATEGORIAS
-    # ========================================================
+    # 4) Validación final de URLs duplicadas globales.
+    vistos = set()
+    duplicados_finales = 0
+    for linea in lineas:
+        u = linea.strip()
+        if url_es_valida(u):
+            if u in vistos:
+                duplicados_finales += 1
+            vistos.add(u)
 
-    todos_los_bloques = (
-        bloques_normales
-        + bloques_pluto
+    texto_final = "\n".join(lineas)
+    if not texto_final.endswith("\n"):
+        texto_final += "\n"
+
+    PRINCIPAL.write_text(
+        texto_final,
+        encoding="utf-8",
+        newline="\n",
     )
 
-    if todos_los_bloques:
+    total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
-        lineas_finales = (
-            insertar_bloques_en_principal(
-                lineas_principal,
-                todos_los_bloques,
-                categorias
-            )
-        )
+    print("\n" + "=" * 72)
+    print("RESUMEN")
+    print("=" * 72)
+    print(f"Canales iniciales:                 {total_inicial}")
+    print(f"Pluto antiguo eliminado:            {pluto_eliminados}")
+    print(f"Sin categoría eliminados:           {limpieza['sin_nombre_eliminados']}")
+    print(f"TOTAL/OTROS duplicados eliminados:  {limpieza['total_otros_duplicados_eliminados']}")
+    print(f"TOTAL/OTROS reclasificados:          {limpieza['total_otros_movidos']}")
+    print(f"Canales colaborador agregados:      {agregados_normales}")
+    print(f"Canales Pluto propios agregados:    {agregados_pluto}")
+    print(f"Duplicados omitidos al agregar:     {omitidos_duplicados}")
+    print(f"Duplicados finales detectados:      {duplicados_finales}")
+    print(f"Fuentes con error:                  {errores}")
+    print(f"Canales finales:                    {total_final}")
 
-        texto_final = (
-            "\n".join(lineas_finales)
-        )
+    if limpieza["movidos_por_categoria"]:
+        print("\nTOTAL/OTROS movidos por categoría:")
+        for cat, cantidad in sorted(limpieza["movidos_por_categoria"].items()):
+            print(f"  - {cat}: {cantidad}")
 
-        if not texto_final.endswith("\n"):
-
-            texto_final += "\n"
-
-        PRINCIPAL.write_text(
-            texto_final,
-            encoding="utf-8",
-            newline="\n"
-        )
-
-    # ========================================================
-    # RESUMEN
-    # ========================================================
-
-    print()
-    print("=" * 70)
-    print("       ALIMENTACIÓN TERMINADA")
-    print("=" * 70)
-
-    print(
-        f"URLs nuevas agregadas: {agregados}"
-    )
-
-    print(
-        f"URLs ya existentes:    {omitidos}"
-    )
-
-    print(
-        f"Fuentes con error:     {errores}"
-    )
-
-    print()
-    print(
-        "Archivo actualizado:"
-    )
-
-    print(PRINCIPAL)
-
-    print()
-    print("REGLAS:")
-
-    print(
-        "  - No duplica URLs dentro de la categoría."
-    )
-
-    print(
-        "  - La misma URL puede existir en otra categoría."
-    )
-
-    print(
-        "  - Respeta las categorías existentes."
-    )
-
-    print(
-        "  - CL.m3u -> CHILE."
-    )
-
-    print(
-        "  - AR.m3u -> ARGENTINA."
-    )
-
-    print(
-        "  - MX.m3u -> MÉXICO."
-    )
-
-    print(
-        "  - PE.m3u -> PERÚ."
-    )
-
-    print(
-        "  - Etc. según la fuente."
-    )
-
-    print(
-        "  - Listas locales de CHILE -> CHILE."
-    )
-
-    print(
-        "  - Pluto se clasifica por categoría/nombre."
-    )
-
-    print(
-        "  - Pluto NO crea categorías."
-    )
-
-    print(
-        "  - Pluto se inserta dentro de su categoría."
-    )
-
-    print(
-        "  - Teen/Kids -> INFANTILES."
-    )
-
-    print(
-        "  - Reto -> ENTRETENIMIENTO."
-    )
-
-    print(
-        "  - Anime -> ANIME."
-    )
-
-    print(
-        "  - Música -> MUSICA."
-    )
-
-    print(
-        "  - Deportes -> DEPORTES."
-    )
-
-    print(
-        "  - Cine -> CINE."
-    )
-
-    print(
-        "  - Series -> SERIES."
-    )
-
-    print(
-        "  - No crea carpetas."
-    )
-
-    print(
-        "  - No mueve canales existentes."
-    )
-
-    print(
-        "  - No escribe dos veces."
-    )
-
-    print(
-        "  - No crea backups automáticos."
-    )
-
-    print("=" * 70)
-
+    print("\nREGLAS ACTIVAS:")
+    print("  - La principal conserva su orden existente.")
+    print("  - IPTVSV.m3u y demás fuentes son complementarias.")
+    print("  - Dedupe global por URL.")
+    print("  - No se eliminan canales existentes salvo limpieza explícita:")
+    print("      * Pluto antiguo")
+    print("      * categoría sin nombre")
+    print("      * duplicados dentro de TOTAL/OTROS")
+    print("  - TOTAL/OTROS únicos se reclasifican cuando es posible.")
+    print("  - Categorías nuevas solo se agregan al final.")
+    print("  - Pluto antiguo se elimina antes de cargar Pluto propio.")
+    print("  - Pluto propio usa exclusivamente FUENTES_PLUTO.")
+    print("  - CHILE de fuentes normales -> CHILE TV.")
+    print("=" * 72)
 
 if __name__ == "__main__":
     main()
-
-
