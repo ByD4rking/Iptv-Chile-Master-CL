@@ -726,10 +726,11 @@ def main():
     # 1) Pluto: sustituir automáticamente cualquier enlace de terceros
     # por nuestra URL vigente. Solo se elimina un Pluto tercero cuando no
     # existe reemplazo propio; los canales no-Pluto no se tocan.
-    lineas, pluto_reemplazo, pluto_errores = reemplazar_pluto_tercero_por_propio(
+    lineas, pluto_reemplazo = reemplazar_pluto_tercero_por_propio(
         lineas,
         session,
     )
+    pluto_errores = pluto_reemplazo.get("eliminados_sin_reemplazo", 0)
 
     # 2) Limpieza de TOTAL, OTROS y categoría vacía.
     lineas, limpieza = limpiar_total_otros_y_sin_nombre(lineas)
