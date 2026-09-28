@@ -281,6 +281,73 @@ def sort_key(channel: dict) -> tuple:
     return (100000 + group_index, number, str(channel.get("name") or "").lower())
 
 
+def previous_entries(path: Path) -> list[dict]:
+    """Read the previous playlist so an automatic refresh never silently drops channels."""
+    if not path.exists() or path.stat().st_size == 0:
+        return []
+
+    text = path.read_text(encoding="utf-8-sig", errors="replace")
+    lines = text.splitlines()
+    entries: list[dict] = []
+
+    for i, line in enumerate(lines):
+        if not line.startswith("#EXTINF:"):
+            continue
+        j = i + 1
+        while j < len(lines) and lines[j].startswith("#"):
+            j += 1
+        if j >= len(lines) or not lines[j].startswith(("http://", "https://")):
+            continue
+
+        def attr(name: str) -> str:
+            match = re.search(rf'{name}="([^"]*)"', line)
+            return match.group(1).strip() if match else ""
+
+        channel_id = attr("tvg-id")
+        name = attr("tvg-name")
+        stream = lines[j].strip()
+        if not channel_id or not name or not valid_stream(stream):
+            continue
+
+        entries.append({
+            "id": channel_id,
+            "name": name,
+            "stream": stream,
+            "logo": attr("tvg-logo"),
+            "category": attr("group-title") or "Entretenimiento",
+        })
+
+    return entries
+
+
+def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[dict], int]:
+    """Keep every previously published channel absent from the fresh API response.
+
+    Fresh Pluto data wins when the same channel ID exists. Missing old IDs are
+    retained with their previous stream/metadata so an upstream temporary
+    omission cannot delete a channel from the repository automatically.
+    """
+    previous = previous_entries(path)
+    if not previous:
+        return channels, 0
+
+    current_ids = {str(ch.get("id") or "").strip() for ch in channels}
+    current_streams = {str(ch.get("stream") or "").strip() for ch in channels}
+    preserved = 0
+
+    for old in previous:
+        old_id = old["id"]
+        old_stream = old["stream"]
+        if old_id in current_ids or old_stream in current_streams:
+            continue
+        channels.append(old)
+        current_ids.add(old_id)
+        current_streams.add(old_stream)
+        preserved += 1
+
+    return channels, preserved
+
+
 def previous_count(path: Path) -> int:
     if not path.exists():
         return 0
@@ -320,9 +387,13 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     playlist_path = PLAYLIST_DIR / f"pluto_{region.code}.m3u"
     data_path = REGIONAL_DATA_DIR / f"channels_{region.code}.json"
 
+    old_count = previous_count(playlist_path)
+    channels, preserved = preserve_previous_channels(playlist_path, channels)
+    if preserved:
+        print(f"[{region.code.upper()}] Conservados del catálogo anterior: {preserved} canales")
+
     content = build_playlist(channels, region)
     new_count = content.count("#EXTINF:")
-    old_count = previous_count(playlist_path)
 
     if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):
         print(
@@ -404,6 +475,27 @@ def build_latam() -> Path:
         raise RuntimeError("LATAM: no hay canales válidos.")
 
     old_count = previous_count(output)
+    # LATAM también conserva cualquier canal que haya desaparecido temporalmente
+    # de una de las fuentes regionales.
+    previous = previous_entries(output)
+    previous_ids = {str(ch.get("id") or "").strip() for ch in previous}
+    previous_streams = {str(ch.get("stream") or "").strip() for ch in previous}
+    preserved = 0
+    for old in previous:
+        old_id = str(old.get("id") or "").strip()
+        old_stream = str(old.get("stream") or "").strip()
+        if old_id in seen or old_stream in previous_streams and old_id in previous_ids:
+            if old_id in seen:
+                continue
+        entry = channel_to_m3u(old, REGIONS["mx"])
+        if not entry or old_id in seen or old_stream in seen:
+            continue
+        lines.append(entry.rstrip())
+        seen.add(old_id or old_stream)
+        preserved += 1
+    if preserved:
+        print(f"[LATAM] Conservados del catálogo anterior: {preserved} canales")
+
     new_count = len(seen)
     if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):
         print(
@@ -430,7 +522,7 @@ def main() -> None:
     print("================================")
 
     results = {}
-    for code in ("es", "mx"):
+    for code in ("ar", "br", "cl", "es", "mx", "us"):
         region = REGIONS[code]
         try:
             channels = fetch_region(region)
