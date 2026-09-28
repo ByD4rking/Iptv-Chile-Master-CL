@@ -3,6 +3,8 @@ name: Pluto TV - Actualizar listas regionales
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "pluto/src/**"
       - "pluto/requirements.txt"
@@ -57,11 +59,40 @@ jobs:
           print("Inventario previo:", {k: len(v) for k, v in out.items()})
           PY
 
+      - name: Validar sintaxis antes de generar
+        run: |
+          python -m compileall -q pluto/src
+
+      - name: Proteger listas maestras
+        run: |
+          set -e
+          git hash-object IPTV-CHILE-MAESTRA_CORREGIDO.m3u > /tmp/master_before.sha
+          git hash-object IPTV-CHILE-MAESTRA_GOD.m3u > /tmp/god_before.sha
       - name: Generar listas Pluto por región
         working-directory: pluto
         run: |
           python src/generate_multiregion.py
 
+
+      - name: Verificar que el generador no tocó archivos ajenos
+        run: |
+          set -e
+          git diff --name-only | while IFS= read -r file; do
+            case "$file" in
+              pluto/output/playlists/pluto_*.m3u|pluto/output/regional/channels_*.json)
+                ;;
+              "")
+                ;;
+              *)
+                echo "REGRESION: el generador modificó un archivo no autorizado: $file"
+                exit 1
+                ;;
+            esac
+          done
+
+          test "$(git hash-object IPTV-CHILE-MAESTRA_CORREGIDO.m3u)" = "$(cat /tmp/master_before.sha)"
+          test "$(git hash-object IPTV-CHILE-MAESTRA_GOD.m3u)" = "$(cat /tmp/god_before.sha)"
+          echo "OK: MAESTRA y GOD permanecen intactas."
       - name: Verificar listas
         run: |
           set -e
@@ -94,6 +125,14 @@ jobs:
               assert text.startswith("#EXTM3U"), f"{name}: M3U inválido"
               assert re.search(r"^#EXTINF:", text, re.MULTILINE), f"{name}: sin canales"
               print(f"{name}: {len(re.findall(r'^#EXTINF:', text, re.MULTILINE))} canales")
+              ids = re.findall(r'tvg-id="([^"]+)"', text)
+              streams = [line.strip() for line in text.splitlines() if line.startswith(("http://", "https://"))]
+              assert len(ids) == len(set(ids)), f"{name}: IDs duplicados"
+              assert len(streams) == len(set(streams)), f"{name}: streams duplicados"
+              assert all(".m3u8" in s for s in streams), f"{name}: hay streams que no son HLS m3u8"
+              assert all("quality=1080p" not in s.lower() for s in streams), f"{name}: se forzó quality=1080p"
+              assert all("/master.m3u8" in s for s in streams), f"{name}: no todos usan master.m3u8"
+              print(f"{name}: validación de IDs, streams y master HLS OK")
           before = json.loads(Path("/tmp/pluto_before.json").read_text(encoding="utf-8"))
           for name, old_ids in before.items():
               if name not in allowed:

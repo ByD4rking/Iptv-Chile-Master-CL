@@ -320,6 +320,11 @@ def previous_entries(path: Path) -> list[dict]:
     return entries
 
 
+def normalize_channel_name(value: str) -> str:
+    value = str(value or "").strip().lower()
+    value = re.sub(r"\\s+", " ", value)
+    return value
+
 def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[dict], int]:
     """Keep every previously published channel absent from the fresh API response.
 
@@ -333,16 +338,32 @@ def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[d
 
     current_ids = {str(ch.get("id") or "").strip() for ch in channels}
     current_streams = {str(ch.get("stream") or "").strip() for ch in channels}
+    current_names: dict[str, int] = {}
+    for ch in channels:
+        name = normalize_channel_name(ch.get("name"))
+        if name:
+            current_names[name] = current_names.get(name, 0) + 1
+
     preserved = 0
 
     for old in previous:
         old_id = old["id"]
         old_stream = old["stream"]
+        old_name = normalize_channel_name(old.get("name"))
+
+        # Fresh Pluto data wins. If Pluto rotates an ID but the channel name is
+        # uniquely unchanged, treat it as the same channel instead of creating
+        # a stale duplicate from the old catalog.
         if old_id in current_ids or old_stream in current_streams:
             continue
+        if old_name and current_names.get(old_name, 0) == 1:
+            continue
+
         channels.append(old)
         current_ids.add(old_id)
         current_streams.add(old_stream)
+        if old_name:
+            current_names[old_name] = current_names.get(old_name, 0) + 1
         preserved += 1
 
     return channels, preserved
@@ -418,7 +439,7 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     return playlist_path, new_count, True
 
 
-def build_latam() -> Path:
+def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
     """
     Construye LATAM exclusivamente con datos frescos de MX + CL + AR.
 
@@ -432,14 +453,15 @@ def build_latam() -> Path:
     regionales = []
     errores = []
 
+    # Reuse the fresh regional catalogs collected by main(). This avoids
+    # querying Pluto twice for MX/CL/AR in the same run and keeps LATAM on
+    # one consistent snapshot of the source catalogs.
     for code in ("mx", "cl", "ar"):
-        try:
-            channels = fetch_region(REGIONS[code])
-            if not channels:
-                raise RuntimeError("sin canales válidos")
+        channels = fresh_regions.get(code)
+        if not channels:
+            errores.append(f"{code.upper()}: sin catálogo fresco válido")
+        else:
             regionales.append((code, channels))
-        except Exception as exc:
-            errores.append(f"{code.upper()}: {exc}")
 
     if errores:
         if output.exists() and output.stat().st_size:
@@ -522,11 +544,18 @@ def main() -> None:
     print("================================")
 
     results = {}
+    fresh_regions: dict[str, list[dict]] = {}
+
     for code in ("ar", "br", "cl", "es", "mx", "us"):
         region = REGIONS[code]
         try:
             channels = fetch_region(region)
             path, count, updated = write_if_safe(region, channels)
+            # LATAM may consume a regional catalog only when that regional
+            # refresh itself passed the safety gate. A blocked region therefore
+            # cannot inject a partial/catastrophic snapshot into LATAM.
+            if channels and updated:
+                fresh_regions[code] = channels
             results[code] = (count, updated)
         except Exception as exc:
             existing = previous_count(PLAYLIST_DIR / f"pluto_{code}.m3u")
@@ -547,7 +576,7 @@ def main() -> None:
             + ", ".join(failed_regions)
         )
 
-    build_latam()
+    build_latam(fresh_regions)
 
     print()
     print("RESUMEN")
