@@ -229,11 +229,10 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
         "infantil": "Infantiles",
         "teen": "Infantiles",
         "noticias": "Informativos",
-        # Variantes de la misma carpeta; siempre aterrizan en la carpeta
-        # existente y canónica, nunca crean otra.
-        "tigo sport/fox": "Deportes",
-        "tigo sports/fox": "Deportes",
-        "tigo sports / fox": "Deportes",
+        # IMPORTANTE: NO mezclar categorías deportivas de IPTVSV.
+        # Tigo Sports / Fox, FOX Sports, DSports, Win Sports y Movistar Deportes
+        # deben conservar su group-title de origen. Solo las excepciones
+        # documentadas arriba pueden normalizarse a una carpeta canónica.
     }
     categoria_busqueda = aliases.get(c_norm, categoria)
 
@@ -245,6 +244,107 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
 
     # Coincidencia con una carpeta existente. Nunca inventar una nueva.
     return buscar_categoria_existente(categoria_busqueda, categorias)
+
+def validar_integridad_iptvsv(lineas, canales, categorias):
+    """Barrera bloqueante para impedir que IPTVSV vuelva a perder categorías.
+
+    Reglas:
+      - La URL es la identidad del canal para deduplicación.
+      - Si una URL de IPTVSV ya existe, su categoría debe coincidir con la
+        categoría de origen, salvo alias canónicos explícitos.
+      - Una categoría IPTVSV no-país no puede desaparecer de la principal
+        mientras la fuente siga aportando canales de esa categoría.
+      - Si la misma URL aparece en IPTVSV con categorías distintas, se detiene
+        la actualización en lugar de elegir una categoría arbitrariamente.
+      - Las categorías-país genéricas siguen excluidas por regla del proyecto.
+    """
+    por_url = defaultdict(set)
+    for canal in canales:
+        url = (canal.get("url") or "").strip()
+        categoria = (canal.get("categoria") or "").strip()
+        if url and categoria:
+            por_url[url].add(categoria)
+
+    conflictos_fuente = {
+        url: sorted(cats)
+        for url, cats in por_url.items()
+        if len({normalizar(c) for c in cats}) > 1
+    }
+    if conflictos_fuente:
+        muestra = list(conflictos_fuente.items())[:10]
+        raise RuntimeError(
+            "IPTVSV BLOQUEADO: una misma URL trae categorías distintas en la fuente: "
+            + "; ".join(f"{u} => {cats}" for u, cats in muestra)
+        )
+
+    urls_principal = {}
+    for canal in lineas:
+        pass
+
+    # Construir mapa URL -> categorías actuales de la principal.
+    actual_por_url = defaultdict(set)
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            actual_por_url[lineas[j].strip()].add(extraer_categoria(extinf))
+            i = j + 1
+        else:
+            i = j
+
+    errores = []
+    categorias_faltantes = set()
+    for categoria in sorted({c.get("categoria", "").strip() for c in canales if c.get("categoria", "").strip()}):
+        if es_categoria_pais_generica_iptvsv(categoria):
+            continue
+        destino = determinar_destino_iptvsv(categoria, "", categorias)
+        if not destino:
+            categorias_faltantes.add(categoria)
+
+    if categorias_faltantes:
+        raise RuntimeError(
+            "IPTVSV BLOQUEADO: faltan en la principal categorías de origen "
+            "no-país que la fuente sigue usando: "
+            + ", ".join(sorted(categorias_faltantes))
+        )
+
+    for canal in canales:
+        url = (canal.get("url") or "").strip()
+        categoria = (canal.get("categoria") or "").strip()
+        if not url or not categoria or es_categoria_pais_generica_iptvsv(categoria):
+            continue
+        destino = determinar_destino_iptvsv(categoria, canal.get("nombre", ""), categorias)
+        if not destino:
+            continue
+        actuales = actual_por_url.get(url, set())
+        if not actuales:
+            continue
+        if any(normalizar(actual) != normalizar(destino) for actual in actuales):
+            errores.append(
+                f"{url} :: fuente='{categoria}' :: principal={sorted(actuales)} :: esperado='{destino}'"
+            )
+
+    if errores:
+        muestra = errores[:20]
+        raise RuntimeError(
+            "IPTVSV BLOQUEADO: se detectaron canales existentes en una "
+            "categoría distinta de la fuente. "
+            + " | ".join(muestra)
+        )
+
+    return {
+        "urls_fuente": len(por_url),
+        "categorias_faltantes": len(categorias_faltantes),
+        "conflictos_fuente": len(conflictos_fuente),
+        "errores_categoria": len(errores),
+    }
+
 
 def reclasificar_iptvsv_existente(lineas, canales, categorias):
     """Hace que la categoría declarada por IPTV-SV mande también para URLs ya existentes.
@@ -1815,6 +1915,17 @@ def main():
             r.raise_for_status()
             canales = parsear_m3u(r.text)
             if fuente_es_iptvsv := es_fuente_iptvsv(fuente):
+                iptvsv_auditoria = validar_integridad_iptvsv(
+                    lineas,
+                    canales,
+                    categorias,
+                )
+                print(
+                    "  -> IPTVSV integridad: "
+                    f"{iptvsv_auditoria['urls_fuente']} URLs fuente, "
+                    f"{iptvsv_auditoria['conflictos_fuente']} conflictos de URL, "
+                    f"{iptvsv_auditoria['errores_categoria']} categorías incorrectas."
+                )
                 lineas, iptvsv_reclasificados, iptvsv_conflictos = reclasificar_iptvsv_existente(
                     lineas,
                     canales,
