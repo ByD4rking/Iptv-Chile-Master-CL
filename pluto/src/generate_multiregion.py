@@ -457,7 +457,8 @@ def main() -> None:
     print("================================")
 
     results = {}
-    for code, region in REGIONS.items():
+    for code in ("es", "mx"):
+        region = REGIONS[code]
         try:
             channels = fetch_region(region)
             path, count, updated = write_if_safe(region, channels)
@@ -473,7 +474,6 @@ def main() -> None:
             + ", ".join(failed_regions)
         )
 
-    build_all()
     build_latam()
 
     print()
