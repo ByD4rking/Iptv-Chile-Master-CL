@@ -512,12 +512,12 @@ def reclasificar_pluto_existente(lineas, session):
 
 def deduplicar_pluto_existente(lineas):
     """
-    Después de reemplazar terceros por nuestras URLs, elimina copias
-    repetidas del mismo canal Pluto por ID. La primera aparición se conserva
-    para respetar el orden de la principal.
+    Elimina solo copias Pluto con el MISMO enlace de acceso.
+    No deduplica por channel ID: dos regiones pueden compartir ID pero
+    entregar URLs de acceso distintas y ambas deben conservarse.
     """
     salida = []
-    ids_vistos = set()
+    urls_vistos = set()
     eliminados = 0
     i = 0
 
@@ -540,13 +540,11 @@ def deduplicar_pluto_existente(lineas):
             j += 1
 
             if es_url_pluto(url):
-                identidad = identidad_pluto(extinf, url)
-                if identidad:
-                    if identidad in ids_vistos:
-                        eliminados += 1
-                        i = j
-                        continue
-                    ids_vistos.add(identidad)
+                if url in urls_vistos:
+                    eliminados += 1
+                    i = j
+                    continue
+                urls_vistos.add(url)
 
         salida.extend(bloque)
         i = j
@@ -754,7 +752,11 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
             reemplazo = por_nombre.get(normalizar(nombre))
 
         if reemplazo is None:
+            # Regla de seguridad: nunca eliminar un canal existente solo
+            # porque la fuente propia no respondió o no lo catalogó.
+            # Se conserva el bloque y queda contabilizado para auditoría.
             eliminados_sin_reemplazo += 1
+            salida.extend(bloque)
             i = j
             continue
 
