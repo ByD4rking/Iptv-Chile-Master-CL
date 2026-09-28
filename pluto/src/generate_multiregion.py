@@ -405,52 +405,6 @@ def build_latam() -> Path:
     print(f"[LATAM] {len(seen)} canales únicos -> {output} (MX: {source_counts.get('mx',0)}, CL: {source_counts.get('cl',0)}, AR: {source_counts.get('ar',0)})")
     return output
 
-def build_all() -> Path:
-    PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
-
-    paths = [PLAYLIST_DIR / f"pluto_{code}.m3u" for code in REGIONS]
-    lines = ["#EXTM3U"]
-    seen_ids = set()
-    total = 0
-
-    for path in paths:
-        if not path.exists():
-            continue
-        text = path.read_text(encoding="utf-8-sig")
-        chunks = re.split(r"(?=^#EXTINF:)", text, flags=re.MULTILINE)
-
-        for chunk in chunks:
-            if not chunk.startswith("#EXTINF:"):
-                continue
-
-            lines_chunk = chunk.strip().splitlines()
-            if len(lines_chunk) < 2:
-                continue
-
-            match = re.search(r'tvg-id="([^"]+)"', lines_chunk[0])
-            key = match.group(1) if match else lines_chunk[1]
-
-            if key in seen_ids:
-                continue
-
-            lines.extend(lines_chunk[:2])
-            seen_ids.add(key)
-            total += 1
-
-    if total == 0:
-        raise RuntimeError("No hay listas regionales válidas para construir pluto_all.m3u.")
-
-    output = PLAYLIST_DIR / "pluto_all.m3u"
-    tmp = output.with_suffix(".m3u.tmp")
-    tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    tmp.replace(output)
-
-    # Do not overwrite the existing legacy pluto.m3u automatically.
-    # Regional playlists are additive; the legacy list remains untouched.
-    print(f"[ALL] {total} canales únicos -> {output}")
-    return output
-
-
 def main() -> None:
     print("================================")
     print("PLUTO TV MULTIRREGIONAL")
