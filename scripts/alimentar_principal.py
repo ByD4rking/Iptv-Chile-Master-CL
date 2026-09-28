@@ -2013,20 +2013,6 @@ def main():
             if url_es_valida(linea_final.strip())
         }
 
-    # VALIDACIÓN FINAL DE COBERTURA PLUTO POR ID.
-    # Una misma señal Pluto puede tener URLs/JWT distintos por región; no se
-    # exige conservar cada URL, solo una representación por ID aceptado.
-    ids_pluto_faltantes_pre = sorted(
-        identidad
-        for identidad in ids_pluto_fuentes
-        if identidad not in ids_pluto_finales_pre
-    )
-    if ids_pluto_faltantes_pre:
-        raise RuntimeError(
-            "VALIDACION PLUTO POR ID FALLIDA: faltan "
-            f"{len(ids_pluto_faltantes_pre)} IDs de las fuentes propias."
-        )
-
     # Repetir validación física después del autorreparo.
     categorias_finales_post = []
     bloques_finales_post = []
@@ -2061,20 +2047,30 @@ def main():
         newline="\n",
     )
 
+    # Validación final después del autorreparo: una representación por ID
+    # aceptado es suficiente; no se exige conservar cada JWT regional.
+    ids_pluto_finales_actualizados = set()
+    for i_post, linea_post in enumerate(lineas):
+        if not linea_post.startswith("#EXTINF"):
+            continue
+        j_post = i_post + 1
+        while j_post < len(lineas) and lineas[j_post].startswith("#"):
+            j_post += 1
+        if j_post < len(lineas) and url_es_valida(lineas[j_post].strip()):
+            identidad_post = identidad_pluto(linea_post, lineas[j_post].strip())
+            if identidad_post:
+                ids_pluto_finales_actualizados.add(identidad_post)
+
     ids_pluto_faltantes = {
         identidad
         for identidad in ids_pluto_fuentes
-        if identidad not in ids_pluto_finales
-        and not (
-            urls_pluto_fuentes_por_id.get(identidad, set()) & urls_finales
-        )
+        if identidad not in ids_pluto_finales_actualizados
     }
     if ids_pluto_faltantes:
         raise RuntimeError(
             "VALIDACION PLUTO FALLIDA: faltan "
-            f"{len(ids_pluto_faltantes)} identidades de las fuentes propias "
-            "sin una URL equivalente conservada. No se permite publicar "
-            "una principal incompleta."
+            f"{len(ids_pluto_faltantes)} IDs de las fuentes propias "
+            "después del autorreparo."
         )
 
     print("\n" + "=" * 72)
