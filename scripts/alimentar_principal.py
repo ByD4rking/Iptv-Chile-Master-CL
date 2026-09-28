@@ -207,7 +207,7 @@ def encontrar_categoria_tematica(texto, categorias):
 PAISES_GENERICO_IPTVSV = {
     "peru", "bolivia", "argentina", "brasil", "colombia", "ecuador",
     "venezuela", "paraguay", "mexico", "espana", "costa rica",
-    "republica dominicana", "chile", "el salvador", "guatemala", "honduras",
+    "republica dominicana", "chile", "el salvador", "el salvador - tcs", "guatemala", "honduras",
     "nicaragua", "panama", "cuba", "puerto rico", "uruguay"
 }
 
@@ -1141,12 +1141,10 @@ def limpiar_extinf_huerfanos(lineas):
 def limpiar_duplicados_globales_y_carpetas_especiales(lineas):
     """
     Auditoría final de integridad:
-      - elimina cualquier URL exacta repetida en toda la principal,
-        conservando la primera aparición;
-      - Telemundo Noticias y Sky Sports no pueden conservar una copia
-        si la misma URL ya está en otra carpeta;
-      - CNN encontrada dentro de Telemundo Noticias pasa a Informativos;
-      - Women's Sports Network encontrada dentro de Sky Sports pasa a Deportes.
+      - elimina URLs exactas repetidas;
+      - Telemundo Noticias y Sky Sports tienen prioridad si una misma URL
+        aparece también en otra carpeta;
+      - NO reclasifica canales por nombre (CNN, Women's Sports Network, etc.).
     """
     bloques = []
     prefijo = []
@@ -1179,47 +1177,19 @@ def limpiar_duplicados_globales_y_carpetas_especiales(lineas):
             prefijo.extend(lineas[inicio:j])
             i = j
 
-    urls_por_categoria = defaultdict(list)
-    for b in bloques:
-        urls_por_categoria[b["url"]].append(b)
-
-    eliminar = set()
-    movidos = defaultdict(int)
-
+    preferidos = {}
     for b in bloques:
         cat = normalizar(b["categoria"])
-        otros = [
-            x for x in urls_por_categoria[b["url"]]
-            if normalizar(x["categoria"]) != cat
-        ]
-
-        if cat in {"telemundo noticias", "sky sports"} and otros:
-            eliminar.add(b["orden"])
-            continue
-
-        if cat == "telemundo noticias" and re.search(
-            r"cnn\s+en\s+espa[nñ]ol", normalizar(b["nombre"])
-        ):
-            destino = "Informativos"
-            b["extinf"] = reemplazar_categoria(b["extinf"], destino)
-            b["lineas"][0] = b["extinf"]
-            b["categoria"] = destino
-            movidos["Telemundo Noticias -> Informativos"] += 1
-
-        elif cat == "sky sports" and re.search(
-            r"women'?s\s+sports\s+network", normalizar(b["nombre"])
-        ):
-            destino = "Deportes"
-            b["extinf"] = reemplazar_categoria(b["extinf"], destino)
-            b["lineas"][0] = b["extinf"]
-            b["categoria"] = destino
-            movidos["Sky Sports -> Deportes"] += 1
+        if cat in {"telemundo noticias", "sky sports"}:
+            preferidos.setdefault(b["url"], b)
 
     vistos = set()
     duplicados = 0
     salida = list(prefijo)
+
     for b in bloques:
-        if b["orden"] in eliminar:
+        if b["url"] in preferidos and preferidos[b["url"]] is not b:
+            duplicados += 1
             continue
         if b["url"] in vistos:
             duplicados += 1
@@ -1227,7 +1197,7 @@ def limpiar_duplicados_globales_y_carpetas_especiales(lineas):
         vistos.add(b["url"])
         salida.extend(b["lineas"])
 
-    return salida, duplicados, dict(movidos)
+    return salida, duplicados, {}
 
 
 def ordenar_y_normalizar_carpetas(lineas):
@@ -1236,12 +1206,10 @@ def ordenar_y_normalizar_carpetas(lineas):
 
     Reglas:
       - CHILE TV queda primero.
-      - CHILE TV Y RADIO queda inmediatamente después.
       - INFANTIL e INFANTILES se unifican en INFANTILES.
       - TEEN se unifica en INFANTILES.
       - NOTICIAS se unifica en INFORMATIVOS.
-      - CNN queda al principio de INFORMATIVOS.
-      - Las carpetas de países quedan al final.
+      - Las carpetas de países, incluido El Salvador - TCS, quedan al final.
       - XXX+18 queda después de todas las carpetas de países, como último.
       - Dentro de cada carpeta se conserva el orden actual de sus canales.
     """
@@ -1281,7 +1249,6 @@ def ordenar_y_normalizar_carpetas(lineas):
         "infantil_a_infantiles": 0,
         "teen_a_infantiles": 0,
         "noticias_a_informativos": 0,
-        "cnn_priorizados": 0,
     }
 
     # Determinar primero las categorías canónicas existentes.
@@ -1339,16 +1306,6 @@ def ordenar_y_normalizar_carpetas(lineas):
             categorias.append(clave)
         grupos[clave]["bloques"].append(b)
 
-    # CNN primero dentro de INFORMATIVOS, manteniendo el orden relativo del resto.
-    info_key = normalizar(cat_informativos)
-    if info_key in grupos:
-        info = grupos[info_key]["bloques"]
-        cnn = [b for b in info if re.search(r"\bcnn\b", normalizar(b["nombre"]))]
-        resto = [b for b in info if b not in cnn]
-        if cnn:
-            grupos[info_key]["bloques"] = cnn + resto
-            cambios["cnn_priorizados"] = len(cnn)
-
     # Orden maestro ACTUAL. Se obtuvo de la última estructura correcta
     # antes de la reorganización accidental. NO usar la lista antigua como
     # plantilla de carpetas: solo sirve para auditar dónde pertenece cada canal.
@@ -1394,7 +1351,6 @@ def ordenar_y_normalizar_carpetas(lineas):
         "lg channels",
         "run:time tv",
         "tecnologia",
-        "el salvador - tcs",
         "cultura",
         "zona paranormal",
         "investigacion",
@@ -1409,7 +1365,7 @@ def ordenar_y_normalizar_carpetas(lineas):
     def prioridad(cat_key, primera_orden):
         if cat_key in orden_indice:
             return (10, orden_indice[cat_key])
-        if cat_key in PAISES_ORDEN_FINAL:
+        if cat_key in PAISES_ORDEN_FINAL or cat_key.startswith("el salvador"):
             return (100, primera_orden)
         if cat_key.startswith("xxx"):
             return (110, 0)
@@ -1725,8 +1681,7 @@ def main():
     print("  - IPTVSV: no crea/alimenta carpetas-país genéricas; se respetan solo excepciones explícitas.")
     print("  - Dedupe global por URL para todas las fuentes; IPTVSV no usa dedupe por channel ID de Pluto.")
     print("  - Auditoría final: una URL exacta solo puede quedar una vez en toda la principal.")
-    print("  - Telemundo Noticias y Sky Sports solo conservan señales no duplicadas en otras carpetas.")
-    print("  - CNN de Telemundo -> Informativos; Women's Sports Network de Sky -> Deportes.")
+    print("  - Telemundo Noticias y Sky Sports tienen prioridad sobre otras carpetas cuando coincide la misma URL.")
     print("  - Pluto: las carpetas existentes se sincronizan con la categoría de la fuente propia.")
     if pluto_reubicados_por_categoria:
         for cat, cantidad in sorted(pluto_reubicados_por_categoria.items()):
