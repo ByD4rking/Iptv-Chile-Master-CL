@@ -1804,16 +1804,11 @@ def main():
 
                 identidad = identidad_pluto(canal.get("extinf", ""), url_pluto_fuente)
                 if identidad:
-                    ids_pluto_fuentes.add(identidad)
                     urls_pluto_fuentes_por_id[identidad].add(canal.get("url", "").strip())
                     canales_pluto_fuentes_por_id[identidad].append(canal)
 
                 # Pluto se deduplica por channel ID global. Las URLs pueden
                 # cambiar por JWT/región, pero el mismo ID sigue siendo el mismo canal.
-                if identidad and identidad in ids_pluto_fuentes:
-                    omitidos_duplicados += 1
-                    continue
-
                 if (
                     identidad
                     and normalizar(destino) in PLUTO_CATEGORIAS_CANONICAS
@@ -1822,6 +1817,15 @@ def main():
                 ):
                     omitidos_duplicados += 1
                     continue
+
+                if identidad and identidad in ids_pluto_fuentes:
+                    omitidos_duplicados += 1
+                    continue
+
+                # Solo los IDs que realmente aceptamos entran en la cobertura
+                # obligatoria. Copias regionales/JWT del mismo ID no se exigen.
+                if identidad:
+                    ids_pluto_fuentes.add(identidad)
 
                 if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
                     agregados_pluto += 1
@@ -2009,15 +2013,18 @@ def main():
             if url_es_valida(linea_final.strip())
         }
 
-    # VALIDACIÓN FINAL DE COBERTURA PLUTO POR URL EXACTA.
-    pluto_urls_faltantes = sorted(
-        url for url in urls_pluto_fuentes
-        if url not in urls_finales
+    # VALIDACIÓN FINAL DE COBERTURA PLUTO POR ID.
+    # Una misma señal Pluto puede tener URLs/JWT distintos por región; no se
+    # exige conservar cada URL, solo una representación por ID aceptado.
+    ids_pluto_faltantes_pre = sorted(
+        identidad
+        for identidad in ids_pluto_fuentes
+        if identidad not in ids_pluto_finales_pre
     )
-    if pluto_urls_faltantes:
+    if ids_pluto_faltantes_pre:
         raise RuntimeError(
-            "VALIDACION PLUTO POR URL FALLIDA: faltan "
-            f"{len(pluto_urls_faltantes)} enlaces exactos de las fuentes propias."
+            "VALIDACION PLUTO POR ID FALLIDA: faltan "
+            f"{len(ids_pluto_faltantes_pre)} IDs de las fuentes propias."
         )
 
     # Repetir validación física después del autorreparo.
