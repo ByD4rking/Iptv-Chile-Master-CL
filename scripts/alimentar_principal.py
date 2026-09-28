@@ -1611,6 +1611,45 @@ def ordenar_y_normalizar_carpetas(lineas):
     return salida, cambios
 
 
+def consolidar_bloques_por_categoria(lineas):
+    """Fusión final determinista: una sola sección física por categoría."""
+    prefijo = []
+    grupos = {}
+    orden = []
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not grupos:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            bloque = lineas[inicio:j + 1]
+            categoria = extraer_categoria(lineas[i])
+            clave = normalizar(categoria)
+            if clave not in grupos:
+                grupos[clave] = {"categoria": categoria, "bloques": []}
+                orden.append(clave)
+            grupos[clave]["bloques"].append(bloque)
+            i = j + 1
+        else:
+            i = j
+
+    salida = list(prefijo)
+    for clave in orden:
+        for bloque in grupos[clave]["bloques"]:
+            salida.extend(bloque)
+
+    return salida, len(orden)
+
+
 def extraer_bloques_no_pluto_por_url(lineas):
     """Captura el estado inicial no-Pluto para impedir pérdidas accidentales."""
     resultado = {}
@@ -1977,7 +2016,11 @@ def main():
     if cambios_orden_post_restauracion:
         print("Orden final tras autorreparación aplicado.")
 
-    # 14) VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
+    # 14) Consolidación física definitiva: una sola sección por categoría.
+    lineas, categorias_fisicas = consolidar_bloques_por_categoria(lineas)
+    print(f"Consolidación física final: {categorias_fisicas} categorías.")
+
+    # 15) VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
     # Si falla, el workflow se detiene y NO publica una lista incompleta.
     categorias_finales = []
     bloques_finales = []
@@ -2034,7 +2077,7 @@ def main():
 
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
-    # 16) BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
+    # 17) BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
     # puede desaparecer silenciosamente por una deduplicación por ID.
     ids_pluto_finales = set()
     for i_final, linea_final in enumerate(lineas):
