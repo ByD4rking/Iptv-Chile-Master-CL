@@ -304,8 +304,7 @@ def reclasificar_iptvsv_existente(lineas, canales, categorias):
 
             destino = destino_por_url.get(url)
             actual = extraer_categoria(extinf)
-            protegido = normalizar(actual) in {"telemundo noticias", "sky sports"}
-            if destino and not protegido and normalizar(actual) != normalizar(destino):
+            if destino and normalizar(actual) != normalizar(destino):
                 bloque[0] = reemplazar_categoria(extinf, destino)
                 movidos += 1
 
@@ -331,11 +330,11 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
         return (
             buscar_categoria_existente("LATAM", categorias)
             or buscar_categoria_existente("LATINOAMÉRICA", categorias)
-            or "LATAM"
+            or None
         )
 
     if pais_fuente == "chile":
-        return buscar_categoria_existente("CHILE TV", categorias) or "CHILE TV"
+        return buscar_categoria_existente("CHILE TV", categorias)
 
     if pais_fuente in CATEGORIAS_PAIS:
         destino = buscar_categoria_existente(CATEGORIAS_PAIS[pais_fuente], categorias)
@@ -391,9 +390,7 @@ def determinar_destino_pluto(categoria, nombre, categorias):
     # Pluto TV Brazil: exclusivamente carpeta-país Brasil.
     if re.search(r"\b(pluto\s*tv\s*)?(brazil|brasil)\b", texto):
         destino_brasil = buscar_categoria_existente("Brasil", categorias)
-        if destino_brasil:
-            return destino_brasil
-        return "Brasil"
+        return destino_brasil
 
     # NUNCA crear ni respetar una carpeta genérica "Pluto TV".
     # Se clasifica por nombre/tema y, si no hay destino seguro, se omite
@@ -408,10 +405,11 @@ def determinar_destino_pluto(categoria, nombre, categorias):
     if exacta:
         return exacta
 
-    return encontrar_categoria_tematica(
+    destino_tematico = encontrar_categoria_tematica(
         f"{categoria} {nombre}",
         categorias,
     )
+    return destino_tematico if destino_tematico else None
 
 def construir_bloque(canal, destino):
     bloque = [
@@ -555,7 +553,9 @@ def reclasificar_pluto_existente(lineas, session):
 
         destino = buscar_categoria_existente(categoria_fuente, categorias_actuales)
         if not destino:
-            destino = categoria_fuente
+            salida.extend(bloque)
+            i = j
+            continue
 
         categoria_actual = extraer_categoria(extinf)
         if normalizar(categoria_actual) != normalizar(destino):
@@ -1065,8 +1065,9 @@ def insertar_bloques(lineas, bloques):
         if rango:
             posiciones.append((rango[1] + 1, datos["bloques"]))
         else:
-            # Categoría nueva: se crea al final, sin tocar el orden existente.
-            posiciones.append((len(resultado), datos["bloques"]))
+            # Regla estricta: las fuentes complementan; nunca crean carpetas.
+            # Si la categoría no existe en la principal, se omiten esos bloques.
+            continue
 
     for posicion, bloques_cat in sorted(posiciones, key=lambda x: x[0], reverse=True):
         insertar = []
@@ -1340,31 +1341,33 @@ def ordenar_y_normalizar_carpetas(lineas):
     cat_infantiles = next(
         (b["categoria"] for b in bloques
          if normalizar(b["categoria"]) == "infantiles"),
-        "INFANTILES",
+        None,
     )
     cat_informativos = next(
         (b["categoria"] for b in bloques
          if normalizar(b["categoria"]) == "informativos"),
-        "INFORMATIVOS",
+        None,
     )
 
     for b in bloques:
         cat_norm = normalizar(b["categoria"])
         destino = b["categoria"]
 
-        if cat_norm in {"infantil", "infantiles", "teen"}:
+        if cat_norm in {"infantil", "infantiles", "teen"} and cat_infantiles:
             destino = cat_infantiles
             if cat_norm == "infantil":
                 cambios["infantil_a_infantiles"] += 1
             elif cat_norm == "teen":
                 cambios["teen_a_infantiles"] += 1
 
-        elif cat_norm == "noticias":
+        elif cat_norm == "noticias" and cat_informativos:
             destino = cat_informativos
             cambios["noticias_a_informativos"] += 1
 
         elif cat_norm == "documentales":
-            destino = buscar_categoria_existente("Documentales y Cultura", [x["categoria"] for x in bloques]) or "Documentales y Cultura"
+            destino_doc = buscar_categoria_existente("Documentales y Cultura", [x["categoria"] for x in bloques])
+            if destino_doc:
+                destino = destino_doc
 
         if destino != b["categoria"]:
             b["extinf"] = reemplazar_categoria(b["extinf"], destino)
@@ -1383,11 +1386,14 @@ def ordenar_y_normalizar_carpetas(lineas):
                 "espana": "España",
             }
             destino_canonico = nombres_canonicos.get(clave_canonica, destino)
-            b["extinf"] = reemplazar_categoria(b["extinf"], destino_canonico)
-            b["lineas"][0] = b["extinf"]
-            b["categoria"] = destino_canonico
-            destino = destino_canonico
-            clave = clave_canonica
+            existente_canonico = buscar_categoria_existente(destino_canonico, [x["categoria"] for x in bloques])
+            if existente_canonico:
+                destino_canonico = existente_canonico
+                b["extinf"] = reemplazar_categoria(b["extinf"], destino_canonico)
+                b["lineas"][0] = b["extinf"]
+                b["categoria"] = destino_canonico
+                destino = destino_canonico
+                clave = clave_canonica
 
         if clave not in grupos:
             grupos[clave] = {
@@ -1534,6 +1540,7 @@ def main():
     lineas, limpieza = limpiar_total_otros_y_sin_nombre(lineas)
 
     categorias = categorias_de_lineas(lineas)
+    categorias_iniciales_normalizadas = {normalizar(x) for x in categorias}
     urls_globales = mapa_urls_principal(lineas)
 
     # IMPORTANTE: NO deduplicar Pluto por channel ID.
@@ -1543,6 +1550,7 @@ def main():
     ids_pluto_fuentes = set()
     urls_pluto_fuentes_por_id = defaultdict(set)
     canales_pluto_fuentes_por_id = defaultdict(list)
+    urls_pluto_fuentes = set()
 
     bloques_nuevos = []
     agregados_normales = 0
@@ -1646,7 +1654,11 @@ def main():
                     sin_categoria += 1
                     continue
 
-                identidad = identidad_pluto(canal.get("extinf", ""), canal.get("url", ""))
+                url_pluto_fuente = canal.get("url", "").strip()
+                if url_pluto_fuente:
+                    urls_pluto_fuentes.add(url_pluto_fuente)
+
+                identidad = identidad_pluto(canal.get("extinf", ""), url_pluto_fuente)
                 if identidad:
                     ids_pluto_fuentes.add(identidad)
                     urls_pluto_fuentes_por_id[identidad].add(canal.get("url", "").strip())
@@ -1728,6 +1740,21 @@ def main():
         categorias_finales.append(normalizar(cat_final))
 
     prohibidas = {"pluto tv", "total", "otros"}
+    categorias_finales_normalizadas = {normalizar(x) for x in categorias_finales}
+    alias_permitidos = {
+        "el salvador": "el salvador - tcs",
+        "documentales y cultura": "documentales",
+    }
+    categorias_nuevas = {
+        cat for cat in categorias_finales_normalizadas
+        if cat not in categorias_iniciales_normalizadas
+        and alias_permitidos.get(cat) not in categorias_iniciales_normalizadas
+    }
+    if categorias_nuevas:
+        raise RuntimeError(
+            "VALIDACION DE CATEGORIAS FALLIDA: se crearon carpetas nuevas: "
+            + ", ".join(sorted(categorias_nuevas))
+        )
     presentes_prohibidas = sorted(set(categorias_finales) & prohibidas)
     if presentes_prohibidas:
         raise RuntimeError(
@@ -1751,12 +1778,6 @@ def main():
     texto_final = "\n".join(lineas)
     if not texto_final.endswith("\n"):
         texto_final += "\n"
-
-    PRINCIPAL.write_text(
-        texto_final,
-        encoding="utf-8",
-        newline="\n",
-    )
 
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
@@ -1829,6 +1850,51 @@ def main():
             for linea_final in lineas
             if url_es_valida(linea_final.strip())
         }
+
+    # VALIDACIÓN FINAL DE COBERTURA PLUTO POR URL EXACTA.
+    pluto_urls_faltantes = sorted(
+        url for url in urls_pluto_fuentes
+        if url not in urls_finales
+    )
+    if pluto_urls_faltantes:
+        raise RuntimeError(
+            "VALIDACION PLUTO POR URL FALLIDA: faltan "
+            f"{len(pluto_urls_faltantes)} enlaces exactos de las fuentes propias."
+        )
+
+    # Repetir validación física después del autorreparo.
+    categorias_finales_post = []
+    bloques_finales_post = []
+    categoria_actual_post = None
+    for linea_post in lineas:
+        if not linea_post.startswith("#EXTINF"):
+            continue
+        cat_post = extraer_categoria(linea_post)
+        if cat_post != categoria_actual_post:
+            bloques_finales_post.append(cat_post)
+            categoria_actual_post = cat_post
+        categorias_finales_post.append(normalizar(cat_post))
+
+    repetidas_post = [
+        cat for cat in set(bloques_finales_post)
+        if bloques_finales_post.count(cat) > 1
+    ]
+    if repetidas_post:
+        raise RuntimeError(
+            "VALIDACION FINAL DE BLOQUES FALLIDA: categorías físicas repetidas: "
+            + ", ".join(sorted(repetidas_post))
+        )
+
+    texto_final = "\n".join(lineas)
+    if not texto_final.endswith("\n"):
+        texto_final += "\n"
+
+    # SOLO AHORA se publica la principal.
+    PRINCIPAL.write_text(
+        texto_final,
+        encoding="utf-8",
+        newline="\n",
+    )
 
     ids_pluto_faltantes = {
         identidad
