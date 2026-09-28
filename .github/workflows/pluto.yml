@@ -54,24 +54,25 @@ jobs:
           done
 
           python - <<'PY'
+          from pathlib import Path
           import re
-          from collections import Counter
-          for code in ("us", "all"):
-              path = f"pluto/output/playlists/pluto_{code}.m3u"
-              text = open(path, encoding="utf-8-sig").read()
-              groups = Counter(
-                  m.group(1)
-                  for line in text.splitlines()
-                  if line.startswith("#EXTINF:")
-                  for m in [re.search(r'group-title="([^"]*)"', line)]
-                  if m
-              )
-              print(f"[{code.upper()}] CATEGORIAS:", dict(groups))
-              assert groups.get("Otros", 0) == 0, f"{code.upper()}: quedan canales en Otros"
+          allowed = {"pluto_es.m3u", "pluto_mx.m3u", "pluto_latam.m3u"}
+          directory = Path("pluto/output/playlists")
+          actual = {p.name for p in directory.glob("pluto_*.m3u")}
+          extra = sorted(actual - allowed)
+          if extra:
+              raise SystemExit("Playlist Pluto no autorizada: " + ", ".join(extra))
+          missing = sorted(allowed - actual)
+          if missing:
+              raise SystemExit("Playlist Pluto permitida ausente: " + ", ".join(missing))
+          for name in sorted(allowed):
+              path = directory / name
+              text = path.read_text(encoding="utf-8-sig")
+              assert text.startswith("#EXTM3U"), f"{name}: M3U inválido"
+              assert re.search(r"^#EXTINF:", text, re.MULTILINE), f"{name}: sin canales"
+              print(f"{name}: {len(re.findall(r'^#EXTINF:', text, re.MULTILINE))} canales")
+          print("OK: solo ES, MX y LATAM.")
           PY
-
-          test -s pluto/output/playlists/pluto.m3u
-          grep -q '^#EXTM3U' pluto/output/playlists/pluto.m3u
 
       - name: Publicar cambios
         run: |
