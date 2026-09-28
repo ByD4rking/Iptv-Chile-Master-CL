@@ -1965,6 +1965,12 @@ def main():
     if no_pluto_restaurados:
         print(f"Autorreparación: {no_pluto_restaurados} canales no-Pluto restaurados.")
 
+    # 14) Última barrera: deduplicación exacta después de cualquier autorreparación.
+    # Así una restauración nunca puede volver a introducir una URL duplicada.
+    lineas, duplicados_post_restauracion, _ = limpiar_duplicados_globales_y_carpetas_especiales(lineas)
+    if duplicados_post_restauracion:
+        print(f"Deduplicación final tras autorreparación: {duplicados_post_restauracion} duplicados eliminados.")
+
     # 14) VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
     # Si falla, el workflow se detiene y NO publica una lista incompleta.
     categorias_finales = []
@@ -2022,7 +2028,7 @@ def main():
 
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
-    # 15) BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
+    # 16) BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
     # puede desaparecer silenciosamente por una deduplicación por ID.
     ids_pluto_finales = set()
     for i_final, linea_final in enumerate(lineas):
