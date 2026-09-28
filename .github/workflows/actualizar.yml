@@ -94,10 +94,30 @@ jobs:
           b_urls={u for _,u in b}; a_urls=[u for _,u in a]
           a_set=set(a_urls)
 
-          # No se permite perder una URL no-Pluto existente.
-          lost_non_pluto=sorted(u for u in b_urls if "pluto" not in u.lower() and u not in a_set)
+          # Una URL no-Pluto existente no puede desaparecer, salvo limpiezas
+          # explícitas ya definidas por el proyecto (TOTAL/OTROS, categorías
+          # Telemundo/Sky mal clasificadas y países no autorizados).
+          allowed_cleanup = {
+              "total", "otros", "telemundo noticias", "sky sports",
+              "qatar", "palestina", "corea del norte", "corea del sur",
+              "israel", "alemania", "francia", "iran", "rusia",
+              "guinea ecuatorial", "estados unidos",
+          }
+          before_by_url={}
+          for ext,url in b:
+              m=re.search(r'group-title="([^"]*)"', ext)
+              before_by_url.setdefault(url, m.group(1).strip().lower() if m else "")
+
+          lost_non_pluto=[]
+          for url in b_urls:
+              if "pluto" in url.lower() or url in a_set:
+                  continue
+              if before_by_url.get(url,"") in allowed_cleanup:
+                  continue
+              lost_non_pluto.append(url)
+
           if lost_non_pluto:
-              raise SystemExit("REGRESION: se perdieron URLs no-Pluto existentes: "+str(lost_non_pluto[:20]))
+              raise SystemExit("REGRESION: se perdieron URLs no-Pluto existentes fuera de limpiezas autorizadas: "+str(sorted(lost_non_pluto)[:20]))
 
           # Una URL de acceso solo puede aparecer una vez.
           dup=sorted(u for u in set(a_urls) if a_urls.count(u)>1)
