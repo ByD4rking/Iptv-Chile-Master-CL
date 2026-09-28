@@ -77,9 +77,9 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE
 
 # 🪐 3. Pluto TV
 
-El proyecto mantiene **tres playlists Pluto TV independientes**, cada una publicada como su propio archivo M3U.
+El proyecto mantiene **siete playlists Pluto TV independientes**, cada una publicada como su propio archivo M3U.
 
-### 🌎🇪🇸🇲🇽 Las tres listas son independientes
+### 🌎🇪🇸🇲🇽🇦🇷🇧🇷🇨🇱🇺🇸 Las siete listas son independientes
 
 Puedes utilizar **una sola**, **dos** o **las tres** según lo que necesites. No es obligatorio cargarlas juntas.
 
@@ -100,6 +100,10 @@ Esto significa que, cuando un mismo canal aparece en varias regiones, el proyect
 | 🌎 **Pluto TV LATAM** | `pluto_latam.m3u` | Contenido orientado a Latinoamérica |
 | 🇪🇸 **Pluto TV España** | `pluto_es.m3u` | Contenido específico de España |
 | 🇲🇽 **Pluto TV México** | `pluto_mx.m3u` | Contenido específico de México |
+| 🇦🇷 **Pluto TV Argentina** | `pluto_ar.m3u` | Contenido específico de Argentina |
+| 🇧🇷 **Pluto TV Brasil** | `pluto_br.m3u` | Contenido específico de Brasil |
+| 🇨🇱 **Pluto TV Chile** | `pluto_cl.m3u` | Contenido específico de Chile |
+| 🇺🇸 **Pluto TV Estados Unidos** | `pluto_us.m3u` | Contenido específico de Estados Unidos |
 
 ### 🔗 RAW — Pluto TV LATAM
 
@@ -119,12 +123,40 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_mx.m3u
 ~~~
 
+### 🔗 RAW — Pluto TV Argentina
+
+~~~
+https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_ar.m3u
+~~~
+
+### 🔗 RAW — Pluto TV Brasil
+
+~~~
+https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_br.m3u
+~~~
+
+### 🔗 RAW — Pluto TV Chile
+
+~~~
+https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_cl.m3u
+~~~
+
+### 🔗 RAW — Pluto TV Estados Unidos
+
+~~~
+https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_us.m3u
+~~~
+
 ### 🧩 ¿Cómo elegir?
 
 - **Solo quieres contenido latinoamericano:** utiliza **Pluto TV LATAM**.
 - **Quieres específicamente contenido de España:** utiliza **Pluto TV España**.
 - **Quieres específicamente contenido de México:** utiliza **Pluto TV México**.
-- **Quieres ampliar la cobertura:** puedes cargar las tres listas en un reproductor que admita múltiples playlists.
+- **Quieres específicamente contenido de Argentina:** utiliza **Pluto TV Argentina**.
+- **Quieres específicamente contenido de Brasil:** utiliza **Pluto TV Brasil**.
+- **Quieres específicamente contenido de Chile:** utiliza **Pluto TV Chile**.
+- **Quieres específicamente contenido de Estados Unidos:** utiliza **Pluto TV Estados Unidos**.
+- **Quieres ampliar la cobertura:** puedes cargar varias o todas las listas en un reproductor que admita múltiples playlists.
 - **Quieres evitar administrar varias listas:** puedes utilizar la lista principal o GOD del proyecto cuando corresponda.
 
 > Pluto TV se mantiene como un bloque separado de la lista principal y de la GOD. Las tres playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual.
