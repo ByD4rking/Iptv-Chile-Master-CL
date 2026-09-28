@@ -1275,6 +1275,24 @@ def limpiar_pluto_categorias_canonicas(lineas, session):
     return salida, eliminados, movidos
 
 
+
+def obtener_ids_pluto_canonicos(session):
+    """Obtiene los IDs canónicos de Retro/Paranormal/Competencia desde LATAM."""
+    ids = set()
+    try:
+        r = session.get(FUENTE_PLUTO_CANONICA, timeout=30)
+        r.raise_for_status()
+        for canal in parsear_m3u(r.text):
+            if normalizar(canal.get("categoria", "")) not in PLUTO_CATEGORIAS_CANONICAS:
+                continue
+            identidad = identidad_pluto(canal.get("extinf", ""), canal.get("url", ""))
+            if identidad:
+                ids.add(identidad)
+    except Exception as e:
+        print(f"  -> AVISO: no se pudo cargar el catálogo canónico Pluto LATAM: {e}")
+    return ids
+
+
 def limpiar_extinf_huerfanos(lineas):
     """Elimina EXTINF sin URL causado por bloques consecutivos mal formados."""
     salida = []
@@ -1671,6 +1689,8 @@ def main():
     # Una misma señal puede tener enlaces regionales distintos (LATAM/ES/CL/AR/MX).
     # La regla del proyecto es no repetir el MISMO enlace de acceso; por eso
     # agregar_bloque() controla únicamente la URL exacta.
+    pluto_ids_canonicos = obtener_ids_pluto_canonicos(session)
+
     ids_pluto_fuentes = set()
     urls_pluto_fuentes_por_id = defaultdict(set)
     canales_pluto_fuentes_por_id = defaultdict(list)
@@ -1791,6 +1811,15 @@ def main():
                 # Pluto se deduplica por channel ID global. Las URLs pueden
                 # cambiar por JWT/región, pero el mismo ID sigue siendo el mismo canal.
                 if identidad and identidad in ids_pluto_fuentes:
+                    omitidos_duplicados += 1
+                    continue
+
+                if (
+                    identidad
+                    and normalizar(destino) in PLUTO_CATEGORIAS_CANONICAS
+                    and pluto_ids_canonicos
+                    and identidad not in pluto_ids_canonicos
+                ):
                     omitidos_duplicados += 1
                     continue
 
