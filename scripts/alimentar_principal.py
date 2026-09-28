@@ -253,6 +253,67 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
     # Coincidencia con una carpeta existente. Nunca inventar una nueva.
     return buscar_categoria_existente(categoria_busqueda, categorias)
 
+def reclasificar_iptvsv_existente(lineas, canales, categorias):
+    """Hace que la categoría declarada por IPTV-SV mande también para URLs ya existentes.
+
+    No duplica enlaces. Solo cambia group-title de una URL que ya estaba en la
+    principal. Telemundo Noticias y Sky Sports permanecen protegidos porque
+    esas carpetas fueron definidas como canónicas para sus enlaces.
+    """
+    destino_por_url = {}
+    conflictos = 0
+
+    for canal in canales:
+        url = (canal.get("url") or "").strip()
+        if not url:
+            continue
+        destino = determinar_destino_iptvsv(
+            canal.get("categoria", ""),
+            canal.get("nombre", ""),
+            categorias,
+        )
+        if not destino:
+            continue
+        anterior = destino_por_url.get(url)
+        if anterior and normalizar(anterior) != normalizar(destino):
+            conflictos += 1
+            continue
+        destino_por_url[url] = destino
+
+    salida = []
+    movidos = 0
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+
+        extinf = lineas[i]
+        bloque = [extinf]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            bloque.append(lineas[j])
+            j += 1
+
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            url = lineas[j].strip()
+            bloque.append(url)
+            j += 1
+
+            destino = destino_por_url.get(url)
+            actual = extraer_categoria(extinf)
+            protegido = normalizar(actual) in {"telemundo noticias", "sky sports"}
+            if destino and not protegido and normalizar(actual) != normalizar(destino):
+                bloque[0] = reemplazar_categoria(extinf, destino)
+                movidos += 1
+
+        salida.extend(bloque)
+        i = j
+
+    return salida, movidos, conflictos
+
 def determinar_destino(categoria, nombre, pais_fuente, categorias):
     texto = normalizar(f"{categoria or ''} {nombre or ''}")
 
@@ -1498,13 +1559,21 @@ def main():
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
+            if fuente_es_iptvsv := es_fuente_iptvsv(fuente):
+                lineas, iptvsv_reclasificados, iptvsv_conflictos = reclasificar_iptvsv_existente(
+                    lineas,
+                    canales,
+                    categorias,
+                )
+                if iptvsv_reclasificados:
+                    print(f"  -> IPTVSV URLs existentes reclasificadas: {iptvsv_reclasificados}")
+                if iptvsv_conflictos:
+                    print(f"  -> IPTVSV conflictos de categoría por URL: {iptvsv_conflictos}")
             pais_fuente = next(
                 (pais for clave, pais in PAIS_POR_FUENTE.items()
                  if clave.lower() in fuente.lower()),
                 None,
             )
-            fuente_es_iptvsv = es_fuente_iptvsv(fuente)
-
             nuevos = 0
             omitidos_regla_especial = 0
             for canal in canales:
