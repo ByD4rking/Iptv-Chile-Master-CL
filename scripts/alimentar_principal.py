@@ -223,35 +223,38 @@ def es_categoria_pais_generica_iptvsv(categoria):
 
 
 def determinar_destino_iptvsv(categoria, nombre, categorias):
-    """Reglas especiales para IPTV-SV; no hereda las reglas de Pluto."""
+    """IPTV-SV: respeta literalmente la carpeta declarada por la fuente.
+
+    No reclasifica por nombre y NO crea carpetas nuevas. Si la fuente dice
+    Anime -> Anime, Cine -> Cine, Comedia -> Comedia, Argentina -> Argentina,
+    etc. Si la carpeta declarada no existe en la principal, el canal se omite
+    en vez de inventar una categoría nueva.
+    """
     categoria = (categoria or "").strip()
-    nombre = (nombre or "").strip()
-    c_norm = normalizar(categoria)
-
-    # La carpeta especial de países sí se respeta si viene declarada por la fuente.
-    if "tv mas importantes de cada pais" in c_norm:
-        return buscar_categoria_existente(categoria, categorias) or buscar_categoria_existente(
-            "TV MÁS IMPORTANTES DE CADA PAÍS", categorias
-        ) or "TV MÁS IMPORTANTES DE CADA PAÍS"
-
-    # Si IPTV-SV declara una carpeta que ya existe en la principal, usarla.
-    exacta = buscar_categoria_existente(categoria, categorias)
-    if exacta and not es_categoria_pais_generica_iptvsv(categoria):
-        return exacta
-
-    # No crear ni alimentar carpetas-país genéricas desde IPTV-SV.
-    if es_categoria_pais_generica_iptvsv(categoria):
+    if not categoria:
         return None
 
-    destino = encontrar_categoria_tematica(f"{categoria} {nombre}", categorias)
+    c_norm = normalizar(categoria)
+
+    if c_norm == "tv mas importantes de cada pais":
+        return buscar_categoria_existente(
+            "TV MÁS IMPORTANTES DE CADA PAÍS", categorias
+        )
+
+    aliases = {
+        "el salvador - tcs": "El Salvador",
+        "documentales": "Documentales y Cultura",
+        "infantil": "Infantiles",
+        "teen": "Infantiles",
+        "noticias": "Informativos",
+    }
+    categoria_busqueda = aliases.get(c_norm, categoria)
+
+    destino = buscar_categoria_existente(categoria_busqueda, categorias)
     if destino:
         return destino
 
-    # Solo se permite crear una categoría declarada no-país y útil.
-    if categoria and c_norm not in {"total", "otros"}:
-        return categoria
     return None
-
 
 def determinar_destino(categoria, nombre, pais_fuente, categorias):
     texto = normalizar(f"{categoria or ''} {nombre or ''}")
@@ -1639,6 +1642,41 @@ def main():
             if u in vistos:
                 duplicados_finales += 1
             vistos.add(u)
+
+    # VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
+    # Si falla, el workflow se detiene y NO publica una lista incompleta.
+    categorias_finales = []
+    bloques_finales = []
+    categoria_actual = None
+    for linea_final in lineas:
+        if not linea_final.startswith("#EXTINF"):
+            continue
+        cat_final = extraer_categoria(linea_final)
+        if cat_final != categoria_actual:
+            bloques_finales.append(cat_final)
+            categoria_actual = cat_final
+        categorias_finales.append(normalizar(cat_final))
+
+    prohibidas = {"pluto tv", "total", "otros"}
+    presentes_prohibidas = sorted(set(categorias_finales) & prohibidas)
+    if presentes_prohibidas:
+        raise RuntimeError(
+            "VALIDACION DE CARPETAS FALLIDA: siguen presentes "
+            + ", ".join(presentes_prohibidas)
+        )
+
+    repetidas_bloques = [
+        cat for cat in set(bloques_finales)
+        if bloques_finales.count(cat) > 1
+    ]
+    if repetidas_bloques:
+        raise RuntimeError(
+            "VALIDACION DE BLOQUES FALLIDA: categorías físicas repetidas: "
+            + ", ".join(sorted(repetidas_bloques))
+        )
+
+    if not lineas or not any(x.startswith("#EXTINF") for x in lineas):
+        raise RuntimeError("VALIDACION FALLIDA: la principal quedó sin canales.")
 
     texto_final = "\n".join(lineas)
     if not texto_final.endswith("\n"):
