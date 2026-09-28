@@ -529,8 +529,16 @@ def main() -> None:
             path, count, updated = write_if_safe(region, channels)
             results[code] = (count, updated)
         except Exception as exc:
-            print(f"[{code.upper()}] ERROR: {exc}")
-            results[code] = (0, False)
+            existing = previous_count(PLAYLIST_DIR / f"pluto_{code}.m3u")
+            if existing:
+                print(
+                    f"[{code.upper()}] ERROR: {exc}. "
+                    f"Se conserva la lista existente ({existing} canales) y se continúa."
+                )
+                results[code] = (existing, False)
+            else:
+                print(f"[{code.upper()}] ERROR: {exc}. No existe una lista previa segura.")
+                results[code] = (0, False)
 
     failed_regions = [code for code, (count, updated) in results.items() if count <= 0]
     if failed_regions:
