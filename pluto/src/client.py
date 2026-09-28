@@ -520,13 +520,17 @@ class PlutoClient:
 
         # Keep the language preference explicit even if Pluto's boot response
         # does not echo it into stitcherParams.
-        # Do not force a lower quality. Pluto can return 720p, 1080p or higher
-        # depending on the channel and manifest available for this region.
+        #
+        # IMPORTANT: do not force a fixed quality here. The URL points to Pluto's
+        # HLS master playlist, which can expose multiple variants. The player can
+        # then select the highest variant available for the channel/device/network
+        # and adapt during playback. A fixed quality=1080p can cap a channel that
+        # offers a higher variant and can also make playback less tolerant on
+        # unstable connections.
         url += (
             f"&country={self.region.country}"
             f"&marketingRegion={self.region.marketing_region}"
             f"&preferredLanguage={self.active_language}"
-            f"&quality=1080p"
         )
 
         return url
