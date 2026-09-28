@@ -251,6 +251,11 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
         "infantil": "Infantiles",
         "teen": "Infantiles",
         "noticias": "Informativos",
+        # Variantes de la misma carpeta; siempre aterrizan en la carpeta
+        # existente y canónica, nunca crean otra.
+        "tigo sport/fox": "Tigo Sports / Fox",
+        "tigo sports/fox": "Tigo Sports / Fox",
+        "tigo sports / fox": "Tigo Sports / Fox",
     }
     categoria_busqueda = aliases.get(c_norm, categoria)
 
