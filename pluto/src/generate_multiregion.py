@@ -401,7 +401,7 @@ def build_playlist(channels: list[dict], region: Region) -> str:
     return "\n".join(lines) + "\n"
 
 
-def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool]:
+def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool, list[dict]]:
     PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
     REGIONAL_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -421,7 +421,7 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
             f"[{region.code.upper()}] BLOQUEADO: {new_count} canales nuevos "
             f"frente a {old_count} anteriores. Se conserva la lista anterior."
         )
-        return playlist_path, old_count, False
+        return playlist_path, old_count, False, channels
 
     tmp_playlist = playlist_path.with_suffix(".m3u.tmp")
     tmp_data = data_path.with_suffix(".json.tmp")
@@ -436,7 +436,7 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     tmp_data.replace(data_path)
 
     print(f"[{region.code.upper()}] {new_count} canales -> {playlist_path}")
-    return playlist_path, new_count, True
+    return playlist_path, new_count, True, channels
 
 
 def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
@@ -498,21 +498,36 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
 
     old_count = previous_count(output)
     # LATAM también conserva cualquier canal que haya desaparecido temporalmente
-    # de una de las fuentes regionales.
+    # de las fuentes regionales. La comparación usa ID, stream o nombre único,
+    # evitando depender solo de IDs que Pluto puede rotar.
     previous = previous_entries(output)
-    previous_ids = {str(ch.get("id") or "").strip() for ch in previous}
-    previous_streams = {str(ch.get("stream") or "").strip() for ch in previous}
+    seen_ids = {str(channel.get("id") or "").strip() for _, channels in regionales for channel in channels}
+    seen_streams = {str(channel.get("stream") or "").strip() for _, channels in regionales for channel in channels}
+    seen_names = {
+        normalize_channel_name(channel.get("name"))
+        for _, channels in regionales
+        for channel in channels
+        if normalize_channel_name(channel.get("name"))
+    }
     preserved = 0
     for old in previous:
         old_id = str(old.get("id") or "").strip()
         old_stream = str(old.get("stream") or "").strip()
-        if old_id in seen or old_stream in previous_streams and old_id in previous_ids:
-            if old_id in seen:
-                continue
+        old_name = normalize_channel_name(old.get("name"))
+        if old_id in seen_ids or old_stream in seen_streams:
+            continue
+        if old_name and old_name in seen_names:
+            continue
         entry = channel_to_m3u(old, REGIONS["mx"])
-        if not entry or old_id in seen or old_stream in seen:
+        if not entry:
             continue
         lines.append(entry.rstrip())
+        if old_id:
+            seen_ids.add(old_id)
+        if old_stream:
+            seen_streams.add(old_stream)
+        if old_name:
+            seen_names.add(old_name)
         seen.add(old_id or old_stream)
         preserved += 1
     if preserved:
@@ -550,12 +565,12 @@ def main() -> None:
         region = REGIONS[code]
         try:
             channels = fetch_region(region)
-            path, count, updated = write_if_safe(region, channels)
-            # LATAM may consume a regional catalog only when that regional
-            # refresh itself passed the safety gate. A blocked region therefore
-            # cannot inject a partial/catastrophic snapshot into LATAM.
-            if channels and updated:
-                fresh_regions[code] = channels
+            path, count, updated, published_channels = write_if_safe(region, channels)
+            # LATAM consume exactamente el catálogo que quedó publicado tras
+            # la preservación de canales anteriores. Así una rotación/omisión
+            # temporal de Pluto no provoca pérdidas indirectas en LATAM.
+            if published_channels and updated:
+                fresh_regions[code] = published_channels
             results[code] = (count, updated)
         except Exception as exc:
             existing = previous_count(PLAYLIST_DIR / f"pluto_{code}.m3u")

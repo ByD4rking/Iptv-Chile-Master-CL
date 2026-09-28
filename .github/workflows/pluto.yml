@@ -48,13 +48,19 @@ jobs:
           out = {}
           for path in sorted(Path("pluto/output/playlists").glob("pluto_*.m3u")):
               text = path.read_text(encoding="utf-8-sig", errors="replace")
-              ids = []
-              for line in text.splitlines():
-                  if line.startswith("#EXTINF:"):
-                      m = re.search(r'tvg-id="([^"]+)"', line)
-                      if m:
-                          ids.append(m.group(1))
-              out[path.name] = sorted(set(ids))
+              entries = []
+              lines = text.splitlines()
+              for i, line in enumerate(lines):
+                  if not line.startswith("#EXTINF:"):
+                      continue
+                  id_match = re.search(r'tvg-id="([^"]+)"', line)
+                  name_match = re.search(r'tvg-name="([^"]+)"', line)
+                  if not id_match:
+                      continue
+                  name = name_match.group(1).strip().lower() if name_match else ""
+                  name = re.sub(r"\\s+", " ", name)
+                  entries.append({"id": id_match.group(1), "name": name})
+              out[path.name] = entries
           Path("/tmp/pluto_before.json").write_text(json.dumps(out), encoding="utf-8")
           print("Inventario previo:", {k: len(v) for k, v in out.items()})
           PY
@@ -134,7 +140,7 @@ jobs:
               assert all("/master.m3u8" in s for s in streams), f"{name}: no todos usan master.m3u8"
               print(f"{name}: validación de IDs, streams y master HLS OK")
           before = json.loads(Path("/tmp/pluto_before.json").read_text(encoding="utf-8"))
-          for name, old_ids in before.items():
+          for name, old_entries in before.items():
               if name not in allowed:
                   continue
               path = directory / name
@@ -142,12 +148,21 @@ jobs:
                   raise SystemExit(f"REGRESION: desapareció {name}")
               text = path.read_text(encoding="utf-8-sig")
               new_ids = set(re.findall(r'tvg-id="([^"]+)"', text))
-              missing = sorted(set(old_ids) - new_ids)
+              new_names = {
+                  re.sub(r"\\s+", " ", value.strip().lower())
+                  for value in re.findall(r'tvg-name="([^"]+)"', text)
+              }
+              missing = [
+                  entry for entry in old_entries
+                  if entry["id"] not in new_ids
+                  and (not entry["name"] or entry["name"] not in new_names)
+              ]
               if missing:
                   raise SystemExit(
-                      f"REGRESION: {name} perdió {len(missing)} canales existentes: {missing[:20]}"
+                      f"REGRESION: {name} perdió {len(missing)} canales existentes "
+                      f"(ID/nombre): {missing[:20]}"
                   )
-              print(f"{name}: OK, conserva {len(old_ids)} canales anteriores")
+              print(f"{name}: OK, conserva {len(old_entries)} canales anteriores (ID o nombre)")
 
           print("OK: las 7 listas Pluto están presentes y no se permite perder canales existentes.")
           PY
