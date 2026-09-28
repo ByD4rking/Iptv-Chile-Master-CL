@@ -318,13 +318,13 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
 
     # Reglas fijas de M3U.CL: estas fuentes tienen destino propio.
     if pais_fuente == "xxx":
-        return buscar_categoria_existente("XXX+18", categorias) or "XXX+18"
+        return buscar_categoria_existente("XXX+18", categorias)
 
     if pais_fuente == "religiosos":
-        return buscar_categoria_existente("RELIGIOSOS", categorias) or "RELIGIOSOS"
+        return buscar_categoria_existente("RELIGIOSOS", categorias)
 
     if pais_fuente == "musica":
-        return buscar_categoria_existente("MÚSICA", categorias) or "MÚSICA"
+        return buscar_categoria_existente("MÚSICA", categorias)
 
     if pais_fuente == "latam":
         return (
@@ -1329,6 +1329,25 @@ def ordenar_y_normalizar_carpetas(lineas):
             prefijo.extend(lineas[inicio:j])
             i = j
 
+    # UNIFICACIÓN FIJA: El Salvador TCS + El Salvador -> EL Salvador.
+    # Solo actúa si al menos una variante ya existe; nunca crea una carpeta
+    # desde cero.
+    el_salvador_variantes = {
+        normalizar("el salvador"),
+        normalizar("el salvador - tcs"),
+        normalizar("el salvador tcs"),
+    }
+    el_salvador_habilitado = any(
+        normalizar(b["categoria"]) in el_salvador_variantes
+        for b in bloques
+    )
+    if el_salvador_habilitado:
+        for b in bloques:
+            if normalizar(b["categoria"]) in el_salvador_variantes:
+                b["categoria"] = "EL Salvador"
+                b["extinf"] = reemplazar_categoria(b["extinf"], "EL Salvador")
+                b["lineas"][0] = b["extinf"]
+
     categorias = []
     grupos = {}
     cambios = {
@@ -1680,7 +1699,7 @@ def main():
             print(f"  -> ERROR: {e}")
 
     # 6) Insertar primero los canales nuevos dentro de sus carpetas existentes.
-    # Las categorías nuevas se crean al final; nunca se reordena la principal.
+    # Regla estricta: las fuentes nunca crean categorías nuevas.
     lineas = insertar_bloques(lineas, bloques_nuevos)
 
     # 7) Consolidar físicamente SOLO Pluto. Esto elimina bloques Pluto
@@ -1749,6 +1768,7 @@ def main():
         cat for cat in categorias_finales_normalizadas
         if cat not in categorias_iniciales_normalizadas
         and alias_permitidos.get(cat) not in categorias_iniciales_normalizadas
+        and cat != normalizar("el salvador")
     }
     if categorias_nuevas:
         raise RuntimeError(
@@ -1970,7 +1990,7 @@ def main():
     print("      * categoría sin nombre")
     print("      * duplicados dentro de TOTAL/OTROS")
     print("  - TOTAL/OTROS únicos se reclasifican cuando es posible.")
-    print("  - Categorías nuevas solo se agregan al final.")
+    print("  - Ninguna fuente puede crear categorías nuevas.")
     print("  - Pluto antiguo se elimina antes de cargar Pluto propio.")
     print("  - Pluto propio usa exclusivamente FUENTES_PLUTO.")
     print("  - CHILE de fuentes normales -> CHILE TV.")
