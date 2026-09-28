@@ -167,8 +167,8 @@ def apply_reference_metadata(
         ref = metadata.get(channel.get("id", ""))
         if not ref:
             # Some regional Pluto IDs can change. Fall back to a unique normalized name match.
-            name = re.sub(r"\\s+", " ", str(channel.get("name") or "").strip().lower())
-            candidates = [m for m in metadata.values() if re.sub(r"\\s+", " ", str(m.get("reference_name") or "").strip().lower()) == name]
+            name = re.sub(r"\s+", " ", str(channel.get("name") or "").strip().lower())
+            candidates = [m for m in metadata.values() if re.sub(r"\s+", " ", str(m.get("reference_name") or "").strip().lower()) == name]
             if len(candidates) == 1:
                 ref = candidates[0]
         if not ref:
@@ -322,7 +322,7 @@ def previous_entries(path: Path) -> list[dict]:
 
 def normalize_channel_name(value: str) -> str:
     value = str(value or "").strip().lower()
-    value = re.sub(r"\\s+", " ", value)
+    value = re.sub(r"\s+", " ", value)
     return value
 
 def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[dict], int]:
