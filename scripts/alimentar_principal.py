@@ -236,6 +236,7 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
         "chile": "CHILE TV",
         "el salvador": "EL Salvador",
         "el salvador - tcs": "EL Salvador",
+        "el salvador local": "EL Salvador",
         "documentales": "Documentales y Cultura",
         "infantil": "Infantiles",
         "teen": "Infantiles",
@@ -1480,6 +1481,7 @@ def main():
     # agregar_bloque() controla únicamente la URL exacta.
     ids_pluto_fuentes = set()
     urls_pluto_fuentes_por_id = defaultdict(set)
+    canales_pluto_fuentes_por_id = defaultdict(list)
 
     bloques_nuevos = []
     agregados_normales = 0
@@ -1579,6 +1581,7 @@ def main():
                 if identidad:
                     ids_pluto_fuentes.add(identidad)
                     urls_pluto_fuentes_por_id[identidad].add(canal.get("url", "").strip())
+                    canales_pluto_fuentes_por_id[identidad].append(canal)
 
                 # La deduplicación de Pluto se hace SOLO por URL exacta.
                 # No se descartan variantes regionales por compartir channel ID.
@@ -1706,6 +1709,58 @@ def main():
         for linea_final in lineas
         if url_es_valida(linea_final.strip())
     }
+
+    # AUTORREPARACIÓN PLUTO: si una identidad fuente desapareció durante
+    # alguna limpieza posterior, reinsertar una representación válida de la
+    # misma fuente antes de declarar la principal incompleta.
+    ids_pluto_finales_pre = set()
+    for i_pre, linea_pre in enumerate(lineas):
+        if linea_pre.startswith("#EXTINF"):
+            j_pre = i_pre + 1
+            while j_pre < len(lineas) and lineas[j_pre].startswith("#"):
+                j_pre += 1
+            if j_pre < len(lineas) and url_es_valida(lineas[j_pre].strip()):
+                identidad_pre = identidad_pluto(linea_pre, lineas[j_pre].strip())
+                if identidad_pre:
+                    ids_pluto_finales_pre.add(identidad_pre)
+
+    reparados_pluto = 0
+    for identidad, canales_fuente in canales_pluto_fuentes_por_id.items():
+        if identidad in ids_pluto_finales_pre:
+            continue
+        canal_fuente = next(
+            (c for c in canales_fuente if c.get("url", "").strip() not in urls_finales),
+            None,
+        )
+        if not canal_fuente:
+            continue
+        destino_fuente = determinar_destino_pluto(
+            canal_fuente.get("categoria", ""),
+            canal_fuente.get("nombre", ""),
+            categorias_de_lineas(lineas),
+        )
+        if not destino_fuente:
+            continue
+        extinf_reparado = reemplazar_categoria(
+            canal_fuente.get("extinf", ""),
+            destino_fuente,
+        )
+        bloque_reparado = [extinf_reparado]
+        bloque_reparado.extend(canal_fuente.get("extras", []))
+        bloque_reparado.append(canal_fuente.get("url", "").strip())
+        lineas.extend(bloque_reparado)
+        urls_finales.add(canal_fuente.get("url", "").strip())
+        reparados_pluto += 1
+
+    if reparados_pluto:
+        lineas, _ = deduplicar_pluto_existente(lineas)
+        lineas, _ = ordenar_y_normalizar_carpetas(lineas)
+        urls_finales = {
+            linea_final.strip()
+            for linea_final in lineas
+            if url_es_valida(linea_final.strip())
+        }
+
     ids_pluto_faltantes = {
         identidad
         for identidad in ids_pluto_fuentes
