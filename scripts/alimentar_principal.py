@@ -987,6 +987,111 @@ def insertar_bloques(lineas, bloques):
         resultado[posicion:posicion] = insertar
     return resultado
 
+
+def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
+    """
+    Consolida físicamente los bloques Pluto en su carpeta destino.
+
+    IMPORTANTE:
+      - Solo se mueven bloques cuyo URL es Pluto.
+      - Todo bloque no-Pluto conserva su orden relativo exacto.
+      - Dentro de cada carpeta, los Pluto conservan su orden relativo.
+      - No se aplica ningún orden global de carpetas.
+      - No se cambian URLs, nombres, logos ni metadatos.
+    """
+    prefijo = []
+    bloques = []
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+
+        inicio = i
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#"):
+            j += 1
+
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            bloque = lineas[inicio:j + 1]
+            bloques.append({
+                "lineas": bloque,
+                "categoria": extraer_categoria(extinf),
+                "url": lineas[j].strip(),
+                "original": len(bloques),
+            })
+            i = j + 1
+        else:
+            prefijo.extend(lineas[inicio:j])
+            i = j
+
+    pluto = [b for b in bloques if es_url_pluto(b["url"])]
+    if not pluto:
+        return lineas, 0, {}
+
+    no_pluto = [b for b in bloques if not es_url_pluto(b["url"])]
+
+    # Pluto por categoría, manteniendo exactamente el orden original.
+    por_categoria = defaultdict(list)
+    primera_original = {}
+    for b in pluto:
+        clave = normalizar(b["categoria"])
+        por_categoria[clave].append(b)
+        primera_original.setdefault(clave, b["original"])
+
+    # Posición de inserción: después del último bloque NO-Pluto de la
+    # categoría. Si la categoría solo contiene Pluto, se conserva la
+    # posición aproximada del primer Pluto que había en ella.
+    inserciones = []
+    for clave, pluto_bloques in por_categoria.items():
+        indices_no_pluto = [
+            idx for idx, b in enumerate(no_pluto)
+            if normalizar(b["categoria"]) == clave
+        ]
+
+        if indices_no_pluto:
+            posicion = indices_no_pluto[-1] + 1
+        else:
+            posicion = sum(
+                1 for b in no_pluto
+                if b["original"] < primera_original[clave]
+            )
+
+        inserciones.append((
+            posicion,
+            primera_original[clave],
+            pluto_bloques,
+        ))
+
+    # Insertar de atrás hacia adelante para no alterar las posiciones
+    # calculadas. En una misma posición se conserva el orden original
+    # entre categorías Pluto.
+    inserciones.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    resultado = list(no_pluto)
+    movidos = 0
+    por_categoria_movidos = defaultdict(int)
+
+    posiciones_originales = {
+        id(b): idx for idx, b in enumerate(bloques)
+    }
+
+    for posicion, _, pluto_bloques in inserciones:
+        for offset, b in enumerate(pluto_bloques):
+            resultado.insert(posicion + offset, b)
+            if posiciones_originales[id(b)] != posicion + offset:
+                movidos += 1
+                por_categoria_movidos[b["categoria"]] += 1
+
+    salida = list(prefijo)
+    for b in resultado:
+        salida.extend(b["lineas"])
+
+    return salida, movidos, dict(por_categoria_movidos)
+
 PAISES_ORDEN_FINAL = {
     "peru", "bolivia", "argentina", "brasil", "brazil", "colombia",
     "ecuador", "venezuela", "paraguay", "mexico", "espana", "spain",
@@ -1316,10 +1421,18 @@ def main():
             errores += 1
             print(f"  -> ERROR: {e}")
 
-    # 6) NO reordenar carpetas de la principal.
-    # La estructura y el orden de las carpetas existentes se conservan.
-    # Las únicas reclasificaciones de carpetas automáticas son las específicas
-    # de Pluto realizadas arriba; las demás fuentes respetan sus reglas propias.
+    # 6) Insertar primero los canales nuevos dentro de sus carpetas existentes.
+    # Las categorías nuevas se crean al final; nunca se reordena la principal.
+    lineas = insertar_bloques(lineas, bloques_nuevos)
+
+    # 7) Consolidar físicamente SOLO Pluto. Esto elimina bloques Pluto
+    # intercalados entre categorías ajenas sin mover ningún bloque no-Pluto.
+    (
+        lineas,
+        pluto_movidos_fisicamente,
+        pluto_movidos_fisicamente_por_categoria,
+    ) = reubicar_bloques_pluto_sin_reordenar_principal(lineas)
+
     orden_carpetas = {
         "infantil_a_infantiles": 0,
         "teen_a_infantiles": 0,
@@ -1327,7 +1440,7 @@ def main():
         "cnn_priorizados": 0,
     }
 
-    # 7) Validación final de URLs duplicadas globales.
+    # 8) Validación final de URLs duplicadas globales.
     vistos = set()
     duplicados_finales = 0
     for linea in lineas:
@@ -1359,6 +1472,7 @@ def main():
     print(f"Pluto reubicados por categoría:        {pluto_reubicados}")
     print(f"Errores sincronizando carpetas Pluto:   {pluto_reubicados_errores}")
     print(f"Pluto duplicados por channel ID:      {pluto_duplicados_existentes}")
+    print(f"Pluto bloques reubicados físicamente: {pluto_movidos_fisicamente}")
     print(f"Pluto Brasil movidos a carpeta Brasil: {pluto_brasil_movidos}")
     print(f"Errores al revisar Pluto Brasil:       {pluto_brasil_errores}")
     print(f"Sin categoría eliminados:           {limpieza['sin_nombre_eliminados']}")
@@ -1374,6 +1488,11 @@ def main():
     print(f"Teen -> INFANTILES:                  {orden_carpetas['teen_a_infantiles']}")
     print(f"Noticias -> INFORMATIVOS:             {orden_carpetas['noticias_a_informativos']}")
     print(f"CNN priorizados en INFORMATIVOS:      {orden_carpetas['cnn_priorizados']}")
+
+    if pluto_movidos_fisicamente_por_categoria:
+        print("\nPLUTO reubicados físicamente por carpeta:")
+        for cat, cantidad in sorted(pluto_movidos_fisicamente_por_categoria.items()):
+            print(f"  - {cat}: {cantidad} canales")
 
     if limpieza["movidos_por_categoria"]:
         print("\nTOTAL/OTROS movidos por categoría:")
