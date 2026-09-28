@@ -3,6 +3,8 @@ name: Pluto TV - Actualizar listas regionales
 
 on:
   push:
+    branches:
+      - main
     paths:
       - "pluto/src/**"
       - "pluto/requirements.txt"
