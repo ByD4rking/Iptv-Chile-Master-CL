@@ -348,62 +348,62 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
 
 
 def build_latam() -> Path:
-    """Build a Spanish-speaking Latin America aggregate from verified regional lists.
-
-    This is an aggregate playlist, not a claim that Pluto exposes a separate
-    official LATAM market. It uses only the regional playlists we already
-    generate and deduplicates by tvg-id (falling back to stream URL).
-    """
+    """Build LATAM from MX/CL/AR in memory; only LATAM itself is published."""
     PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
-
-    source_codes = ("mx", "cl", "ar")
     lines = ["#EXTM3U"]
     seen = set()
     source_counts = {}
 
-    for code in source_codes:
+    for code in ("mx", "cl", "ar"):
         path = PLAYLIST_DIR / f"pluto_{code}.m3u"
-        if not path.exists():
-            source_counts[code] = 0
-            continue
+        if path.exists() and path.stat().st_size:
+            text = path.read_text(encoding="utf-8-sig")
+            chunks = re.split(r"(?=^#EXTINF:)", text, flags=re.MULTILINE)
+            channels = []
+            for chunk in chunks:
+                if not chunk.startswith("#EXTINF:"):
+                    continue
+                parts = chunk.strip().splitlines()
+                if len(parts) < 2:
+                    continue
+                id_match = re.search(r'tvg-id="([^"]+)"', parts[0])
+                cid = id_match.group(1) if id_match else parts[1].strip()
+                name_match = re.search(r',(.+)$', parts[0])
+                name = name_match.group(1).strip() if name_match else cid
+                channels.append({"id": cid, "name": name, "stream": parts[1].strip(),
+                                 "logo": (re.search(r'tvg-logo="([^"]*)"', parts[0]) or [None, ""])[1],
+                                 "category": (re.search(r'group-title="([^"]*)"', parts[0]) or [None, "Entretenimiento"])[1]})
+        else:
+            try:
+                channels = fetch_region(REGIONS[code])
+            except Exception as exc:
+                print(f"[{code.upper()}] ERROR interno LATAM: {exc}")
+                channels = []
 
-        text = path.read_text(encoding="utf-8-sig")
-        chunks = re.split(r"(?=^#EXTINF:)", text, flags=re.MULTILINE)
-        added_from_source = 0
-
-        for chunk in chunks:
-            if not chunk.startswith("#EXTINF:"):
+        added = 0
+        for channel in channels:
+            key = str(channel.get("id") or channel.get("stream") or "").strip()
+            if not key or key in seen:
                 continue
-            lines_chunk = chunk.strip().splitlines()
-            if len(lines_chunk) < 2:
+            if "stream" not in channel:
                 continue
-
-            match = re.search(r'tvg-id="([^\"]+)"', lines_chunk[0])
-            key = match.group(1) if match else lines_chunk[1].strip()
-            if key in seen:
+            entry = channel_to_m3u(channel, REGIONS["mx"])
+            if not entry:
                 continue
-
-            lines.extend(lines_chunk[:2])
+            lines.append(entry.rstrip())
             seen.add(key)
-            added_from_source += 1
-
-        source_counts[code] = added_from_source
+            added += 1
+        source_counts[code] = added
 
     if not seen:
-        raise RuntimeError("LATAM: no hay canales regionales válidos para construir la lista.")
+        raise RuntimeError("LATAM: no hay canales válidos.")
 
     output = PLAYLIST_DIR / "pluto_latam.m3u"
     tmp = output.with_suffix(".m3u.tmp")
     tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
     tmp.replace(output)
-
-    print(
-        f"[LATAM] {len(seen)} canales únicos -> {output} "
-        f"(MX: {source_counts.get('mx', 0)}, CL: {source_counts.get('cl', 0)}, "
-        f"AR: {source_counts.get('ar', 0)})"
-    )
+    print(f"[LATAM] {len(seen)} canales únicos -> {output} (MX: {source_counts.get('mx',0)}, CL: {source_counts.get('cl',0)}, AR: {source_counts.get('ar',0)})")
     return output
-
 
 def build_all() -> Path:
     PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
