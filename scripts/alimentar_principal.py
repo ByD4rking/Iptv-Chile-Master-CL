@@ -1099,6 +1099,13 @@ PAISES_ORDEN_FINAL = {
     "honduras", "nicaragua", "panama", "cuba", "puerto rico", "uruguay",
 }
 
+# Alias de países: evita que "Brasil/Brazil" o "España/Spain" terminen
+# en bloques físicos separados. La categoría visible queda en español.
+PAISES_CANONICOS = {
+    "brazil": "brasil",
+    "spain": "espana",
+}
+
 def ordenar_y_normalizar_carpetas(lineas):
     """
     Ordena y normaliza las carpetas de la principal sin cambiar URLs.
@@ -1186,6 +1193,16 @@ def ordenar_y_normalizar_carpetas(lineas):
             b["categoria"] = destino
 
         clave = normalizar(destino)
+        # Unificar alias de países antes de crear el grupo físico.
+        clave_canonica = PAISES_CANONICOS.get(clave, clave)
+        if clave_canonica != clave:
+            destino_canonico = PAISES_CANONICOS[clave_canonica]
+            b["extinf"] = reemplazar_categoria(b["extinf"], destino_canonico)
+            b["lineas"][0] = b["extinf"]
+            b["categoria"] = destino_canonico
+            destino = destino_canonico
+            clave = clave_canonica
+
         if clave not in grupos:
             grupos[clave] = {
                 "categoria": destino,
