@@ -451,7 +451,7 @@ def reclasificar_pluto_existente(lineas, session):
         extinf = lineas[i]
         bloque = [extinf]
         j = i + 1
-        while j < len(lineas) and lineas[j].startswith("#"):
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             bloque.append(lineas[j])
             j += 1
 
@@ -514,7 +514,7 @@ def deduplicar_pluto_existente(lineas):
         extinf = lineas[i]
         bloque = [extinf]
         j = i + 1
-        while j < len(lineas) and lineas[j].startswith("#"):
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             bloque.append(lineas[j])
             j += 1
 
@@ -576,7 +576,7 @@ def mover_pluto_brasil_a_brasil(lineas, session):
         extinf = lineas[i]
         bloque = [extinf]
         j = i + 1
-        while j < len(lineas) and lineas[j].startswith("#"):
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             bloque.append(lineas[j])
             j += 1
 
@@ -696,7 +696,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         bloque = [extinf]
         j = i + 1
 
-        while j < len(lineas) and lineas[j].startswith("#"):
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             bloque.append(lineas[j])
             j += 1
 
@@ -800,7 +800,7 @@ def limpiar_pluto_antiguo(lineas, session):
             bloque = [extinf]
             j = i + 1
 
-            while j < len(lineas) and lineas[j].startswith("#"):
+            while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
                 bloque.append(lineas[j])
                 j += 1
 
@@ -1022,7 +1022,7 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
         inicio = i
         extinf = lineas[i]
         j = i + 1
-        while j < len(lineas) and lineas[j].startswith("#"):
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             j += 1
 
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
@@ -1115,6 +1115,29 @@ PAISES_CANONICOS = {
     "spain": "espana",
 }
 
+def limpiar_extinf_huerfanos(lineas):
+    """Elimina EXTINF sin URL causado por bloques consecutivos mal formados."""
+    salida = []
+    i = 0
+    eliminados = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            salida.extend(lineas[inicio:j + 1])
+            i = j + 1
+        else:
+            eliminados += 1
+            i = inicio + 1
+    return salida, eliminados
+
+
 def ordenar_y_normalizar_carpetas(lineas):
     """
     Ordena y normaliza las carpetas de la principal sin cambiar URLs.
@@ -1144,7 +1167,7 @@ def ordenar_y_normalizar_carpetas(lineas):
         inicio = i
         extinf = lineas[i]
         j = i + 1
-        while j < len(lineas) and lineas[j].startswith("#"):
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             j += 1
 
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
@@ -1195,6 +1218,9 @@ def ordenar_y_normalizar_carpetas(lineas):
         elif cat_norm == "noticias":
             destino = cat_informativos
             cambios["noticias_a_informativos"] += 1
+
+        elif cat_norm == "documentales":
+            destino = buscar_categoria_existente("Documentales y Cultura", [x["categoria"] for x in bloques]) or "Documentales y Cultura"
 
         if destino != b["categoria"]:
             b["extinf"] = reemplazar_categoria(b["extinf"], destino)
@@ -1513,14 +1539,17 @@ def main():
         pluto_movidos_fisicamente_por_categoria,
     ) = reubicar_bloques_pluto_sin_reordenar_principal(lineas)
 
-    # 8) Auditoría/normalización FINAL: consolida las carpetas y aplica
+    # 8) Limpieza de seguridad: nunca conservar EXTINF sin URL.
+    lineas, extinf_huerfanos_eliminados = limpiar_extinf_huerfanos(lineas)
+
+    # 9) Auditoría/normalización FINAL: consolida las carpetas y aplica
     # exclusivamente el orden maestro ACTUAL. La lista antigua no se usa
     # para volver a imponer un orden histórico.
     lineas, cambios_orden = ordenar_y_normalizar_carpetas(lineas)
 
     orden_carpetas = cambios_orden
 
-    # 9) Validación final de URLs duplicadas globales.
+    # 10) Validación final de URLs duplicadas globales.
     vistos = set()
     duplicados_finales = 0
     for linea in lineas:
