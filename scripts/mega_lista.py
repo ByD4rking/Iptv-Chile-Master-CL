@@ -119,8 +119,8 @@ FUENTES = [
 
 PAISES = {
     "ve": "VENEZUELA",
-    "do": "REPÃšBLICA DOMINICANA",
-    "pe": "PERÃš",
+    "do": "REPUBLICA DOMINICANA",
+    "pe": "PERU",
     "py": "PARAGUAY",
     "mx": "MEXICO",
     "es": "ESPAÑA",
