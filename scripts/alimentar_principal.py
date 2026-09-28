@@ -1479,6 +1479,7 @@ def main():
     # La regla del proyecto es no repetir el MISMO enlace de acceso; por eso
     # agregar_bloque() controla únicamente la URL exacta.
     ids_pluto_fuentes = set()
+    urls_pluto_fuentes_por_id = defaultdict(set)
 
     bloques_nuevos = []
     agregados_normales = 0
@@ -1577,6 +1578,7 @@ def main():
                 identidad = identidad_pluto(canal.get("extinf", ""), canal.get("url", ""))
                 if identidad:
                     ids_pluto_fuentes.add(identidad)
+                    urls_pluto_fuentes_por_id[identidad].add(canal.get("url", "").strip())
 
                 # La deduplicación de Pluto se hace SOLO por URL exacta.
                 # No se descartan variantes regionales por compartir channel ID.
@@ -1699,12 +1701,25 @@ def main():
                 if identidad_final:
                     ids_pluto_finales.add(identidad_final)
 
-    ids_pluto_faltantes = ids_pluto_fuentes - ids_pluto_finales
+    urls_finales = {
+        linea_final.strip()
+        for linea_final in lineas
+        if url_es_valida(linea_final.strip())
+    }
+    ids_pluto_faltantes = {
+        identidad
+        for identidad in ids_pluto_fuentes
+        if identidad not in ids_pluto_finales
+        and not (
+            urls_pluto_fuentes_por_id.get(identidad, set()) & urls_finales
+        )
+    }
     if ids_pluto_faltantes:
         raise RuntimeError(
             "VALIDACION PLUTO FALLIDA: faltan "
-            f"{len(ids_pluto_faltantes)} channel IDs de las fuentes propias. "
-            "No se permite publicar una principal incompleta."
+            f"{len(ids_pluto_faltantes)} identidades de las fuentes propias "
+            "sin una URL equivalente conservada. No se permite publicar "
+            "una principal incompleta."
         )
 
     print("\n" + "=" * 72)
