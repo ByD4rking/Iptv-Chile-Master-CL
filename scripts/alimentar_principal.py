@@ -1316,10 +1316,11 @@ def main():
             errores += 1
             print(f"  -> ERROR: {e}")
 
-    # 6) Orden final de carpetas y unificación de categorías equivalentes.
-    # Esta etapa no cambia URLs ni elimina canales; solo corrige group-title
-    # y la posición de las carpetas/canales.
-    lineas, orden_carpetas = ordenar_y_normalizar_carpetas(lineas)
+    # 6) NO reordenar carpetas de la principal.
+    # La estructura y el orden de las carpetas existentes se conservan.
+    # Las únicas reclasificaciones de carpetas automáticas son las específicas
+    # de Pluto realizadas arriba; las demás fuentes respetan sus reglas propias.
+    orden_carpetas = {}
 
     # 7) Validación final de URLs duplicadas globales.
     vistos = set()
