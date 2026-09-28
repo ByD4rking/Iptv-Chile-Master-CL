@@ -1475,26 +1475,11 @@ def main():
     categorias = categorias_de_lineas(lineas)
     urls_globales = mapa_urls_principal(lineas)
 
-    # IDs Pluto ya presentes en la principal. Se usan además de la URL para
-    # impedir que una misma señal Pluto entre varias veces con URLs regionales
-    # distintas.
-    ids_pluto_globales = set()
-    i_pluto = 0
-    while i_pluto < len(lineas):
-        if lineas[i_pluto].startswith("#EXTINF"):
-            extinf_pluto = lineas[i_pluto]
-            j_pluto = i_pluto + 1
-            while j_pluto < len(lineas) and lineas[j_pluto].startswith("#"):
-                j_pluto += 1
-            if j_pluto < len(lineas) and url_es_valida(lineas[j_pluto].strip()):
-                url_pluto = lineas[j_pluto].strip()
-                if es_url_pluto(url_pluto):
-                    identidad = identidad_pluto(extinf_pluto, url_pluto)
-                    if identidad:
-                        ids_pluto_globales.add(identidad)
-                i_pluto = j_pluto + 1
-                continue
-        i_pluto += 1
+    # IMPORTANTE: NO deduplicar Pluto por channel ID.
+    # Una misma señal puede tener enlaces regionales distintos (LATAM/ES/CL/AR/MX).
+    # La regla del proyecto es no repetir el MISMO enlace de acceso; por eso
+    # agregar_bloque() controla únicamente la URL exacta.
+    ids_pluto_fuentes = set()
 
     bloques_nuevos = []
     agregados_normales = 0
@@ -1591,13 +1576,12 @@ def main():
                     continue
 
                 identidad = identidad_pluto(canal.get("extinf", ""), canal.get("url", ""))
-                if identidad and identidad in ids_pluto_globales:
-                    omitidos_duplicados += 1
-                    continue
+                if identidad:
+                    ids_pluto_fuentes.add(identidad)
 
+                # La deduplicación de Pluto se hace SOLO por URL exacta.
+                # No se descartan variantes regionales por compartir channel ID.
                 if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
-                    if identidad:
-                        ids_pluto_globales.add(identidad)
                     agregados_pluto += 1
                     nuevos += 1
                 else:
@@ -1668,6 +1652,27 @@ def main():
 
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
+    # BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
+    # puede desaparecer silenciosamente por una deduplicación por ID.
+    ids_pluto_finales = set()
+    for i_final, linea_final in enumerate(lineas):
+        if linea_final.startswith("#EXTINF"):
+            j_final = i_final + 1
+            while j_final < len(lineas) and lineas[j_final].startswith("#"):
+                j_final += 1
+            if j_final < len(lineas) and url_es_valida(lineas[j_final].strip()):
+                identidad_final = identidad_pluto(linea_final, lineas[j_final].strip())
+                if identidad_final:
+                    ids_pluto_finales.add(identidad_final)
+
+    ids_pluto_faltantes = ids_pluto_fuentes - ids_pluto_finales
+    if ids_pluto_faltantes:
+        raise RuntimeError(
+            "VALIDACION PLUTO FALLIDA: faltan "
+            f"{len(ids_pluto_faltantes)} channel IDs de las fuentes propias. "
+            "No se permite publicar una principal incompleta."
+        )
+
     print("\n" + "=" * 72)
     print("RESUMEN")
     print("=" * 72)
@@ -1677,7 +1682,7 @@ def main():
     print(f"Pluto ya propios conservados:        {pluto_reemplazo["ya_propios"]}")
     print(f"Pluto reubicados por categoría:        {pluto_reubicados}")
     print(f"Errores sincronizando carpetas Pluto:   {pluto_reubicados_errores}")
-    print(f"Pluto duplicados por channel ID:      {pluto_duplicados_existentes}")
+    print(f"Pluto duplicados por URL exacta:       {pluto_duplicados_existentes}")
     print(f"Pluto bloques reubicados físicamente: {pluto_movidos_fisicamente}")
     print(f"Pluto Brasil movidos a carpeta Brasil: {pluto_brasil_movidos}")
     print(f"Errores al revisar Pluto Brasil:       {pluto_brasil_errores}")
