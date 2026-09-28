@@ -40,6 +40,37 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Recuperar playlists Pluto vacías desde el último estado válido
+        run: |
+          set -e
+          for file in ar br cl es latam mx us; do
+            path="pluto/output/playlists/pluto_$file.m3u"
+            if [ -s "$path" ]; then
+              continue
+            fi
+
+            echo "[$file] La playlist actual está vacía; buscando la última versión no vacía en el historial."
+            recovered=0
+            while IFS= read -r commit; do
+              if [ -z "$commit" ]; then
+                continue
+              fi
+              if git cat-file -e "$commit:$path" 2>/dev/null; then
+                git show "$commit:$path" > "/tmp/pluto_$file.m3u.recovered" || true
+                if [ -s "/tmp/pluto_$file.m3u.recovered" ] && grep -q '^#EXTM3U' "/tmp/pluto_$file.m3u.recovered"; then
+                  cp "/tmp/pluto_$file.m3u.recovered" "$path"
+                  echo "[$file] Recuperada desde $commit: $(grep -c '^#EXTINF:' "$path") canales."
+                  recovered=1
+                  break
+                fi
+              fi
+            done < <(git log --all --format=%H -- "$path")
+
+            if [ "$recovered" -ne 1 ]; then
+              echo "[$file] No existe una versión histórica no vacía; el generador deberá obtener un catálogo nuevo."
+            fi
+          done
+
       - name: Guardar inventario previo de canales
         run: |
           python - <<'PY'
