@@ -1971,6 +1971,12 @@ def main():
     if duplicados_post_restauracion:
         print(f"Deduplicación final tras autorreparación: {duplicados_post_restauracion} duplicados eliminados.")
 
+    # Consolidar de nuevo las categorías después de la autorreparación.
+    # Esto evita que un canal restaurado genere un bloque físico separado.
+    lineas, cambios_orden_post_restauracion = ordenar_y_normalizar_carpetas(lineas)
+    if cambios_orden_post_restauracion:
+        print("Orden final tras autorreparación aplicado.")
+
     # 14) VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
     # Si falla, el workflow se detiene y NO publica una lista incompleta.
     categorias_finales = []
