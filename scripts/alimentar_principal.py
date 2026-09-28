@@ -45,14 +45,11 @@ FUENTES = [
 # Estas son las listas Pluto que alimentan la PRINCIPAL.
 # US y ALL NO se agregan aquí: pertenecen a la lista GOD.
 FUENTES_PLUTO = [
-    # LATAM primero: misma prioridad que la auditoría temática de Pluto.
+    # LATAM es la fuente maestra y SIEMPRE tiene prioridad.
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+    # Solo se permiten como complementos España y México.
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
 ]
 
 # Catálogo adicional SOLO para reemplazar enlaces Pluto de terceros.
@@ -67,32 +64,13 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO + [
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_all.m3u",
-]
+FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO
 
 # Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
 # eliminan de la principal antes de incorporar nuestras listas.
-FUENTES_PLUTO_ANTIGUAS = [
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_all.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_us.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_ca.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_gb.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_fr.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_de.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_es.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_it.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_mx.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_br.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_ar.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_cl.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_no.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_se.m3u",
-    "https://raw.githubusercontent.com/BuddyChewChew/pluto/main/pluto_dk.m3u",
-    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.ES.m3u",
-    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
-]
+# No se consultan ni reintroducen listas Pluto regionales antiguas.
+# La principal solo usa LATAM + ES + MX.
+FUENTES_PLUTO_ANTIGUAS = []
 
 PAIS_POR_FUENTE = {
     "/XXX.m3u": "xxx",
@@ -741,10 +719,12 @@ def cargar_catalogo_pluto_propio(session):
                     cid = m_id.group(1).strip().lower()
                 nombre = normalizar(canal.get("nombre", ""))
                 if cid:
-                    por_id[cid] = canal
-                    por_region[region][cid] = canal
+                    # LATAM aparece primero en FUENTES_PLUTO y por tanto
+                    # gana frente a ES/MX cuando comparten el mismo canal.
+                    por_id.setdefault(cid, canal)
+                    por_region[region].setdefault(cid, canal)
                 if nombre:
-                    por_nombre[nombre] = canal
+                    por_nombre.setdefault(nombre, canal)
         except Exception as e:
             errores += 1
             print(f"  -> No se pudo cargar Pluto propio: {fuente} :: {e}")
