@@ -550,9 +550,12 @@ def main() -> None:
         region = REGIONS[code]
         try:
             channels = fetch_region(region)
-            if channels:
-                fresh_regions[code] = channels
             path, count, updated = write_if_safe(region, channels)
+            # LATAM may consume a regional catalog only when that regional
+            # refresh itself passed the safety gate. A blocked region therefore
+            # cannot inject a partial/catastrophic snapshot into LATAM.
+            if channels and updated:
+                fresh_regions[code] = channels
             results[code] = (count, updated)
         except Exception as exc:
             existing = previous_count(PLAYLIST_DIR / f"pluto_{code}.m3u")
