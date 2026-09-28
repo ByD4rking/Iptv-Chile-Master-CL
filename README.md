@@ -4,7 +4,7 @@
 
 IPTV Chile Master reúne y organiza diferentes fuentes IPTV públicas en playlists pensadas para un uso sencillo en reproductores compatibles con **M3U/M3U8**.
 
-El proyecto mantiene una **lista principal**, una versión ampliada **GOD** y un conjunto de playlists **Pluto TV** independientes.
+El proyecto mantiene una **lista principal**, una versión ampliada **GOD** y un conjunto de playlists **Pluto TV independientes**.
 
 ---
 
@@ -77,76 +77,132 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE
 
 # 🪐 3. Pluto TV
 
-El proyecto también mantiene playlists específicas de **Pluto TV**, generadas y actualizadas dentro del repositorio.
+El proyecto mantiene **tres playlists Pluto TV independientes**, cada una publicada como su propio archivo M3U.
 
-Actualmente se publican **tres playlists oficiales**:
+### 🌎🇪🇸🇲🇽 Las tres listas son independientes
 
-| Región | Playlist | RAW |
+Puedes utilizar **una sola**, **dos** o **las tres** según lo que necesites. No es obligatorio cargarlas juntas.
+
+La organización conjunta que utiliza el proyecto es únicamente una **regla interna de integración y mantenimiento** para evitar duplicados y aprovechar primero el contenido de LATAM cuando está disponible.
+
+**Prioridad interna de integración:**
+
+**LATAM → España → México**
+
+Esto significa que, cuando un mismo canal aparece en varias regiones, el proyecto prioriza la versión LATAM y utiliza España o México cuando aportan contenido que no está disponible en una región anterior.
+
+> **Importante:** esta prioridad no limita al usuario. Cada playlist Pluto puede utilizarse por separado y directamente mediante su URL RAW.
+
+### 📋 Playlists oficiales
+
+| Región | Archivo | Uso |
 | :--- | :--- | :--- |
-| 🌎 **Pluto TV LATAM** | Latinoamérica | [RAW M3U](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_latam.m3u) |
-| 🇪🇸 **Pluto TV España** | España | [RAW M3U](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_es.m3u) |
-| 🇲🇽 **Pluto TV México** | México | [RAW M3U](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_mx.m3u) |
+| 🌎 **Pluto TV LATAM** | `pluto_latam.m3u` | Contenido orientado a Latinoamérica |
+| 🇪🇸 **Pluto TV España** | `pluto_es.m3u` | Contenido específico de España |
+| 🇲🇽 **Pluto TV México** | `pluto_mx.m3u` | Contenido específico de México |
 
-### 🔗 Enlaces directos
-
-#### 🌎 Pluto TV LATAM
+### 🔗 RAW — Pluto TV LATAM
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_latam.m3u
 ~~~
 
-Playlist orientada al contenido disponible para **Latinoamérica**.
-
-#### 🇪🇸 Pluto TV España
+### 🔗 RAW — Pluto TV España
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_es.m3u
 ~~~
 
-Playlist específica para el catálogo de **España**.
-
-#### 🇲🇽 Pluto TV México
+### 🔗 RAW — Pluto TV México
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_mx.m3u
 ~~~
 
-Playlist específica para el catálogo de **México**.
+### 🧩 ¿Cómo elegir?
 
-### 🧭 Prioridad de integración Pluto
+- **Solo quieres contenido latinoamericano:** utiliza **Pluto TV LATAM**.
+- **Quieres específicamente contenido de España:** utiliza **Pluto TV España**.
+- **Quieres específicamente contenido de México:** utiliza **Pluto TV México**.
+- **Quieres ampliar la cobertura:** puedes cargar las tres listas en un reproductor que admita múltiples playlists.
+- **Quieres evitar administrar varias listas:** puedes utilizar la lista principal o GOD del proyecto cuando corresponda.
 
-Cuando un canal está disponible en más de una región, el proyecto utiliza una prioridad de integración para reducir duplicados:
-
-**LATAM → España → México**
-
-Esto permite aprovechar primero la versión LATAM cuando existe y utilizar las versiones regionales únicamente cuando aportan contenido que no está disponible en la anterior.
-
-> Las playlists regionales de Pluto son independientes de la lista principal y de la lista GOD.
+> Pluto TV se mantiene como un bloque separado de la lista principal y de la GOD. Las tres playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual.
 
 ---
 
-## ▶️ Cómo utilizar las listas
+## ▶️ 4. Reproductores compatibles
 
-Puedes utilizar cualquiera de las URLs RAW anteriores en un reproductor compatible con listas IPTV mediante URL.
+Las listas del proyecto son archivos **M3U/M3U8** y pueden utilizarse con distintos reproductores. La disponibilidad exacta puede variar según el modelo de TV, sistema operativo y tienda de aplicaciones.
 
-Algunos reproductores compatibles con M3U/M3U8 incluyen:
+### 📺 Reproductores para Smart TV
 
-- 📺 TiviMate
-- 📺 OTT Navigator
-- ▶️ VLC
-- 📱 Otros reproductores IPTV compatibles con URL M3U
+#### ⭐ SS IPTV — opción gratuita
 
-### Pasos
+**SS IPTV (Simple Smart IPTV)** es un reproductor gratuito para Smart TV que permite cargar playlists propias y reproducir contenido mediante Internet. Su documentación oficial contempla Smart TV de **LG, Samsung, Philips y Sony**, con diferencias de instalación según modelo y plataforma. citeturn1search0turn1search1turn1search4
+
+- Compatible con playlists propias.
+- Orientado especialmente a Smart TV.
+- Permite cargar listas externas.
+- No proporciona canales propios: debes añadir tu propia playlist.
+- Es gratuito según la documentación oficial de SS IPTV. citeturn1search4
+
+🔗 **Sitio oficial:** https://www.ss-iptv.com/
+
+#### ▶️ VLC
+
+VLC también puede utilizarse para abrir listas M3U/M3U8 y reproducir sus streams. Es una alternativa multiplataforma especialmente útil cuando el dispositivo permite instalar VLC.
+
+---
+
+### 🤖 Reproductores para Android / Android TV
+
+#### ⭐ Televizo IPTV Player
+
+Televizo permite utilizar **múltiples playlists M3U**, EPG, favoritos, búsqueda, Chromecast y selección de pistas de audio/subtítulos. Está disponible para teléfonos, tablets y televisores compatibles. citeturn0search1turn0search7
+
+🔗 **Google Play:** https://play.google.com/store/apps/details?id=com.ottplay.ottplay
+
+#### ⭐ TiviMate IPTV Player
+
+TiviMate está diseñado especialmente para **Android TV** y navegación con control remoto. Admite M3U, Xtream Codes y Stalker Portal, además de múltiples listas, EPG, favoritos, búsqueda, catch-up, grabación y multivista. La aplicación ofrece funciones gratuitas y otras mediante compras dentro de la aplicación. citeturn0search2turn0search3
+
+🔗 **Google Play:** https://play.google.com/store/apps/details?id=ar.tvplayer.tv
+
+🔗 **Sitio oficial:** https://tivimate.com/
+
+#### ⭐ OTT Navigator IPTV
+
+OTT Navigator admite listas **M3U/M3U8**, múltiples listas, EPG, favoritos, búsqueda, Xtream Codes y reproducción adaptativa. Está disponible para Android y es una alternativa flexible para quienes manejan varias playlists. citeturn0search0turn0search5
+
+🔗 **Google Play:** https://play.google.com/store/apps/details?id=com.ottnavigator.iptvnavigator
+
+> **Nota:** estos reproductores no proporcionan las listas ni los canales del proyecto. Son herramientas para cargar y reproducir tus propias playlists.
+
+### 🧭 Elección rápida
+
+| Dispositivo | Opciones recomendadas |
+| :--- | :--- |
+| 📺 Smart TV LG / Samsung | **SS IPTV** |
+| 📺 Smart TV compatible con VLC | **VLC** |
+| 🤖 Android TV | **TiviMate / Televizo / OTT Navigator** |
+| 📱 Android | **Televizo / OTT Navigator** |
+| 💻 PC | **VLC** |
+
+---
+
+## 🛠️ Cómo utilizar las listas
 
 1. Copia la URL **RAW** de la playlist que quieras utilizar.
-2. Abre tu reproductor IPTV.
+2. Abre el reproductor IPTV de tu dispositivo.
 3. Selecciona la opción para añadir una lista mediante URL.
 4. Pega la URL.
-5. Guarda y actualiza la playlist.
+5. Guarda la playlist.
+6. Actualiza la lista cuando necesites obtener los cambios más recientes.
 
 ---
 
-## 🤖 Actualización y mantenimiento
+## 🤖 5. Actualización y mantenimiento
 
 El repositorio utiliza procesos automatizados para mantener y revisar las playlists.
 
@@ -165,7 +221,7 @@ La automatización busca **actualizar sin destruir la estructura existente**: lo
 
 ---
 
-## 🗂️ Estructura del proyecto
+## 🗂️ 6. Estructura del proyecto
 
 La organización principal del repositorio incluye:
 
