@@ -298,8 +298,8 @@ class PlutoClient:
 
         for start, stop in windows:
             params = {
-                "start": start.strftime("%Y-%m-%d %H:00:00.000+0000"),
-                "stop": stop.strftime("%Y-%m-%d %H:00:00.000+0000"),
+                "start": start.strftime("%Y-%m-%dT%H:00:00Z"),
+                "stop": stop.strftime("%Y-%m-%dT%H:00:00Z"),
                 "sid": uuid.uuid4().hex,
                 "deviceId": uuid.uuid4().hex,
             }
@@ -478,13 +478,16 @@ class PlutoClient:
         # This avoids treating a valid US lineup as an empty catalogue.
         if not channels and self.region.code == "us":
             try:
+                channels = self._get_us_legacy_channels()
+            except Exception as exc:
+                print(f"[US] legacy /v2/channels falló: {exc}")
+
+        # Final catalogue fallback: legacy channels.json.
+        if not channels and self.region.code == "us":
+            try:
                 channels = self._get_us_legacy_catalog()
             except Exception as exc:
                 print(f"[US] legacy channels.json falló: {exc}")
-
-        # Second US fallback: the legacy live-guide API.
-        if not channels and self.region.code == "us":
-            channels = self._get_us_legacy_channels()
 
         # Último respaldo para US: la API legacy de Pluto sigue siendo
         # una vía de catálogo útil cuando service-channels entrega 0.
