@@ -43,13 +43,9 @@ FUENTES = [
     # IPTV-ORG
     # --------------------------------------------------------
 
-    "https://iptv-org.github.io/iptv/countries/mx.m3u",
+
     "https://iptv-org.github.io/iptv/index.m3u",
-    "https://iptv-org.github.io/iptv/countries/cl.m3u",
-    "https://iptv-org.github.io/iptv/regions/latam.m3u",
-    "https://iptv-org.github.io/iptv/regions/hispam.m3u",
-    "https://iptv-org.github.io/iptv/regions/lac.m3u",
-    "https://iptv-org.github.io/iptv/regions/southam.m3u",
+   
 
     # --------------------------------------------------------
     # OTRAS FUENTES
@@ -105,9 +101,15 @@ FUENTES = [
     # Las listas regionales eliminadas NO se vuelven a consultar.
     # --------------------------------------------------------
 
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_all.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
 ]
 
 
@@ -120,8 +122,8 @@ PAISES = {
     "do": "REPÃšBLICA DOMINICANA",
     "pe": "PERÃš",
     "py": "PARAGUAY",
-    "mx": "MÃ‰XICO",
-    "es": "ESPAÃ‘A",
+    "mx": "MEXICO",
+    "es": "ESPAÑA",
     "ec": "ECUADOR",
     "cr": "COSTA RICA",
     "co": "COLOMBIA",
@@ -130,7 +132,7 @@ PAISES = {
     "bo": "BOLIVIA",
     "ar": "ARGENTINA",
     "us": "ESTADOS UNIDOS",
-    "ca": "CANADÃ",
+    "ca": "CANADA",
     "gb": "REINO UNIDO",
     "fr": "FRANCIA",
     "de": "ALEMANIA",
@@ -146,8 +148,8 @@ PAISES = {
 # ============================================================
 
 PLUTO_ESPECIALES = {
-    "es": "ESPAÃ‘A",
-    "mx": "MÃ‰XICO",
+    "es": "ESPAÑA",
+    "mx": "MEXICO",
     "cl": "CHILE",
     "ar": "ARGENTINA",
 }
