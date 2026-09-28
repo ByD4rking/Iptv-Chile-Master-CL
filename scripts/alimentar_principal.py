@@ -1210,7 +1210,6 @@ def ordenar_y_normalizar_carpetas(lineas):
     # plantilla de carpetas: solo sirve para auditar dónde pertenece cada canal.
     ORDEN_MAESTRO_ACTUAL = [
         "chile tv",
-        "chile tv y radio",
         "anime",
         "competencia",
         "infantiles",
@@ -1223,7 +1222,6 @@ def ordenar_y_normalizar_carpetas(lineas):
         "cine / peliculas premium",
         "cine / peliculas",
         "cine",
-        "documentales",
         "deportes",
         "musica",
         "retro",
