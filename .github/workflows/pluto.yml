@@ -45,7 +45,7 @@ jobs:
       - name: Verificar listas
         run: |
           set -e
-          for file in cl mx ar br es us latam all; do
+          for file in es mx latam; do
             test -s "pluto/output/playlists/pluto_$file.m3u"
             grep -q '^#EXTM3U' "pluto/output/playlists/pluto_$file.m3u"
             echo "pluto_$file.m3u:"
@@ -77,8 +77,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add pluto/output/playlists/pluto.m3u
-          git add pluto/output/playlists/pluto_*.m3u
+          git add pluto/output/playlists/pluto_es.m3u
+          git add pluto/output/playlists/pluto_mx.m3u
+          git add pluto/output/playlists/pluto_latam.m3u
 
           if git diff --cached --quiet; then
             echo "No hay cambios en las playlists."
