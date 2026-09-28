@@ -132,4 +132,22 @@ jobs:
           fi
 
           git commit -m "Actualizar playlists Pluto TV regionales"
-          git push origin HEAD:main
+
+          # La generación puede tardar y otro proceso puede avanzar main.
+          # Nunca se hace force-push ni se sobrescriben cambios remotos.
+          for intento in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+            else
+              echo "ERROR: conflicto durante publicación Pluto; no se sobrescribe el remoto."
+              git rebase --abort || true
+              exit 1
+            fi
+            sleep 5
+          done
+
+          echo "ERROR: no se pudo publicar Pluto después de 3 intentos."
+          exit 1
