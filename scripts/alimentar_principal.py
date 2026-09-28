@@ -1497,13 +1497,8 @@ def main():
     lineas, cambios_orden = ordenar_y_normalizar_carpetas(lineas)
 
     orden_carpetas = cambios_orden
-        "infantil_a_infantiles": 0,
-        "teen_a_infantiles": 0,
-        "noticias_a_informativos": 0,
-        "cnn_priorizados": 0,
-    }
 
-    # 8) Validación final de URLs duplicadas globales.
+    # 9) Validación final de URLs duplicadas globales.
     vistos = set()
     duplicados_finales = 0
     for linea in lineas:
