@@ -74,7 +74,7 @@ jobs:
 
           python - <<'PY'
           from pathlib import Path
-          import re
+          import json, re
           allowed = {
               "pluto_ar.m3u", "pluto_br.m3u", "pluto_cl.m3u",
               "pluto_es.m3u", "pluto_latam.m3u", "pluto_mx.m3u",
