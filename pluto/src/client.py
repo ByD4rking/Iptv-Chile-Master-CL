@@ -225,6 +225,67 @@ class PlutoClient:
 
         self.boot()
 
+    def _get_us_legacy_catalog(self) -> list[dict]:
+        """Fetch the US lineup from Pluto's legacy channels.json endpoint.
+
+        The current service-channels endpoint can return HTTP 200 with an empty
+        catalogue for US. Pluto clients in the wild use channels.json as the
+        legacy fallback, and this endpoint does not require a Bearer token.
+        """
+        params = {
+            "sid": uuid.uuid4().hex,
+            "deviceId": uuid.uuid4().hex,
+        }
+        headers = {
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Origin": "https://pluto.tv",
+            "Referer": "https://pluto.tv/",
+            "User-Agent": USER_AGENT,
+            "X-Forwarded-For": self.region.forwarded_ip,
+        }
+
+        response = self.session.get(
+            LEGACY_CHANNELS_URL,
+            params=params,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        if not isinstance(data, list):
+            return []
+
+        converted = []
+        for item in data:
+            channel_id = item.get("id") or item.get("_id")
+            if not channel_id:
+                continue
+
+            logo = item.get("colorLogoPNG", {})
+            if isinstance(logo, dict):
+                logo = logo.get("path", "")
+            if not logo:
+                logo = item.get("logo", {})
+                if isinstance(logo, dict):
+                    logo = logo.get("path", "")
+
+            converted.append({
+                "id": channel_id,
+                "name": item.get("name", ""),
+                "slug": item.get("slug", ""),
+                "description": item.get("description", item.get("summary", "")),
+                "number": item.get("number"),
+                "category": item.get("category", ""),
+                "country": item.get("country", "US"),
+                "region": item.get("region", "US"),
+                "language": item.get("language", "en-US"),
+                "logo": logo or "",
+            })
+
+        print(f"[US] API legacy channels.json: {len(converted)} canales")
+        return converted
+
     def _get_us_legacy_channels(self) -> list[dict]:
         """Fetch the US live lineup from Pluto's legacy live-guide API."""
         now = datetime.now(timezone.utc).replace(
@@ -412,9 +473,16 @@ class PlutoClient:
 
             channels = fallback_channels
 
-        # US: use the legacy live-guide API before channels.json.
-        # This is the route used by current Pluto clients when
-        # service-channels has no data.
+        # US: service-channels can return 200 + empty data. Prefer Pluto's
+        # legacy channels.json catalogue before trying the time-window guide.
+        # This avoids treating a valid US lineup as an empty catalogue.
+        if not channels and self.region.code == "us":
+            try:
+                channels = self._get_us_legacy_catalog()
+            except Exception as exc:
+                print(f"[US] legacy channels.json falló: {exc}")
+
+        # Second US fallback: the legacy live-guide API.
         if not channels and self.region.code == "us":
             channels = self._get_us_legacy_channels()
 
