@@ -1312,11 +1312,13 @@ def ordenar_y_normalizar_carpetas(lineas):
         clave_canonica = CATEGORIAS_CANONICAS.get(clave, clave)
         clave_canonica = PAISES_CANONICOS.get(clave_canonica, clave_canonica)
         if clave_canonica != clave:
-            destino_canonico = (
-                CATEGORIAS_CANONICAS.get(clave_canonica)
-                or PAISES_CANONICOS.get(clave_canonica)
-                or destino
-            )
+            nombres_canonicos = {
+                "el salvador": "El Salvador",
+                "documentales y cultura": "Documentales y Cultura",
+                "brasil": "Brasil",
+                "espana": "España",
+            }
+            destino_canonico = nombres_canonicos.get(clave_canonica, destino)
             b["extinf"] = reemplazar_categoria(b["extinf"], destino_canonico)
             b["lineas"][0] = b["extinf"]
             b["categoria"] = destino_canonico
