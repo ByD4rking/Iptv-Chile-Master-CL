@@ -57,6 +57,16 @@ FUENTES_PLUTO = [
 
 # Catálogo adicional SOLO para reemplazar enlaces Pluto de terceros.
 # Estas fuentes no se agregan como canales a la principal.
+FUENTE_PLUTO_CANONICA = FUENTES_PLUTO[0]
+
+PLUTO_CATEGORIAS_CANONICAS = {"retro", "zona paranormal", "competencia"}
+
+CATEGORIAS_PAIS_NO_AUTORIZADAS = {
+    "qatar", "palestina", "corea del norte", "corea del sur", "israel",
+    "alemania", "francia", "iran", "rusia", "guinea ecuatorial",
+    "estados unidos",
+}
+
 FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO + [
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_all.m3u",
@@ -1201,6 +1211,70 @@ CATEGORIAS_CANONICAS = {
     "documentales": "documentales y cultura",
 }
 
+
+def limpiar_pluto_categorias_canonicas(lineas, session):
+    """Alinea Retro/Paranormal/Competencia con Pluto LATAM por channel ID."""
+    try:
+        r = session.get(FUENTE_PLUTO_CANONICA, timeout=30)
+        r.raise_for_status()
+        fuente = parsear_m3u(r.text)
+    except Exception as e:
+        print(f"  -> AVISO: no se pudo consultar Pluto LATAM para la limpieza canónica: {e}")
+        return lineas, 0, 0
+
+    canonicos = {}
+    for canal in fuente:
+        cat = normalizar(canal.get("categoria", ""))
+        if cat not in PLUTO_CATEGORIAS_CANONICAS:
+            continue
+        identidad = identidad_pluto(canal.get("extinf", ""), canal.get("url", ""))
+        if identidad:
+            canonicos.setdefault(identidad, canal.get("categoria", ""))
+
+    if not canonicos:
+        return lineas, 0, 0
+
+    salida = []
+    eliminados = 0
+    movidos = 0
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+
+        if j >= len(lineas) or not url_es_valida(lineas[j].strip()):
+            salida.extend(lineas[i:j])
+            i = j
+            continue
+
+        bloque = list(lineas[i:j + 1])
+        cat = normalizar(extraer_categoria(extinf))
+
+        if cat in PLUTO_CATEGORIAS_CANONICAS and es_url_pluto(lineas[j].strip()):
+            identidad = identidad_pluto(extinf, lineas[j].strip())
+            destino = canonicos.get(identidad)
+            if not destino:
+                eliminados += 1
+                i = j + 1
+                continue
+            if normalizar(extraer_categoria(extinf)) != normalizar(destino):
+                bloque[0] = reemplazar_categoria(extinf, destino)
+                movidos += 1
+
+        salida.extend(bloque)
+        i = j + 1
+
+    return salida, eliminados, movidos
+
+
 def limpiar_extinf_huerfanos(lineas):
     """Elimina EXTINF sin URL causado por bloques consecutivos mal formados."""
     salida = []
@@ -1262,6 +1336,30 @@ def limpiar_duplicados_globales_y_carpetas_especiales(lineas):
         else:
             prefijo.extend(lineas[inicio:j])
             i = j
+
+    # Carpetas especiales: solo conservan sus señales propias.
+    bloques_filtrados = []
+    for b in bloques:
+        cat = normalizar(b["categoria"])
+        nombre = normalizar(b["nombre"])
+
+        if cat == "telemundo noticias":
+            if not (
+                nombre.startswith("telemundo noticias")
+                or nombre == "telemundo live stream schedule"
+            ):
+                continue
+
+        if cat == "sky sports":
+            if not nombre.startswith("sky sports"):
+                continue
+
+        if cat in CATEGORIAS_PAIS_NO_AUTORIZADAS:
+            continue
+
+        bloques_filtrados.append(b)
+
+    bloques = bloques_filtrados
 
     preferidos = {}
     for b in bloques:
@@ -1555,7 +1653,14 @@ def main():
     # canal, aunque tengan URLs Pluto distintas.
     lineas, pluto_duplicados_existentes = deduplicar_pluto_existente(lineas)
 
-    # 5) Limpieza de TOTAL, OTROS y categoría vacía.
+    # 5) Pluto: Retro/Paranormal/Competencia usan la referencia LATAM.
+    (
+        lineas,
+        pluto_canonicos_eliminados,
+        pluto_canonicos_movidos,
+    ) = limpiar_pluto_categorias_canonicas(lineas, session)
+
+    # 6) Limpieza de TOTAL, OTROS y categoría vacía.
     lineas, limpieza = limpiar_total_otros_y_sin_nombre(lineas)
 
     categorias = categorias_de_lineas(lineas)
@@ -1683,8 +1788,12 @@ def main():
                     urls_pluto_fuentes_por_id[identidad].add(canal.get("url", "").strip())
                     canales_pluto_fuentes_por_id[identidad].append(canal)
 
-                # La deduplicación de Pluto se hace SOLO por URL exacta.
-                # No se descartan variantes regionales por compartir channel ID.
+                # Pluto se deduplica por channel ID global. Las URLs pueden
+                # cambiar por JWT/región, pero el mismo ID sigue siendo el mismo canal.
+                if identidad and identidad in ids_pluto_fuentes:
+                    omitidos_duplicados += 1
+                    continue
+
                 if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
                     agregados_pluto += 1
                     nuevos += 1
@@ -1942,6 +2051,8 @@ def main():
     print(f"Pluto reubicados por categoría:        {pluto_reubicados}")
     print(f"Errores sincronizando carpetas Pluto:   {pluto_reubicados_errores}")
     print(f"Pluto duplicados por URL exacta:       {pluto_duplicados_existentes}")
+    print(f"Pluto canónicos eliminados (no LATAM):  {pluto_canonicos_eliminados}")
+    print(f"Pluto canónicos movidos de carpeta:     {pluto_canonicos_movidos}")
     print(f"Pluto bloques reubicados físicamente: {pluto_movidos_fisicamente}")
     print(f"Pluto Brasil movidos a carpeta Brasil: {pluto_brasil_movidos}")
     print(f"Errores al revisar Pluto Brasil:       {pluto_brasil_errores}")
@@ -1977,9 +2088,10 @@ def main():
     print("  - La principal conserva su orden existente.")
     print("  - IPTVSV.m3u usa reglas propias y NO hereda ninguna regla de Pluto.")
     print("  - IPTVSV: no crea/alimenta carpetas-país genéricas; se respetan solo excepciones explícitas.")
-    print("  - Dedupe global por URL para todas las fuentes; IPTVSV no usa dedupe por channel ID de Pluto.")
+    print("  - Dedupe global por URL para fuentes normales.")
+    print("  - Pluto: dedupe global por channel ID; JWT/región distintos no crean copias.")
     print("  - Auditoría final: una URL exacta solo puede quedar una vez en toda la principal.")
-    print("  - Telemundo Noticias y Sky Sports tienen prioridad sobre otras carpetas cuando coincide la misma URL.")
+    print("  - Telemundo Noticias conserva solo señales Telemundo; Sky Sports solo señales Sky Sports.")
     print("  - Pluto: las carpetas existentes se sincronizan con la categoría de la fuente propia.")
     if pluto_reubicados_por_categoria:
         for cat, cantidad in sorted(pluto_reubicados_por_categoria.items()):
