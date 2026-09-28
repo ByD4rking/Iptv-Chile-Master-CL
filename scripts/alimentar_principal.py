@@ -223,26 +223,19 @@ def es_categoria_pais_generica_iptvsv(categoria):
 
 
 def determinar_destino_iptvsv(categoria, nombre, categorias):
-    """IPTV-SV: respeta literalmente la carpeta declarada por la fuente.
+    """IPTV-SV respeta la carpeta declarada, con solo alias canónicos explícitos.
 
-    No reclasifica por nombre y NO crea carpetas nuevas. Si la fuente dice
-    Anime -> Anime, Cine -> Cine, Comedia -> Comedia, Argentina -> Argentina,
-    etc. Si la carpeta declarada no existe en la principal, el canal se omite
-    en vez de inventar una categoría nueva.
+    No reclasifica por nombre, no usa reglas temáticas y no crea carpetas.
     """
     categoria = (categoria or "").strip()
     if not categoria:
         return None
 
     c_norm = normalizar(categoria)
-
-    if c_norm == "tv mas importantes de cada pais":
-        return buscar_categoria_existente(
-            "TV MÁS IMPORTANTES DE CADA PAÍS", categorias
-        )
-
     aliases = {
-        "el salvador - tcs": "El Salvador",
+        "chile": "CHILE TV",
+        "el salvador": "EL Salvador",
+        "el salvador - tcs": "EL Salvador",
         "documentales": "Documentales y Cultura",
         "infantil": "Infantiles",
         "teen": "Infantiles",
@@ -250,11 +243,14 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
     }
     categoria_busqueda = aliases.get(c_norm, categoria)
 
-    destino = buscar_categoria_existente(categoria_busqueda, categorias)
-    if destino:
-        return destino
+    # La carpeta especial solo se acepta si YA existe.
+    if c_norm == "tv mas importantes de cada pais":
+        return buscar_categoria_existente(
+            "TV MÁS IMPORTANTES DE CADA PAÍS", categorias
+        )
 
-    return None
+    # Coincidencia con una carpeta existente. Nunca inventar una nueva.
+    return buscar_categoria_existente(categoria_busqueda, categorias)
 
 def determinar_destino(categoria, nombre, pais_fuente, categorias):
     texto = normalizar(f"{categoria or ''} {nombre or ''}")
