@@ -1611,6 +1611,81 @@ def ordenar_y_normalizar_carpetas(lineas):
     return salida, cambios
 
 
+def extraer_bloques_no_pluto_por_url(lineas):
+    """Captura el estado inicial no-Pluto para impedir pérdidas accidentales."""
+    resultado = {}
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            bloque = lineas[inicio:j + 1]
+            url = lineas[j].strip()
+            if not es_url_pluto(url):
+                resultado.setdefault(url, bloque)
+        i = j + 1 if j < len(lineas) and url_es_valida(lineas[j].strip()) else j
+    return resultado
+
+
+def restaurar_no_pluto_existente(lineas, iniciales):
+    """
+    Restaura URLs no-Pluto que ya existían antes de la actualización.
+    Las fuentes solo pueden sumar canales; no pueden hacer desaparecer
+    una señal existente por una limpieza accidental.
+    """
+    actuales = mapa_urls_principal(lineas)
+    categorias = categorias_de_lineas(lineas)
+    bloques_por_categoria = defaultdict(list)
+    restaurados = 0
+
+    for url, bloque in iniciales.items():
+        if url in actuales:
+            continue
+        extinf = bloque[0]
+        categoria = extraer_categoria(extinf)
+        destino = buscar_categoria_existente(categoria, categorias)
+
+        # Si la categoría fue normalizada, reutilizar su carpeta canónica.
+        if not destino:
+            aliases = {
+                "chile": "CHILE TV",
+                "infantil": "INFANTILES",
+                "teen": "INFANTILES",
+                "noticias": "INFORMATIVOS",
+            }
+            destino = buscar_categoria_existente(
+                aliases.get(normalizar(categoria), categoria),
+                categorias,
+            )
+
+        if not destino:
+            # No crear carpetas nuevas durante la autorreparación.
+            continue
+
+        bloque_restaurado = list(bloque)
+        bloque_restaurado[0] = reemplazar_categoria(extinf, destino)
+        bloques_por_categoria[destino].append(bloque_restaurado)
+        actuales.add(url)
+        restaurados += 1
+
+    for categoria, bloques in bloques_por_categoria.items():
+        rango = encontrar_rango_categoria(lineas, categoria)
+        if not rango:
+            continue
+        posicion = rango[1] + 1
+        insertar = []
+        for bloque in bloques:
+            insertar.extend(bloque)
+        lineas[posicion:posicion] = insertar
+
+    return lineas, restaurados
+
+
 def main():
     print("=" * 72)
     print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
@@ -1629,6 +1704,8 @@ def main():
     ).splitlines()
 
     total_inicial = sum(1 for x in lineas if x.startswith("#EXTINF"))
+
+    bloques_no_pluto_iniciales = extraer_bloques_no_pluto_por_url(lineas)
 
     # 1) Pluto: sustituir automáticamente cualquier enlace de terceros
     # por nuestra URL vigente. Solo se elimina un Pluto tercero cuando no
@@ -1879,7 +1956,16 @@ def main():
                 duplicados_finales += 1
             vistos.add(u)
 
-    # 13) VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
+    # 13) Protección de no-regresión: ningún canal no-Pluto que ya existía
+    # puede desaparecer por una limpieza interna accidental.
+    lineas, no_pluto_restaurados = restaurar_no_pluto_existente(
+        lineas,
+        bloques_no_pluto_iniciales,
+    )
+    if no_pluto_restaurados:
+        print(f"Autorreparación: {no_pluto_restaurados} canales no-Pluto restaurados.")
+
+    # 14) VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
     # Si falla, el workflow se detiene y NO publica una lista incompleta.
     categorias_finales = []
     bloques_finales = []
@@ -1936,7 +2022,7 @@ def main():
 
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
-    # 14) BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
+    # 15) BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
     # puede desaparecer silenciosamente por una deduplicación por ID.
     ids_pluto_finales = set()
     for i_final, linea_final in enumerate(lineas):
