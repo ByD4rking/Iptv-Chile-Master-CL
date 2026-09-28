@@ -333,14 +333,19 @@ def determinar_destino_pluto(categoria, nombre, categorias):
             return destino_brasil
         return "Brasil"
 
-    # Si Pluto ya declara exactamente una carpeta que existe en la
-    # principal (por ejemplo "PLUTO TV"), respetamos esa carpeta.
+    # NUNCA crear ni respetar una carpeta genérica "Pluto TV".
+    # Se clasifica por nombre/tema y, si no hay destino seguro, se omite
+    # para evitar que vuelva a aparecer esa carpeta.
+    if normalizar(categoria) == "pluto tv":
+        destino_especial = destino_especial_total_otros(nombre, categoria, categorias)
+        if destino_especial and normalizar(destino_especial) != "pluto tv":
+            return destino_especial
+        return None
+
     exacta = buscar_categoria_existente(categoria, categorias)
     if exacta:
         return exacta
 
-    # Si declara una temática (por ejemplo "Anime" o "Pluto TV - Anime"),
-    # continúa la misma lógica temática de la principal.
     return encontrar_categoria_tematica(
         f"{categoria} {nombre}",
         categorias,
@@ -822,14 +827,60 @@ def limpiar_pluto_antiguo(lineas, session):
     )
     return salida, eliminados, errores
 
+def destino_especial_total_otros(nombre, categoria, categorias):
+    """Clasifica entradas heredadas de TOTAL/OTROS y evita recrear esas carpetas."""
+    texto = normalizar(f"{categoria or ''} {nombre or ''}")
+    reglas = [
+        (r"\b(anime|animacion|anime station|anime zone)\b", "Anime"),
+        (r"\b(infantil|kids|kid|junior|nick jr|rugrats|bob esponja|babyfirst|chiquilines|dreiko)\b", "Infantiles"),
+        (r"\b(novela|novelas)\b", "Novelas"),
+        (r"\b(series?|csi|drama)\b", "Series"),
+        (r"\b(cine|pelicula|peliculas|horrorfy|fmtv)\b", "Cine / Películas"),
+        (r"\b(reality|masterchef|survivor|hell.?s kitchen)\b", "Reality"),
+        (r"\b(deporte|deportes|sport|sports|velocidad|motorvision|futbol)\b", "Deportes"),
+        (r"\b(retro|clasica|clasico)\b", "Retro"),
+        (r"\b(paranormal|misterio|misterios|extraterrestre)\b", "Zona Paranormal"),
+        (r"\b(investiga|investigacion|cops|forense)\b", "Investigación"),
+        (r"\b(documental|documentales|cultural|culturales|saber mas|rt doc)\b", "Documentales y Cultura"),
+        (r"\b(quiz|curiosidad|curioso|vida real)\b", "Curiosidad"),
+        (r"\b(estilo de vida|paisajes|encantador de perros|autos|cocinando|viajes)\b", "Estilo De Vida"),
+        (r"\b(musica|music|musical)\b", "Música"),
+        (r"\b(comedia|humor)\b", "Comedia"),
+        (r"\b(south park)\b", "South Park"),
+        (r"\b(religioso|religiosos|supreme master|ad venir)\b", "Religiosos"),
+        (r"\b(noticias|noticia|news|aljazeera|dw |france 24|rt |hispantv|palestine|kan 11|tv5 monde|tvge)\b", "Informativos"),
+        (r"\b(fashiontv|fashion)\b", "Fashion"),
+        (r"\b(platzi|cloudflare)\b", "Tecnología"),
+    ]
+    for patron, destino in reglas:
+        if re.search(patron, texto):
+            encontrado = buscar_categoria_existente(destino, categorias)
+            if encontrado:
+                return encontrado
+    # Países explícitos solo si ya existe su carpeta.
+    aliases_pais = {
+        "bolivia": "Bolivia", "brasil": "Brasil", "brazil": "Brasil",
+        "chile": "CHILE TV", "venezuela": "Venezuela", "el salvador": "El Salvador",
+        "guatemala": "Guatemala", "honduras": "Honduras", "costa rica": "Costa Rica",
+        "mexico": "México", "colombia": "Colombia", "ecuador": "Ecuador",
+        "peru": "Perú", "argentina": "Argentina", "paraguay": "Paraguay",
+        "republica dominicana": "República Dominicana", "espana": "España",
+    }
+    for alias, destino in aliases_pais.items():
+        if re.search(rf"\b{re.escape(alias)}\b", texto):
+            encontrado = buscar_categoria_existente(destino, categorias)
+            if encontrado:
+                return encontrado
+    return buscar_categoria_existente("GENERAL", categorias)
+
+
 def limpiar_total_otros_y_sin_nombre(lineas):
     """
-    Revisa TOTAL, OTROS y entradas sin group-title sin destruir
-    cabeceras ni metadatos M3U.
-    - Entradas sin categoría: se eliminan.
-    - TOTAL/OTROS duplicados por URL en otra categoría: se eliminan.
-    - Únicos: se reclasifican cuando existe una categoría clara.
-    - Si no se puede clasificar, se conserva en OTROS.
+    Limpia TOTAL/OTROS definitivamente.
+    - Si la misma URL existe en otra carpeta, elimina la copia TOTAL/OTROS.
+    - Si TOTAL y OTROS contienen la misma URL, conserva una sola y la reclasifica.
+    - Los únicos se reclasifican.
+    - Nunca deja ni crea TOTAL/OTROS.
     """
     categorias = categorias_de_lineas(lineas)
     bloques = []
@@ -839,112 +890,70 @@ def limpiar_total_otros_y_sin_nombre(lineas):
         if not lineas[i].startswith("#EXTINF"):
             i += 1
             continue
-
         inicio = i
         extinf = lineas[i]
         categoria = extraer_categoria(extinf)
         nombre = extraer_nombre(extinf)
-
         j = i + 1
-        while j < len(lineas) and lineas[j].startswith("#"):
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             j += 1
-
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
-            bloques.append({
-                "start": inicio,
-                "end": j + 1,
-                "extinf": extinf,
-                "categoria": categoria,
-                "nombre": nombre,
-                "url": lineas[j].strip(),
-            })
-            i = j + 1
+            bloques.append({"start":inicio,"end":j+1,"extinf":extinf,"categoria":categoria,"nombre":nombre,"url":lineas[j].strip()})
+            i=j+1
         else:
-            i += 1
+            i=j
 
     categorias_por_url = defaultdict(set)
     for b in bloques:
         if b["categoria"]:
             categorias_por_url[b["url"]].add(normalizar(b["categoria"]))
 
-    eliminar_urls = set()
+    eliminar = set()
     reemplazos = {}
     sin_nombre_eliminados = 0
     duplicados_eliminados = 0
     movidos = defaultdict(int)
+    especial_vistos = set()
 
-    for idx, b in enumerate(bloques):
-        cat = normalizar(b["categoria"])
-
+    for idx,b in enumerate(bloques):
+        cat=normalizar(b["categoria"])
         if not b["categoria"]:
-            eliminar_urls.add(idx)
-            sin_nombre_eliminados += 1
+            eliminar.add(idx); sin_nombre_eliminados += 1; continue
+        if cat not in {"total","otros"}:
             continue
 
-        if cat not in {"total", "otros"}:
-            continue
-
-        otras = {
-            x for x in categorias_por_url[b["url"]]
-            if x not in {"total", "otros"}
-        }
-
+        otras={x for x in categorias_por_url[b["url"]] if x not in {"total","otros"}}
         if otras:
-            eliminar_urls.add(idx)
-            duplicados_eliminados += 1
-            continue
+            eliminar.add(idx); duplicados_eliminados += 1; continue
 
-        destino = determinar_destino(
-            b["categoria"],
-            b["nombre"],
-            None,
-            categorias,
-        )
+        # Si TOTAL y OTROS comparten URL, conservar solo la primera aparición.
+        if b["url"] in especial_vistos:
+            eliminar.add(idx); duplicados_eliminados += 1; continue
+        especial_vistos.add(b["url"])
 
-        if destino and normalizar(destino) not in {"total", "otros"}:
-            reemplazos[idx] = destino
-            movidos[destino] += 1
+        destino=destino_especial_total_otros(b["nombre"],b["categoria"],categorias)
+        if destino and normalizar(destino) not in {"total","otros"}:
+            reemplazos[idx]=destino; movidos[destino]+=1
+        else:
+            eliminar.add(idx); duplicados_eliminados += 1
 
-    salida = []
-    bloque_idx = 0
-    i = 0
-
-    while i < len(lineas):
-        if (
-            bloque_idx < len(bloques)
-            and i == bloques[bloque_idx]["start"]
-        ):
-            b = bloques[bloque_idx]
-            idx = bloque_idx
-            bloque_idx += 1
-
-            if idx in eliminar_urls:
-                i = b["end"]
-                continue
-
+    salida=[]; bloque_idx=0; i=0
+    while i<len(lineas):
+        if bloque_idx<len(bloques) and i==bloques[bloque_idx]["start"]:
+            b=bloques[bloque_idx]; idx=bloque_idx; bloque_idx+=1
+            if idx in eliminar:
+                i=b["end"]; continue
             if idx in reemplazos:
-                salida.append(
-                    reemplazar_categoria(
-                        b["extinf"],
-                        reemplazos[idx],
-                    )
-                )
-                i = b["start"] + 1
-                continue
+                salida.append(reemplazar_categoria(b["extinf"],reemplazos[idx]))
+                i=b["start"]+1; continue
+            salida.extend(lineas[b["start"]:b["end"]]); i=b["end"]; continue
+        salida.append(lineas[i]); i+=1
 
-            # Bloque sin cambios: copiarlo exactamente.
-            salida.extend(lineas[b["start"]:b["end"]])
-            i = b["end"]
-            continue
-
-        salida.append(lineas[i])
-        i += 1
-
-    return salida, {
-        "sin_nombre_eliminados": sin_nombre_eliminados,
-        "total_otros_duplicados_eliminados": duplicados_eliminados,
-        "total_otros_movidos": sum(movidos.values()),
-        "movidos_por_categoria": dict(movidos),
+    return salida,{
+        "sin_nombre_eliminados":sin_nombre_eliminados,
+        "total_otros_duplicados_eliminados":duplicados_eliminados,
+        "total_otros_movidos":sum(movidos.values()),
+        "movidos_por_categoria":dict(movidos),
     }
 
 def agregar_bloque(canal, destino, urls_globales, bloques):
@@ -1266,7 +1275,6 @@ def ordenar_y_normalizar_carpetas(lineas):
         "rakuten tv",
         "lg channels",
         "run:time tv",
-        "pluto tv",
         "tecnologia",
         "el salvador - tcs",
         "cultura",
@@ -1274,8 +1282,6 @@ def ordenar_y_normalizar_carpetas(lineas):
         "investigacion",
         "novelas",
         "estilo de vida",
-        "total",
-        "otros",
     ]
     orden_indice = {cat: i for i, cat in enumerate(ORDEN_MAESTRO_ACTUAL)}
 
@@ -1466,11 +1472,7 @@ def main():
                 )
 
                 if not destino:
-                    # Pluto puede crear una categoría temática nueva
-                    # si la fuente declara una categoría útil.
-                    destino = canal.get("categoria", "").strip()
-
-                if not destino:
+                    # No crear carpetas genéricas Pluto TV ni categorías vacías.
                     sin_categoria += 1
                     continue
 
