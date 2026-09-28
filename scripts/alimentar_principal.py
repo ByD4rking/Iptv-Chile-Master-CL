@@ -415,13 +415,9 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     if pais_fuente == "musica":
         return buscar_categoria_existente("MÚSICA", categorias)
 
-    if pais_fuente == "latam":
-        return (
-            buscar_categoria_existente("LATAM", categorias)
-            or buscar_categoria_existente("LATINOAMÉRICA", categorias)
-            or None
-        )
-
+    # LATAM NO tiene carpeta propia. Sus canales se redistribuyen
+    # según su categoría/nombre hacia la carpeta existente que corresponda.
+    # Si no hay una clasificación segura, se omite el canal.
     if pais_fuente == "chile":
         return buscar_categoria_existente("CHILE TV", categorias)
 
@@ -443,6 +439,7 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
         "espana": ["espana", "spain"],
         "costa rica": ["costa rica"],
         "republica dominicana": ["republica dominicana", "dominican republic"],
+        "chile": ["chile"],
     }
     for pais, nombres in aliases.items():
         if any(normalizar(alias) in texto for alias in nombres):
@@ -2380,6 +2377,7 @@ def main():
     print("  - Pluto antiguo se elimina antes de cargar Pluto propio.")
     print("  - Pluto propio usa exclusivamente FUENTES_PLUTO.")
     print("  - CHILE de fuentes normales -> CHILE TV.")
+    print("  - LATAM.m3u NO crea carpeta LATAM: sus canales se redistribuyen por país/temática; los no clasificables se omiten.")
     print("=" * 72)
 
 if __name__ == "__main__":
