@@ -58,8 +58,13 @@ jobs:
                   if not id_match:
                       continue
                   name = name_match.group(1).strip().lower() if name_match else ""
-                  name = re.sub(r"\\s+", " ", name)
-                  entries.append({"id": id_match.group(1), "name": name})
+                  name = re.sub(r"\s+", " ", name)
+                  stream = ""
+                  if i + 1 < len(lines):
+                      candidate = lines[i + 1].strip()
+                      if candidate.startswith(("http://", "https://")):
+                          stream = candidate
+                  entries.append({"id": id_match.group(1), "name": name, "stream": stream})
               out[path.name] = entries
           Path("/tmp/pluto_before.json").write_text(json.dumps(out), encoding="utf-8")
           print("Inventario previo:", {k: len(v) for k, v in out.items()})
@@ -149,13 +154,19 @@ jobs:
               text = path.read_text(encoding="utf-8-sig")
               new_ids = set(re.findall(r'tvg-id="([^"]+)"', text))
               new_names = {
-                  re.sub(r"\\s+", " ", value.strip().lower())
+                  re.sub(r"\s+", " ", value.strip().lower())
                   for value in re.findall(r'tvg-name="([^"]+)"', text)
+              }
+              new_streams = {
+                  line.strip()
+                  for line in text.splitlines()
+                  if line.startswith(("http://", "https://"))
               }
               missing = [
                   entry for entry in old_entries
                   if entry["id"] not in new_ids
                   and (not entry["name"] or entry["name"] not in new_names)
+                  and (not entry["stream"] or entry["stream"] not in new_streams)
               ]
               if missing:
                   raise SystemExit(
