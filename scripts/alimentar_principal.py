@@ -277,10 +277,6 @@ def validar_integridad_iptvsv(lineas, canales, categorias):
             + "; ".join(f"{u} => {cats}" for u, cats in muestra)
         )
 
-    urls_principal = {}
-    for canal in lineas:
-        pass
-
     # Construir mapa URL -> categorías actuales de la principal.
     actual_por_url = defaultdict(set)
     i = 0
