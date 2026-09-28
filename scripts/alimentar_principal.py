@@ -1429,12 +1429,17 @@ def main():
                         categorias,
                     )
 
-                # Si no existe una categoría equivalente, se permite
-                # crearla usando la categoría declarada por la fuente.
-                if not destino:
-                    destino = canal.get("categoria", "").strip()
+                # Nunca crear TOTAL/OTROS. Si una fuente antigua los
+                # declara, intentar clasificar por nombre; si no hay destino
+                # seguro, se omite para no contaminar la principal.
+                if not destino and normalizar(canal.get("categoria", "")) in {"total", "otros"}:
+                    destino = destino_especial_total_otros(
+                        canal.get("nombre", ""),
+                        canal.get("categoria", ""),
+                        categorias,
+                    )
                 if not destino or normalizar(destino) in {"total", "otros"}:
-                    destino = "OTROS"
+                    continue
 
                 if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
                     agregados_normales += 1
