@@ -1205,18 +1205,76 @@ def ordenar_y_normalizar_carpetas(lineas):
             grupos[info_key]["bloques"] = cnn + resto
             cambios["cnn_priorizados"] = len(cnn)
 
+    # Orden maestro ACTUAL. Se obtuvo de la última estructura correcta
+    # antes de la reorganización accidental. NO usar la lista antigua como
+    # plantilla de carpetas: solo sirve para auditar dónde pertenece cada canal.
+    ORDEN_MAESTRO_ACTUAL = [
+        "chile tv",
+        "chile tv y radio",
+        "musica",
+        "retro",
+        "reality",
+        "entretenimiento",
+        "anime",
+        "infantiles",
+        "series",
+        "doramas / asia",
+        "fashion",
+        "cine / peliculas",
+        "comedia",
+        "cine",
+        "south park",
+        "cine / peliculas premium",
+        "entretenimiento premium",
+        "entretenimiento / cine / series",
+        "general",
+        "telemundo noticias",
+        "documentales y cultura",
+        "informativos",
+        "fifa+",
+        "sky sports",
+        "tigo sports / fox",
+        "deportes",
+        "curiosidad",
+        "documentales",
+        "dsports",
+        "fox sports",
+        "win sports",
+        "movistar deportes",
+        "espn",
+        "religiosos",
+        "tv chichicasteca",
+        "canela tv",
+        "freetv",
+        "sony channels",
+        "rakuten tv",
+        "lg channels",
+        "run:time tv",
+        "pluto tv",
+        "tecnologia",
+        "el salvador - tcs",
+        "cultura",
+        "zona paranormal",
+        "investigacion",
+        "competencia",
+        "novelas",
+        "estilo de vida",
+        "total",
+        "otros",
+    ]
+    orden_indice = {cat: i for i, cat in enumerate(ORDEN_MAESTRO_ACTUAL)}
+
+    # Los países NO se ordenan con el orden antiguo: se mandan todos al
+    # final conservando entre ellos el orden de primera aparición ACTUAL.
+    # XXX+18 queda absolutamente al final.
     def prioridad(cat_key, primera_orden):
-        if cat_key == "chile tv":
-            return (0, 0)
-        if cat_key == "chile tv y radio":
-            return (0, 1)
-        if cat_key in {"total", "otros"}:
-            return (90, primera_orden)
+        if cat_key in orden_indice:
+            return (10, orden_indice[cat_key])
         if cat_key in PAISES_ORDEN_FINAL:
             return (100, primera_orden)
-        if cat_key in {"xxx", "xxx+18"} or cat_key.startswith("xxx"):
-            return (110, primera_orden)
-        return (10, primera_orden)
+        if cat_key.startswith("xxx"):
+            return (110, 0)
+        return (50, primera_orden)
 
     grupos_ordenados = sorted(
         grupos.values(),
@@ -1433,7 +1491,12 @@ def main():
         pluto_movidos_fisicamente_por_categoria,
     ) = reubicar_bloques_pluto_sin_reordenar_principal(lineas)
 
-    orden_carpetas = {
+    # 8) Auditoría/normalización FINAL: consolida las carpetas y aplica
+    # exclusivamente el orden maestro ACTUAL. La lista antigua no se usa
+    # para volver a imponer un orden histórico.
+    lineas, cambios_orden = ordenar_y_normalizar_carpetas(lineas)
+
+    orden_carpetas = cambios_orden
         "infantil_a_infantiles": 0,
         "teen_a_infantiles": 0,
         "noticias_a_informativos": 0,
