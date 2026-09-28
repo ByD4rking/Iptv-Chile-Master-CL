@@ -1663,7 +1663,6 @@ def main():
     print(f"Infantil -> INFANTILES:              {orden_carpetas['infantil_a_infantiles']}")
     print(f"Teen -> INFANTILES:                  {orden_carpetas['teen_a_infantiles']}")
     print(f"Noticias -> INFORMATIVOS:             {orden_carpetas['noticias_a_informativos']}")
-    print(f"CNN priorizados en INFORMATIVOS:      {orden_carpetas['cnn_priorizados']}")
     if movimientos_especiales:
         print("\nCARPETAS ESPECIALES corregidas:")
         for cat, cantidad in sorted(movimientos_especiales.items()):
