@@ -1320,7 +1320,12 @@ def main():
     # La estructura y el orden de las carpetas existentes se conservan.
     # Las únicas reclasificaciones de carpetas automáticas son las específicas
     # de Pluto realizadas arriba; las demás fuentes respetan sus reglas propias.
-    orden_carpetas = {}
+    orden_carpetas = {
+        "infantil_a_infantiles": 0,
+        "teen_a_infantiles": 0,
+        "noticias_a_informativos": 0,
+        "cnn_priorizados": 0,
+    }
 
     # 7) Validación final de URLs duplicadas globales.
     vistos = set()
