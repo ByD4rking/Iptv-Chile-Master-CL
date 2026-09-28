@@ -348,44 +348,49 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
 
 
 def build_latam() -> Path:
-    """Build LATAM from MX/CL/AR in memory; only LATAM itself is published."""
+    """
+    Construye LATAM exclusivamente con datos frescos de MX + CL + AR.
+
+    No lee pluto_mx/cl/ar.m3u del disco para evitar reutilizar catálogos
+    antiguos que ya no son playlists publicadas. Si una fuente regional falla,
+    se conserva la LATAM anterior en vez de publicar una mezcla parcial.
+    """
     PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
+    output = PLAYLIST_DIR / "pluto_latam.m3u"
+
+    regionales = []
+    errores = []
+
+    for code in ("mx", "cl", "ar"):
+        try:
+            channels = fetch_region(REGIONS[code])
+            if not channels:
+                raise RuntimeError("sin canales válidos")
+            regionales.append((code, channels))
+        except Exception as exc:
+            errores.append(f"{code.upper()}: {exc}")
+
+    if errores:
+        if output.exists() and output.stat().st_size:
+            print(
+                "[LATAM] Fuentes incompletas; se conserva la LATAM anterior. "
+                + " | ".join(errores)
+            )
+            return output
+        raise RuntimeError(
+            "LATAM: no se puede construir de forma segura; "
+            + " | ".join(errores)
+        )
+
     lines = ["#EXTM3U"]
     seen = set()
     source_counts = {}
 
-    for code in ("mx", "cl", "ar"):
-        path = PLAYLIST_DIR / f"pluto_{code}.m3u"
-        if path.exists() and path.stat().st_size:
-            text = path.read_text(encoding="utf-8-sig")
-            chunks = re.split(r"(?=^#EXTINF:)", text, flags=re.MULTILINE)
-            channels = []
-            for chunk in chunks:
-                if not chunk.startswith("#EXTINF:"):
-                    continue
-                parts = chunk.strip().splitlines()
-                if len(parts) < 2:
-                    continue
-                id_match = re.search(r'tvg-id="([^"]+)"', parts[0])
-                cid = id_match.group(1) if id_match else parts[1].strip()
-                name_match = re.search(r',(.+)$', parts[0])
-                name = name_match.group(1).strip() if name_match else cid
-                channels.append({"id": cid, "name": name, "stream": parts[1].strip(),
-                                 "logo": (re.search(r'tvg-logo="([^"]*)"', parts[0]) or [None, ""])[1],
-                                 "category": (re.search(r'group-title="([^"]*)"', parts[0]) or [None, "Entretenimiento"])[1]})
-        else:
-            try:
-                channels = fetch_region(REGIONS[code])
-            except Exception as exc:
-                print(f"[{code.upper()}] ERROR interno LATAM: {exc}")
-                channels = []
-
+    for code, channels in regionales:
         added = 0
         for channel in channels:
             key = str(channel.get("id") or channel.get("stream") or "").strip()
             if not key or key in seen:
-                continue
-            if "stream" not in channel:
                 continue
             entry = channel_to_m3u(channel, REGIONS["mx"])
             if not entry:
@@ -398,12 +403,26 @@ def build_latam() -> Path:
     if not seen:
         raise RuntimeError("LATAM: no hay canales válidos.")
 
-    output = PLAYLIST_DIR / "pluto_latam.m3u"
+    old_count = previous_count(output)
+    new_count = len(seen)
+    if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):
+        print(
+            f"[LATAM] BLOQUEADO: {new_count} canales frente a {old_count} "
+            "anteriores. Se conserva la LATAM anterior."
+        )
+        return output
+
     tmp = output.with_suffix(".m3u.tmp")
     tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
     tmp.replace(output)
-    print(f"[LATAM] {len(seen)} canales únicos -> {output} (MX: {source_counts.get('mx',0)}, CL: {source_counts.get('cl',0)}, AR: {source_counts.get('ar',0)})")
+    print(
+        f"[LATAM] {new_count} canales únicos -> {output} "
+        f"(MX: {source_counts.get('mx', 0)}, "
+        f"CL: {source_counts.get('cl', 0)}, "
+        f"AR: {source_counts.get('ar', 0)})"
+    )
     return output
+
 
 def main() -> None:
     print("================================")
