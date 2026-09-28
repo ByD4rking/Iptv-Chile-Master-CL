@@ -1362,10 +1362,14 @@ def ordenar_y_normalizar_carpetas(lineas):
     # Los países NO se ordenan con el orden antiguo: se mandan todos al
     # final conservando entre ellos el orden de primera aparición ACTUAL.
     # XXX+18 queda absolutamente al final.
+    el_salvador_orden = min((g["primera_orden"] for g in grupos.values() if normalizar(g["categoria"]).startswith("el salvador")), default=10**9)
+
     def prioridad(cat_key, primera_orden):
         if cat_key in orden_indice:
             return (10, orden_indice[cat_key])
-        if cat_key in PAISES_ORDEN_FINAL or cat_key.startswith("el salvador"):
+        if cat_key.startswith("el salvador"):
+            return (100, el_salvador_orden)
+        if cat_key in PAISES_ORDEN_FINAL:
             return (100, primera_orden)
         if cat_key.startswith("xxx"):
             return (110, 0)
