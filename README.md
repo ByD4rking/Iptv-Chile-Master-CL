@@ -131,63 +131,99 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 ---
 
-## ▶️ 4. Reproductores compatibles
+## ▶️ 4. Reproductores recomendados
 
-Las listas del proyecto son archivos **M3U/M3U8** y pueden utilizarse con distintos reproductores. La disponibilidad exacta puede variar según el modelo de TV, sistema operativo y tienda de aplicaciones.
+Las listas del proyecto son archivos **M3U/M3U8** y pueden utilizarse en distintos dispositivos. La disponibilidad de cada aplicación puede variar según el sistema operativo, modelo de equipo y tienda de aplicaciones.
 
-### 📺 Reproductores para Smart TV
+### 📱 Android — recomendación principal
 
-#### ⭐ SS IPTV — opción gratuita
+#### ⭐ Televizo + MPV
 
-**SS IPTV (Simple Smart IPTV)** es un reproductor gratuito para Smart TV que permite cargar playlists propias y reproducir contenido mediante Internet. Su documentación oficial contempla Smart TV de **LG, Samsung, Philips y Sony**, con diferencias de instalación según modelo y plataforma. citeturn1search0turn1search1turn1search4
+**Televizo** como gestor/reproductor IPTV y **MPV** como reproductor externo forman una combinación muy útil cuando se busca una reproducción más flexible.
 
-- Compatible con playlists propias.
-- Orientado especialmente a Smart TV.
-- Permite cargar listas externas.
-- No proporciona canales propios: debes añadir tu propia playlist.
-- Es gratuito según la documentación oficial de SS IPTV. citeturn1search4
+- Televizo permite gestionar playlists M3U y organizar el contenido.
+- MPV puede utilizarse como reproductor externo para los streams.
+- Si un canal presenta pantalla negra, cortes o problemas de decodificación en el reproductor integrado, probar **MPV** como reproductor externo puede ayudar.
 
-🔗 **Sitio oficial:** https://www.ss-iptv.com/
+### 💻 PC
 
-#### ▶️ VLC
+#### ⭐ FredTV
 
-VLC también puede utilizarse para abrir listas M3U/M3U8 y reproducir sus streams. Es una alternativa multiplataforma especialmente útil cuando el dispositivo permite instalar VLC.
+**FredTV** es una opción orientada a la reproducción de listas IPTV en PC.
 
----
+#### ▶️ MPV Player
 
-### 🤖 Reproductores para Android / Android TV
+**MPV** es una alternativa ligera y flexible para reproducir streams y archivos multimedia.
 
-#### ⭐ Televizo IPTV Player
+#### ▶️ IPTVnator
 
-Televizo permite utilizar **múltiples playlists M3U**, EPG, favoritos, búsqueda, Chromecast y selección de pistas de audio/subtítulos. Está disponible para teléfonos, tablets y televisores compatibles. citeturn0search1turn0search7
+**IPTVnator** está orientado específicamente a listas IPTV y puede utilizarse para gestionar y reproducir playlists M3U/M3U8.
 
-🔗 **Google Play:** https://play.google.com/store/apps/details?id=com.ottplay.ottplay
+### 🍏 macOS
 
-#### ⭐ TiviMate IPTV Player
+#### ⭐ IPTVnator
 
-TiviMate está diseñado especialmente para **Android TV** y navegación con control remoto. Admite M3U, Xtream Codes y Stalker Portal, además de múltiples listas, EPG, favoritos, búsqueda, catch-up, grabación y multivista. La aplicación ofrece funciones gratuitas y otras mediante compras dentro de la aplicación. citeturn0search2turn0search3
+**IPTVnator** es una alternativa recomendada para macOS cuando se quiere trabajar directamente con playlists IPTV.
 
-🔗 **Google Play:** https://play.google.com/store/apps/details?id=ar.tvplayer.tv
+También puede utilizarse **MPV** o **VLC** como reproductor externo cuando sea necesario.
 
-🔗 **Sitio oficial:** https://tivimate.com/
+### 📱 iPhone / iPad
 
-#### ⭐ OTT Navigator IPTV
+#### ⭐ GSE Smart IPTV + VLC
 
-OTT Navigator admite listas **M3U/M3U8**, múltiples listas, EPG, favoritos, búsqueda, Xtream Codes y reproducción adaptativa. Está disponible para Android y es una alternativa flexible para quienes manejan varias playlists. citeturn0search0turn0search5
+**GSE Smart IPTV** puede utilizarse para gestionar listas IPTV, mientras que **VLC** puede emplearse como reproductor externo cuando sea compatible con el flujo.
 
-🔗 **Google Play:** https://play.google.com/store/apps/details?id=com.ottnavigator.iptvnavigator
+### 📺 Smart TV
 
-> **Nota:** estos reproductores no proporcionan las listas ni los canales del proyecto. Son herramientas para cargar y reproducir tus propias playlists.
+#### 🤖 Android TV
 
-### 🧭 Elección rápida
+**Televizo** es una de las opciones disponibles para Android TV y permite trabajar con playlists IPTV.
+
+También puedes utilizar **TiviMate** u **OTT Navigator IPTV** si prefieres una interfaz orientada específicamente a televisión y control remoto.
+
+#### 📺 Samsung, LG y otras Smart TV
+
+**SS IPTV** es una opción gratuita para Smart TV que permite cargar playlists propias.
+
+También puede utilizarse **IPTV Smarters Pro** en los dispositivos y versiones donde esté disponible, cargando manualmente la playlist M3U.
+
+> **Importante:** la disponibilidad de una aplicación depende del modelo de TV, sistema operativo, región y tienda de aplicaciones. Si una aplicación no aparece en la tienda de tu televisor, utiliza una alternativa compatible con ese dispositivo.
+
+### 🧭 Resumen por dispositivo
 
 | Dispositivo | Opciones recomendadas |
 | :--- | :--- |
-| 📺 Smart TV LG / Samsung | **SS IPTV** |
-| 📺 Smart TV compatible con VLC | **VLC** |
-| 🤖 Android TV | **TiviMate / Televizo / OTT Navigator** |
-| 📱 Android | **Televizo / OTT Navigator** |
-| 💻 PC | **VLC** |
+| 📱 **Android** | **Televizo + MPV** |
+| 🤖 **Android TV** | **Televizo / TiviMate / OTT Navigator** |
+| 💻 **Windows / PC** | **FredTV / MPV / IPTVnator** |
+| 🍏 **macOS** | **IPTVnator / MPV / VLC** |
+| 📱 **iPhone / iPad** | **GSE Smart IPTV + VLC** |
+| 📺 **Samsung / LG / Smart TV** | **SS IPTV / IPTV Smarters Pro** |
+
+### 🛠️ Solución para pantalla negra, cortes o reproducción poco fluida
+
+Si un canal funciona pero presenta **pantalla negra, cortes, congelamientos o reproducción poco fluida**, prueba primero un reproductor externo:
+
+1. En Android, prueba **MPV** como reproductor externo desde Televizo.
+2. Si MPV no está disponible, prueba **VLC**.
+3. Comprueba nuevamente el mismo canal.
+4. Si continúa sin funcionar, el problema puede estar en el propio stream, su servidor o su compatibilidad con el dispositivo.
+
+> 💡 **Tip importante:** utilizar un reproductor externo no garantiza que un canal vaya a funcionar. Si el stream está caído, bloqueado o es incompatible, ningún reproductor podrá solucionarlo.
+
+### ⚙️ Ajustes recomendados
+
+Para problemas de compatibilidad de vídeo, puedes probar:
+
+- **MPV:** revisar la configuración de decodificación y probar decodificación por software cuando la aceleración por hardware provoque incompatibilidades.
+- **VLC:** revisar la configuración de decodificación de vídeo y probar decodificación por software si aparecen errores de imagen.
+- Mantener actualizados el reproductor y el sistema operativo.
+- Probar otro reproductor antes de descartar una URL.
+- Comparar el mismo canal con otra URL de la playlist cuando exista una alternativa.
+
+> **Nota:** la decodificación por software puede aumentar el uso de CPU. En equipos con recursos limitados, puede ser preferible mantener la aceleración por hardware si funciona correctamente.
+
+> **Importante:** estos reproductores **no proporcionan los canales ni las listas del proyecto**. Son herramientas para cargar y reproducir tus propias playlists.
 
 ---
 
