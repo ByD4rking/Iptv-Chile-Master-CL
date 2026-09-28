@@ -1138,6 +1138,98 @@ def limpiar_extinf_huerfanos(lineas):
     return salida, eliminados
 
 
+def limpiar_duplicados_globales_y_carpetas_especiales(lineas):
+    """
+    Auditoría final de integridad:
+      - elimina cualquier URL exacta repetida en toda la principal,
+        conservando la primera aparición;
+      - Telemundo Noticias y Sky Sports no pueden conservar una copia
+        si la misma URL ya está en otra carpeta;
+      - CNN encontrada dentro de Telemundo Noticias pasa a Informativos;
+      - Women's Sports Network encontrada dentro de Sky Sports pasa a Deportes.
+    """
+    bloques = []
+    prefijo = []
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+
+        inicio = i
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            bloques.append({
+                "lineas": lineas[inicio:j + 1],
+                "extinf": extinf,
+                "categoria": extraer_categoria(extinf),
+                "nombre": extraer_nombre(extinf),
+                "url": lineas[j].strip(),
+                "orden": len(bloques),
+            })
+            i = j + 1
+        else:
+            prefijo.extend(lineas[inicio:j])
+            i = j
+
+    urls_por_categoria = defaultdict(list)
+    for b in bloques:
+        urls_por_categoria[b["url"]].append(b)
+
+    eliminar = set()
+    movidos = defaultdict(int)
+
+    for b in bloques:
+        cat = normalizar(b["categoria"])
+        otros = [
+            x for x in urls_por_categoria[b["url"]]
+            if normalizar(x["categoria"]) != cat
+        ]
+
+        if cat in {"telemundo noticias", "sky sports"} and otros:
+            eliminar.add(b["orden"])
+            continue
+
+        if cat == "telemundo noticias" and re.search(
+            r"cnn\s+en\s+espa[nñ]ol", normalizar(b["nombre"])
+        ):
+            destino = "Informativos"
+            b["extinf"] = reemplazar_categoria(b["extinf"], destino)
+            b["lineas"][0] = b["extinf"]
+            b["categoria"] = destino
+            movidos["Telemundo Noticias -> Informativos"] += 1
+
+        elif cat == "sky sports" and re.search(
+            r"women'?s\s+sports\s+network", normalizar(b["nombre"])
+        ):
+            destino = "Deportes"
+            b["extinf"] = reemplazar_categoria(b["extinf"], destino)
+            b["lineas"][0] = b["extinf"]
+            b["categoria"] = destino
+            movidos["Sky Sports -> Deportes"] += 1
+
+    vistos = set()
+    duplicados = 0
+    salida = list(prefijo)
+    for b in bloques:
+        if b["orden"] in eliminar:
+            continue
+        if b["url"] in vistos:
+            duplicados += 1
+            continue
+        vistos.add(b["url"])
+        salida.extend(b["lineas"])
+
+    return salida, duplicados, dict(movidos)
+
+
 def ordenar_y_normalizar_carpetas(lineas):
     """
     Ordena y normaliza las carpetas de la principal sin cambiar URLs.
@@ -1547,9 +1639,23 @@ def main():
     # para volver a imponer un orden histórico.
     lineas, cambios_orden = ordenar_y_normalizar_carpetas(lineas)
 
+    # 10) Auditoría final: exact-URL dedupe y limpieza de carpetas especiales.
+    (
+        lineas,
+        duplicados_limpieza_final,
+        movimientos_especiales,
+    ) = limpiar_duplicados_globales_y_carpetas_especiales(lineas)
+
+    # La limpieza puede vaciar bloques o mover canales, por lo que se vuelve
+    # a aplicar el orden maestro una sola vez, sin tocar el orden interno.
+    lineas, cambios_orden_final = ordenar_y_normalizar_carpetas(lineas)
+    for clave, valor in cambios_orden_final.items():
+        if isinstance(valor, int):
+            cambios_orden[clave] = cambios_orden.get(clave, 0) + valor
+
     orden_carpetas = cambios_orden
 
-    # 10) Validación final de URLs duplicadas globales.
+    # 11) Validación final de URLs duplicadas globales.
     vistos = set()
     duplicados_finales = 0
     for linea in lineas:
@@ -1590,6 +1696,7 @@ def main():
     print(f"Canales colaborador agregados:      {agregados_normales}")
     print(f"Canales Pluto propios agregados:    {agregados_pluto}")
     print(f"Duplicados omitidos al agregar:     {omitidos_duplicados}")
+    print(f"Duplicados exactos eliminados en auditoría final: {duplicados_limpieza_final}")
     print(f"Duplicados finales detectados:      {duplicados_finales}")
     print(f"Fuentes con error:                  {errores}")
     print(f"Canales finales:                    {total_final}")
@@ -1597,6 +1704,10 @@ def main():
     print(f"Teen -> INFANTILES:                  {orden_carpetas['teen_a_infantiles']}")
     print(f"Noticias -> INFORMATIVOS:             {orden_carpetas['noticias_a_informativos']}")
     print(f"CNN priorizados en INFORMATIVOS:      {orden_carpetas['cnn_priorizados']}")
+    if movimientos_especiales:
+        print("\nCARPETAS ESPECIALES corregidas:")
+        for cat, cantidad in sorted(movimientos_especiales.items()):
+            print(f"  - {cat}: {cantidad} canales")
 
     if pluto_movidos_fisicamente_por_categoria:
         print("\nPLUTO reubicados físicamente por carpeta:")
@@ -1613,6 +1724,9 @@ def main():
     print("  - IPTVSV.m3u usa reglas propias y NO hereda ninguna regla de Pluto.")
     print("  - IPTVSV: no crea/alimenta carpetas-país genéricas; se respetan solo excepciones explícitas.")
     print("  - Dedupe global por URL para todas las fuentes; IPTVSV no usa dedupe por channel ID de Pluto.")
+    print("  - Auditoría final: una URL exacta solo puede quedar una vez en toda la principal.")
+    print("  - Telemundo Noticias y Sky Sports solo conservan señales no duplicadas en otras carpetas.")
+    print("  - CNN de Telemundo -> Informativos; Women's Sports Network de Sky -> Deportes.")
     print("  - Pluto: las carpetas existentes se sincronizan con la categoría de la fuente propia.")
     if pluto_reubicados_por_categoria:
         for cat, cantidad in sorted(pluto_reubicados_por_categoria.items()):
