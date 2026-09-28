@@ -15,8 +15,9 @@ permissions:
   contents: write
 
 concurrency:
-  group: pluto-update
-  cancel-in-progress: true
+  group: iptv-maintenance
+  cancel-in-progress: false
+
 
 jobs:
   update:
