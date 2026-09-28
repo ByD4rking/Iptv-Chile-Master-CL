@@ -605,6 +605,80 @@ def deduplicar_pluto_existente(lineas):
 
     return salida, eliminados
 
+def deduplicar_pluto_por_prioridad(lineas, canales_por_id):
+    """
+    Deduplica Pluto por identidad y aplica prioridad LATAM > ES > MX.
+
+    Si el mismo channel ID aparece en varias fuentes, conserva la representación
+    de la primera fuente en FUENTES_PLUTO (LATAM). Si LATAM no lo tiene, conserva
+    ES; si tampoco ES lo tiene, conserva MX. La posición física de la primera
+    aparición se mantiene para no reordenar innecesariamente la principal.
+    """
+    prioridad_url = {}
+    for identidad, canales in canales_por_id.items():
+        if not canales:
+            continue
+        for canal in canales:
+            url = (canal.get("url") or "").strip()
+            if url:
+                prioridad_url[identidad] = url
+                break
+
+    bloques = []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            bloques.append((lineas[i:i+1], "", "", False))
+            i += 1
+            continue
+
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            j += 1
+
+        bloque = lineas[inicio:j]
+        url = ""
+        if j > inicio + 1 and url_es_valida(bloque[-1].strip()):
+            url = bloque[-1].strip()
+        identidad = identidad_pluto(bloque[0], url) if url and es_url_pluto(url) else ""
+        bloques.append((bloque, identidad, url, bool(identidad)))
+        i = j
+
+    grupos = defaultdict(list)
+    for idx, (_, identidad, url, es_pluto_id) in enumerate(bloques):
+        if es_pluto_id:
+            grupos[identidad].append((idx, url))
+
+    reemplazar_en = {}
+    eliminar = set()
+    eliminados = 0
+
+    for identidad, items in grupos.items():
+        if len(items) <= 1:
+            continue
+        preferred = prioridad_url.get(identidad, "")
+        elegido = next((idx for idx, url in items if preferred and url == preferred), items[0][0])
+        primero = items[0][0]
+        reemplazar_en[primero] = elegido
+        for idx, _ in items:
+            if idx != primero:
+                eliminar.add(idx)
+                eliminados += 1
+
+    salida = []
+    for idx, (bloque, identidad, url, es_pluto_id) in enumerate(bloques):
+        if idx in eliminar:
+            continue
+        elegido = reemplazar_en.get(idx)
+        if elegido is not None and elegido != idx:
+            bloque = bloques[elegido][0]
+        salida.extend(bloque)
+
+    return salida, eliminados
+
 def mover_pluto_brasil_a_brasil(lineas, session):
     """Compatibilidad histórica: ya no consulta ni crea una fuente Pluto BR."""
     return lineas, 0, 0
@@ -1757,7 +1831,13 @@ def main():
     # Regla estricta: las fuentes nunca crean categorías nuevas.
     lineas = insertar_bloques(lineas, bloques_nuevos)
 
-    # 7) Consolidar físicamente SOLO Pluto. Esto elimina bloques Pluto
+    # 7) Consolidar Pluto por identidad aplicando LATAM > ES > MX.
+    lineas, pluto_prioridad_eliminados = deduplicar_pluto_por_prioridad(
+        lineas,
+        canales_pluto_fuentes_por_id,
+    )
+
+    # 8) Consolidar físicamente SOLO Pluto. Esto elimina bloques Pluto
     # intercalados entre categorías ajenas sin mover ningún bloque no-Pluto.
     (
         lineas,
@@ -1765,15 +1845,15 @@ def main():
         pluto_movidos_fisicamente_por_categoria,
     ) = reubicar_bloques_pluto_sin_reordenar_principal(lineas)
 
-    # 8) Limpieza de seguridad: nunca conservar EXTINF sin URL.
+    # 9) Limpieza de seguridad: nunca conservar EXTINF sin URL.
     lineas, extinf_huerfanos_eliminados = limpiar_extinf_huerfanos(lineas)
 
-    # 9) Auditoría/normalización FINAL: consolida las carpetas y aplica
+    # 10) Auditoría/normalización FINAL: consolida las carpetas y aplica
     # exclusivamente el orden maestro ACTUAL. La lista antigua no se usa
     # para volver a imponer un orden histórico.
     lineas, cambios_orden = ordenar_y_normalizar_carpetas(lineas)
 
-    # 10) Auditoría final: exact-URL dedupe y limpieza de carpetas especiales.
+    # 11) Auditoría final: exact-URL dedupe y limpieza de carpetas especiales.
     (
         lineas,
         duplicados_limpieza_final,
@@ -1789,7 +1869,7 @@ def main():
 
     orden_carpetas = cambios_orden
 
-    # 11) Validación final de URLs duplicadas globales.
+    # 12) Validación final de URLs duplicadas globales.
     vistos = set()
     duplicados_finales = 0
     for linea in lineas:
@@ -1799,7 +1879,7 @@ def main():
                 duplicados_finales += 1
             vistos.add(u)
 
-    # VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
+    # 13) VALIDACIÓN BLOQUEANTE ANTES DE ESCRIBIR LA PRINCIPAL.
     # Si falla, el workflow se detiene y NO publica una lista incompleta.
     categorias_finales = []
     bloques_finales = []
@@ -1856,7 +1936,7 @@ def main():
 
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
-    # BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
+    # 14) BLOQUEO DE SEGURIDAD: ninguna señal Pluto presente en las fuentes propias
     # puede desaparecer silenciosamente por una deduplicación por ID.
     ids_pluto_finales = set()
     for i_final, linea_final in enumerate(lineas):
@@ -2008,6 +2088,7 @@ def main():
     print(f"Canales Pluto propios agregados:    {agregados_pluto}")
     print(f"Duplicados omitidos al agregar:     {omitidos_duplicados}")
     print(f"Duplicados exactos eliminados en auditoría final: {duplicados_limpieza_final}")
+    print(f"Duplicados Pluto por prioridad LATAM>ES>MX eliminados: {pluto_prioridad_eliminados}")
     print(f"Duplicados finales detectados:      {duplicados_finales}")
     print(f"Fuentes con error:                  {errores}")
     print(f"Canales finales:                    {total_final}")
