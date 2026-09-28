@@ -420,7 +420,19 @@ def reclasificar_pluto_existente(lineas, session):
     categorias_fuente = {}
     errores = 0
 
-    for fuente in FUENTES_PLUTO:
+    # Pluto LATAM es la referencia temática principal. Las listas regionales
+    # complementan, pero nunca deben sobrescribir una categoría ya declarada
+    # por LATAM. Brasil se corrige después con su regla específica.
+    fuentes_pluto_ordenadas = sorted(
+        FUENTES_PLUTO,
+        key=lambda f: (
+            0 if f.lower().endswith("pluto_latam.m3u") else 1,
+            0 if f.lower().endswith("pluto.m3u") else 1,
+            f,
+        ),
+    )
+
+    for fuente in fuentes_pluto_ordenadas:
         try:
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
@@ -431,6 +443,9 @@ def reclasificar_pluto_existente(lineas, session):
                 )
                 categoria = (canal.get("categoria") or "").strip()
                 if identidad and categoria:
+                    # La primera fuente que clasifica el ID gana; como
+                    # pluto_latam se procesa primero, sus categorías quedan
+                    # protegidas frente a clasificaciones regionales distintas.
                     categorias_fuente.setdefault(identidad, categoria)
         except Exception as e:
             errores += 1
@@ -1115,6 +1130,12 @@ PAISES_CANONICOS = {
     "spain": "espana",
 }
 
+# Alias físicos que nunca deben volver a generar carpetas separadas.
+CATEGORIAS_CANONICAS = {
+    "el salvador - tcs": "el salvador",
+    "documentales": "documentales y cultura",
+}
+
 def limpiar_extinf_huerfanos(lineas):
     """Elimina EXTINF sin URL causado por bloques consecutivos mal formados."""
     salida = []
@@ -1287,10 +1308,15 @@ def ordenar_y_normalizar_carpetas(lineas):
             b["categoria"] = destino
 
         clave = normalizar(destino)
-        # Unificar alias de países antes de crear el grupo físico.
-        clave_canonica = PAISES_CANONICOS.get(clave, clave)
+        # Unificar alias de categorías antes de crear el grupo físico.
+        clave_canonica = CATEGORIAS_CANONICAS.get(clave, clave)
+        clave_canonica = PAISES_CANONICOS.get(clave_canonica, clave_canonica)
         if clave_canonica != clave:
-            destino_canonico = PAISES_CANONICOS[clave_canonica]
+            destino_canonico = (
+                CATEGORIAS_CANONICAS.get(clave_canonica)
+                or PAISES_CANONICOS.get(clave_canonica)
+                or destino
+            )
             b["extinf"] = reemplazar_categoria(b["extinf"], destino_canonico)
             b["lineas"][0] = b["extinf"]
             b["categoria"] = destino_canonico
