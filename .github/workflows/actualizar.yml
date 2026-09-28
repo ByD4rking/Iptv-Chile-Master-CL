@@ -4,7 +4,9 @@ on:
   push:
     paths:
       - "pluto/output/playlists/**"
-      - "scripts/alimentar_principal.py"
+      - "scripts/**"
+      - "pluto/src/**"
+      - ".github/workflows/**"
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
@@ -13,7 +15,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: actualizar-listas
+  group: iptv-maintenance
   cancel-in-progress: false
 
 jobs:
@@ -50,6 +52,11 @@ jobs:
             scripts/mega_lista.py \
             scripts/generar_reporte.py
 
+      - name: Guardar estado previo de la principal
+        run: |
+          cp IPTV-CHILE-MAESTRA_CORREGIDO.m3u /tmp/principal_before.m3u
+          grep '^#EXTINF' IPTV-CHILE-MAESTRA_CORREGIDO.m3u | sed -n 's/.*$//p' >/dev/null
+
       - name: Actualizar lista principal
         run: |
           python scripts/alimentar_principal.py
@@ -61,6 +68,54 @@ jobs:
       - name: Generar lista GOD
         run: |
           python scripts/mega_lista.py
+
+      - name: Auditoría de no regresión
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          before = Path("/tmp/principal_before.m3u").read_text(encoding="utf-8-sig")
+          after = Path("IPTV-CHILE-MAESTRA_CORREGIDO.m3u").read_text(encoding="utf-8-sig")
+
+          def entries(text):
+              out=[]
+              lines=text.splitlines()
+              for i,line in enumerate(lines):
+                  if line.startswith("#EXTINF:"):
+                      j=i+1
+                      while j < len(lines) and lines[j].startswith("#"):
+                          j += 1
+                      if j < len(lines) and lines[j].startswith(("http://","https://")):
+                          out.append((line, lines[j].strip()))
+              return out
+
+          b=entries(before); a=entries(after)
+          b_urls={u for _,u in b}; a_urls=[u for _,u in a]
+          a_set=set(a_urls)
+
+          # No se permite perder una URL no-Pluto existente.
+          lost_non_pluto=sorted(u for u in b_urls if "pluto" not in u.lower() and u not in a_set)
+          if lost_non_pluto:
+              raise SystemExit("REGRESION: se perdieron URLs no-Pluto existentes: "+str(lost_non_pluto[:20]))
+
+          # Una URL de acceso solo puede aparecer una vez.
+          dup=sorted(u for u in set(a_urls) if a_urls.count(u)>1)
+          if dup:
+              raise SystemExit("REGRESION: URLs duplicadas en principal: "+str(dup[:20]))
+
+          # No se pueden recrear carpetas prohibidas.
+          cats=[re.search(r'group-title="([^"]*)"',line) for line,_ in a]
+          cats={m.group(1).strip().lower() for m in cats if m}
+          forbidden={"pluto tv","total","otros"}
+          bad=sorted(c for c in cats if c in forbidden)
+          if bad:
+              raise SystemExit("REGRESION: carpetas prohibidas: "+str(bad))
+
+          print(f"Principal antes: {len(b)} | después: {len(a)}")
+          print(f"URLs no-Pluto preservadas: {len(b_urls)-len(lost_non_pluto)}")
+          print("OK: no-regresión, sin duplicados URL y sin carpetas prohibidas.")
+          PY
 
       - name: Validar archivos M3U
         run: |
