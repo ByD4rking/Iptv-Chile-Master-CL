@@ -27,7 +27,7 @@ import requests
 
 BASE = Path(__file__).resolve().parent.parent
 
-PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
+PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
 SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
 
