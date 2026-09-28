@@ -606,77 +606,8 @@ def deduplicar_pluto_existente(lineas):
     return salida, eliminados
 
 def mover_pluto_brasil_a_brasil(lineas, session):
-    """
-    Corrige también los canales Pluto Brasil que YA estaban en la principal.
-
-    La regla no se limita a los canales nuevos: identifica los IDs presentes
-    en nuestra playlist oficial pluto_br.m3u y mueve esas entradas a Brasil.
-    También reconoce URLs Pluto con country=BR o metadatos que indiquen Brasil.
-    No cambia URL, nombre, logo ni ningún otro dato del canal; solo group-title.
-    """
-    fuente_br = "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u"
-    ids_br = set()
-    errores = 0
-
-    try:
-        r = session.get(fuente_br, timeout=30)
-        r.raise_for_status()
-        for canal in parsear_m3u(r.text):
-            identidad = identidad_pluto(canal.get("extinf", ""), canal.get("url", ""))
-            if identidad:
-                ids_br.add(identidad)
-    except Exception as e:
-        errores += 1
-        print(f"  -> No se pudo cargar pluto_br para corregir carpeta Brasil: {e}")
-
-    categorias = categorias_de_lineas(lineas)
-    destino_brasil = buscar_categoria_existente("Brasil", categorias) or "Brasil"
-    salida = []
-    movidos = 0
-    i = 0
-
-    while i < len(lineas):
-        if not lineas[i].startswith("#EXTINF"):
-            salida.append(lineas[i])
-            i += 1
-            continue
-
-        extinf = lineas[i]
-        bloque = [extinf]
-        j = i + 1
-        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
-            bloque.append(lineas[j])
-            j += 1
-
-        if j >= len(lineas) or not url_es_valida(lineas[j].strip()):
-            salida.extend(bloque)
-            i = j
-            continue
-
-        url = lineas[j].strip()
-        bloque.append(url)
-        j += 1
-
-        if not es_url_pluto(url):
-            salida.extend(bloque)
-            i = j
-            continue
-
-        identidad = identidad_pluto(extinf, url)
-        texto = normalizar(f"{extraer_categoria(extinf) or ''} {extraer_nombre(extinf) or ''} {url}")
-        es_br = bool(identidad and identidad in ids_br)
-        es_br = es_br or bool(re.search(r"(?:[?&])country=br(?:&|$)", url, re.I))
-        es_br = es_br or bool(re.search(r"\\b(brazil|brasil)\\b", texto))
-
-        if es_br and normalizar(extraer_categoria(extinf) or "") != normalizar(destino_brasil):
-            bloque[0] = reemplazar_categoria(extinf, destino_brasil)
-            movidos += 1
-
-        salida.extend(bloque)
-        i = j
-
-    return salida, movidos, errores
-
+    """Compatibilidad histórica: ya no consulta ni crea una fuente Pluto BR."""
+    return lineas, 0, 0
 
 def extraer_pluto_id(url):
     """Obtiene el channel ID de una URL Pluto, sin depender del dominio."""
@@ -1644,12 +1575,10 @@ def main():
         pluto_reubicados_por_categoria,
     ) = reclasificar_pluto_existente(lineas, session)
 
-    # 3) Pluto Brasil: corregir también las entradas que ya existían.
-    # La regla aplica a TODO Pluto Brasil, no solo a los canales nuevos.
-    lineas, pluto_brasil_movidos, pluto_brasil_errores = mover_pluto_brasil_a_brasil(
-        lineas,
-        session,
-    )
+    # 3) Pluto: las fuentes permitidas son LATAM, ES y MX.
+    # No se consulta ninguna playlist regional Pluto eliminada.
+    pluto_brasil_movidos = 0
+    pluto_brasil_errores = 0
 
     # 4) Pluto: una sola entrada por channel ID en toda la principal.
     # Conserva la primera aparición y elimina copias regionales del mismo
@@ -1670,10 +1599,9 @@ def main():
     categorias_iniciales_normalizadas = {normalizar(x) for x in categorias}
     urls_globales = mapa_urls_principal(lineas)
 
-    # IMPORTANTE: NO deduplicar Pluto por channel ID.
-    # Una misma señal puede tener enlaces regionales distintos (LATAM/ES/CL/AR/MX).
-    # La regla del proyecto es no repetir el MISMO enlace de acceso; por eso
-    # agregar_bloque() controla únicamente la URL exacta.
+    # Pluto sí se deduplica por identidad/channel ID entre nuestras fuentes:
+    # LATAM tiene prioridad; ES y MX solo complementan IDs que aún no existen.
+    # Para fuentes normales, agregar_bloque() evita repetir la URL exacta.
     pluto_ids_canonicos = obtener_ids_pluto_canonicos(session)
 
     ids_pluto_fuentes = set()
@@ -1792,8 +1720,8 @@ def main():
                     urls_pluto_fuentes_por_id[identidad].add(canal.get("url", "").strip())
                     canales_pluto_fuentes_por_id[identidad].append(canal)
 
-                # Pluto se deduplica por channel ID global. Las URLs pueden
-                # cambiar por JWT/región, pero el mismo ID sigue siendo el mismo canal.
+                            # Pluto se deduplica por channel ID global: LATAM gana y
+                # ES/MX solo aportan IDs todavía ausentes.
                 if (
                     identidad
                     and normalizar(destino) in PLUTO_CATEGORIAS_CANONICAS
