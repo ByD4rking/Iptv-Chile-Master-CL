@@ -228,7 +228,7 @@ class PlutoClient:
 
         self.boot()
 
-    def _get_us_legacy_catalog(self) -> list[dict]:
+    def _get_us_legacy_catalog(self, use_forwarded_ip: bool = True) -> list[dict]:
         """Fetch the US lineup from Pluto's legacy channels.json endpoint.
 
         The current service-channels endpoint can return HTTP 200 with an empty
@@ -244,7 +244,7 @@ class PlutoClient:
             "Origin": "https://pluto.tv",
             "Referer": "https://pluto.tv/",
             "User-Agent": USER_AGENT,
-            "X-Forwarded-For": self.region.forwarded_ip,
+            **({"X-Forwarded-For": self.region.forwarded_ip} if use_forwarded_ip else {}),
         }
 
         response = self.session.get(
@@ -289,7 +289,7 @@ class PlutoClient:
         print(f"[US] API legacy channels.json: {len(converted)} canales")
         return converted
 
-    def _get_us_legacy_channels(self) -> list[dict]:
+    def _get_us_legacy_channels(self, use_forwarded_ip: bool = True) -> list[dict]:
         """Fetch the US live lineup from Pluto's legacy live-guide API."""
         now = datetime.now(timezone.utc).replace(
             minute=0, second=0, microsecond=0
@@ -312,7 +312,7 @@ class PlutoClient:
                 "Origin": "https://pluto.tv",
                 "Referer": "https://pluto.tv/",
                 "User-Agent": USER_AGENT,
-                "X-Forwarded-For": self.region.forwarded_ip,
+                **({"X-Forwarded-For": self.region.forwarded_ip} if use_forwarded_ip else {}),
             }
 
             response = self.session.get(
@@ -480,17 +480,27 @@ class PlutoClient:
         # legacy channels.json catalogue before trying the time-window guide.
         # This avoids treating a valid US lineup as an empty catalogue.
         if not channels and self.region.code == "us":
-            try:
-                channels = self._get_us_legacy_channels()
-            except Exception as exc:
-                print(f"[US] legacy /v2/channels falló: {exc}")
+            for forwarded in (True, False):
+                try:
+                    channels = self._get_us_legacy_channels(use_forwarded_ip=forwarded)
+                except Exception as exc:
+                    mode = "con X-Forwarded-For" if forwarded else "sin X-Forwarded-For"
+                    print(f"[US] legacy /v2/channels {mode} falló: {exc}")
+                if channels:
+                    break
 
-        # Final catalogue fallback: legacy channels.json.
+        # Final catalogue fallback: legacy channels.json. Try both regional
+        # and non-regional headers because a stale/invalid forwarded address
+        # must not make a healthy US catalogue look empty.
         if not channels and self.region.code == "us":
-            try:
-                channels = self._get_us_legacy_catalog()
-            except Exception as exc:
-                print(f"[US] legacy channels.json falló: {exc}")
+            for forwarded in (True, False):
+                try:
+                    channels = self._get_us_legacy_catalog(use_forwarded_ip=forwarded)
+                except Exception as exc:
+                    mode = "con X-Forwarded-For" if forwarded else "sin X-Forwarded-For"
+                    print(f"[US] legacy channels.json {mode} falló: {exc}")
+                if channels:
+                    break
 
         # channels.json ya está encapsulado en _get_us_legacy_catalog().
         # No mantenemos otra implementación inline del mismo fallback.
