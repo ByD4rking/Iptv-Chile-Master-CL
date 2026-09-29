@@ -157,18 +157,18 @@ class PlutoClient:
             "blockingMode": "",
         }
 
-        # Pluto's current web clients select the market primarily from the
-        # forwarded regional address. For US, do not also force country/
-        # marketingRegion in the boot query: that combination can produce a
-        # valid session but an empty service-channels catalogue.
-        if self.region.code != "us":
-            params.update(
-                {
-                    "country": self.region.country,
-                    "marketingRegion": self.region.marketing_region,
-                    "preferredLanguage": self.active_language,
-                }
-            )
+        # Send the regional profile explicitly on boot for every region,
+        # including US. The live Pluto web clients use both the boot market
+        # parameters and the regional request context. Omitting these fields
+        # for US can yield a valid session token while service-channels returns
+        # an empty catalogue.
+        params.update(
+            {
+                "country": self.region.country,
+                "marketingRegion": self.region.marketing_region,
+                "preferredLanguage": self.active_language,
+            }
+        )
 
         response = self.session.get(
             BOOT_URL,
