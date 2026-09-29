@@ -6,76 +6,171 @@ from urllib.request import Request, urlopen
 BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
 OUTPUT = BASE / "data" / "channels.json"
-TIMEOUT = 20
+TIMEOUT = 30
+
 
 def load_json(path, default):
-    if not path.exists(): return default
-    with path.open("r", encoding="utf-8-sig") as f: return json.load(f)
+    if not path.exists():
+        return default
+    with path.open("r", encoding="utf-8-sig") as f:
+        return json.load(f)
+
 
 def save_json(path, data):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
 
 def read_source(source):
-    local_path = str(source.get("path") or "").strip()
-    if local_path:
-        path = Path(local_path).expanduser()
-        if not path.exists(): raise FileNotFoundError(f"No existe: {path}")
-        if not path.is_file(): raise IsADirectoryError(f"No es archivo: {path}")
-        return path.read_text(encoding="utf-8-sig", errors="replace")
     url = str(source.get("url") or "").strip()
-    if url:
-        request = Request(url, headers={"User-Agent": "IPTV-CHILE-GENERADOR/3.0"})
-        with urlopen(request, timeout=TIMEOUT) as response: return response.read().decode("utf-8", errors="replace")
-    raise ValueError("La fuente no tiene 'path' ni 'url'")
+    if not url.startswith(("http://", "https://")):
+        raise ValueError("La fuente debe usar una URL HTTP/HTTPS.")
+    request = Request(
+        url,
+        headers={"User-Agent": "IPTV-CHILE-GENERADOR/3.0"},
+    )
+    with urlopen(request, timeout=TIMEOUT) as response:
+        return response.read().decode("utf-8", errors="replace")
 
-def parse_m3u(text, source_name):
-    channels, current = [], None
+
+def parse_m3u(text, source_name, priority):
+    channels = []
+    current = None
+
     for raw_line in text.splitlines():
         line = raw_line.strip()
-        if not line: continue
+        if not line:
+            continue
+
         if line.startswith("#EXTINF:"):
-            current = {"name": line.split(",", 1)[-1].strip(), "group": "", "logo": "", "url": "", "source": source_name}
+            current = {
+                "name": line.split(",", 1)[-1].strip(),
+                "group": "",
+                "logo": "",
+                "url": "",
+                "source": source_name,
+                "priority": priority,
+            }
+
             for key in ("group-title", "tvg-logo"):
                 marker = f'{key}="'
                 if marker in line:
                     value = line.split(marker, 1)[1].split('"', 1)[0]
                     current["group" if key == "group-title" else "logo"] = value
             continue
+
         if current and not line.startswith("#") and line.startswith(("http://", "https://")):
-            current["url"] = line; channels.append(current); current = None
+            current["url"] = line
+            channels.append(current)
+            current = None
+
     return channels
 
-def channel_id(url): return hashlib.sha256(url.encode("utf-8")).hexdigest()[:20]
+
+def channel_id(url):
+    return hashlib.sha256(url.encode("utf-8")).hexdigest()[:20]
+
 
 def main():
     config = load_json(CONFIG, {"sources": []})
     sources = config.get("sources", [])
-    if not sources: raise SystemExit("No hay fuentes configuradas.")
+    if not sources:
+        raise SystemExit("No hay fuentes independientes configuradas.")
+
     all_entries = []
+    successful_sources = 0
+
     for source in sources:
         name = str(source.get("name") or "FUENTE").strip()
+        priority = int(source.get("priority") or 0)
         try:
-            all_entries.extend(parse_m3u(read_source(source), name))
+            entries = parse_m3u(read_source(source), name, priority)
+            print(f"[OK] {name}: {len(entries)} entradas")
+            all_entries.extend(entries)
+            successful_sources += 1
         except Exception as error:
-            print(f"[{name}] ERROR: {error}")
-    # URL = identidad única. El nombre no se usa para deduplicar.
+            print(f"[ERROR] {name}: {error}")
+
+    if not successful_sources:
+        raise SystemExit("Ninguna fuente independiente respondió correctamente.")
+
     grouped = {}
+
+    # URL = identidad única. El nombre nunca crea duplicados.
     for entry in all_entries:
-        url = str(entry.get("url") or "").strip(); name = str(entry.get("name") or "").strip()
-        if not url or not name: continue
-        item = grouped.setdefault(url, {"id": channel_id(url), "name": name, "group": str(entry.get("group") or "").strip(), "logo": str(entry.get("logo") or "").strip(), "sources": [], "aliases": []})
-        if name not in item["aliases"]: item["aliases"].append(name)
-        if not item["group"] and entry.get("group"): item["group"] = str(entry["group"]).strip()
-        if not item["logo"] and entry.get("logo"): item["logo"] = str(entry["logo"]).strip()
+        url = str(entry.get("url") or "").strip()
+        name = str(entry.get("name") or "").strip()
+        if not url or not name:
+            continue
+
+        item = grouped.setdefault(
+            url,
+            {
+                "id": channel_id(url),
+                "name": name,
+                "group": str(entry.get("group") or "Chile").strip() or "Chile",
+                "logo": str(entry.get("logo") or "").strip(),
+                "sources": [],
+                "aliases": [],
+            },
+        )
+
+        if name not in item["aliases"]:
+            item["aliases"].append(name)
+
+        if not item["logo"] and entry.get("logo"):
+            item["logo"] = str(entry["logo"]).strip()
+
         source_name = str(entry.get("source") or "").strip()
-        if source_name and source_name not in {x.get("source") for x in item["sources"]}: item["sources"].append({"url": url, "source": source_name})
+        source_priority = int(entry.get("priority") or 0)
+
+        if source_name:
+            existing = next(
+                (x for x in item["sources"] if x["source"] == source_name),
+                None,
+            )
+            if existing is None:
+                item["sources"].append(
+                    {
+                        "url": url,
+                        "source": source_name,
+                        "priority": source_priority,
+                    }
+                )
+
     channels = list(grouped.values())
+
     for url, item in grouped.items():
         item["aliases"] = [x for x in item["aliases"] if x != item["name"]]
-        if not item["sources"]: item["sources"] = [{"url": url, "source": ""}]
-    channels.sort(key=lambda x: (x["group"].lower(), x["name"].lower(), x["id"]))
-    save_json(OUTPUT, channels)
-    print(f"Entradas: {len(all_entries)} | URLs únicas: {len(channels)}")
+        item["sources"].sort(
+            key=lambda x: int(x.get("priority") or 0),
+            reverse=True,
+        )
+        if not item["sources"]:
+            item["sources"] = [{"url": url, "source": "", "priority": 0}]
 
-if __name__ == "__main__": main()
+    channels.sort(
+        key=lambda x: (
+            x["group"].lower(),
+            x["name"].lower(),
+            x["id"],
+        )
+    )
+
+    save_json(OUTPUT, channels)
+
+    print("=" * 60)
+    print("IPTV-CHILE-GENERADOR - COLLECTOR")
+    print("=" * 60)
+    print(f"Fuentes OK:        {successful_sources}/{len(sources)}")
+    print(f"Entradas originales:{len(all_entries)}")
+    print(f"URLs únicas:       {len(channels)}")
+    print(f"Archivo:           {OUTPUT}")
+    print("OK: generador independiente; ninguna lista local del repositorio es fuente.")
+
+
+if __name__ == "__main__":
+    main()
