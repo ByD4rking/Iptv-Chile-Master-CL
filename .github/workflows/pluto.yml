@@ -101,9 +101,33 @@ jobs:
           print("Inventario previo:", {k: len(v) for k, v in out.items()})
           PY
 
-      - name: Validar sintaxis antes de generar
+      - name: Validar sintaxis y carga del servidor Pluto
         run: |
+          set -e
           python -m compileall -q pluto/src
+          cd pluto/src
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          for path in sorted(Path(".").glob("*.py")):
+              ast.parse(path.read_text(encoding="utf-8-sig"), filename=str(path))
+              print(f"AST OK: {path}")
+          from server import app
+          routes = {rule.rule for rule in app.url_map.iter_rules()}
+          required = {
+              "/",
+              "/channels",
+              "/playlist.m3u",
+              "/stream/<channel_id>",
+              "/pluto-master/<channel_id>.m3u8",
+              "/pluto-proxy/<channel_id>/<encoded_url>",
+          }
+          missing = required - routes
+          if missing:
+              raise SystemExit(f"RUTAS Pluto ausentes: {sorted(missing)}")
+          print("IMPORT OK: server.py")
+          print("RUTAS OK:", sorted(routes))
+          PY
 
       - name: Proteger listas maestras
         run: |
