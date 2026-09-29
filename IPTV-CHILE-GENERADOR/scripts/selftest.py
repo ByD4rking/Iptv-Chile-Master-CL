@@ -6,6 +6,7 @@ from atomic import file_sha256
 
 BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
+CATALOG = BASE / "config" / "catalog.json"
 CHANNELS = BASE / "data" / "channels.json"
 OUTPUT = BASE / "IPTV-CHILE-GENERADOR.m3u"
 QUALITY = BASE / "data" / "quality.json"
@@ -27,6 +28,12 @@ def main():
         str(x.get("url", "")).startswith(("http://", "https://"))
         for x in sources
     ), "Existe una fuente no HTTP/HTTPS."
+
+    catalog = load(CATALOG)
+    catalog_channels = catalog.get("channels", [])
+    assert catalog_channels, "El catalogo propio esta vacio."
+    catalog_ids = [str(x.get("id") or "").strip() for x in catalog_channels]
+    assert len(catalog_ids) == len(set(catalog_ids)), "El catalogo propio contiene IDs duplicados."
 
     channels = load(CHANNELS)
     quality = load(QUALITY)
@@ -73,6 +80,8 @@ def main():
             urls.append(url)
 
     assert len(ids) == len(set(ids)), "channels.json contiene IDs de canal duplicados."
+    assert set(ids) <= set(catalog_ids), "channels.json contiene un canal fuera del catalogo propio."
+    assert set(catalog_ids) == set(ids), "channels.json perdio o agrego canales respecto del catalogo propio."
     assert len(urls) == len(set(urls)), "channels.json contiene una URL duplicada."
     assert OUTPUT.exists() and OUTPUT.stat().st_size > 0, "No existe una M3U generada."
 
@@ -101,8 +110,14 @@ def main():
 
     assert output_urls, "La M3U no contiene URLs."
     assert len(output_urls) == len(set(output_urls)), "La M3U contiene URLs duplicadas."
-    assert set(output_urls) <= set(urls), (
-        "La M3U contiene una URL ajena a las fuentes independientes."
+    catalog_urls = {
+        str(source.get("url") or "").strip()
+        for channel in catalog_channels
+        for source in channel.get("sources", [])
+        if str(source.get("url") or "").strip()
+    }
+    assert set(output_urls) <= catalog_urls, (
+        "La M3U contiene una URL que no pertenece al catalogo propio."
     )
     extinf = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
     assert extinf == len(output_urls), f"EXTINF ({extinf}) != URLs ({len(output_urls)})."
