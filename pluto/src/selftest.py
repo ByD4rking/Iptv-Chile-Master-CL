@@ -78,6 +78,8 @@ def main() -> None:
         fail("client.py: faltan fallbacks US de catálogo")
     if "if not channels and self.region.code == \"us\"" not in client:
         fail("client.py: falta protección contra catálogo US vacío")
+    if "use_forwarded_ip: bool = True" not in client or "for forwarded in (True, False)" not in client:
+        fail("client.py: el fallback US debe probar con y sin X-Forwarded-For")
 
     generator_path = ROOT / "generate_multiregion.py"
     generator = generator_path.read_text(encoding="utf-8-sig")
