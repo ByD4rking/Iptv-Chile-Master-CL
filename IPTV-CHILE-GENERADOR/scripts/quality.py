@@ -152,7 +152,14 @@ def valid_direct_payload(content, content_type):
         len(content) >= 8 and content[4:8] == b"ftyp",
         len(content) >= 3 and content[:3] == b"Ogg",
         len(content) >= 4 and content[:4] == b"\x1a\x45\xdf\xa3",
-        len(content) >= 1 and content[0] == 0x47,
+        (
+            len(content) >= 188
+            and content[0] == 0x47
+            and (
+                (len(content) >= 376 and content[188] == 0x47)
+                or (len(content) >= 564 and content[376] == 0x47)
+            )
+        ),
         len(content) >= 2 and content[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2"),
         len(content) >= 2 and content[0] == 0xFF and (content[1] & 0xF6) == 0xF0,
     )
