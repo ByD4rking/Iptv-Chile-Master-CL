@@ -70,7 +70,15 @@ def main():
             if not url or url not in online or url in emitted:
                 continue
 
-            quality = quality_by_url.get(url, {})
+            quality = quality_by_url.get(url)
+            if not quality:
+                continue
+
+            # Una URL debe haber pasado la comprobación de reproducción
+            # antes de poder entrar en la M3U final.
+            if not quality.get("playback_checked") or not quality.get("playback_ok"):
+                continue
+
             priority = int(source.get("priority") or 0)
 
             candidates.append(
