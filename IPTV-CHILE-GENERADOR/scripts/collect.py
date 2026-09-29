@@ -6,6 +6,7 @@ from urllib.request import Request, urlopen
 BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
 OUTPUT = BASE / "data" / "channels.json"
+SOURCE_HEALTH_FILE = BASE / "data" / "source_health.json"
 TIMEOUT = 30
 
 
@@ -82,17 +83,53 @@ def main():
 
     all_entries = []
     successful_sources = 0
+    health = load_json(SOURCE_HEALTH_FILE, {})
+    from datetime import datetime, timezone
+    checked_at = datetime.now(timezone.utc).isoformat()
 
     for source in sources:
         name = str(source.get("name") or "FUENTE").strip()
+        source_url = str(source.get("url") or "").strip()
         priority = int(source.get("priority") or 0)
+        state = health.setdefault(
+            name,
+            {
+                "url": source_url,
+                "priority": priority,
+                "checks": 0,
+                "successes": 0,
+                "failures": 0,
+                "consecutive_failures": 0,
+                "last_success": None,
+                "last_failure": None,
+                "last_error": None,
+                "last_entries": 0,
+            },
+        )
+        state["url"] = source_url
+        state["priority"] = priority
+        state["checks"] += 1
         try:
             entries = parse_m3u(read_source(source), name, priority)
+            if not entries:
+                raise ValueError("La fuente respondió pero no contiene entradas M3U válidas.")
             print(f"[OK] {name}: {len(entries)} entradas")
             all_entries.extend(entries)
             successful_sources += 1
+            state["successes"] += 1
+            state["consecutive_failures"] = 0
+            state["last_success"] = checked_at
+            state["last_error"] = None
+            state["last_entries"] = len(entries)
         except Exception as error:
-            print(f"[ERROR] {name}: {error}")
+            message = str(error)
+            print(f"[ERROR] {name}: {message}")
+            state["failures"] += 1
+            state["consecutive_failures"] += 1
+            state["last_failure"] = checked_at
+            state["last_error"] = message
+
+    save_json(SOURCE_HEALTH_FILE, health)
 
     if not successful_sources:
         raise SystemExit("Ninguna fuente independiente respondió correctamente.")
@@ -173,6 +210,7 @@ def main():
     print("IPTV-CHILE-GENERADOR - COLLECTOR")
     print("=" * 60)
     print(f"Fuentes OK:        {successful_sources}/{len(sources)}")
+    print(f"Salud de fuentes:  {SOURCE_HEALTH_FILE}")
     print(f"Entradas originales:{len(all_entries)}")
     print(f"URLs únicas:       {len(channels)}")
     print(f"Archivo:           {OUTPUT}")
