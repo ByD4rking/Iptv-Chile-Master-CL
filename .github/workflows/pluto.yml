@@ -256,6 +256,43 @@ jobs:
           print("OK: las 7 listas Pluto están presentes y no se permite perder canales existentes.")
           PY
 
+      - name: Verificar exactamente lo que se va a publicar
+        run: |
+          set -e
+          git add pluto/output/playlists/pluto_ar.m3u
+          git add pluto/output/playlists/pluto_br.m3u
+          git add pluto/output/playlists/pluto_cl.m3u
+          git add pluto/output/playlists/pluto_es.m3u
+          git add pluto/output/playlists/pluto_latam.m3u
+          git add pluto/output/playlists/pluto_mx.m3u
+          git add pluto/output/playlists/pluto_us.m3u
+          git add pluto/output/health/streams.json
+
+          python - <<'PY'
+          from pathlib import Path
+          import re, subprocess
+          allowed = [
+              "pluto_ar.m3u", "pluto_br.m3u", "pluto_cl.m3u",
+              "pluto_es.m3u", "pluto_latam.m3u", "pluto_mx.m3u",
+              "pluto_us.m3u",
+          ]
+          for name in allowed:
+              path = Path("pluto/output/playlists") / name
+              text = subprocess.check_output(["git", "show", f":{path}"], text=True, encoding="utf-8")
+              count = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
+              if not text.startswith("#EXTM3U") or count <= 0:
+                  raise SystemExit(f"STAGED INVALIDO: {name}: {count} canales")
+              streams = [line.strip() for line in text.splitlines() if line.startswith(("http://", "https://"))]
+              if len(streams) != count:
+                  raise SystemExit(f"STAGED INVALIDO: {name}: EXTINF={count}, streams={len(streams)}")
+              if len(streams) != len(set(streams)):
+                  raise SystemExit(f"STAGED INVALIDO: {name}: streams duplicados")
+              if any("/master.m3u8" not in s or "quality=1080p" in s.lower() for s in streams):
+                  raise SystemExit(f"STAGED INVALIDO: {name}: stream HLS no permitido")
+              print(f"STAGED OK: {name}: {count} canales")
+          print("OK: el contenido exacto que se publicará supera la barrera final.")
+          PY
+
       - name: Publicar cambios
         run: |
           git config user.name "github-actions[bot]"
