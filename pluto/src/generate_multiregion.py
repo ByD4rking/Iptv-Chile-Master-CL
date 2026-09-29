@@ -21,10 +21,6 @@ MIN_PREVIOUS_RATIO = 0.50
 # Preservation is catalog protection: transient omissions never delete channels.
 # Preserved entries get a freshly signed Pluto HLS URL before publication.
 PRESERVE_RETRY_COUNT = 2
-# A missing channel is preserved; it is never deleted merely because Pluto
-# omitted it once or twice. The preserved entry is rehydrated with a fresh
-# Pluto session/stream URL when its identity is still known.
-PRESERVE_RETRY_COUNT = 2
 
 # No maximum channel count: every valid channel returned by Pluto is eligible.
 
@@ -462,7 +458,6 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     if preserved:
         print(f"[{region.code.upper()}] Conservados del catálogo anterior: {preserved} canales")
 
-    channels = refresh_preserved_streams(region, channels)
     channels = refresh_preserved_streams(region, channels)
     content = build_playlist(channels, region)
     new_count = content.count("#EXTINF:")
