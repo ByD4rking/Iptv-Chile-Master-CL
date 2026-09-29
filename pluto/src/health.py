@@ -20,7 +20,6 @@ OUTPUT = Path(__file__).resolve().parent.parent / "output" / "health"
 HISTORY = OUTPUT / "streams.json"
 TIMEOUT = (8, 15)
 ATTEMPTS = 3
-MAX_HISTORY = 12
 USER_AGENT = "Mozilla/5.0 Pluto-HLS-Health/1.0"
 
 
@@ -134,10 +133,12 @@ def audit(channels: list[dict], workers: int = 12) -> dict:
     # Bound the persisted history so it cannot grow without limit. Keep only
     # the latest record per currently audited channel; consecutive failures are
     # carried forward from the previous run.
-    HISTORY.write_text(
+    tmp = HISTORY.with_suffix(".json.tmp")
+    tmp.write_text(
         json.dumps(results, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+    tmp.replace(HISTORY)
     ok = sum(1 for x in results.values() if x.get("ok"))
     failed = len(results) - ok
     return {"checked": len(results), "ok": ok, "failed": failed, "history": str(HISTORY)}
