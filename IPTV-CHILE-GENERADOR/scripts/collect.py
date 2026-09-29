@@ -14,6 +14,8 @@ OUTPUT = BASE / "data" / "channels.json"
 SOURCE_HEALTH_FILE = BASE / "data" / "source_health.json"
 ENDPOINT_HEALTH_FILE = BASE / "data" / "endpoint_health.json"
 TIMEOUT = 30
+SOURCE_QUARANTINE_AFTER = 6
+SOURCE_QUARANTINE_HOURS = 24
 
 
 def load_json(path, default):
@@ -105,6 +107,8 @@ def main():
     from datetime import datetime, timezone
     checked_at = datetime.now(timezone.utc).isoformat()
 
+    quarantined_source_count = sum(1 for s in sources if str(health.get(str(s.get("name") or "FUENTE").strip(), {}).get("quarantine_until") or "").strip())
+    force_source_probe = quarantined_source_count == len(sources)
     for source in sources:
         name = str(source.get("name") or "FUENTE").strip()
         source_url = str(source.get("url") or "").strip()
@@ -126,6 +130,18 @@ def main():
         )
         state["url"] = source_url
         state["priority"] = priority
+        quarantine_until = str(state.get("quarantine_until") or "").strip()
+        quarantined = False
+        if quarantine_until:
+            try:
+                quarantined = datetime.fromisoformat(quarantine_until.replace("Z", "+00:00")) > datetime.now(timezone.utc)
+            except ValueError:
+                quarantined = False
+        if quarantined and not force_source_probe:
+            state["last_skip"] = checked_at
+            state["last_skip_reason"] = "cuarentena_por_fallos_persistentes"
+            print(f"[QUARANTINE] {name}: se omite hasta {quarantine_until}")
+            continue
         state["checks"] += 1
         try:
             entries = parse_m3u(read_source(source), name, priority)
@@ -136,6 +152,7 @@ def main():
             successful_sources += 1
             state["successes"] += 1
             state["consecutive_failures"] = 0
+            state["quarantine_until"] = None
             state["last_success"] = checked_at
             state["last_error"] = None
             state["last_entries"] = len(entries)
@@ -146,9 +163,13 @@ def main():
             state["consecutive_failures"] += 1
             state["last_failure"] = checked_at
             state["last_error"] = message
+            if state["consecutive_failures"] >= SOURCE_QUARANTINE_AFTER:
+                from datetime import timedelta
+                state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=SOURCE_QUARANTINE_HOURS)).isoformat()
+                print(f"[QUARANTINE] {name}: {state["consecutive_failures"]} fallos consecutivos; pausa hasta {state["quarantine_until"]}")
 
     if not successful_sources:
-        raise SystemExit("Ninguna fuente independiente respondió correctamente.")
+        raise SystemExit("Ninguna fuente independiente respondió correctamente (las fuentes en cuarentena no cuentan como fuente disponible).")
 
     catalog = load_json(CATALOG, {"channels": []})
     catalog_channels = catalog.get("channels", [])
