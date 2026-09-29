@@ -37,6 +37,18 @@ def main():
     assert all(catalog_ids), "El catalogo contiene un canal sin ID."
     assert len(catalog_ids) == len(set(catalog_ids)), "El catalogo propio contiene IDs duplicados."
 
+    catalog_urls = []
+    for catalog_channel in catalog_channels:
+        for source in catalog_channel.get("sources") or []:
+            url = str(source.get("url") or "").strip()
+            assert url.startswith(("http://", "https://")), (
+                f"Catalogo: endpoint no HTTP/HTTPS: {url}"
+            )
+            catalog_urls.append(url)
+    assert len(catalog_urls) == len(set(catalog_urls)), (
+        "El catalogo propio contiene endpoints duplicados."
+    )
+
     channels = load(CHANNELS)
     quality = load(QUALITY)
     status = load(STATUS)
