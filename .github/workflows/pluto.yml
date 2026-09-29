@@ -101,6 +101,11 @@ jobs:
           print("Inventario previo:", {k: len(v) for k, v in out.items()})
           PY
 
+      - name: Selftest estructural Pluto
+        run: |
+          set -e
+          python pluto/src/selftest.py
+
       - name: Validar sintaxis y carga del servidor Pluto
         run: |
           set -e
