@@ -4,6 +4,7 @@ import base64
 import json
 import re
 from pathlib import Path
+import os
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
 import requests
@@ -162,7 +163,9 @@ def playlist():
             f'tvg-name="{name}" tvg-logo="{logo}" '
             f'group-title="{category}",{name}'
         )
-        lines.append(f"http://127.0.0.1:5000/stream/{channel_id}")
+        # Relative URL: usable from the TV/phone/PC that loads the playlist.
+        # Never hard-code 127.0.0.1 because that points to the client device.
+        lines.append(f"/stream/{channel_id}")
 
     body = "\n".join(lines) + "\n"
     return Response(
@@ -274,6 +277,13 @@ if __name__ == "__main__":
     print("================================")
     print("PLUTO LOCAL SERVER")
     print("RECONEXION AUTOMATICA HABILITADA")
+    print("HOST:", os.getenv("PLUTO_HOST", "0.0.0.0"))
+    print("PORT:", os.getenv("PLUTO_PORT", "5000"))
     print("================================")
     print()
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    app.run(
+        host=os.getenv("PLUTO_HOST", "0.0.0.0"),
+        port=int(os.getenv("PLUTO_PORT", "5000")),
+        debug=False,
+        threaded=True,
+    )
