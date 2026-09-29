@@ -405,7 +405,7 @@ def main():
                     f"HLS: {hls} | masters con variantes: {fallback}"
                 )
 
-    endpoint_health = {}
+    # Invariantes de entrada: cada candidato debe evaluarse exactamente una vez.\n    task_urls = [str(task["source"].get("url") or "").strip() for task in tasks]\n    if len(task_urls) != len(set(task_urls)):\n        raise SystemExit("INCONSISTENCIA: channels.json contiene URLs candidatas duplicadas.")\n    if any(not str(task["channel"].get("id") or "").strip() for task in tasks):\n        raise SystemExit("INCONSISTENCIA: existe un candidato sin channel_id.")\n\n    endpoint_health = {}
     if ENDPOINT_HEALTH_FILE.exists():
         try:
             with ENDPOINT_HEALTH_FILE.open("r", encoding="utf-8-sig") as f:
@@ -448,6 +448,9 @@ def main():
             state["last_failure"] = checked_at
             state["last_error"] = result.get("error") or result.get("playback_error")
         result["endpoint_consecutive_failures"] = state["consecutive_failures"]
+        result["endpoint_checks"] = int(state.get("checks") or 0)
+        result["endpoint_successes"] = int(state.get("successes") or 0)
+        result["endpoint_failures"] = int(state.get("failures") or 0)
 
     atomic_write_json(ENDPOINT_HEALTH_FILE, endpoint_health)
 
