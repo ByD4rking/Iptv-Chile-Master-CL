@@ -1,0 +1,97 @@
+name: IPTV Chile Generador - aislado
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "IPTV-CHILE-GENERADOR/**"
+      - ".github/workflows/generador.yml"
+  schedule:
+    - cron: "30 */6 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: iptv-chile-generador
+  cancel-in-progress: false
+
+jobs:
+  generar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guardar huellas de listas protegidas
+        run: |
+          set -e
+          mkdir -p /tmp/generador-guard
+          sha256sum IPTV-CHILE-MAESTRA_CORREGIDO.m3u IPTV-CHILE-MAESTRA_GOD.m3u > /tmp/generador-guard/maestras.sha256
+          find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/pluto.sha256
+          find scripts -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/scripts.sha256
+
+      - name: Validar sintaxis
+        run: |
+          python -m py_compile             IPTV-CHILE-GENERADOR/scripts/collect.py             IPTV-CHILE-GENERADOR/scripts/check.py             IPTV-CHILE-GENERADOR/scripts/fix_encoding.py             IPTV-CHILE-GENERADOR/scripts/generate.py             IPTV-CHILE-GENERADOR/scripts/quality.py             IPTV-CHILE-GENERADOR/scripts/guard.py
+
+      - name: Auditar aislamiento
+        run: python IPTV-CHILE-GENERADOR/scripts/guard.py
+
+      - name: Comprobar streams
+        run: python IPTV-CHILE-GENERADOR/scripts/check.py
+
+      - name: Analizar calidad
+        run: python IPTV-CHILE-GENERADOR/scripts/quality.py
+
+      - name: Generar M3U
+        run: python IPTV-CHILE-GENERADOR/scripts/generate.py
+
+      - name: Validar M3U
+        run: |
+          set -e
+          FILE="IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u"
+          test -s "$FILE"
+          grep -q '^#EXTM3U$' "$FILE"
+          grep -q '^#EXTINF:' "$FILE"
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u")
+          urls = [x.strip() for x in p.read_text(encoding="utf-8").splitlines() if x.startswith(("http://","https://"))]
+          if len(urls) != len(set(urls)):
+              raise SystemExit("REGRESION: URL duplicada.")
+          print(f"OK: {len(urls)} URLs únicas.")
+          PY
+
+      - name: Confirmar aislamiento antes de publicar
+        run: |
+          set -e
+          sha256sum -c /tmp/generador-guard/maestras.sha256
+          sha256sum -c /tmp/generador-guard/pluto.sha256
+          sha256sum -c /tmp/generador-guard/scripts.sha256
+          git diff --name-only | while IFS= read -r file; do
+            case "$file" in
+              IPTV-CHILE-GENERADOR/*|.github/workflows/generador.yml) ;;
+              "") ;;
+              *) echo "REGRESION: archivo fuera del generador: $file"; exit 1 ;;
+            esac
+          done
+          echo "OK: listas maestras, Pluto y scripts externos intactos."
+
+      - name: Publicar solo el generador
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add IPTV-CHILE-GENERADOR
+          if git diff --cached --quiet; then
+            echo "No hay cambios."
+            exit 0
+          fi
+          git commit -m "Actualizar generador IPTV Chile"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
