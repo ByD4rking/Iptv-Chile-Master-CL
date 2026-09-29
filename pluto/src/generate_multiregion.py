@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from pathlib import Path
 
 from channels import GROUPS, normalize_channel
@@ -16,6 +17,10 @@ REGIONAL_DATA_DIR = OUTPUT_DIR / "regional"
 
 # Do not replace a known-good playlist with a catastrophic partial response.
 MIN_PREVIOUS_RATIO = 0.50
+# A missing channel is preserved; it is never deleted merely because Pluto
+# omitted it once or twice. The preserved entry is rehydrated with a fresh
+# Pluto session/stream URL when its identity is still known.
+PRESERVE_RETRY_COUNT = 2
 
 # No maximum channel count: every valid channel returned by Pluto is eligible.
 
@@ -325,6 +330,44 @@ def normalize_channel_name(value: str) -> str:
     value = re.sub(r"\s+", " ", value)
     return value
 
+def refresh_preserved_streams(region: Region, channels: list[dict]) -> list[dict]:
+    """Refresh HLS URLs for channels carried over from a previous playlist.
+
+    Preservation protects catalog continuity; it must never preserve an expired
+    JWT. PlutoClient owns session renewal, so every preserved channel receives
+    a newly signed master URL when its Pluto ID is still usable.
+    """
+    client = PlutoClient(region)
+    client.ensure_session()
+    refreshed = 0
+    failed = 0
+    for channel in channels:
+        if not channel.get("preserved_previous"):
+            continue
+        channel_id = str(channel.get("id") or "").strip()
+        if not channel_id:
+            failed += 1
+            continue
+        last_error = None
+        for _ in range(PRESERVE_RETRY_COUNT + 1):
+            try:
+                channel["stream"] = client.build_stream_url(channel_id)
+                refreshed += 1
+                break
+            except Exception as exc:
+                last_error = exc
+                try:
+                    client.boot()
+                except Exception as boot_exc:
+                    last_error = boot_exc
+        else:
+            failed += 1
+            print(f"[{region.code.upper()}] No se pudo renovar JWT de {channel_id}: {last_error}")
+    if refreshed or failed:
+        print(f"[{region.code.upper()}] JWT renovados en canales preservados: {refreshed}; fallos de renovación: {failed}")
+    return channels
+
+
 def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[dict], int]:
     """Keep every previously published channel absent from the fresh API response.
 
@@ -359,6 +402,7 @@ def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[d
         if old_name and current_names.get(old_name, 0) == 1:
             continue
 
+        old["preserved_previous"] = True
         channels.append(old)
         current_ids.add(old_id)
         current_streams.add(old_stream)
@@ -413,6 +457,7 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     if preserved:
         print(f"[{region.code.upper()}] Conservados del catálogo anterior: {preserved} canales")
 
+    channels = refresh_preserved_streams(region, channels)
     content = build_playlist(channels, region)
     new_count = content.count("#EXTINF:")
 
