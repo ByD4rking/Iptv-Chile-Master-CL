@@ -164,6 +164,21 @@ jobs:
           test "$(git hash-object IPTV-CHILE-MAESTRA_CORREGIDO.m3u)" = "$(cat /tmp/master_before.sha)"
           test "$(git hash-object IPTV-CHILE-MAESTRA_GOD.m3u)" = "$(cat /tmp/god_before.sha)"
           echo "OK: MAESTRA y GOD permanecen intactas."
+      - name: Verificar que ninguna región válida quedó vacía
+        run: |
+          set -e
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          for code in ("ar", "br", "cl", "es", "latam", "mx", "us"):
+              path = Path(f"pluto/output/playlists/pluto_{code}.m3u")
+              text = path.read_text(encoding="utf-8-sig") if path.exists() else ""
+              count = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
+              if count <= 0:
+                  raise SystemExit(f"PROTECCION: {path} quedó vacía; se cancela la publicación.")
+              print(f"{code.upper()}: {count} canales")
+          PY
+
       - name: Verificar listas
         run: |
           set -e
