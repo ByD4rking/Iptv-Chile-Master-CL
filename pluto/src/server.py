@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
@@ -95,7 +96,17 @@ def _rewrite_playlist(text: str, base_url: str, channel_id: str) -> str:
     output: list[str] = []
     for line in text.splitlines():
         stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
+        if stripped.startswith("#"):
+            def rewrite_uri(match):
+                absolute_uri = urljoin(base_url, match.group(1))
+                if _allowed_upstream(absolute_uri):
+                    return 'URI="/pluto-proxy/%s/%s"' % (
+                        channel_id,
+                        _encode_url(absolute_uri),
+                    )
+                return match.group(0)
+
+            line = re.sub(r'URI="([^"]+)"', rewrite_uri, line)
             output.append(line)
             continue
 
