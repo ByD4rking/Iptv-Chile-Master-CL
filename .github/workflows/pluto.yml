@@ -150,7 +150,7 @@ jobs:
           set -e
           git diff --name-only | while IFS= read -r file; do
             case "$file" in
-              pluto/output/playlists/pluto_*.m3u|pluto/output/regional/channels_*.json)
+              pluto/output/playlists/pluto_*.m3u|pluto/output/regional/channels_*.json|pluto/output/health/streams.json)
                 ;;
               "")
                 ;;
@@ -250,6 +250,7 @@ jobs:
           git add pluto/output/playlists/pluto_latam.m3u
           git add pluto/output/playlists/pluto_mx.m3u
           git add pluto/output/playlists/pluto_us.m3u
+          git add pluto/output/health/streams.json
 
           if git diff --cached --quiet; then
             echo "No hay cambios en las playlists."
