@@ -8,7 +8,7 @@ import os
 from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
 import requests
-from flask import Flask, Response, abort, jsonify
+from flask import Flask, Response, abort, jsonify, request
 
 from client import PlutoClient
 
@@ -165,7 +165,8 @@ def playlist():
         )
         # Relative URL: usable from the TV/phone/PC that loads the playlist.
         # Never hard-code 127.0.0.1 because that points to the client device.
-        lines.append(f"/stream/{channel_id}")
+        base = request.host_url.rstrip("/")
+        lines.append(f"{base}/stream/{channel_id}")
 
     body = "\n".join(lines) + "\n"
     return Response(
