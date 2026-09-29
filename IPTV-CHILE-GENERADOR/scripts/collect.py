@@ -160,10 +160,20 @@ def main():
     # que ya esten declarados en el catalogo; nunca pueden insertar canales
     # nuevos automaticamente.
     catalog_ids_by_key = {}
+    catalog_keys_by_id = {}
+    catalog_url_keys = {}
     for catalog_entry in catalog_channels:
         catalog_id = str(catalog_entry.get("id") or "").strip()
+        channel_key = str(catalog_entry.get("channel_key") or "").strip()
+        if not channel_key:
+            raise SystemExit(f"El catalogo contiene un canal sin channel_key: {catalog_id}")
+        catalog_keys_by_id[catalog_id] = channel_key
         for key in candidate_keys(catalog_entry):
             catalog_ids_by_key.setdefault(key, set()).add(catalog_id)
+        for catalog_source in catalog_entry.get("sources") or []:
+            source_url = str(catalog_source.get("url") or "").strip()
+            if source_url:
+                catalog_url_keys[source_url] = channel_key
 
     discovered_by_name = {}
     for entry in all_entries:
@@ -181,6 +191,7 @@ def main():
             "group": str(catalog_entry.get("group") or "Chile").strip() or "Chile",
             "logo": str(catalog_entry.get("logo") or "").strip(),
             "aliases": list(catalog_entry.get("aliases") or []),
+            "channel_key": str(catalog_entry.get("channel_key") or "").strip(),
             "sources": [],
         }
         if not item["id"] or not item["name"]:
@@ -191,7 +202,7 @@ def main():
         # nombre normalizado (incluyendo aliases), evitando inventar canales.
         candidates_by_url = {}
 
-        def add_candidate(url, source_name, priority, match):
+        def add_candidate(url, source_name, priority, match, channel_key=None):
             url = str(url or "").strip()
             if not url:
                 return
@@ -201,6 +212,8 @@ def main():
                 "priority": int(priority or 0),
                 "match": match,
             }
+            if channel_key:
+                candidate["channel_key"] = channel_key
             current = candidates_by_url.get(url)
             if current is None or candidate["priority"] > current["priority"]:
                 candidates_by_url[url] = candidate
@@ -211,17 +224,39 @@ def main():
                 "CATALOGO",
                 int(catalog_source.get("priority") or 0),
                 "catalogo",
+                item["channel_key"],
+            )
+
+        # Identidad primaria: URL ya declarada en el catalogo -> channel_key.
+        # Nombre/alias es solo fallback cuando la clave identifica un unico canal.
+        for discovered_entry in all_entries:
+            discovered_url = str(discovered_entry.get("url") or "").strip()
+            if not discovered_url:
+                continue
+            if catalog_url_keys.get(discovered_url) != item["channel_key"]:
+                continue
+            add_candidate(
+                discovered_url,
+                discovered_entry.get("source"),
+                int(discovered_entry.get("priority") or 0),
+                "channel_key_por_url",
+                item["channel_key"],
             )
 
         for key in candidate_keys(catalog_entry):
             if catalog_ids_by_key.get(key) != {item["id"]}:
                 continue
             for discovered_entry in discovered_by_name.get(key, []):
+                discovered_url = str(discovered_entry.get("url") or "").strip()
+                if catalog_url_keys.get(discovered_url) not in (None, item["channel_key"]):
+                    continue
+                match = "channel_key_por_url" if catalog_url_keys.get(discovered_url) == item["channel_key"] else "nombre_exacto_fallback"
                 add_candidate(
-                    discovered_entry.get("url"),
+                    discovered_url,
                     discovered_entry.get("source"),
                     int(discovered_entry.get("priority") or 0),
-                    "nombre_exacto",
+                    match,
+                    item["channel_key"],
                 )
                 if discovered_entry.get("name") and discovered_entry["name"] not in item["aliases"] and discovered_entry["name"] != item["name"]:
                     item["aliases"].append(discovered_entry["name"])
@@ -292,13 +327,27 @@ def main():
         for source in channel.get("sources", []):
             state = endpoint_health.setdefault(source["url"], {
                 "channel_id": channel["id"], "channel_name": channel["name"],
+                "channel_key": channel["channel_key"],
                 "source": source["source"], "priority": source["priority"],
                 "checks": 0, "successes": 0, "failures": 0,
                 "consecutive_failures": 0, "last_success": None,
                 "last_failure": None, "last_error": None,
             })
+            existing_channel_id = str(state.get("channel_id") or "").strip()
+            existing_channel_key = str(state.get("channel_key") or "").strip()
+            if existing_channel_id and existing_channel_id != channel["id"]:
+                raise SystemExit(
+                    f"INCONSISTENCIA: endpoint {source['url']} cambió de canal "
+                    f"({existing_channel_id} -> {channel['id']})."
+                )
+            if existing_channel_key and existing_channel_key != channel["channel_key"]:
+                raise SystemExit(
+                    f"INCONSISTENCIA: endpoint {source['url']} cambió de channel_key "
+                    f"({existing_channel_key} -> {channel['channel_key']})."
+                )
             state.update({
                 "channel_id": channel["id"], "channel_name": channel["name"],
+                "channel_key": channel["channel_key"],
                 "source": source["source"], "priority": source["priority"],
             })
     save_json(SOURCE_HEALTH_FILE, health)
