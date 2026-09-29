@@ -15,8 +15,8 @@ permissions:
   contents: write
 
 concurrency:
-  # Solo una ejecución efectiva del generador por rama.
-  # Si entra un cambio nuevo, se cancela la ejecución anterior.
+  # Evita cancelar una auditoría de calidad en curso. Los cambios nuevos
+  # esperan su turno para no dejar snapshots parciales.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
@@ -40,15 +40,7 @@ jobs:
       - name: Validar sintaxis
         run: |
           set -euo pipefail
-          python -m py_compile \
-            IPTV-CHILE-GENERADOR/scripts/atomic.py \
-            IPTV-CHILE-GENERADOR/scripts/collect.py \
-            IPTV-CHILE-GENERADOR/scripts/check.py \
-            IPTV-CHILE-GENERADOR/scripts/fix_encoding.py \
-            IPTV-CHILE-GENERADOR/scripts/generate.py \
-            IPTV-CHILE-GENERADOR/scripts/quality.py \
-            IPTV-CHILE-GENERADOR/scripts/guard.py \
-            IPTV-CHILE-GENERADOR/scripts/selftest.py
+          python -m compileall -q IPTV-CHILE-GENERADOR/scripts
 
       - name: Guardar huellas protegidas
         run: |
