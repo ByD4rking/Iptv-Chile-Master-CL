@@ -649,7 +649,9 @@ def main() -> None:
     all_channels = []
     for code in ("ar", "br", "cl", "es", "mx", "us"):
         path = PLAYLIST_DIR / f"pluto_{code}.m3u"
-        all_channels.extend(previous_entries(path))
+        for entry in previous_entries(path):
+            entry["health_key"] = f"{code}:{entry.get('id') or entry.get('name') or ''}"
+            all_channels.append(entry)
     health = audit_hls(all_channels)
     print(f"HLS HEALTH: {health['ok']} OK / {health['failed']} fallos / {health['checked']} comprobados")
 
