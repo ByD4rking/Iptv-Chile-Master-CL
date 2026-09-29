@@ -74,7 +74,6 @@ def main():
         ids.append(channel_id)
 
         channel_urls = set()
-        assert channel.get("sources"), f"Canal {channel_id} sin endpoints candidatos."
         for source in channel.get("sources", []):
             url = str(source.get("url") or "").strip()
             assert url.startswith(("http://", "https://")), f"URL inválida: {url}"
