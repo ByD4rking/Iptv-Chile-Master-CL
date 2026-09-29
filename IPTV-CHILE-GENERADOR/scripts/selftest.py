@@ -80,6 +80,16 @@ def main():
             assert url not in channel_urls, f"Canal {channel_id} repite la URL: {url}"
             channel_urls.add(url)
             assert url in endpoint_health, f"Endpoint sin historial: {url}"
+            health = endpoint_health[url]
+            assert str(health.get("channel_id") or "") == channel_id, (
+                f"Endpoint {url} tiene health asociado al canal equivocado."
+            )
+            assert int(health.get("checks") or 0) >= 0
+            assert int(health.get("successes") or 0) >= 0
+            assert int(health.get("failures") or 0) >= 0
+            assert int(health.get("successes") or 0) + int(health.get("failures") or 0) <= int(health.get("checks") or 0), (
+                f"Health inconsistente para {url}."
+            )
             urls.append(url)
 
     assert len(ids) == len(set(ids)), "channels.json contiene IDs de canal duplicados."
