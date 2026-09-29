@@ -32,6 +32,8 @@ def _probe_once(url: str) -> tuple[bool, str, float]:
         body = response.text[:2_000_000]
         if "#EXTM3U" not in body:
             return False, "respuesta no es M3U8", time.monotonic() - started
+        if "#EXT-X-" not in body:
+            return False, "M3U8 sin etiquetas HLS", time.monotonic() - started
 
         variants = []
         lines = body.splitlines()
@@ -73,6 +75,9 @@ def _probe_once(url: str) -> tuple[bool, str, float]:
                 break
         if not segment:
             return False, "playlist sin segmento", time.monotonic() - started
+        segment_lower = segment.lower()
+        if not segment_lower.startswith(("http://", "https://")):
+            return False, "segmento con esquema no permitido", time.monotonic() - started
 
         sr = session.get(segment, headers=headers, timeout=TIMEOUT, stream=True)
         sr.raise_for_status()
@@ -80,8 +85,13 @@ def _probe_once(url: str) -> tuple[bool, str, float]:
         sr.close()
         if not sample:
             return False, "segmento vacío", time.monotonic() - started
+        # MPEG-TS commonly starts with sync byte 0x47; fMP4 starts with an ISO BMFF box.
+        looks_ts = len(sample) > 1 and sample[0] == 0x47
+        looks_mp4 = len(sample) >= 8 and sample[4:8] in {b"ftyp", b"styp", b"moof"}
+        if not (looks_ts or looks_mp4):
+            return False, "segmento sin firma TS/fMP4 reconocible", time.monotonic() - started
 
-        return True, "master+variant+segment OK", time.monotonic() - started
+        return True, "master+variant+segment+firma OK", time.monotonic() - started
 
 
 def probe(url: str) -> dict:
