@@ -7,6 +7,7 @@ from pathlib import Path
 
 from channels import GROUPS, normalize_channel
 from client import PlutoClient
+from health import audit as audit_hls
 from regions import REGIONS, Region
 
 
@@ -642,6 +643,15 @@ def main() -> None:
         )
 
     build_latam(fresh_regions)
+
+    # Real HLS verification is diagnostic and persistent; failures never delete
+    # previously published channels.
+    all_channels = []
+    for code in ("ar", "br", "cl", "es", "mx", "us"):
+        path = PLAYLIST_DIR / f"pluto_{code}.m3u"
+        all_channels.extend(previous_entries(path))
+    health = audit_hls(all_channels)
+    print(f"HLS HEALTH: {health['ok']} OK / {health['failed']} fallos / {health['checked']} comprobados")
 
     print()
     print("RESUMEN")
