@@ -98,6 +98,8 @@ def main():
             quality_item = quality_by_url.get(url)
             if not quality_item:
                 continue
+            if quality_item.get("quarantined"):
+                continue
             if not quality_item.get("playback_checked") or not quality_item.get("playback_ok"):
                 continue
 
