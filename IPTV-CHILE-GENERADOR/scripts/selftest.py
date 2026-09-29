@@ -12,6 +12,7 @@ OUTPUT = BASE / "IPTV-CHILE-GENERADOR.m3u"
 QUALITY = BASE / "data" / "quality.json"
 STATUS = BASE / "data" / "status.json"
 SOURCE_HEALTH = BASE / "data" / "source_health.json"
+ENDPOINT_HEALTH = BASE / "data" / "endpoint_health.json"
 MANIFEST = BASE / "data" / "pipeline_manifest.json"
 
 
@@ -39,6 +40,7 @@ def main():
     quality = load(QUALITY)
     status = load(STATUS)
     source_health = load(SOURCE_HEALTH)
+    endpoint_health = load(ENDPOINT_HEALTH)
     manifest = load(MANIFEST)
 
     channels_sha = file_sha256(CHANNELS)
@@ -72,17 +74,22 @@ def main():
         ids.append(channel_id)
 
         channel_urls = set()
+        assert channel.get("sources"), f"Canal {channel_id} sin endpoints candidatos."
         for source in channel.get("sources", []):
             url = str(source.get("url") or "").strip()
             assert url.startswith(("http://", "https://")), f"URL inválida: {url}"
             assert url not in channel_urls, f"Canal {channel_id} repite la URL: {url}"
             channel_urls.add(url)
+            assert url in endpoint_health, f"Endpoint sin historial: {url}"
             urls.append(url)
 
     assert len(ids) == len(set(ids)), "channels.json contiene IDs de canal duplicados."
     assert set(ids) <= set(catalog_ids), "channels.json contiene un canal fuera del catalogo propio."
     assert set(catalog_ids) == set(ids), "channels.json perdio o agrego canales respecto del catalogo propio."
     assert len(urls) == len(set(urls)), "channels.json contiene una URL duplicada."
+    assert quality.get("total_urls") == len(urls), "quality.json no cubre todos los endpoints candidatos."
+    assert quality.get("endpoint_candidates") == len(urls), "quality.json no registra todos los candidatos."
+    assert quality.get("channels_with_multiple_candidates", 0) == sum(1 for c in channels if len(c.get("sources", [])) > 1), "Métrica de candidatos múltiples inconsistente."
     assert OUTPUT.exists() and OUTPUT.stat().st_size > 0, "No existe una M3U generada."
 
     text = OUTPUT.read_text(encoding="utf-8-sig")
@@ -110,28 +117,19 @@ def main():
 
     assert output_urls, "La M3U no contiene URLs."
     assert len(output_urls) == len(set(output_urls)), "La M3U contiene URLs duplicadas."
-    catalog_urls = {
-        str(source.get("url") or "").strip()
-        for channel in catalog_channels
-        for source in channel.get("sources", [])
-        if str(source.get("url") or "").strip()
-    }
-    assert set(output_urls) <= catalog_urls, (
-        "La M3U contiene una URL que no pertenece al catalogo propio."
+    channel_urls = set(urls)
+    assert set(output_urls) <= channel_urls, (
+        "La M3U contiene una URL que no pertenece a los endpoints candidatos."
     )
     extinf = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
     assert extinf == len(output_urls), f"EXTINF ({extinf}) != URLs ({len(output_urls)})."
-
-    assert quality.get("total_urls") == len(urls), (
-        "quality.json no corresponde al total de URLs de channels.json."
-    )
 
     temp_files = list((BASE / "data").glob(".*.tmp"))
     temp_files += list(BASE.glob(".*.tmp"))
     assert not temp_files, f"Quedaron temporales atómicos: {temp_files}"
 
     print(
-        f"SELFTEST OK: {len(channels)} canales, {len(output_urls)} URLs finales; "
+        f"SELFTEST OK: {len(channels)} canales, {len(urls)} candidatos, {len(output_urls)} URLs finales; "
         "pipeline completo con snapshots y manifest consistente."
     )
 
