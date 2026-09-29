@@ -34,8 +34,11 @@ def main():
     catalog_channels = catalog.get("channels", [])
     assert catalog_channels, "El catalogo propio esta vacio."
     catalog_ids = [str(x.get("id") or "").strip() for x in catalog_channels]
+    catalog_keys = [str(x.get("channel_key") or "").strip() for x in catalog_channels]
     assert all(catalog_ids), "El catalogo contiene un canal sin ID."
+    assert all(catalog_keys), "El catalogo contiene un canal sin channel_key."
     assert len(catalog_ids) == len(set(catalog_ids)), "El catalogo propio contiene IDs duplicados."
+    assert len(catalog_keys) == len(set(catalog_keys)), "El catalogo propio contiene channel_key duplicados."
 
     catalog_urls = []
     for catalog_channel in catalog_channels:
@@ -97,6 +100,13 @@ def main():
         channel_id = str(channel.get("id") or "").strip()
         assert channel_id, "Canal sin ID."
         assert channel.get("name"), "Canal sin nombre."
+        channel_key = str(channel.get("channel_key") or "").strip()
+        assert channel_key, f"Canal {channel_id} sin channel_key."
+        assert channel_key in set(catalog_keys), f"Canal {channel_id} usa un channel_key fuera del catalogo."
+        catalog_channel = next(x for x in catalog_channels if str(x.get("id") or "").strip() == channel_id)
+        assert channel_key == str(catalog_channel.get("channel_key") or "").strip(), (
+            f"Canal {channel_id} tiene channel_key distinto al catalogo."
+        )
         ids.append(channel_id)
 
         channel_urls = set()
@@ -111,6 +121,9 @@ def main():
             health = endpoint_health[url]
             assert str(health.get("channel_id") or "") == channel_id, (
                 f"Endpoint {url} tiene health asociado al canal equivocado."
+            )
+            assert str(health.get("channel_key") or "") == channel_key, (
+                f"Endpoint {url} tiene health asociado al channel_key equivocado."
             )
 
             checks = int(health.get("checks") or 0)
