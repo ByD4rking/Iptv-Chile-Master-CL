@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "description": "Fuentes externas independientes para IPTV-CHILE-GENERADOR. No depende de las listas maestras del repositorio.",
+  "version": 3,
+  "description": "Fuentes externas independientes para IPTV-CHILE-GENERADOR. Se usan solo para descubrir o actualizar endpoints de canales ya definidos por config/catalog.json; no pueden agregar canales al catalogo.",
   "sources": [
     {
       "name": "IPTV-ORG-CHILE",
@@ -16,6 +16,156 @@
       "name": "JROMERO-CHILE",
       "url": "https://raw.githubusercontent.com/jromero88/iptv/master/channels/cl.m3u",
       "priority": 80
+    },
+    {
+      "name": "M3UCL-RELIGIOSOS",
+      "url": "https://m3u.cl/lista/religiosos.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-MUSICA",
+      "url": "https://m3u.cl/lista/musica.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-LATAM",
+      "url": "https://m3u.cl/lista/LATAM.m3u",
+      "priority": 75
+    },
+    {
+      "name": "M3UCL-VE",
+      "url": "https://m3u.cl/lista/VE.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-DO",
+      "url": "https://m3u.cl/lista/DO.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-PE",
+      "url": "https://m3u.cl/lista/PE.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-PY",
+      "url": "https://m3u.cl/lista/PY.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-MX",
+      "url": "https://m3u.cl/lista/MX.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-ES",
+      "url": "https://m3u.cl/lista/ES.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-EC",
+      "url": "https://m3u.cl/lista/EC.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-CR",
+      "url": "https://m3u.cl/lista/CR.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-CO",
+      "url": "https://m3u.cl/lista/CO.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-CL",
+      "url": "https://m3u.cl/lista/CL.m3u",
+      "priority": 85
+    },
+    {
+      "name": "M3UCL-BR",
+      "url": "https://m3u.cl/lista/BR.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-BO",
+      "url": "https://m3u.cl/lista/BO.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-AR",
+      "url": "https://m3u.cl/lista/AR.m3u",
+      "priority": 70
+    },
+    {
+      "name": "M3UCL-TOTAL",
+      "url": "https://m3u.cl/lista/total.m3u",
+      "priority": 75
+    },
+    {
+      "name": "M3UCL-TOP",
+      "url": "https://m3u.cl/lista/top.m3u",
+      "priority": 75
+    },
+    {
+      "name": "JMIGUE-IPTVSV",
+      "url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "priority": 65
+    },
+    {
+      "name": "JMIGUE-PLUTOTV-ES",
+      "url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.ES.m3u",
+      "priority": 65
+    },
+    {
+      "name": "JMIGUE-PLUTOTV-MX",
+      "url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
+      "priority": 65
+    },
+    {
+      "name": "LOCAL-PLUTO-ALL",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_all.m3u",
+      "priority": 60
+    },
+    {
+      "name": "LOCAL-PLUTO-US",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
+      "priority": 60
+    },
+    {
+      "name": "LOCAL-PLUTO-BR",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
+      "priority": 60
+    },
+    {
+      "name": "LOCAL-PLUTO",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto.m3u",
+      "priority": 60
+    },
+    {
+      "name": "LOCAL-PLUTO-AR",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
+      "priority": 60
+    },
+    {
+      "name": "LOCAL-PLUTO-CL",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
+      "priority": 60
+    },
+    {
+      "name": "LOCAL-PLUTO-ES",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "priority": 60
+    },
+    {
+      "name": "LOCAL-PLUTO-MX",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "priority": 60
+    },
+    {
+      "name": "LOCAL-PLUTO-LATAM",
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "priority": 60
     }
   ]
 }
