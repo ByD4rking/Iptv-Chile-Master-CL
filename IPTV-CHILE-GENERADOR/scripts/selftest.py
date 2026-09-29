@@ -133,6 +133,11 @@ def main():
             assert successes + failures == checks, (
                 f"Health inconsistente para {url}: successes + failures != checks."
             )
+            quarantine_until = health.get("quarantine_until")
+            if quarantine_until:
+                assert isinstance(quarantine_until, str), f"quarantine_until inválido para {url}."
+                from datetime import datetime
+                datetime.fromisoformat(quarantine_until.replace("Z", "+00:00"))
             urls.append(url)
 
     assert len(ids) == len(set(ids)), "channels.json contiene IDs de canal duplicados."
