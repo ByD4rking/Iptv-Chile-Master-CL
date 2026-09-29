@@ -25,7 +25,7 @@ from pathlib import Path
 import requests
 
 from verificar_m3u import parsear_m3u, verificar_canal
-from aprendizaje import registrar_lote
+from aprendizaje import registrar_lote, parametros_verificacion, perfil
 
 
 # ============================================================
@@ -149,15 +149,23 @@ def verificar_archivo(
         max_workers=hilos
     ) as ex:
 
-        futuros = {
-            ex.submit(
-                verificar_canal,
-                canal,
+        def tarea(canal):
+            timeout_canal, reintentos_canal = parametros_verificacion(
+                canal["url"],
                 timeout,
-                max_por_servidor,
                 reintentos,
+            )
+            canal["_aprendizaje"] = perfil(canal["url"])
+            return verificar_canal(
+                canal,
+                timeout_canal,
+                max_por_servidor,
+                reintentos_canal,
                 espera_reintento,
-            ): canal
+            )
+
+        futuros = {
+            ex.submit(tarea, canal): canal
             for canal in canales
         }
 

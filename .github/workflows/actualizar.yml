@@ -137,6 +137,19 @@ jobs:
           print("OK: no-regresión, sin duplicados URL y sin carpetas prohibidas.")
           PY
 
+      - name: Validar aprendizaje
+        run: |
+          python scripts/aprendizaje.py
+          if [ -f scripts/aprendizaje.json ]; then
+            TAMANO=$(wc -c < scripts/aprendizaje.json)
+            echo "Tamaño aprendizaje.json: $TAMANO bytes"
+            if [ "$TAMANO" -ge 5000000 ]; then
+              echo "ERROR: el historial de aprendizaje superó 5 MB."
+              exit 1
+            fi
+          fi
+          echo "Aprendizaje persistente validado."
+
       - name: Validar archivos M3U
         run: |
           set -e
