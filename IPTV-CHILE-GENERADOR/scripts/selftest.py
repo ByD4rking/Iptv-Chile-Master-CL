@@ -6,6 +6,8 @@ BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
 CHANNELS = BASE / "data" / "channels.json"
 OUTPUT = BASE / "IPTV-CHILE-GENERADOR.m3u"
+QUALITY = BASE / "data" / "quality.json"
+SOURCE_HEALTH = BASE / "data" / "source_health.json"
 
 def load(path):
     with path.open("r", encoding="utf-8-sig") as f: return json.load(f)
@@ -16,6 +18,10 @@ def main():
     assert sources, "No hay fuentes configuradas."
     assert all(str(x.get("url", "")).startswith(("http://", "https://")) for x in sources), "Existe una fuente no HTTP/HTTPS."
     channels = load(CHANNELS)
+    quality = load(QUALITY)
+    source_health = load(SOURCE_HEALTH)
+    configured_names = {str(x.get("name") or "").strip() for x in sources}
+    assert configured_names <= set(source_health), "Falta historial de salud para una fuente configurada."
     urls = []
     ids = []
     for channel in channels:
@@ -38,11 +44,17 @@ def main():
     text = OUTPUT.read_text(encoding="utf-8-sig")
     assert text.startswith("#EXTM3U"), "La salida no comienza con #EXTM3U."
     output_urls = [line.strip() for line in text.splitlines() if line.startswith(("http://", "https://"))]
+    quality_by_url = {str(x.get("url") or "").strip(): x for x in quality.get("results", [])}
+    for url in output_urls:
+        item = quality_by_url.get(url)
+        assert item, f"La M3U contiene una URL sin resultado de calidad: {url}"
+        assert item.get("playback_checked") and item.get("playback_ok"), f"La M3U contiene una URL sin reproducción verificada: {url}"
     assert output_urls, "La M3U no contiene URLs."
     assert len(output_urls) == len(set(output_urls)), "La M3U contiene URLs duplicadas."
     assert set(output_urls) <= set(urls), "La M3U contiene una URL ajena a las fuentes independientes."
     extinf = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
     assert extinf == len(output_urls), f"EXTINF ({extinf}) != URLs ({len(output_urls)})."
-    print(f"SELFTEST OK: {len(channels)} canales, {len(output_urls)} URLs finales.")
+    assert quality.get("total_urls") == len(urls), "quality.json no corresponde al total de URLs de channels.json."
+    print(f"SELFTEST OK: {len(channels)} canales, {len(output_urls)} URLs finales; reproducción verificada.")
 
 if __name__ == "__main__": main()
