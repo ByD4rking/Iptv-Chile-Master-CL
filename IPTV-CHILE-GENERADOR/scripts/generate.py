@@ -131,7 +131,9 @@ def main():
         "channels": len(channels),
         "generated_channels": generated,
         "output_urls": len(emitted),
-        "quality_playback_ok": sum(1 for item in quality.get("results", []) if item.get("playback_ok")),
+        "quality_playback_ok": sum(
+            1 for item in quality.get("results", []) if item.get("playback_ok")
+        ),
     }
     atomic_write_json(MANIFEST_FILE, manifest)
 
@@ -143,3 +145,7 @@ def main():
     print(f"URLs únicas M3U:    {len(emitted)}")
     print(f"Manifest:           {MANIFEST_FILE}")
     print("OK: salida independiente, deduplicada y consistente con sus etapas.")
+
+
+if __name__ == "__main__":
+    main()
