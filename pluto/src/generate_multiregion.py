@@ -17,6 +17,9 @@ REGIONAL_DATA_DIR = OUTPUT_DIR / "regional"
 
 # Do not replace a known-good playlist with a catastrophic partial response.
 MIN_PREVIOUS_RATIO = 0.50
+# Never publish an empty/zero-channel regional playlist when a previous
+# published catalog exists. A transient upstream failure must fail closed.
+REQUIRE_NONEMPTY_PREVIOUS = True
 # Preservation is catalog protection: transient omissions never delete channels.
 # Preserved entries get a freshly signed Pluto HLS URL before publication.
 PRESERVE_RETRY_COUNT = 2
@@ -460,6 +463,12 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     content = build_playlist(channels, region)
     new_count = content.count("#EXTINF:")
 
+    if old_count and REQUIRE_NONEMPTY_PREVIOUS and new_count <= 0:
+        raise RuntimeError(
+            f"{region.code.upper()}: intento de publicar catálogo vacío; "
+            "se conserva la playlist anterior."
+        )
+
     if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):
         print(
             f"[{region.code.upper()}] BLOQUEADO: {new_count} canales nuevos "
@@ -613,8 +622,8 @@ def main() -> None:
             # LATAM consume exactamente el catálogo que quedó publicado tras
             # la preservación de canales anteriores. Así una rotación/omisión
             # temporal de Pluto no provoca pérdidas indirectas en LATAM.
-            if published_channels and updated:
-                fresh_regions[code] = published_channels
+            if count > 0:
+                fresh_regions[code] = published_channels if published_channels else previous_entries(path)
             results[code] = (count, updated)
         except Exception as exc:
             existing = previous_count(PLAYLIST_DIR / f"pluto_{code}.m3u")
