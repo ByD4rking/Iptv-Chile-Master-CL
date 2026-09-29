@@ -86,6 +86,13 @@ def main():
         for channel in channels
         for source in channel.get("sources", [])
     ]
+    task_urls = [str(task["source"].get("url") or "").strip() for task in tasks]
+    if any(not url.startswith(("http://", "https://")) for url in task_urls):
+        raise SystemExit("INCONSISTENCIA: existe un endpoint candidato no HTTP/HTTPS.")
+    if len(task_urls) != len(set(task_urls)):
+        raise SystemExit("INCONSISTENCIA: channels.json contiene URLs candidatas duplicadas.")
+    if any(not str(task["channel"].get("id") or "").strip() for task in tasks):
+        raise SystemExit("INCONSISTENCIA: existe un candidato sin channel_id.")
 
     results = []
     with ThreadPoolExecutor(max_workers=WORKERS) as executor:
