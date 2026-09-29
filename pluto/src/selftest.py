@@ -65,7 +65,7 @@ def main() -> None:
 
     health_path = ROOT / "health.py"
     health = health_path.read_text(encoding="utf-8-sig")
-    if "def _probe_once(" not in health or "master+variant+segment OK" not in health:
+    if "def _probe_once(" not in health or "master+variant+segment+firma OK" not in health:
         fail("health.py: falta verificación HLS master -> variant -> segment")
     if "consecutive_failures" not in health:
         fail("health.py: falta persistencia de fallos consecutivos")
