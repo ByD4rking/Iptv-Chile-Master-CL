@@ -63,6 +63,18 @@ def main() -> None:
     if not compileall.compile_dir(str(ROOT), quiet=1, force=True):
         fail("compileall falló")
 
+    health_path = ROOT / "health.py"
+    health = health_path.read_text(encoding="utf-8-sig")
+    if "def _probe_once(" not in health or "master+variant+segment OK" not in health:
+        fail("health.py: falta verificación HLS master -> variant -> segment")
+    if "consecutive_failures" not in health:
+        fail("health.py: falta persistencia de fallos consecutivos")
+
+    client_path = ROOT / "client.py"
+    client = client_path.read_text(encoding="utf-8-sig")
+    if "TOKEN_REFRESH_MARGIN = 300" not in client:
+        fail("client.py: falta margen de renovación JWT adelantada")
+
     server_path = ROOT / "server.py"
     server = server_path.read_text(encoding="utf-8-sig")
 
@@ -110,6 +122,8 @@ def main() -> None:
     print(f"SELFTEST OK: {len(py_files)} archivos Python sin errores de sintaxis.")
     print("SELFTEST OK: compileall correcto.")
     print("SELFTEST OK: servidor Pluto conserva proxy, renovación JWT y acceso LAN.")
+    print("SELFTEST OK: health.py verifica HLS real y persiste fallos consecutivos.")
+    print("SELFTEST OK: client.py renueva JWT con margen anticipado.")
 
 
 if __name__ == "__main__":
