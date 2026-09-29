@@ -69,6 +69,16 @@ def main() -> None:
         fail("health.py: falta verificación HLS master -> variant -> segment")
     if "consecutive_failures" not in health:
         fail("health.py: falta persistencia de fallos consecutivos")
+    for fragment in (
+        "def _playlist_uri_candidates(",
+        "def _segment_signature_ok(",
+        "#EXT-X-PART:",
+        "#EXT-X-PRELOAD-HINT:",
+        "def _safe_error(",
+        'return f"HTTP {status}"',
+    ):
+        if fragment not in health:
+            fail(f"health.py: falta protección/soporte HLS requerido: {fragment}")
 
     client_path = ROOT / "client.py"
     client = client_path.read_text(encoding="utf-8-sig")
