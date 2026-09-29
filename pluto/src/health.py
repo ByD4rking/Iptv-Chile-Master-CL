@@ -8,7 +8,6 @@ erase the catalog.
 """
 
 import json
-import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -115,7 +114,7 @@ def audit(channels: list[dict], workers: int = 12) -> dict:
 
     with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
         futures = {
-            pool.submit(probe, str(ch.get("stream") or "")): str(ch.get("id") or ch.get("name") or "")
+            pool.submit(probe, str(ch.get("stream") or "")): str(ch.get("health_key") or ch.get("id") or ch.get("name") or "")
             for ch in channels
             if ch.get("stream")
         }
@@ -132,6 +131,9 @@ def audit(channels: list[dict], workers: int = 12) -> dict:
                 "checked_at": now,
             }
 
+    # Bound the persisted history so it cannot grow without limit. Keep only
+    # the latest record per currently audited channel; consecutive failures are
+    # carried forward from the previous run.
     HISTORY.write_text(
         json.dumps(results, ensure_ascii=False, indent=2),
         encoding="utf-8",
