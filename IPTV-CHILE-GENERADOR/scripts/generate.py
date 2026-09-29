@@ -28,11 +28,15 @@ def clean(value):
     return str(value).replace("\n", " ").replace("\r", " ").strip()
 
 
-def quality_key(item, status_item):
+def quality_key(item, status_item, source):
+    # Orden objetivo: reproducibilidad ya validada, resolución, bitrate,
+    # latencia, prioridad de fuente y estabilidad histórica del endpoint.
     return (
         int(item.get("height") or 0),
         int(item.get("bitrate") or 0),
         -int(status_item.get("response_time_ms") or 999999),
+        int(source.get("priority") or 0),
+        -int(item.get("endpoint_consecutive_failures") or 0),
     )
 
 
@@ -91,7 +95,7 @@ def main():
             priority = int(source.get("priority") or 0)
             candidates.append(
                 (
-                    quality_key(quality_item, online[url]),
+                    quality_key(quality_item, online[url], source),
                     priority,
                     url,
                 )
@@ -122,7 +126,7 @@ def main():
     atomic_write_text(OUTPUT_FILE, "\n".join(lines) + "\n")
 
     manifest = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "channels_sha256": current_channels_sha,
         "status_sha256": file_sha256(STATUS_FILE),
@@ -131,6 +135,8 @@ def main():
         "channels": len(channels),
         "generated_channels": generated,
         "output_urls": len(emitted),
+        "channels_with_candidates": sum(1 for channel in channels if channel.get("sources")),
+        "channels_with_multiple_candidates": sum(1 for channel in channels if len(channel.get("sources", [])) > 1),
         "quality_playback_ok": sum(
             1 for item in quality.get("results", []) if item.get("playback_ok")
         ),
