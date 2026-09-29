@@ -80,6 +80,13 @@ def main() -> None:
         fail("client.py: falta protección contra catálogo US vacío")
     if "use_forwarded_ip: bool = True" not in client or "for forwarded in (True, False)" not in client:
         fail("client.py: el fallback US debe probar con y sin X-Forwarded-For")
+    for marker in (
+        '"country": self.region.country',
+        '"marketingRegion": self.region.marketing_region',
+        '"preferredLanguage": self.active_language',
+    ):
+        if marker not in client:
+            fail(f"client.py: falta parámetro de mercado en boot: {marker}")
 
     generator_path = ROOT / "generate_multiregion.py"
     generator = generator_path.read_text(encoding="utf-8-sig")
