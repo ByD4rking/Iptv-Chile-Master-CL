@@ -40,7 +40,16 @@ jobs:
       - name: Validar sintaxis
         run: |
           set -euo pipefail
-          python -m compileall -q IPTV-CHILE-GENERADOR/scripts
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+
+          root = Path("IPTV-CHILE-GENERADOR/scripts")
+          for path in sorted(root.glob("*.py")):
+              source = path.read_text(encoding="utf-8")
+              ast.parse(source, filename=str(path))
+              print(f"OK: {path}")
+          PY
 
       - name: Guardar huellas protegidas
         run: |
