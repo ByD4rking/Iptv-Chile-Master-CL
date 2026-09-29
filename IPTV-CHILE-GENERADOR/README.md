@@ -40,13 +40,13 @@ selftest.py
 
 ### Componentes
 
-- **collect.py**: descarga y normaliza las fuentes.
+- **collect.py**: descarga y normaliza las fuentes y mantiene `data/source_health.json` con éxitos, fallos consecutivos, último error y última descarga válida por fuente.
 - **check.py**: comprueba disponibilidad y mide latencia.
-- **quality.py**: detecta resolución y bitrate.
-- **generate.py**: selecciona streams online, priorizando calidad y después prioridad de fuente.
+- **quality.py**: detecta resolución/bitrate y valida reproducción real: para HLS comprueba playlist, variante y al menos un segmento; para streams directos verifica que la respuesta no sea HTML y contenga datos.
+- **generate.py**: solo publica URLs con disponibilidad HTTP y reproducción verificada; prioriza resolución, bitrate, latencia y finalmente prioridad de fuente.
 - **fix_encoding.py**: corrige problemas de codificación en metadatos; nunca altera URLs.
 - **guard.py**: calcula huellas de las áreas protegidas.
-- **selftest.py**: verifica integridad de datos, unicidad y procedencia de URLs.
+- **selftest.py**: verifica integridad, unicidad, procedencia, salud de fuentes y que cada URL publicada tenga reproducción verificada.
 
 ## 🛡️ Protección de las otras listas
 
@@ -64,6 +64,23 @@ El commit automático solo añade:
 ```
 IPTV-CHILE-GENERADOR/
 ```
+
+## 📡 Salud y fallos de fuentes
+
+Cada ejecución registra por fuente:
+
+- cantidad de comprobaciones;
+- éxitos y fallos acumulados;
+- fallos consecutivos;
+- última ejecución exitosa;
+- último fallo y mensaje de error;
+- cantidad de entradas de la última descarga válida.
+
+Una fuente que falla no elimina las demás: si al menos una fuente independiente responde correctamente, la generación continúa. Si fallan todas, el workflow se detiene en lugar de publicar una M3U basada en datos inciertos.
+
+## ▶️ Validación real de reproducción
+
+El generador no considera suficiente un `HTTP 200`. Las URLs HLS pasan por una validación adicional de playlist, variante y segmento. Una URL que responda pero no entregue un segmento reproducible queda fuera de la M3U final.
 
 ## 📦 Historial
 
