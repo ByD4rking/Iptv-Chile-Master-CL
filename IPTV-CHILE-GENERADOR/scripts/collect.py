@@ -127,19 +127,26 @@ def main():
         source_name = str(entry.get("source") or "").strip()
         source_priority = int(entry.get("priority") or 0)
 
-        if source_name:
-            existing = next(
-                (x for x in item["sources"] if x["source"] == source_name),
-                None,
+        # La URL es la identidad global del canal. Por tanto, una URL
+        # nunca puede aparecer dos veces dentro de sources[], aunque
+        # distintas fuentes externas la publiquen con nombres distintos.
+        existing = next(
+            (x for x in item["sources"] if x["url"] == url),
+            None,
+        )
+
+        if existing is None:
+            item["sources"].append(
+                {
+                    "url": url,
+                    "source": source_name,
+                    "priority": source_priority,
+                }
             )
-            if existing is None:
-                item["sources"].append(
-                    {
-                        "url": url,
-                        "source": source_name,
-                        "priority": source_priority,
-                    }
-                )
+        elif source_priority > int(existing.get("priority") or 0):
+            # Conservamos como principal la fuente con mayor prioridad.
+            existing["source"] = source_name
+            existing["priority"] = source_priority
 
     channels = list(grouped.values())
 
