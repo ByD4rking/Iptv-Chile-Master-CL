@@ -17,6 +17,9 @@ REGIONAL_DATA_DIR = OUTPUT_DIR / "regional"
 
 # Do not replace a known-good playlist with a catastrophic partial response.
 MIN_PREVIOUS_RATIO = 0.50
+# Preservation is catalog protection: transient omissions never delete channels.
+# Preserved entries get a freshly signed Pluto HLS URL before publication.
+PRESERVE_RETRY_COUNT = 2
 # A missing channel is preserved; it is never deleted merely because Pluto
 # omitted it once or twice. The preserved entry is rehydrated with a fresh
 # Pluto session/stream URL when its identity is still known.
@@ -403,6 +406,7 @@ def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[d
             continue
 
         old["preserved_previous"] = True
+        old["preserved_previous"] = True
         channels.append(old)
         current_ids.add(old_id)
         current_streams.add(old_stream)
@@ -457,6 +461,7 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     if preserved:
         print(f"[{region.code.upper()}] Conservados del catálogo anterior: {preserved} canales")
 
+    channels = refresh_preserved_streams(region, channels)
     channels = refresh_preserved_streams(region, channels)
     content = build_playlist(channels, region)
     new_count = content.count("#EXTINF:")
