@@ -6,7 +6,7 @@ on:
       - "pluto/output/playlists/**"
       - "scripts/**"
       - "pluto/src/**"
-      - ".github/workflows/**"
+      - ".github/workflows/actualizar.yml"
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
