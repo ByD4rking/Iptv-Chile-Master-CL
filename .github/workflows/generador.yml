@@ -3,6 +3,8 @@ name: IPTV Chile Generador - aislado
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     paths:
       - "IPTV-CHILE-GENERADOR/**"
       - ".github/workflows/generador.yml"
@@ -22,24 +24,35 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
           fetch-depth: 0
 
-      - name: Guardar huellas de listas protegidas
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: Validar sintaxis
         run: |
-          set -e
+          python -m py_compile             IPTV-CHILE-GENERADOR/scripts/collect.py             IPTV-CHILE-GENERADOR/scripts/check.py             IPTV-CHILE-GENERADOR/scripts/fix_encoding.py             IPTV-CHILE-GENERADOR/scripts/generate.py             IPTV-CHILE-GENERADOR/scripts/quality.py             IPTV-CHILE-GENERADOR/scripts/guard.py             IPTV-CHILE-GENERADOR/scripts/selftest.py
+
+      - name: Guardar huellas protegidas
+        run: |
+          set -euo pipefail
           mkdir -p /tmp/generador-guard
           sha256sum IPTV-CHILE-MAESTRA_CORREGIDO.m3u IPTV-CHILE-MAESTRA_GOD.m3u > /tmp/generador-guard/maestras.sha256
           find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/pluto.sha256
           find scripts -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/scripts.sha256
 
-      - name: Validar sintaxis
-        run: |
-          python -m py_compile             IPTV-CHILE-GENERADOR/scripts/collect.py             IPTV-CHILE-GENERADOR/scripts/check.py             IPTV-CHILE-GENERADOR/scripts/fix_encoding.py             IPTV-CHILE-GENERADOR/scripts/generate.py             IPTV-CHILE-GENERADOR/scripts/quality.py             IPTV-CHILE-GENERADOR/scripts/guard.py
-
-      - name: Auditar aislamiento
+      - name: Auditar aislamiento inicial
         run: python IPTV-CHILE-GENERADOR/scripts/guard.py
+
+      - name: Recopilar fuentes independientes
+        run: python IPTV-CHILE-GENERADOR/scripts/collect.py
+
+      - name: Corregir codificación
+        run: python IPTV-CHILE-GENERADOR/scripts/fix_encoding.py
 
       - name: Comprobar streams
         run: python IPTV-CHILE-GENERADOR/scripts/check.py
@@ -50,48 +63,40 @@ jobs:
       - name: Generar M3U
         run: python IPTV-CHILE-GENERADOR/scripts/generate.py
 
-      - name: Validar M3U
-        run: |
-          set -e
-          FILE="IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u"
-          test -s "$FILE"
-          grep -q '^#EXTM3U$' "$FILE"
-          grep -q '^#EXTINF:' "$FILE"
-          python - <<'PY'
-          from pathlib import Path
-          p = Path("IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u")
-          urls = [x.strip() for x in p.read_text(encoding="utf-8").splitlines() if x.startswith(("http://","https://"))]
-          if len(urls) != len(set(urls)):
-              raise SystemExit("REGRESION: URL duplicada.")
-          print(f"OK: {len(urls)} URLs únicas.")
-          PY
+      - name: Self-test del generador
+        run: python IPTV-CHILE-GENERADOR/scripts/selftest.py
 
-      - name: Confirmar aislamiento antes de publicar
+      - name: Validar aislamiento final
         run: |
-          set -e
+          set -euo pipefail
           sha256sum -c /tmp/generador-guard/maestras.sha256
           sha256sum -c /tmp/generador-guard/pluto.sha256
           sha256sum -c /tmp/generador-guard/scripts.sha256
-          git diff --name-only | while IFS= read -r file; do
+
+          while IFS= read -r line; do
+            file="${line:3}"
             case "$file" in
               IPTV-CHILE-GENERADOR/*|.github/workflows/generador.yml) ;;
               "") ;;
-              *) echo "REGRESION: archivo fuera del generador: $file"; exit 1 ;;
+              *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
             esac
-          done
-          echo "OK: listas maestras, Pluto y scripts externos intactos."
+          done < <(git status --porcelain)
 
-      - name: Publicar solo el generador
+          echo "OK: ninguna lista o script externo fue modificado."
+
+      - name: Publicar únicamente el generador
         run: |
-          set -e
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add IPTV-CHILE-GENERADOR
+
           if git diff --cached --quiet; then
-            echo "No hay cambios."
+            echo "No hay cambios nuevos en el generador."
             exit 0
           fi
-          git commit -m "Actualizar generador IPTV Chile"
+
+          git commit -m "Actualizar IPTV-CHILE-GENERADOR"
           git fetch origin main
           git rebase origin/main
           git push origin HEAD:main
