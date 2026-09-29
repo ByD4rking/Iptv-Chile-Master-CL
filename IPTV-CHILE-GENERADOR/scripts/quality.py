@@ -400,6 +400,15 @@ def main():
     print(f"URLs:    {total}")
     print(f"Workers: {WORKERS}")
 
+    # Invariantes de entrada: cada candidato debe evaluarse exactamente una vez.
+    task_urls = [str(task["source"].get("url") or "").strip() for task in tasks]
+    if any(not url.startswith(("http://", "https://")) for url in task_urls):
+        raise SystemExit("INCONSISTENCIA: existe un endpoint candidato no HTTP/HTTPS.")
+    if len(task_urls) != len(set(task_urls)):
+        raise SystemExit("INCONSISTENCIA: channels.json contiene URLs candidatas duplicadas.")
+    if any(not str(task["channel"].get("id") or "").strip() for task in tasks):
+        raise SystemExit("INCONSISTENCIA: existe un candidato sin channel_id.")
+
     results = []
     with ThreadPoolExecutor(max_workers=WORKERS) as executor:
         futures = [executor.submit(inspect_url, item) for item in tasks]
@@ -415,7 +424,7 @@ def main():
                     f"HLS: {hls} | masters con variantes: {fallback}"
                 )
 
-    # Invariantes de entrada: cada candidato debe evaluarse exactamente una vez.\n    task_urls = [str(task["source"].get("url") or "").strip() for task in tasks]\n    if len(task_urls) != len(set(task_urls)):\n        raise SystemExit("INCONSISTENCIA: channels.json contiene URLs candidatas duplicadas.")\n    if any(not str(task["channel"].get("id") or "").strip() for task in tasks):\n        raise SystemExit("INCONSISTENCIA: existe un candidato sin channel_id.")\n\n    endpoint_health = {}
+    endpoint_health = {}
     if ENDPOINT_HEALTH_FILE.exists():
         try:
             with ENDPOINT_HEALTH_FILE.open("r", encoding="utf-8-sig") as f:
@@ -440,6 +449,13 @@ def main():
             "last_failure": None,
             "last_error": None,
         })
+        existing_channel_id = str(state.get("channel_id") or "").strip()
+        if existing_channel_id and existing_channel_id != result["channel_id"]:
+            raise SystemExit(
+                f"INCONSISTENCIA: endpoint {url} cambió de canal "
+                f"({existing_channel_id} -> {result['channel_id']})."
+            )
+
         state.update({
             "channel_id": result["channel_id"],
             "channel_name": result["channel_name"],
