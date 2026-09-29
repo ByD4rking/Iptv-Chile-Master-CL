@@ -18,6 +18,8 @@ TIMEOUT = 10
 WORKERS = 15
 READ_LIMIT = 256 * 1024
 SEGMENT_LIMIT = 64 * 1024
+ENDPOINT_QUARANTINE_AFTER = 5
+ENDPOINT_QUARANTINE_HOURS = 24
 
 
 def quality_key(item, status_item, source_priority):
@@ -403,12 +405,34 @@ def main():
     with CHANNELS_FILE.open("r", encoding="utf-8") as f:
         channels = json.load(f)
 
-    tasks = [
-        {"channel": channel, "source": source}
-        for channel in channels
-        for source in channel.get("sources", [])
-    ]
-    total = len(tasks)
+    endpoint_health = {}
+    if ENDPOINT_HEALTH_FILE.exists():
+        try:
+            with ENDPOINT_HEALTH_FILE.open("r", encoding="utf-8-sig") as f:
+                endpoint_health = json.load(f)
+        except Exception:
+            endpoint_health = {}
+
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
+    tasks = []
+    skipped_quarantine = []
+    for channel in channels:
+        for source in channel.get("sources", []):
+            url = str(source.get("url") or "").strip()
+            state = endpoint_health.get(url, {})
+            until = str(state.get("quarantine_until") or "").strip()
+            quarantined = False
+            if until:
+                try:
+                    quarantined = datetime.fromisoformat(until.replace("Z", "+00:00")) > now
+                except ValueError:
+                    quarantined = False
+            if quarantined:
+                skipped_quarantine.append((channel, source, state))
+            else:
+                tasks.append({"channel": channel, "source": source})
+    total = len(tasks) + len(skipped_quarantine)
 
     print("=" * 60)
     print("IPTV-CHILE-GENERADOR - QUALITY + PLAYBACK SCANNER")
@@ -427,6 +451,20 @@ def main():
         raise SystemExit("INCONSISTENCIA: existe un candidato sin channel_id.")
 
     results = []
+    for channel, source, state in skipped_quarantine:
+        results.append({
+            "channel_id": channel.get("id", ""), "channel_name": channel.get("name", ""),
+            "url": str(source.get("url") or "").strip(), "source": source.get("source", ""),
+            "source_priority": int(source.get("priority") or 0), "width": None, "height": None,
+            "resolution": None, "bitrate": None, "quality_score": 0, "detected": False,
+            "playback_checked": False, "playback_ok": False, "playback_type": None,
+            "playback_error": "Endpoint en cuarentena por fallos persistentes.",
+            "validated_url": None, "variant_index": None, "variant_count": None,
+            "error": None, "quarantined": True, "quarantine_until": state.get("quarantine_until"),
+            "endpoint_consecutive_failures": int(state.get("consecutive_failures") or 0),
+            "endpoint_checks": int(state.get("checks") or 0), "endpoint_successes": int(state.get("successes") or 0),
+            "endpoint_failures": int(state.get("failures") or 0),
+        })
     with ThreadPoolExecutor(max_workers=WORKERS) as executor:
         futures = [executor.submit(inspect_url, item) for item in tasks]
         for completed, future in enumerate(as_completed(futures), 1):
@@ -441,15 +479,7 @@ def main():
                     f"HLS: {hls} | masters con variantes: {fallback}"
                 )
 
-    endpoint_health = {}
-    if ENDPOINT_HEALTH_FILE.exists():
-        try:
-            with ENDPOINT_HEALTH_FILE.open("r", encoding="utf-8-sig") as f:
-                endpoint_health = json.load(f)
-        except Exception:
-            endpoint_health = {}
-
-    from datetime import datetime, timezone
+    from datetime import datetime, timezone, timedelta
     checked_at = datetime.now(timezone.utc).isoformat()
     for result in results:
         url = result["url"]
@@ -480,22 +510,29 @@ def main():
             "priority": result["source_priority"],
             "checks": int(state.get("checks") or 0) + 1,
         })
+        if result.get("quarantined"):
+            continue
         if result["playback_ok"]:
             state["successes"] = int(state.get("successes") or 0) + 1
             state["consecutive_failures"] = 0
             state["last_success"] = checked_at
             state["last_error"] = None
+            state["quarantine_until"] = None
         else:
             state["failures"] = int(state.get("failures") or 0) + 1
             state["consecutive_failures"] = int(state.get("consecutive_failures") or 0) + 1
             state["last_failure"] = checked_at
             state["last_error"] = result.get("error") or result.get("playback_error")
+            if state["consecutive_failures"] >= ENDPOINT_QUARANTINE_AFTER:
+                state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=ENDPOINT_QUARANTINE_HOURS)).isoformat()
         result["endpoint_consecutive_failures"] = state["consecutive_failures"]
         result["endpoint_checks"] = int(state.get("checks") or 0)
         result["endpoint_successes"] = int(state.get("successes") or 0)
         result["endpoint_failures"] = int(state.get("failures") or 0)
 
     atomic_write_json(ENDPOINT_HEALTH_FILE, endpoint_health)
+    if skipped_quarantine:
+        print(f"Endpoints en cuarentena: {len(skipped_quarantine)} (se reintentaran al vencer la cuarentena).")
 
     status_data = {}
     if STATUS_FILE.exists():
