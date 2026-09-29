@@ -17,13 +17,22 @@ def main():
     assert all(str(x.get("url", "")).startswith(("http://", "https://")) for x in sources), "Existe una fuente no HTTP/HTTPS."
     channels = load(CHANNELS)
     urls = []
+    ids = []
     for channel in channels:
-        assert channel.get("id"), "Canal sin ID."
+        channel_id = str(channel.get("id") or "").strip()
+        assert channel_id, "Canal sin ID."
         assert channel.get("name"), "Canal sin nombre."
+        ids.append(channel_id)
+
+        channel_urls = set()
         for source in channel.get("sources", []):
             url = str(source.get("url") or "").strip()
             assert url.startswith(("http://", "https://")), f"URL inválida: {url}"
+            assert url not in channel_urls, f"Canal {channel_id} repite la URL: {url}"
+            channel_urls.add(url)
             urls.append(url)
+
+    assert len(ids) == len(set(ids)), "channels.json contiene IDs de canal duplicados."
     assert len(urls) == len(set(urls)), "channels.json contiene una URL duplicada."
     assert OUTPUT.exists() and OUTPUT.stat().st_size > 0, "No existe una M3U generada."
     text = OUTPUT.read_text(encoding="utf-8-sig")
