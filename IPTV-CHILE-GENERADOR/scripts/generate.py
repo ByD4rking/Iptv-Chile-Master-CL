@@ -29,14 +29,19 @@ def clean(value):
 
 
 def quality_key(item, status_item, source):
-    # Orden objetivo: reproducibilidad ya validada, resolución, bitrate,
-    # latencia, prioridad de fuente y estabilidad histórica del endpoint.
+    # La disponibilidad manda sobre la calidad nominal: primero preferimos
+    # endpoints estables; después resolución/bitrate. Así un 720p estable no
+    # pierde automáticamente frente a un 1080p que falla repetidamente.
+    checks = int(item.get("endpoint_checks") or 0)
+    successes = int(item.get("endpoint_successes") or 0)
+    reliability = (successes / checks) if checks else 0.0
     return (
+        -int(item.get("endpoint_consecutive_failures") or 0),
+        reliability,
         int(item.get("height") or 0),
         int(item.get("bitrate") or 0),
         -int(status_item.get("response_time_ms") or 999999),
         int(source.get("priority") or 0),
-        -int(item.get("endpoint_consecutive_failures") or 0),
     )
 
 
