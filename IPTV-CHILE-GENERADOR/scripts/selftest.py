@@ -11,6 +11,7 @@ OUTPUT = BASE / "IPTV-CHILE-GENERADOR.m3u"
 QUALITY = BASE / "data" / "quality.json"
 STATUS = BASE / "data" / "status.json"
 SOURCE_HEALTH = BASE / "data" / "source_health.json"
+MANIFEST = BASE / "data" / "pipeline_manifest.json"
 
 
 def load(path):
@@ -31,6 +32,7 @@ def main():
     quality = load(QUALITY)
     status = load(STATUS)
     source_health = load(SOURCE_HEALTH)
+    manifest = load(MANIFEST)
 
     channels_sha = file_sha256(CHANNELS)
     assert status.get("channels_sha256") == channels_sha, (
@@ -39,6 +41,11 @@ def main():
     assert quality.get("channels_sha256") == channels_sha, (
         "quality.json no corresponde al channels.json actual."
     )
+
+    assert manifest.get("channels_sha256") == channels_sha, "Manifest no corresponde a channels.json."
+    assert manifest.get("status_sha256") == status_sha, "Manifest no corresponde a status.json."
+    assert manifest.get("quality_sha256") == quality_sha, "Manifest no corresponde a quality.json."
+    assert manifest.get("m3u_sha256") == m3u_sha, "Manifest no corresponde a la M3U."
 
     configured_names = {str(x.get("name") or "").strip() for x in sources}
     assert configured_names <= set(source_health), (
@@ -106,7 +113,7 @@ def main():
 
     print(
         f"SELFTEST OK: {len(channels)} canales, {len(output_urls)} URLs finales; "
-        "fallback HLS y consistencia entre etapas verificables."
+        "pipeline completo con snapshots y manifest consistente."
     )
 
 

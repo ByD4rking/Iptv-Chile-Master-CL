@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+
+from atomic import atomic_write_json
 BASE = Path(__file__).resolve().parent.parent
 FILE = BASE / "data" / "channels.json"
 
@@ -19,7 +21,7 @@ def main():
         for source in channel.get("sources", []):
             if "source" in source: source["source"] = fix_text(source["source"])
         channel["aliases"] = [fix_text(x) for x in channel.get("aliases", [])]
-    FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"OK: codificación corregida en {FILE}; URLs no modificadas.")
+    atomic_write_json(FILE, data)
+    print(f"OK: codificación corregida atómicamente en {FILE}; URLs no modificadas.")
 
 if __name__ == "__main__": main()

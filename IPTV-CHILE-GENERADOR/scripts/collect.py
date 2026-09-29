@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 from urllib.request import Request, urlopen
 
+from atomic import atomic_write_json
+
 BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
 OUTPUT = BASE / "data" / "channels.json"
@@ -18,11 +20,7 @@ def load_json(path, default):
 
 
 def save_json(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    atomic_write_json(path, data)
 
 
 def read_source(source):
@@ -129,8 +127,6 @@ def main():
             state["last_failure"] = checked_at
             state["last_error"] = message
 
-    save_json(SOURCE_HEALTH_FILE, health)
-
     if not successful_sources:
         raise SystemExit("Ninguna fuente independiente respondió correctamente.")
 
@@ -205,6 +201,7 @@ def main():
     )
 
     save_json(OUTPUT, channels)
+    save_json(SOURCE_HEALTH_FILE, health)
 
     print("=" * 60)
     print("IPTV-CHILE-GENERADOR - COLLECTOR")

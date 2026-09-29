@@ -20,6 +20,8 @@ concurrency:
 
 jobs:
   generar:
+    # Evita el bucle push -> Actions -> commit -> Actions.
+    if: github.event_name != 'push' || github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
@@ -35,7 +37,16 @@ jobs:
 
       - name: Validar sintaxis
         run: |
-          python -m py_compile             IPTV-CHILE-GENERADOR/scripts/collect.py             IPTV-CHILE-GENERADOR/scripts/check.py             IPTV-CHILE-GENERADOR/scripts/fix_encoding.py             IPTV-CHILE-GENERADOR/scripts/generate.py             IPTV-CHILE-GENERADOR/scripts/quality.py             IPTV-CHILE-GENERADOR/scripts/guard.py             IPTV-CHILE-GENERADOR/scripts/selftest.py
+          set -euo pipefail
+          python -m py_compile \
+            IPTV-CHILE-GENERADOR/scripts/atomic.py \
+            IPTV-CHILE-GENERADOR/scripts/collect.py \
+            IPTV-CHILE-GENERADOR/scripts/check.py \
+            IPTV-CHILE-GENERADOR/scripts/fix_encoding.py \
+            IPTV-CHILE-GENERADOR/scripts/generate.py \
+            IPTV-CHILE-GENERADOR/scripts/quality.py \
+            IPTV-CHILE-GENERADOR/scripts/guard.py \
+            IPTV-CHILE-GENERADOR/scripts/selftest.py
 
       - name: Guardar huellas protegidas
         run: |

@@ -2,13 +2,14 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from atomic import atomic_write_text, file_sha256
+from atomic import atomic_write_json, atomic_write_text, file_sha256
 
 BASE = Path(__file__).resolve().parent.parent
 CHANNELS_FILE = BASE / "data" / "channels.json"
 STATUS_FILE = BASE / "data" / "status.json"
 QUALITY_FILE = BASE / "data" / "quality.json"
 OUTPUT_FILE = BASE / "IPTV-CHILE-GENERADOR.m3u"
+MANIFEST_FILE = BASE / "data" / "pipeline_manifest.json"
 
 
 def load_json(path, default):
@@ -120,11 +121,25 @@ def main():
 
     atomic_write_text(OUTPUT_FILE, "\n".join(lines) + "\n")
 
+    manifest = {
+        "schema_version": 1,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "channels_sha256": current_channels_sha,
+        "status_sha256": file_sha256(STATUS_FILE),
+        "quality_sha256": file_sha256(QUALITY_FILE),
+        "m3u_sha256": file_sha256(OUTPUT_FILE),
+        "channels": len(channels),
+        "generated_channels": generated,
+        "output_urls": len(emitted),
+        "quality_playback_ok": sum(1 for item in quality.get("results", []) if item.get("playback_ok")),
+    }
+    atomic_write_json(MANIFEST_FILE, manifest)
+
     print("=" * 60)
     print("IPTV-CHILE-GENERADOR - GENERATE")
     print("=" * 60)
     print(f"Canales analizados: {len(channels)}")
     print(f"Canales generados:  {generated}")
     print(f"URLs únicas M3U:    {len(emitted)}")
-    print(f"Archivo:            {OUTPUT_FILE}")
+    print(f"Manifest:           {MANIFEST_FILE}")
     print("OK: salida independiente, deduplicada y consistente con sus etapas.")
