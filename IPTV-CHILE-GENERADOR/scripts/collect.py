@@ -258,7 +258,9 @@ def main():
             unique_sources.append(source)
         channel["sources"] = unique_sources
 
-    channels = [channel for channel in channels if channel.get("sources")]
+    # No eliminamos canales sin candidatos: el catálogo sigue siendo la
+    # fuente de verdad completa. Esos canales quedan en cuarentena operativa
+    # hasta que alguna fuente aporte un endpoint verificable.
 
     if duplicate_assignments:
         print(
