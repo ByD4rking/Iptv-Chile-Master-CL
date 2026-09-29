@@ -15,8 +15,10 @@ permissions:
   contents: write
 
 concurrency:
-  group: iptv-chile-generador
-  cancel-in-progress: false
+  # Solo una ejecución efectiva del generador por rama.
+  # Si entra un cambio nuevo, se cancela la ejecución anterior.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   generar:
@@ -108,6 +110,47 @@ jobs:
           fi
 
           git commit -m "Actualizar IPTV-CHILE-GENERADOR"
-          git fetch origin main
-          git rebase origin/main
-          git push origin HEAD:main
+
+          # Puede existir un push externo mientras se generaba la lista.
+          # Si main avanzó, no mezclamos artefactos de dos ejecuciones:
+          # abortamos el rebase y regeneramos sobre el main más reciente.
+          for intento in 1 2 3; do
+            git fetch origin main
+            if git rev-parse HEAD = git rev-parse origin/main; then
+              echo "main ya contiene exactamente este estado."
+              exit 0
+            fi
+
+            if git rebase origin/main; then
+              git push origin HEAD:main
+              exit 0
+            fi
+
+            echo "REBASE CONFLICTIVO: la base cambió durante la generación (intento $intento)."
+            git rebase --abort || true
+
+            if [ "$intento" -eq 3 ]; then
+              echo "ERROR: main siguió cambiando durante tres intentos de publicación."
+              exit 1
+            fi
+
+            # No mezclamos M3U/JSON generados de dos ejecuciones distintas.
+            git reset --hard origin/main
+            python IPTV-CHILE-GENERADOR/scripts/collect.py
+            python IPTV-CHILE-GENERADOR/scripts/fix_encoding.py
+            python IPTV-CHILE-GENERADOR/scripts/check.py
+            python IPTV-CHILE-GENERADOR/scripts/quality.py
+            python IPTV-CHILE-GENERADOR/scripts/generate.py
+            python IPTV-CHILE-GENERADOR/scripts/selftest.py
+
+            sha256sum -c /tmp/generador-guard/maestras.sha256
+            sha256sum -c /tmp/generador-guard/pluto.sha256
+            sha256sum -c /tmp/generador-guard/scripts.sha256
+
+            git add IPTV-CHILE-GENERADOR
+            if git diff --cached --quiet; then
+              echo "La regeneración sobre main no produjo cambios nuevos."
+              exit 0
+            fi
+            git commit -m "Actualizar IPTV-CHILE-GENERADOR"
+          done
