@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-import time
 from pathlib import Path
 
 from channels import GROUPS, normalize_channel
@@ -402,7 +401,6 @@ def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[d
         if old_name and current_names.get(old_name, 0) == 1:
             continue
 
-        old["preserved_previous"] = True
         old["preserved_previous"] = True
         channels.append(old)
         current_ids.add(old_id)
