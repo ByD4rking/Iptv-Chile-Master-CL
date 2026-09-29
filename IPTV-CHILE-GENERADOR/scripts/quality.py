@@ -11,6 +11,7 @@ from atomic import atomic_write_json, file_sha256
 BASE = Path(__file__).resolve().parent.parent
 CHANNELS_FILE = BASE / "data" / "channels.json"
 QUALITY_FILE = BASE / "data" / "quality.json"
+ENDPOINT_HEALTH_FILE = BASE / "data" / "endpoint_health.json"
 
 TIMEOUT = 10
 WORKERS = 15
@@ -304,6 +305,7 @@ def inspect_url(item):
         "channel_name": channel.get("name", ""),
         "url": url,
         "source": source.get("source", ""),
+        "source_priority": int(source.get("priority") or 0),
         "width": None,
         "height": None,
         "resolution": None,
@@ -403,6 +405,52 @@ def main():
                     f"HLS: {hls} | masters con variantes: {fallback}"
                 )
 
+    endpoint_health = {}
+    if ENDPOINT_HEALTH_FILE.exists():
+        try:
+            with ENDPOINT_HEALTH_FILE.open("r", encoding="utf-8-sig") as f:
+                endpoint_health = json.load(f)
+        except Exception:
+            endpoint_health = {}
+
+    from datetime import datetime, timezone
+    checked_at = datetime.now(timezone.utc).isoformat()
+    for result in results:
+        url = result["url"]
+        state = endpoint_health.setdefault(url, {
+            "channel_id": result["channel_id"],
+            "channel_name": result["channel_name"],
+            "source": result["source"],
+            "priority": result["source_priority"],
+            "checks": 0,
+            "successes": 0,
+            "failures": 0,
+            "consecutive_failures": 0,
+            "last_success": None,
+            "last_failure": None,
+            "last_error": None,
+        })
+        state.update({
+            "channel_id": result["channel_id"],
+            "channel_name": result["channel_name"],
+            "source": result["source"],
+            "priority": result["source_priority"],
+            "checks": int(state.get("checks") or 0) + 1,
+        })
+        if result["playback_ok"]:
+            state["successes"] = int(state.get("successes") or 0) + 1
+            state["consecutive_failures"] = 0
+            state["last_success"] = checked_at
+            state["last_error"] = None
+        else:
+            state["failures"] = int(state.get("failures") or 0) + 1
+            state["consecutive_failures"] = int(state.get("consecutive_failures") or 0) + 1
+            state["last_failure"] = checked_at
+            state["last_error"] = result.get("error") or result.get("playback_error")
+        result["endpoint_consecutive_failures"] = state["consecutive_failures"]
+
+    atomic_write_json(ENDPOINT_HEALTH_FILE, endpoint_health)
+
     channels_quality = {}
     for result in results:
         channel = channels_quality.setdefault(
@@ -423,7 +471,7 @@ def main():
         )
 
     output = {
-        "schema_version": 2,
+        "schema_version": 3,
         "channels_sha256": channels_sha256,
         "total_channels": len(channels),
         "total_urls": total,
@@ -434,6 +482,8 @@ def main():
             if result["playback_checked"] and not result["playback_ok"]
         ),
         "hls_checked": sum(1 for result in results if result["playback_type"] == "hls"),
+        "endpoint_candidates": total,
+        "channels_with_multiple_candidates": sum(1 for x in channels_quality.values() if len(x["sources"]) > 1),
         "hls_fallback_successes": sum(
             1 for result in results if (result.get("variant_index") or 0) > 1
         ),
