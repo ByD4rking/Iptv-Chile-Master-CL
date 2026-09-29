@@ -18,7 +18,7 @@ concurrency:
   # Solo una ejecución efectiva del generador por rama.
   # Si entra un cambio nuevo, se cancela la ejecución anterior.
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   generar:
