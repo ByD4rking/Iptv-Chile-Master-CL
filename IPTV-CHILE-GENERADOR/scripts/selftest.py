@@ -123,6 +123,43 @@ def main():
     extinf = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
     assert extinf == len(output_urls), f"EXTINF ({extinf}) != URLs ({len(output_urls)})."
 
+    # La salida debe seleccionar como máximo un endpoint por canal y el
+    # tvg-id debe corresponder exactamente al catálogo propio.
+    blocks = re.findall(
+        r'^#EXTINF:[^\n]*\btvg-id="([^"]+)"[^\n]*\n(https?://[^\n]+)
+    temp_files += list(BASE.glob(".*.tmp"))
+    assert not temp_files, f"Quedaron temporales atómicos: {temp_files}"
+
+    print(
+        f"SELFTEST OK: {len(channels)} canales, {len(urls)} candidatos, {len(output_urls)} URLs finales; "
+        "pipeline completo con snapshots y manifest consistente."
+    )
+
+
+if __name__ == "__main__":
+    main()
+,
+        text,
+        re.MULTILINE,
+    )
+    assert len(blocks) == len(output_urls), "Hay una entrada M3U sin tvg-id o sin URL asociada."
+    selected_ids = [channel_id for channel_id, _ in blocks]
+    assert len(selected_ids) == len(set(selected_ids)), (
+        "La M3U contiene más de un endpoint seleccionado para el mismo canal."
+    )
+    assert set(selected_ids) <= set(catalog_ids), (
+        "La M3U contiene un tvg-id que no pertenece al catálogo."
+    )
+    selected_pairs = {(channel_id, url) for channel_id, url in blocks}
+    candidate_pairs = {
+        (channel.get("id"), source.get("url"))
+        for channel in channels
+        for source in channel.get("sources", [])
+    }
+    assert selected_pairs <= candidate_pairs, (
+        "La M3U seleccionó una combinación canal/endpoint que no existe en channels.json."
+    )
+
     temp_files = list((BASE / "data").glob(".*.tmp"))
     temp_files += list(BASE.glob(".*.tmp"))
     assert not temp_files, f"Quedaron temporales atómicos: {temp_files}"
