@@ -50,9 +50,10 @@ def _decode_url(value: str) -> str:
 
 def _allowed_upstream(url: str) -> bool:
     parsed = urlparse(url)
+    host = (parsed.hostname or "").lower()
     return (
         parsed.scheme == "https"
-        and (parsed.hostname or "").lower().endswith(".pluto.tv")
+        and (host == "pluto.tv" or host.endswith(".pluto.tv"))
         and parsed.path.endswith((".m3u8", ".ts", ".m4s", ".mp4", ".aac", ".mp3"))
     )
 
@@ -83,7 +84,6 @@ def _fetch(url: str) -> requests.Response:
         stream=False,
     )
     if response.status_code in (401, 403, 404, 410, 429, 500, 502, 503, 504):
-        client.boot()
         raise requests.HTTPError(
             f"upstream transient/auth failure: {response.status_code}",
             response=response,
@@ -202,6 +202,7 @@ def pluto_master(channel_id: str):
     last_error: Exception | None = None
     for _ in range(3):
         try:
+            client.ensure_session()
             upstream = client.build_stream_url(channel_id)
             response = _fetch(upstream)
             text = _rewrite_playlist(response.text, upstream, channel_id)
