@@ -35,6 +35,10 @@ def main():
     manifest = load(MANIFEST)
 
     channels_sha = file_sha256(CHANNELS)
+    status_sha = file_sha256(STATUS)
+    quality_sha = file_sha256(QUALITY)
+    m3u_sha = file_sha256(OUTPUT)
+
     assert status.get("channels_sha256") == channels_sha, (
         "status.json no corresponde al channels.json actual."
     )
