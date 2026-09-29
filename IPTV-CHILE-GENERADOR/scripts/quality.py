@@ -6,6 +6,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
+from atomic import atomic_write_json, file_sha256
+
 BASE = Path(__file__).resolve().parent.parent
 CHANNELS_FILE = BASE / "data" / "channels.json"
 QUALITY_FILE = BASE / "data" / "quality.json"
@@ -19,7 +21,6 @@ SEGMENT_LIMIT = 64 * 1024
 def detect_resolution(text):
     if not text:
         return None
-
     matches = re.findall(r'RESOLUTION=(\d+)x(\d+)', text, re.IGNORECASE)
     if matches:
         width, height = max(
@@ -27,39 +28,36 @@ def detect_resolution(text):
             key=lambda item: (item[1], item[0]),
         )
         return {"width": width, "height": height, "resolution": f"{width}x{height}"}
-
     match = re.search(r'(\d{3,4})x(\d{3,4})', text, re.IGNORECASE)
     if match:
         width, height = int(match.group(1)), int(match.group(2))
         return {"width": width, "height": height, "resolution": f"{width}x{height}"}
-
     match = re.search(r'(\d{3,4})p\b', text, re.IGNORECASE)
     if match:
         height = int(match.group(1))
         return {"width": None, "height": height, "resolution": f"{height}p"}
-
     return None
 
 
 def detect_bandwidth(text):
     if not text:
         return None
-
     values = []
     for pattern in (r'BANDWIDTH=(\d+)', r'AVERAGE-BANDWIDTH=(\d+)'):
-        values.extend(int(match.group(1)) for match in re.finditer(pattern, text, re.IGNORECASE))
-
+        values.extend(
+            int(match.group(1))
+            for match in re.finditer(pattern, text, re.IGNORECASE)
+        )
     return max(values) if values else None
 
 
 def fetch(url, accept="*/*", limit=READ_LIMIT, extra_headers=None):
     headers = {
-        "User-Agent": "IPTV-CHILE-GENERADOR/QUALITY-2.0",
+        "User-Agent": "IPTV-CHILE-GENERADOR/QUALITY-4.0",
         "Accept": accept,
     }
     if extra_headers:
         headers.update(extra_headers)
-
     request = Request(url, headers=headers)
     with urlopen(request, timeout=TIMEOUT) as response:
         content = response.read(limit)
@@ -82,12 +80,12 @@ def parse_master_playlist(text, base_url):
     variants = []
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     for index, line in enumerate(lines):
-        if not line.startswith("#EXT-X-STREAM-INF:"):
+        if not line.upper().startswith("#EXT-X-STREAM-INF:"):
             continue
         attrs = dict(
             (key.upper(), value)
             for key, value in re.findall(
-                r'([A-Z0-9-]+)=(".*?"|[^,]+)',
+                r'([A-Z0-9-]+)=(\".*?\"|[^,]+)',
                 line.split(":", 1)[1],
                 re.IGNORECASE,
             )
@@ -103,122 +101,190 @@ def parse_master_playlist(text, base_url):
             width, height = int(match.group(1)), int(match.group(2))
 
         bandwidth = int(re.sub(r"\D", "", attrs.get("BANDWIDTH", "0")) or 0)
-        variants.append({
-            "url": urljoin(base_url, uri),
-            "width": width or None,
-            "height": height or None,
-            "bandwidth": bandwidth or None,
-        })
+        variants.append(
+            {
+                "url": urljoin(base_url, uri),
+                "width": width or None,
+                "height": height or None,
+                "bandwidth": bandwidth or None,
+            }
+        )
 
-    variants.sort(key=lambda item: (item["height"] or 0, item["bandwidth"] or 0), reverse=True)
+    # Highest quality first; validation will fall through to the next variant.
+    variants.sort(
+        key=lambda item: (item["height"] or 0, item["bandwidth"] or 0),
+        reverse=True,
+    )
     return variants
 
 
 def first_media_segment(text, base_url):
-    for raw in text.splitlines():
-        line = raw.strip()
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
         if not line:
             continue
-
-        # LL-HLS puede entregar partes sin una línea de segmento normal.
         if line.startswith("#EXT-X-PART:") or line.startswith("#EXT-X-PRELOAD-HINT:"):
             match = re.search(r'URI="([^"]+)"', line, re.IGNORECASE)
             if match:
                 return urljoin(base_url, match.group(1))
-
         if line.startswith("#"):
             continue
-
         return urljoin(base_url, line)
-
     return None
 
 
-def validate_hls(url, initial_text, initial_content_type):
-    playlist_url = url
-    playlist_text = initial_text
-    playlist_type = initial_content_type
-    resolution = detect_resolution(playlist_text)
-    bandwidth = detect_bandwidth(playlist_text)
+def valid_direct_payload(content, content_type):
+    if not content:
+        return False, "Respuesta vacía."
 
-    variants = parse_master_playlist(playlist_text, playlist_url)
-    if variants:
-        selected = variants[0]
-        playlist_url = selected["url"]
-        status, playlist_type, content, final_url = fetch(
-            playlist_url,
-            accept="application/vnd.apple.mpegurl, application/x-mpegURL, */*",
-        )
-        if status < 200 or status >= 400:
-            return {
-                "playback_checked": True,
-                "playback_ok": False,
-                "playback_type": "hls",
-                "playback_error": f"HTTP {status} al cargar variante HLS",
-                "width": selected["width"],
-                "height": selected["height"],
-                "resolution": (
-                    f'{selected["width"]}x{selected["height"]}'
-                    if selected["width"] and selected["height"]
-                    else None
-                ),
-                "bitrate": selected["bandwidth"],
-            }
-        playlist_text = content.decode("utf-8", errors="ignore")
-        playlist_url = final_url
-        resolution = resolution or detect_resolution(playlist_text)
-        bandwidth = bandwidth or detect_bandwidth(playlist_text)
+    lowered = (content_type or "").lower()
+    sample = content[:4096].lstrip().lower()
 
-    if "#EXTM3U" not in playlist_text:
-        return {
-            "playback_checked": True,
-            "playback_ok": False,
-            "playback_type": "hls",
-            "playback_error": "La respuesta HLS no es una playlist M3U válida.",
-        }
+    if "text/html" in lowered or sample.startswith((b"<!doctype html", b"<html", b"<head")):
+        return False, "El endpoint respondió HTML."
 
-    segment_url = first_media_segment(playlist_text, playlist_url)
-    if not segment_url:
-        return {
-            "playback_checked": True,
-            "playback_ok": False,
-            "playback_type": "hls",
-            "playback_error": "Playlist HLS válida pero sin segmento reproducible.",
-        }
+    if "application/json" in lowered or sample.startswith((b"{", b"[")):
+        return False, "El endpoint respondió JSON, no un stream."
 
-    try:
+    # Common media signatures: MPEG-TS, fMP4/ISO-BMFF, MP3, ID3, AAC/ADTS, Ogg, WebM.
+    signatures = (
+        len(content) >= 3 and content[:3] == b"ID3",
+        len(content) >= 8 and content[4:8] == b"ftyp",
+        len(content) >= 3 and content[:3] == b"Ogg",
+        len(content) >= 4 and content[:4] == b"\x1a\x45\xdf\xa3",
+        len(content) >= 1 and content[0] == 0x47,
+        len(content) >= 2 and content[:2] in (b"\xff\xfb", b"\xff\xf3", b"\xff\xf2"),
+        len(content) >= 2 and content[0] == 0xFF and (content[1] & 0xF6) == 0xF0,
+    )
+    if any(signatures):
+        return True, None
+
+    media_types = (
+        "video/",
+        "audio/",
+        "application/octet-stream",
+        "application/mp2t",
+        "application/fmp4",
+    )
+    if any(token in lowered for token in media_types) and len(content) >= 188:
+        return True, None
+
+    return False, "No se detectó una firma/formato de medio reproducible."
+
+
+def validate_hls(url, initial_text, initial_content_type, max_depth=2):
+    def attempt(playlist_url, playlist_text, playlist_type, depth):
+        if "#EXTM3U" not in playlist_text[:4096]:
+            return None, "La respuesta no es una playlist HLS M3U."
+
+        variants = parse_master_playlist(playlist_text, playlist_url)
+        if variants and depth < max_depth:
+            failures = []
+            for index, variant in enumerate(variants, 1):
+                try:
+                    status, content_type, content, final_url = fetch(
+                        variant["url"],
+                        accept="application/vnd.apple.mpegurl, application/x-mpegURL, */*",
+                    )
+                    if not 200 <= status < 400:
+                        failures.append(f"variante {index}: HTTP {status}")
+                        continue
+                    child = content.decode("utf-8", errors="ignore")
+                    if parse_master_playlist(child, final_url):
+                        nested, error = attempt(final_url, child, content_type, depth + 1)
+                        if nested:
+                            nested["variant_index"] = index
+                            nested["variant_count"] = len(variants)
+                            return nested, None
+                        failures.append(f"variante {index}: {error}")
+                        continue
+
+                    segment_url = first_media_segment(child, final_url)
+                    if not segment_url:
+                        failures.append(f"variante {index}: sin segmento")
+                        continue
+                    seg_status, seg_type, segment, _ = fetch(
+                        segment_url,
+                        accept="video/*,audio/*,application/octet-stream,*/*",
+                        limit=SEGMENT_LIMIT,
+                        extra_headers={"Range": "bytes=0-65535"},
+                    )
+                    if 200 <= seg_status < 400 and segment:
+                        valid, error = valid_direct_payload(segment, seg_type)
+                        if valid:
+                            return (
+                                {
+                                    "playback_checked": True,
+                                    "playback_ok": True,
+                                    "playback_type": "hls",
+                                    "playback_error": None,
+                                    "width": variant["width"],
+                                    "height": variant["height"],
+                                    "resolution": (
+                                        f'{variant["width"]}x{variant["height"]}'
+                                        if variant["width"] and variant["height"]
+                                        else None
+                                    ),
+                                    "bitrate": variant["bandwidth"],
+                                    "segment_bytes": len(segment),
+                                    "variant_index": index,
+                                    "variant_count": len(variants),
+                                    "validated_url": final_url,
+                                },
+                                None,
+                            )
+                        failures.append(f"variante {index}: segmento inválido: {error}")
+                    else:
+                        failures.append(f"variante {index}: segmento HTTP {seg_status}")
+                except Exception as error:
+                    failures.append(f"variante {index}: {error}")
+
+            return None, "Todas las variantes HLS fallaron: " + "; ".join(failures[:8])
+
+        segment_url = first_media_segment(playlist_text, playlist_url)
+        if not segment_url:
+            return None, "Playlist HLS válida pero sin segmento reproducible."
+
         status, content_type, segment, _ = fetch(
             segment_url,
             accept="video/*,audio/*,application/octet-stream,*/*",
             limit=SEGMENT_LIMIT,
             extra_headers={"Range": "bytes=0-65535"},
         )
-        if status < 200 or status >= 400 or not segment:
-            return {
-                "playback_checked": True,
-                "playback_ok": False,
-                "playback_type": "hls",
-                "playback_error": f"Segmento HLS inaccesible (HTTP {status}).",
-            }
+        if not 200 <= status < 400 or not segment:
+            return None, f"Segmento HLS inaccesible (HTTP {status})."
 
-        return {
-            "playback_checked": True,
-            "playback_ok": True,
-            "playback_type": "hls",
-            "playback_error": None,
-            "width": resolution["width"] if resolution else None,
-            "height": resolution["height"] if resolution else None,
-            "resolution": resolution["resolution"] if resolution else None,
-            "bitrate": bandwidth,
-            "segment_bytes": len(segment),
-        }
-    except Exception as error:
-        return {
-            "playback_checked": True,
-            "playback_ok": False,
-            "playback_type": "hls",
-            "playback_error": f"Segmento HLS: {error}",
-        }
+        valid, error = valid_direct_payload(segment, content_type)
+        if not valid:
+            return None, f"Segmento HLS inválido: {error}"
+
+        resolution = detect_resolution(playlist_text)
+        bandwidth = detect_bandwidth(playlist_text)
+        return (
+            {
+                "playback_checked": True,
+                "playback_ok": True,
+                "playback_type": "hls",
+                "playback_error": None,
+                "width": resolution["width"] if resolution else None,
+                "height": resolution["height"] if resolution else None,
+                "resolution": resolution["resolution"] if resolution else None,
+                "bitrate": bandwidth,
+                "segment_bytes": len(segment),
+                "validated_url": playlist_url,
+            },
+            None,
+        )
+
+    result, error = attempt(url, initial_text, initial_content_type, 0)
+    if result:
+        return result
+    return {
+        "playback_checked": True,
+        "playback_ok": False,
+        "playback_type": "hls",
+        "playback_error": error or "Validación HLS fallida.",
+    }
 
 
 def inspect_url(item):
@@ -241,6 +307,9 @@ def inspect_url(item):
         "playback_ok": False,
         "playback_type": None,
         "playback_error": None,
+        "validated_url": None,
+        "variant_index": None,
+        "variant_count": None,
         "error": None,
     }
 
@@ -250,24 +319,21 @@ def inspect_url(item):
 
     try:
         status, content_type, content, final_url = fetch(url)
-        if status < 200 or status >= 400:
+        if not 200 <= status < 400:
             result["error"] = f"HTTP {status}"
             return result
 
         text = content.decode("utf-8", errors="ignore")
         if is_hls(text, content_type):
             hls = validate_hls(final_url, text, content_type)
-            result.update({key: value for key, value in hls.items() if value is not None})
+            result.update(hls)
         else:
             result["playback_checked"] = True
             result["playback_type"] = "direct"
-            lowered = text[:512].lower()
-            if not content or "text/html" in (content_type or "").lower() or "<html" in lowered:
-                result["playback_ok"] = False
-                result["playback_error"] = "La URL respondió contenido no reproducible."
-            else:
-                result["playback_ok"] = True
-                result["playback_error"] = None
+            valid, error = valid_direct_payload(content, content_type)
+            result["playback_ok"] = valid
+            result["playback_error"] = error
+            result["validated_url"] = final_url
 
             resolution = detect_resolution(text)
             bitrate = detect_bandwidth(text)
@@ -297,6 +363,7 @@ def main():
     if not CHANNELS_FILE.exists():
         raise SystemExit("No existe channels.json")
 
+    channels_sha256 = file_sha256(CHANNELS_FILE)
     with CHANNELS_FILE.open("r", encoding="utf-8") as f:
         channels = json.load(f)
 
@@ -323,7 +390,11 @@ def main():
             if completed == 1 or completed % 100 == 0 or completed == total:
                 ok = sum(1 for x in results if x["playback_ok"])
                 hls = sum(1 for x in results if x["playback_type"] == "hls")
-                print(f"[{completed}/{total}] reproducibles: {ok} | HLS: {hls}")
+                fallback = sum(1 for x in results if (x.get("variant_count") or 0) > 1)
+                print(
+                    f"[{completed}/{total}] reproducibles: {ok} | "
+                    f"HLS: {hls} | masters con variantes: {fallback}"
+                )
 
     channels_quality = {}
     for result in results:
@@ -338,38 +409,44 @@ def main():
         channel["best"] = (
             max(
                 available,
-                key=lambda x: (
-                    x["height"] or 0,
-                    x["bitrate"] or 0,
-                ),
+                key=lambda x: (x["height"] or 0, x["bitrate"] or 0),
             )
             if available
             else None
         )
 
     output = {
+        "schema_version": 2,
+        "channels_sha256": channels_sha256,
         "total_channels": len(channels),
         "total_urls": total,
         "detected": sum(1 for result in results if result["detected"]),
         "playback_ok": sum(1 for result in results if result["playback_ok"]),
-        "playback_failed": sum(1 for result in results if result["playback_checked"] and not result["playback_ok"]),
+        "playback_failed": sum(
+            1 for result in results
+            if result["playback_checked"] and not result["playback_ok"]
+        ),
         "hls_checked": sum(1 for result in results if result["playback_type"] == "hls"),
+        "hls_fallback_successes": sum(
+            1 for result in results if (result.get("variant_index") or 0) > 1
+        ),
         "results": results,
         "channels": channels_quality,
     }
 
-    with QUALITY_FILE.open("w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+    atomic_write_json(QUALITY_FILE, output)
 
     print("=" * 60)
     print("QUALITY + PLAYBACK SCANNER TERMINADO")
     print("=" * 60)
-    print(f"URLs analizadas:       {total}")
-    print(f"Reproducibles:         {output['playback_ok']}")
-    print(f"Fallos de reproducción:{output['playback_failed']}")
-    print(f"HLS comprobados:       {output['hls_checked']}")
-    print(f"Resoluciones detectadas: {output['detected']}")
-    print(f"Archivo:               {QUALITY_FILE}")
+    print(f"URLs analizadas:          {total}")
+    print(f"Reproducibles:            {output['playback_ok']}")
+    print(f"Fallos de reproducción:   {output['playback_failed']}")
+    print(f"HLS comprobados:          {output['hls_checked']}")
+    print(f"Fallback HLS exitosos:    {output['hls_fallback_successes']}")
+    print(f"Resoluciones detectadas:  {output['detected']}")
+    print(f"Snapshot channels.json:   {channels_sha256}")
+    print(f"Archivo:                  {QUALITY_FILE}")
 
 
 if __name__ == "__main__":

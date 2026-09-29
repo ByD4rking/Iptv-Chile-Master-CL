@@ -6,6 +6,8 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from atomic import atomic_write_json, file_sha256
+
 BASE = Path(__file__).resolve().parent.parent
 CHANNELS_FILE = BASE / "data" / "channels.json"
 STATUS_FILE = BASE / "data" / "status.json"
@@ -23,13 +25,6 @@ def load_json(path, default):
             return json.load(f)
     except Exception:
         return default
-
-
-def save_json(path, data):
-    path.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
 
 
 def check_url(item):
@@ -53,18 +48,17 @@ def check_url(item):
         return result
 
     start = time.perf_counter()
-
     try:
         request = Request(
             url,
             headers={
-                "User-Agent": "IPTV-CHILE-GENERADOR/CHECK-3.0",
+                "User-Agent": "IPTV-CHILE-GENERADOR/CHECK-4.0",
                 "Accept": "*/*",
             },
         )
         with urlopen(request, timeout=TIMEOUT) as response:
             result["status_code"] = response.status
-            response.read(1024)
+            response.read(2048)
             result["response_time_ms"] = round(
                 (time.perf_counter() - start) * 1000, 2
             )
@@ -81,6 +75,10 @@ def check_url(item):
 
 
 def main():
+    if not CHANNELS_FILE.exists():
+        raise SystemExit("No existe channels.json")
+
+    channels_sha256 = file_sha256(CHANNELS_FILE)
     channels = load_json(CHANNELS_FILE, [])
     history = load_json(HISTORY_FILE, {})
     tasks = [
@@ -134,22 +132,25 @@ def main():
 
     online = sum(1 for result in results if result["online"])
 
-    save_json(
-        STATUS_FILE,
-        {
-            "checked_at": checked_at,
-            "total": len(results),
-            "online": online,
-            "offline": len(results) - online,
-            "results": results,
-        },
-    )
-    save_json(HISTORY_FILE, history)
+    status = {
+        "schema_version": 2,
+        "checked_at": checked_at,
+        "channels_sha256": channels_sha256,
+        "total": len(results),
+        "online": online,
+        "offline": len(results) - online,
+        "results": results,
+    }
+
+    # Both artifacts are committed only after the complete scan succeeds.
+    atomic_write_json(STATUS_FILE, status)
+    atomic_write_json(HISTORY_FILE, history)
 
     print(f"URLs comprobadas: {len(results)}")
     print(f"Online: {online}")
     print(f"Offline: {len(results) - online}")
-    print(f"Historial limitado a: {MAX_HISTORY} URLs")
+    print(f"Historial limitado a: {MAX_HISTORY}")
+    print(f"Snapshot channels.json: {channels_sha256}")
 
 
 if __name__ == "__main__":

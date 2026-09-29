@@ -2,26 +2,49 @@ import json
 import re
 from pathlib import Path
 
+from atomic import file_sha256
+
 BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
 CHANNELS = BASE / "data" / "channels.json"
 OUTPUT = BASE / "IPTV-CHILE-GENERADOR.m3u"
 QUALITY = BASE / "data" / "quality.json"
+STATUS = BASE / "data" / "status.json"
 SOURCE_HEALTH = BASE / "data" / "source_health.json"
 
+
 def load(path):
-    with path.open("r", encoding="utf-8-sig") as f: return json.load(f)
+    with path.open("r", encoding="utf-8-sig") as f:
+        return json.load(f)
+
 
 def main():
     config = load(CONFIG)
     sources = config.get("sources", [])
     assert sources, "No hay fuentes configuradas."
-    assert all(str(x.get("url", "")).startswith(("http://", "https://")) for x in sources), "Existe una fuente no HTTP/HTTPS."
+    assert all(
+        str(x.get("url", "")).startswith(("http://", "https://"))
+        for x in sources
+    ), "Existe una fuente no HTTP/HTTPS."
+
     channels = load(CHANNELS)
     quality = load(QUALITY)
+    status = load(STATUS)
     source_health = load(SOURCE_HEALTH)
+
+    channels_sha = file_sha256(CHANNELS)
+    assert status.get("channels_sha256") == channels_sha, (
+        "status.json no corresponde al channels.json actual."
+    )
+    assert quality.get("channels_sha256") == channels_sha, (
+        "quality.json no corresponde al channels.json actual."
+    )
+
     configured_names = {str(x.get("name") or "").strip() for x in sources}
-    assert configured_names <= set(source_health), "Falta historial de salud para una fuente configurada."
+    assert configured_names <= set(source_health), (
+        "Falta historial de salud para una fuente configurada."
+    )
+
     urls = []
     ids = []
     for channel in channels:
@@ -41,20 +64,51 @@ def main():
     assert len(ids) == len(set(ids)), "channels.json contiene IDs de canal duplicados."
     assert len(urls) == len(set(urls)), "channels.json contiene una URL duplicada."
     assert OUTPUT.exists() and OUTPUT.stat().st_size > 0, "No existe una M3U generada."
+
     text = OUTPUT.read_text(encoding="utf-8-sig")
     assert text.startswith("#EXTM3U"), "La salida no comienza con #EXTM3U."
-    output_urls = [line.strip() for line in text.splitlines() if line.startswith(("http://", "https://"))]
-    quality_by_url = {str(x.get("url") or "").strip(): x for x in quality.get("results", [])}
+    assert f"# IPTV-CHILE-GENERADOR-CHANNELS-SHA256: {channels_sha}" in text, (
+        "La M3U no pertenece al snapshot actual de channels.json."
+    )
+
+    output_urls = [
+        line.strip()
+        for line in text.splitlines()
+        if line.startswith(("http://", "https://"))
+    ]
+    quality_by_url = {
+        str(x.get("url") or "").strip(): x
+        for x in quality.get("results", [])
+    }
+
     for url in output_urls:
         item = quality_by_url.get(url)
         assert item, f"La M3U contiene una URL sin resultado de calidad: {url}"
-        assert item.get("playback_checked") and item.get("playback_ok"), f"La M3U contiene una URL sin reproducción verificada: {url}"
+        assert item.get("playback_checked") and item.get("playback_ok"), (
+            f"La M3U contiene una URL sin reproducción verificada: {url}"
+        )
+
     assert output_urls, "La M3U no contiene URLs."
     assert len(output_urls) == len(set(output_urls)), "La M3U contiene URLs duplicadas."
-    assert set(output_urls) <= set(urls), "La M3U contiene una URL ajena a las fuentes independientes."
+    assert set(output_urls) <= set(urls), (
+        "La M3U contiene una URL ajena a las fuentes independientes."
+    )
     extinf = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
     assert extinf == len(output_urls), f"EXTINF ({extinf}) != URLs ({len(output_urls)})."
-    assert quality.get("total_urls") == len(urls), "quality.json no corresponde al total de URLs de channels.json."
-    print(f"SELFTEST OK: {len(channels)} canales, {len(output_urls)} URLs finales; reproducción verificada.")
 
-if __name__ == "__main__": main()
+    assert quality.get("total_urls") == len(urls), (
+        "quality.json no corresponde al total de URLs de channels.json."
+    )
+
+    temp_files = list((BASE / "data").glob(".*.tmp"))
+    temp_files += list(BASE.glob(".*.tmp"))
+    assert not temp_files, f"Quedaron temporales atómicos: {temp_files}"
+
+    print(
+        f"SELFTEST OK: {len(channels)} canales, {len(output_urls)} URLs finales; "
+        "fallback HLS y consistencia entre etapas verificables."
+    )
+
+
+if __name__ == "__main__":
+    main()

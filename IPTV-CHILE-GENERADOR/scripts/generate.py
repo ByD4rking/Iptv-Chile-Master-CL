@@ -2,6 +2,8 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+from atomic import atomic_write_text, file_sha256
+
 BASE = Path(__file__).resolve().parent.parent
 CHANNELS_FILE = BASE / "data" / "channels.json"
 STATUS_FILE = BASE / "data" / "status.json"
@@ -38,12 +40,21 @@ def main():
     status = load_json(STATUS_FILE, {})
     quality = load_json(QUALITY_FILE, {})
 
+    current_channels_sha = file_sha256(CHANNELS_FILE)
+    if status.get("channels_sha256") != current_channels_sha:
+        raise SystemExit(
+            "INCONSISTENCIA: status.json no corresponde al channels.json actual."
+        )
+    if quality.get("channels_sha256") != current_channels_sha:
+        raise SystemExit(
+            "INCONSISTENCIA: quality.json no corresponde al channels.json actual."
+        )
+
     online = {
         clean(item.get("url")): item
         for item in status.get("results", [])
         if item.get("online") and clean(item.get("url"))
     }
-
     quality_by_url = {
         clean(item.get("url")): item
         for item in quality.get("results", [])
@@ -53,6 +64,7 @@ def main():
     lines = [
         "#EXTM3U",
         f'# IPTV-CHILE-GENERADOR | {datetime.now(timezone.utc).date().isoformat()}',
+        f"# IPTV-CHILE-GENERADOR-CHANNELS-SHA256: {current_channels_sha}",
     ]
 
     emitted = set()
@@ -64,26 +76,21 @@ def main():
         logo = clean(channel.get("logo"))
 
         candidates = []
-
         for source in channel.get("sources", []):
             url = clean(source.get("url"))
             if not url or url not in online or url in emitted:
                 continue
 
-            quality = quality_by_url.get(url)
-            if not quality:
+            quality_item = quality_by_url.get(url)
+            if not quality_item:
                 continue
-
-            # Una URL debe haber pasado la comprobación de reproducción
-            # antes de poder entrar en la M3U final.
-            if not quality.get("playback_checked") or not quality.get("playback_ok"):
+            if not quality_item.get("playback_checked") or not quality_item.get("playback_ok"):
                 continue
 
             priority = int(source.get("priority") or 0)
-
             candidates.append(
                 (
-                    quality_key(quality, online[url]),
+                    quality_key(quality_item, online[url]),
                     priority,
                     url,
                 )
@@ -103,21 +110,15 @@ def main():
             attrs.append(f'tvg-logo="{logo}"')
         attrs.append(f'group-title="{group}"')
 
-        lines.append(
-            "#EXTINF:-1 "
-            + " ".join(attrs)
-            + ","
-            + name
-        )
+        lines.append("#EXTINF:-1 " + " ".join(attrs) + "," + name)
         lines.append(url)
-
         emitted.add(url)
         generated += 1
 
-    OUTPUT_FILE.write_text(
-        "\n".join(lines) + "\n",
-        encoding="utf-8",
-    )
+    if not emitted:
+        raise SystemExit("ABORTADO: no hay streams validados para publicar.")
+
+    atomic_write_text(OUTPUT_FILE, "\n".join(lines) + "\n")
 
     print("=" * 60)
     print("IPTV-CHILE-GENERADOR - GENERATE")
@@ -126,8 +127,4 @@ def main():
     print(f"Canales generados:  {generated}")
     print(f"URLs únicas M3U:    {len(emitted)}")
     print(f"Archivo:            {OUTPUT_FILE}")
-    print("OK: salida independiente y deduplicada por URL.")
-
-
-if __name__ == "__main__":
-    main()
+    print("OK: salida independiente, deduplicada y consistente con sus etapas.")
