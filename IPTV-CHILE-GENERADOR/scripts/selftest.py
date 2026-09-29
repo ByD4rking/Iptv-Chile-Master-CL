@@ -64,6 +64,18 @@ def main():
     assert configured_names <= set(source_health), (
         "Falta historial de salud para una fuente configurada."
     )
+    for source in sources:
+        name = str(source.get("name") or "").strip()
+        state = source_health[name]
+        assert str(state.get("url") or "").strip() == str(source.get("url") or "").strip(), (
+            f"Health de fuente {name} apunta a otra URL."
+        )
+        assert int(state.get("checks") or 0) >= 0
+        assert int(state.get("successes") or 0) >= 0
+        assert int(state.get("failures") or 0) >= 0
+        assert int(state.get("successes") or 0) + int(state.get("failures") or 0) == int(
+            state.get("checks") or 0
+        ), f"Health inconsistente para la fuente {name}."
 
     urls = []
     ids = []
