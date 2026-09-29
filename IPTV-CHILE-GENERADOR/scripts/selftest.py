@@ -34,6 +34,7 @@ def main():
     catalog_channels = catalog.get("channels", [])
     assert catalog_channels, "El catalogo propio esta vacio."
     catalog_ids = [str(x.get("id") or "").strip() for x in catalog_channels]
+    assert all(catalog_ids), "El catalogo contiene un canal sin ID."
     assert len(catalog_ids) == len(set(catalog_ids)), "El catalogo propio contiene IDs duplicados."
 
     channels = load(CHANNELS)
@@ -54,7 +55,6 @@ def main():
     assert quality.get("channels_sha256") == channels_sha, (
         "quality.json no corresponde al channels.json actual."
     )
-
     assert manifest.get("channels_sha256") == channels_sha, "Manifest no corresponde a channels.json."
     assert manifest.get("status_sha256") == status_sha, "Manifest no corresponde a status.json."
     assert manifest.get("quality_sha256") == quality_sha, "Manifest no corresponde a quality.json."
@@ -67,6 +67,8 @@ def main():
 
     urls = []
     ids = []
+    candidate_pairs = set()
+
     for channel in channels:
         channel_id = str(channel.get("id") or "").strip()
         assert channel_id, "Canal sin ID."
@@ -79,16 +81,20 @@ def main():
             assert url.startswith(("http://", "https://")), f"URL inválida: {url}"
             assert url not in channel_urls, f"Canal {channel_id} repite la URL: {url}"
             channel_urls.add(url)
+            candidate_pairs.add((channel_id, url))
+
             assert url in endpoint_health, f"Endpoint sin historial: {url}"
             health = endpoint_health[url]
             assert str(health.get("channel_id") or "") == channel_id, (
                 f"Endpoint {url} tiene health asociado al canal equivocado."
             )
-            assert int(health.get("checks") or 0) >= 0
-            assert int(health.get("successes") or 0) >= 0
-            assert int(health.get("failures") or 0) >= 0
-            assert int(health.get("successes") or 0) + int(health.get("failures") or 0) <= int(health.get("checks") or 0), (
-                f"Health inconsistente para {url}."
+
+            checks = int(health.get("checks") or 0)
+            successes = int(health.get("successes") or 0)
+            failures = int(health.get("failures") or 0)
+            assert checks >= 0 and successes >= 0 and failures >= 0
+            assert successes + failures == checks, (
+                f"Health inconsistente para {url}: successes + failures != checks."
             )
             urls.append(url)
 
@@ -96,11 +102,14 @@ def main():
     assert set(ids) <= set(catalog_ids), "channels.json contiene un canal fuera del catalogo propio."
     assert set(catalog_ids) == set(ids), "channels.json perdio o agrego canales respecto del catalogo propio."
     assert len(urls) == len(set(urls)), "channels.json contiene una URL duplicada."
+
     assert quality.get("total_urls") == len(urls), "quality.json no cubre todos los endpoints candidatos."
     assert quality.get("endpoint_candidates") == len(urls), "quality.json no registra todos los candidatos."
-    assert quality.get("channels_with_multiple_candidates", 0) == sum(1 for c in channels if len(c.get("sources", [])) > 1), "Métrica de candidatos múltiples inconsistente."
-    assert OUTPUT.exists() and OUTPUT.stat().st_size > 0, "No existe una M3U generada."
+    assert quality.get("channels_with_multiple_candidates", 0) == sum(
+        1 for c in channels if len(c.get("sources", [])) > 1
+    ), "Métrica de candidatos múltiples inconsistente."
 
+    assert OUTPUT.exists() and OUTPUT.stat().st_size > 0, "No existe una M3U generada."
     text = OUTPUT.read_text(encoding="utf-8-sig")
     assert text.startswith("#EXTM3U"), "La salida no comienza con #EXTM3U."
     assert f"# IPTV-CHILE-GENERADOR-CHANNELS-SHA256: {channels_sha}" in text, (
@@ -126,33 +135,22 @@ def main():
 
     assert output_urls, "La M3U no contiene URLs."
     assert len(output_urls) == len(set(output_urls)), "La M3U contiene URLs duplicadas."
-    channel_urls = set(urls)
-    assert set(output_urls) <= channel_urls, (
+    assert set(output_urls) <= set(urls), (
         "La M3U contiene una URL que no pertenece a los endpoints candidatos."
     )
+
     extinf = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
     assert extinf == len(output_urls), f"EXTINF ({extinf}) != URLs ({len(output_urls)})."
 
-    # La salida debe seleccionar como máximo un endpoint por canal y el
-    # tvg-id debe corresponder exactamente al catálogo propio.
+    # La salida debe seleccionar como máximo un endpoint por canal y cada
+    # combinación canal/endpoint debe existir exactamente entre los candidatos.
     blocks = re.findall(
-        r'^#EXTINF:[^\n]*\btvg-id="([^"]+)"[^\n]*\n(https?://[^\n]+)
-    temp_files += list(BASE.glob(".*.tmp"))
-    assert not temp_files, f"Quedaron temporales atómicos: {temp_files}"
-
-    print(
-        f"SELFTEST OK: {len(channels)} canales, {len(urls)} candidatos, {len(output_urls)} URLs finales; "
-        "pipeline completo con snapshots y manifest consistente."
-    )
-
-
-if __name__ == "__main__":
-    main()
-,
+        r'^#EXTINF:[^\n]*\btvg-id="([^"]+)"[^\n]*\n(https?://[^\n]+)',
         text,
-        re.MULTILINE,
+        flags=re.MULTILINE,
     )
     assert len(blocks) == len(output_urls), "Hay una entrada M3U sin tvg-id o sin URL asociada."
+
     selected_ids = [channel_id for channel_id, _ in blocks]
     assert len(selected_ids) == len(set(selected_ids)), (
         "La M3U contiene más de un endpoint seleccionado para el mismo canal."
@@ -160,12 +158,8 @@ if __name__ == "__main__":
     assert set(selected_ids) <= set(catalog_ids), (
         "La M3U contiene un tvg-id que no pertenece al catálogo."
     )
+
     selected_pairs = {(channel_id, url) for channel_id, url in blocks}
-    candidate_pairs = {
-        (channel.get("id"), source.get("url"))
-        for channel in channels
-        for source in channel.get("sources", [])
-    }
     assert selected_pairs <= candidate_pairs, (
         "La M3U seleccionó una combinación canal/endpoint que no existe en channels.json."
     )
