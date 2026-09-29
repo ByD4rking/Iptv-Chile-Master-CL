@@ -117,9 +117,20 @@ def parse_master_playlist(text, base_url):
 def first_media_segment(text, base_url):
     for raw in text.splitlines():
         line = raw.strip()
-        if not line or line.startswith("#"):
+        if not line:
             continue
+
+        # LL-HLS puede entregar partes sin una línea de segmento normal.
+        if line.startswith("#EXT-X-PART:") or line.startswith("#EXT-X-PRELOAD-HINT:"):
+            match = re.search(r'URI="([^"]+)"', line, re.IGNORECASE)
+            if match:
+                return urljoin(base_url, match.group(1))
+
+        if line.startswith("#"):
+            continue
+
         return urljoin(base_url, line)
+
     return None
 
 
