@@ -1,16 +1,21 @@
-﻿{
+{
+  "version": 2,
+  "description": "Fuentes externas independientes para IPTV-CHILE-GENERADOR. No depende de las listas maestras del repositorio.",
   "sources": [
     {
-      "name": "MAESTRA_CORREGIDO_LOCAL",
-      "path": "C:/Users/ByD4rk/Desktop/respositorio/IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+      "name": "IPTV-ORG-CHILE",
+      "url": "https://iptv-org.github.io/iptv/countries/cl.m3u",
+      "priority": 100
     },
     {
-      "name": "PLUTO_CL_LOCAL",
-      "path": "C:/Users/ByD4rk/Desktop/respositorio/pluto/output/playlists/pluto_cl.m3u"
+      "name": "DEARBULUT-CHILE",
+      "url": "https://dearbulut.github.io/iptv/playlists/country/cl.m3u",
+      "priority": 90
     },
     {
-      "name": "PLUTO_LATAM_LOCAL",
-      "path": "C:/Users/ByD4rk/Desktop/respositorio/pluto/output/playlists/pluto_latam.m3u"
+      "name": "JROMERO-CHILE",
+      "url": "https://raw.githubusercontent.com/jromero88/iptv/master/channels/cl.m3u",
+      "priority": 80
     }
   ]
 }
