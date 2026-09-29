@@ -18,10 +18,6 @@ app = Flask(__name__)
 client = PlutoClient()
 
 PROXY_TIMEOUT = (5, 20)
-ALLOWED_UPSTREAM_HOSTS = {
-    "stitcher.pluto.tv",
-    "service-stitcher.clusters.pluto.tv",
-}
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -55,7 +51,7 @@ def _allowed_upstream(url: str) -> bool:
     parsed = urlparse(url)
     return (
         parsed.scheme == "https"
-        and parsed.hostname in ALLOWED_UPSTREAM_HOSTS
+        and (parsed.hostname or "").lower().endswith(".pluto.tv")
         and parsed.path.endswith((".m3u8", ".ts", ".m4s", ".mp4", ".aac", ".mp3"))
     )
 
@@ -102,8 +98,7 @@ def _rewrite_playlist(text: str, base_url: str, channel_id: str) -> str:
         else:
             output.append(line)
 
-    return "
-".join(output) + "\n"
+    return "\\n".join(output) + "\\n"
 
 
 @app.get("/")
