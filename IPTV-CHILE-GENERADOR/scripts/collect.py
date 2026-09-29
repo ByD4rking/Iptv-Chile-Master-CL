@@ -107,7 +107,18 @@ def main():
     from datetime import datetime, timezone
     checked_at = datetime.now(timezone.utc).isoformat()
 
-    quarantined_source_count = sum(1 for s in sources if str(health.get(str(s.get("name") or "FUENTE").strip(), {}).get("quarantine_until") or "").strip())
+    now_utc = datetime.now(timezone.utc)
+    quarantined_source_count = 0
+    for source in sources:
+        source_name = str(source.get("name") or "FUENTE").strip()
+        until = str(health.get(source_name, {}).get("quarantine_until") or "").strip()
+        if not until:
+            continue
+        try:
+            if datetime.fromisoformat(until.replace("Z", "+00:00")) > now_utc:
+                quarantined_source_count += 1
+        except ValueError:
+            pass
     force_source_probe = quarantined_source_count == len(sources)
     for source in sources:
         name = str(source.get("name") or "FUENTE").strip()
