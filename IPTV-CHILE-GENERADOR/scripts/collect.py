@@ -1,5 +1,7 @@
 import hashlib
 import json
+import re
+import unicodedata
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -10,6 +12,7 @@ CONFIG = BASE / "config" / "sources.json"
 CATALOG = BASE / "config" / "catalog.json"
 OUTPUT = BASE / "data" / "channels.json"
 SOURCE_HEALTH_FILE = BASE / "data" / "source_health.json"
+ENDPOINT_HEALTH_FILE = BASE / "data" / "endpoint_health.json"
 TIMEOUT = 30
 
 
@@ -72,6 +75,22 @@ def parse_m3u(text, source_name, priority):
 
 def channel_id(url):
     return hashlib.sha256(url.encode("utf-8")).hexdigest()[:20]
+
+
+def normalize_label(value):
+    text = unicodedata.normalize("NFKD", str(value or ""))
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = text.lower()
+    text = re.sub(r"\[[^]]*\]|\([^)]*\)", " ", text)
+    text = re.sub(r"\b(?:4k|2160p|1440p|1080p|720p|576p|480p|360p|240p)\b", " ", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return " ".join(text.split())
+
+
+def candidate_keys(entry):
+    values = [entry.get("name", "")]
+    values.extend(entry.get("aliases") or [])
+    return {normalize_label(value) for value in values if normalize_label(value)}
 
 
 def main():
@@ -140,12 +159,13 @@ def main():
     # a nuestra lista. Las fuentes externas solo pueden aportar endpoints
     # que ya esten declarados en el catalogo; nunca pueden insertar canales
     # nuevos automaticamente.
-    discovered = {}
+    discovered_by_name = {}
     for entry in all_entries:
         url = str(entry.get("url") or "").strip()
         if not url:
             continue
-        discovered.setdefault(url, []).append(entry)
+        for key in candidate_keys(entry):
+            discovered_by_name.setdefault(key, []).append(entry)
 
     channels = []
     for catalog_entry in catalog_channels:
@@ -160,45 +180,48 @@ def main():
         if not item["id"] or not item["name"]:
             continue
 
-        # Conservamos los endpoints declarados por nosotros aunque una fuente
-        # externa este caida o deje de publicarlos. Asi el catalogo no se borra
-        # por un fallo temporal de terceros.
-        catalog_sources = catalog_entry.get("sources") or []
-        for catalog_source in catalog_sources:
-            url = str(catalog_source.get("url") or "").strip()
+        # El catalogo controla la pertenencia de canales. Las fuentes solo
+        # pueden aportar endpoints alternativos con coincidencia exacta del
+        # nombre normalizado (incluyendo aliases), evitando inventar canales.
+        candidates_by_url = {}
+
+        def add_candidate(url, source_name, priority, match):
+            url = str(url or "").strip()
             if not url:
-                continue
+                return
+            candidate = {
+                "url": url,
+                "source": str(source_name or "EXTERNA").strip(),
+                "priority": int(priority or 0),
+                "match": match,
+            }
+            current = candidates_by_url.get(url)
+            if current is None or candidate["priority"] > current["priority"]:
+                candidates_by_url[url] = candidate
 
-            candidates = discovered.get(url, [])
-            if candidates:
-                best = max(
-                    candidates,
-                    key=lambda x: int(x.get("priority") or 0),
-                )
-                source_name = str(best.get("source") or "EXTERNA").strip()
-                priority = int(best.get("priority") or catalog_source.get("priority") or 0)
-                if best.get("name") and best["name"] not in item["aliases"] and best["name"] != item["name"]:
-                    item["aliases"].append(best["name"])
-                if not item["logo"] and best.get("logo"):
-                    item["logo"] = str(best["logo"]).strip()
-            else:
-                source_name = "CATALOGO"
-                priority = int(catalog_source.get("priority") or 0)
-
-            item["sources"].append(
-                {
-                    "url": url,
-                    "source": source_name,
-                    "priority": priority,
-                }
+        for catalog_source in catalog_entry.get("sources") or []:
+            add_candidate(
+                catalog_source.get("url"),
+                "CATALOGO",
+                int(catalog_source.get("priority") or 0),
+                "catalogo",
             )
 
-        # Dedupe defensivo por URL.
-        unique_sources = {}
-        for source in item["sources"]:
-            unique_sources[source["url"]] = source
+        for key in candidate_keys(catalog_entry):
+            for discovered_entry in discovered_by_name.get(key, []):
+                add_candidate(
+                    discovered_entry.get("url"),
+                    discovered_entry.get("source"),
+                    int(discovered_entry.get("priority") or 0),
+                    "nombre_exacto",
+                )
+                if discovered_entry.get("name") and discovered_entry["name"] not in item["aliases"] and discovered_entry["name"] != item["name"]:
+                    item["aliases"].append(discovered_entry["name"])
+                if not item["logo"] and discovered_entry.get("logo"):
+                    item["logo"] = str(discovered_entry["logo"]).strip()
+
         item["sources"] = sorted(
-            unique_sources.values(),
+            candidates_by_url.values(),
             key=lambda x: (-int(x.get("priority") or 0), x["url"]),
         )
 
@@ -214,7 +237,24 @@ def main():
     )
 
     save_json(OUTPUT, channels)
+    endpoint_health = load_json(ENDPOINT_HEALTH_FILE, {})
+    active_urls = {source["url"] for channel in channels for source in channel.get("sources", [])}
+    endpoint_health = {url: state for url, state in endpoint_health.items() if url in active_urls}
+    for channel in channels:
+        for source in channel.get("sources", []):
+            state = endpoint_health.setdefault(source["url"], {
+                "channel_id": channel["id"], "channel_name": channel["name"],
+                "source": source["source"], "priority": source["priority"],
+                "checks": 0, "successes": 0, "failures": 0,
+                "consecutive_failures": 0, "last_success": None,
+                "last_failure": None, "last_error": None,
+            })
+            state.update({
+                "channel_id": channel["id"], "channel_name": channel["name"],
+                "source": source["source"], "priority": source["priority"],
+            })
     save_json(SOURCE_HEALTH_FILE, health)
+    save_json(ENDPOINT_HEALTH_FILE, endpoint_health)
 
     print("=" * 60)
     print("IPTV-CHILE-GENERADOR - COLLECTOR")
