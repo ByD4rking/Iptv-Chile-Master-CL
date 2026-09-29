@@ -65,10 +65,20 @@ def main() -> None:
 
     health_path = ROOT / "health.py"
     health = health_path.read_text(encoding="utf-8-sig")
-    if "def _probe_once(" not in health or "master+variant+segment+firma OK" not in health:
+    if "def _probe_once(" not in health or "master+variant+segment+media OK" not in health:
         fail("health.py: falta verificación HLS master -> variant -> segment")
     if "consecutive_failures" not in health:
         fail("health.py: falta persistencia de fallos consecutivos")
+    for fragment in (
+        "def _playlist_uri_candidates(",
+        "def _segment_signature_ok(",
+        "#EXT-X-PART:",
+        "#EXT-X-PRELOAD-HINT:",
+        "def _safe_error(",
+        'return f"HTTP {status}"',
+    ):
+        if fragment not in health:
+            fail(f"health.py: falta protección/soporte HLS requerido: {fragment}")
     for fragment in (
         "def _playlist_uri_candidates(",
         "def _segment_signature_ok(",
