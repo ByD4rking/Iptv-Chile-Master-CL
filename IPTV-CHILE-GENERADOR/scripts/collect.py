@@ -159,6 +159,12 @@ def main():
     # a nuestra lista. Las fuentes externas solo pueden aportar endpoints
     # que ya esten declarados en el catalogo; nunca pueden insertar canales
     # nuevos automaticamente.
+    catalog_ids_by_key = {}
+    for catalog_entry in catalog_channels:
+        catalog_id = str(catalog_entry.get("id") or "").strip()
+        for key in candidate_keys(catalog_entry):
+            catalog_ids_by_key.setdefault(key, set()).add(catalog_id)
+
     discovered_by_name = {}
     for entry in all_entries:
         url = str(entry.get("url") or "").strip()
@@ -208,6 +214,8 @@ def main():
             )
 
         for key in candidate_keys(catalog_entry):
+            if catalog_ids_by_key.get(key) != {item["id"]}:
+                continue
             for discovered_entry in discovered_by_name.get(key, []):
                 add_candidate(
                     discovered_entry.get("url"),
@@ -236,6 +244,28 @@ def main():
         )
     )
 
+    claimed_urls = {}
+    duplicate_assignments = 0
+    for channel in channels:
+        unique_sources = []
+        for source in channel.get("sources", []):
+            url = source["url"]
+            owner = claimed_urls.get(url)
+            if owner is not None and owner != channel["id"]:
+                duplicate_assignments += 1
+                continue
+            claimed_urls[url] = channel["id"]
+            unique_sources.append(source)
+        channel["sources"] = unique_sources
+
+    channels = [channel for channel in channels if channel.get("sources")]
+
+    if duplicate_assignments:
+        print(
+            f"AVISO: {duplicate_assignments} asociaciones duplicadas de endpoint "
+            "fueron descartadas para mantener identidad URL global."
+        )
+
     save_json(OUTPUT, channels)
     endpoint_health = load_json(ENDPOINT_HEALTH_FILE, {})
     active_urls = {source["url"] for channel in channels for source in channel.get("sources", [])}
@@ -262,7 +292,8 @@ def main():
     print(f"Fuentes OK:        {successful_sources}/{len(sources)}")
     print(f"Salud de fuentes:  {SOURCE_HEALTH_FILE}")
     print(f"Entradas originales:{len(all_entries)}")
-    print(f"URLs únicas:       {len(channels)}")
+    print(f"Canales catalogados: {len(channels)}")
+    print(f"Endpoints candidatos:{len(claimed_urls)}")
     print(f"Archivo:           {OUTPUT}")
     print("OK: generador independiente; ninguna lista local del repositorio es fuente.")
 
