@@ -246,29 +246,43 @@ def main():
         )
     )
 
-    claimed_urls = {}
-    duplicate_assignments = 0
+    # Una URL es identidad global de endpoint. Si una misma URL aparece
+    # asociada a dos canales distintos, no elegimos arbitrariamente al primero:
+    # la retiramos de todos los canales y dejamos que otra fuente la resuelva.
+    url_owners = {}
     for channel in channels:
-        unique_sources = []
         for source in channel.get("sources", []):
-            url = source["url"]
-            owner = claimed_urls.get(url)
-            if owner is not None and owner != channel["id"]:
-                duplicate_assignments += 1
-                continue
-            claimed_urls[url] = channel["id"]
-            unique_sources.append(source)
-        channel["sources"] = unique_sources
+            url_owners.setdefault(source["url"], set()).add(channel["id"])
+
+    ambiguous_urls = {
+        url for url, owners in url_owners.items()
+        if len(owners) > 1
+    }
+    duplicate_assignments = sum(
+        len(url_owners[url]) for url in ambiguous_urls
+    )
+
+    if ambiguous_urls:
+        for channel in channels:
+            channel["sources"] = [
+                source
+                for source in channel.get("sources", [])
+                if source["url"] not in ambiguous_urls
+            ]
+        print(
+            f"AVISO: {duplicate_assignments} asociaciones ambiguas fueron "
+            "retiradas de forma determinista para preservar ownership único."
+        )
+
+    claimed_urls = {
+        source["url"]: channel["id"]
+        for channel in channels
+        for source in channel.get("sources", [])
+    }
 
     # No eliminamos canales sin candidatos: el catálogo sigue siendo la
     # fuente de verdad completa. Esos canales quedan en cuarentena operativa
     # hasta que alguna fuente aporte un endpoint verificable.
-
-    if duplicate_assignments:
-        print(
-            f"AVISO: {duplicate_assignments} asociaciones duplicadas de endpoint "
-            "fueron descartadas para mantener identidad URL global."
-        )
 
     save_json(OUTPUT, channels)
     endpoint_health = load_json(ENDPOINT_HEALTH_FILE, {})
