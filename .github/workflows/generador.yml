@@ -123,11 +123,14 @@ jobs:
             fi
 
             if git rebase origin/main; then
-              git push origin HEAD:main
-              exit 0
+              if git push origin HEAD:main; then
+                echo "PUBLICACIÓN EXITOSA: main actualizado."
+                exit 0
+              fi
+              echo "PUSH RECHAZADO: main cambió después del fetch; se regenerará sobre origin/main."
             fi
 
-            echo "REBASE CONFLICTIVO: la base cambió durante la generación (intento $intento)."
+            echo "REBASE/PUSH NO PUBLICADO: la base cambió durante la publicación (intento $intento)."
             git rebase --abort || true
 
             if [ "$intento" -eq 3 ]; then
