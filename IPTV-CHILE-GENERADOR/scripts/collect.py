@@ -233,8 +233,10 @@ def main():
             key=lambda x: (-int(x.get("priority") or 0), x["url"]),
         )
 
-        if item["sources"]:
-            channels.append(item)
+        # Conservamos SIEMPRE el canal del catalogo, incluso si hoy no tiene
+        # ningun endpoint candidato. El catalogo es la fuente de verdad de
+        # pertenencia; la disponibilidad de endpoints es un estado operativo.
+        channels.append(item)
 
     channels.sort(
         key=lambda x: (
