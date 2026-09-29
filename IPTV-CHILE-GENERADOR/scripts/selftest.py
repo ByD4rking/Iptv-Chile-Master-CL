@@ -139,6 +139,28 @@ def main():
         "La M3U contiene una URL que no pertenece a los endpoints candidatos."
     )
 
+    expected_with_candidates = sum(1 for channel in channels if channel.get("sources"))
+    expected_multiple = sum(1 for channel in channels if len(channel.get("sources", [])) > 1)
+    expected_playback_ok = sum(
+        1 for item in quality.get("results", []) if item.get("playback_ok")
+    )
+    assert manifest.get("channels") == len(channels), "Manifest: cantidad de canales inconsistente."
+    assert manifest.get("generated_channels") == len(output_urls), (
+        "Manifest: cantidad de canales generados inconsistente."
+    )
+    assert manifest.get("output_urls") == len(output_urls), (
+        "Manifest: cantidad de URLs inconsistente."
+    )
+    assert manifest.get("channels_with_candidates") == expected_with_candidates, (
+        "Manifest: channels_with_candidates inconsistente."
+    )
+    assert manifest.get("channels_with_multiple_candidates") == expected_multiple, (
+        "Manifest: channels_with_multiple_candidates inconsistente."
+    )
+    assert manifest.get("quality_playback_ok") == expected_playback_ok, (
+        "Manifest: quality_playback_ok inconsistente."
+    )
+
     extinf = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
     assert extinf == len(output_urls), f"EXTINF ({extinf}) != URLs ({len(output_urls)})."
 
