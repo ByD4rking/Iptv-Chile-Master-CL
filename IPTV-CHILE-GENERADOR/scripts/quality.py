@@ -180,6 +180,26 @@ def valid_direct_payload(content, content_type):
     return False, "No se detectó una firma/formato de medio reproducible."
 
 
+
+def fetch_segment(url):
+    """Prueba Range primero y reintenta GET completo si el servidor no lo soporta."""
+    try:
+        return fetch(
+            url,
+            accept="video/*,audio/*,application/octet-stream,*/*",
+            limit=SEGMENT_LIMIT,
+            extra_headers={"Range": "bytes=0-65535"},
+        )
+    except HTTPError as error:
+        if error.code not in (400, 405, 416, 501):
+            raise
+    return fetch(
+        url,
+        accept="video/*,audio/*,application/octet-stream,*/*",
+        limit=SEGMENT_LIMIT,
+    )
+
+
 def validate_hls(url, initial_text, initial_content_type, max_depth=2):
     def attempt(playlist_url, playlist_text, playlist_type, depth):
         if "#EXTM3U" not in playlist_text[:4096]:
@@ -211,12 +231,7 @@ def validate_hls(url, initial_text, initial_content_type, max_depth=2):
                     if not segment_url:
                         failures.append(f"variante {index}: sin segmento")
                         continue
-                    seg_status, seg_type, segment, _ = fetch(
-                        segment_url,
-                        accept="video/*,audio/*,application/octet-stream,*/*",
-                        limit=SEGMENT_LIMIT,
-                        extra_headers={"Range": "bytes=0-65535"},
-                    )
+                    seg_status, seg_type, segment, _ = fetch_segment(segment_url)
                     if 200 <= seg_status < 400 and segment:
                         valid, error = valid_direct_payload(segment, seg_type)
                         if valid:
@@ -253,12 +268,7 @@ def validate_hls(url, initial_text, initial_content_type, max_depth=2):
         if not segment_url:
             return None, "Playlist HLS válida pero sin segmento reproducible."
 
-        status, content_type, segment, _ = fetch(
-            segment_url,
-            accept="video/*,audio/*,application/octet-stream,*/*",
-            limit=SEGMENT_LIMIT,
-            extra_headers={"Range": "bytes=0-65535"},
-        )
+        status, content_type, segment, _ = fetch_segment(segment_url)
         if not 200 <= status < 400 or not segment:
             return None, f"Segmento HLS inaccesible (HTTP {status})."
 
