@@ -9,7 +9,6 @@ the runtime dependencies are installed and catch malformed source early.
 import ast
 import compileall
 import re
-import sys
 from pathlib import Path
 
 
@@ -64,7 +63,29 @@ def main() -> None:
     if not compileall.compile_dir(str(ROOT), quiet=1, force=True):
         fail("compileall falló")
 
-    server = (ROOT / "server.py").read_text(encoding="utf-8-sig")
+    server_path = ROOT / "server.py"
+    server = server_path.read_text(encoding="utf-8-sig")
+
+    # Verificación estática de las rutas públicas: no depende de Flask.
+    server_tree = ast.parse(server, filename=str(server_path))
+    routes = set()
+    for node in server_tree.body:
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        for decorator in node.decorator_list:
+            if (
+                isinstance(decorator, ast.Call)
+                and isinstance(decorator.func, ast.Attribute)
+                and decorator.func.attr == "get"
+                and decorator.args
+                and isinstance(decorator.args[0], ast.Constant)
+                and isinstance(decorator.args[0].value, str)
+            ):
+                routes.add(decorator.args[0].value)
+    missing_routes = EXPECTED_SERVER_ROUTES - routes
+    if missing_routes:
+        fail(f"server.py: rutas ausentes: {sorted(missing_routes)}")
+
     required_fragments = (
         "def _fetch(",
         "def _rewrite_playlist(",
