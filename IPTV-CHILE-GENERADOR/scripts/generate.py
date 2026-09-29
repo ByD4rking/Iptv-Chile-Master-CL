@@ -52,7 +52,6 @@ def main():
 
     lines = [
         "#EXTM3U",
-        f'#EXTVLCOPT:http-referrer=""',
         f'# IPTV-CHILE-GENERADOR | {datetime.now(timezone.utc).date().isoformat()}',
     ]
 
