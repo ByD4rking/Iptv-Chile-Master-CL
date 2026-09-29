@@ -57,7 +57,10 @@ jobs:
               fi
               if git cat-file -e "$commit:$path" 2>/dev/null; then
                 git show "$commit:$path" > "/tmp/pluto_$file.m3u.recovered" || true
-                if [ -s "/tmp/pluto_$file.m3u.recovered" ] && grep -q '^#EXTM3U' "/tmp/pluto_$file.m3u.recovered"; then
+                if [ -s "/tmp/pluto_$file.m3u.recovered" ] \
+                  && grep -q '^#EXTM3U' "/tmp/pluto_$file.m3u.recovered" \
+                  && grep -q '^#EXTINF:' "/tmp/pluto_$file.m3u.recovered" \
+                  && grep -q '/master.m3u8' "/tmp/pluto_$file.m3u.recovered"; then
                   cp "/tmp/pluto_$file.m3u.recovered" "$path"
                   echo "[$file] Recuperada desde $commit: $(grep -c '^#EXTINF:' "$path") canales."
                   recovered=1
