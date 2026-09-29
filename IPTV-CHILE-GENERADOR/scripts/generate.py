@@ -34,10 +34,14 @@ def quality_key(item, status_item, source):
     # pierde automáticamente frente a un 1080p que falla repetidamente.
     checks = int(item.get("endpoint_checks") or 0)
     successes = int(item.get("endpoint_successes") or 0)
-    reliability = (successes / checks) if checks else 0.0
+    # Suavizado bayesiano: un endpoint con 1/1 no debe parecer tan fiable
+    # como uno probado muchas veces. El prior Beta(1,1) evita decisiones
+    # demasiado agresivas con muestras pequeñas.
+    reliability = (successes + 1) / (checks + 2)
     return (
         -int(item.get("endpoint_consecutive_failures") or 0),
         reliability,
+        checks,
         int(item.get("height") or 0),
         int(item.get("bitrate") or 0),
         -int(status_item.get("response_time_ms") or 999999),
