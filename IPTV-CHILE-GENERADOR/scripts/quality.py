@@ -11,12 +11,29 @@ from atomic import atomic_write_json, file_sha256
 BASE = Path(__file__).resolve().parent.parent
 CHANNELS_FILE = BASE / "data" / "channels.json"
 QUALITY_FILE = BASE / "data" / "quality.json"
+STATUS_FILE = BASE / "data" / "status.json"
 ENDPOINT_HEALTH_FILE = BASE / "data" / "endpoint_health.json"
 
 TIMEOUT = 10
 WORKERS = 15
 READ_LIMIT = 256 * 1024
 SEGMENT_LIMIT = 64 * 1024
+
+
+def quality_key(item, status_item, source_priority):
+    # Debe coincidir con el criterio utilizado por generate.py.
+    checks = int(item.get("endpoint_checks") or 0)
+    successes = int(item.get("endpoint_successes") or 0)
+    reliability = (successes + 1) / (checks + 2)
+    return (
+        -int(item.get("endpoint_consecutive_failures") or 0),
+        reliability,
+        checks,
+        int(item.get("height") or 0),
+        int(item.get("bitrate") or 0),
+        -int(status_item.get("response_time_ms") or 999999),
+        int(source_priority or 0),
+    )
 
 
 def detect_resolution(text):
@@ -480,6 +497,18 @@ def main():
 
     atomic_write_json(ENDPOINT_HEALTH_FILE, endpoint_health)
 
+    status_data = {}
+    if STATUS_FILE.exists():
+        try:
+            with STATUS_FILE.open("r", encoding="utf-8-sig") as f:
+                status_data = json.load(f)
+        except Exception:
+            status_data = {}
+    status_by_url = {
+        str(item.get("url") or "").strip(): item
+        for item in status_data.get("results", [])
+    }
+
     channels_quality = {}
     for result in results:
         channel = channels_quality.setdefault(
@@ -493,7 +522,11 @@ def main():
         channel["best"] = (
             max(
                 available,
-                key=lambda x: (x["height"] or 0, x["bitrate"] or 0),
+                key=lambda x: quality_key(
+                    x,
+                    status_by_url.get(str(x.get("url") or "").strip(), {}),
+                    x.get("source_priority") or 0,
+                ),
             )
             if available
             else None
