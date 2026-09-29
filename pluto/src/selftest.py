@@ -74,6 +74,23 @@ def main() -> None:
     client = client_path.read_text(encoding="utf-8-sig")
     if "TOKEN_REFRESH_MARGIN = 300" not in client:
         fail("client.py: falta margen de renovación JWT adelantada")
+    if "LEGACY_CHANNELS_URL" not in client or "_get_us_legacy_catalog" not in client or "_get_us_legacy_channels" not in client:
+        fail("client.py: faltan fallbacks US de catálogo")
+    if "if not channels and self.region.code == \"us\"" not in client:
+        fail("client.py: falta protección contra catálogo US vacío")
+
+    generator_path = ROOT / "generate_multiregion.py"
+    generator = generator_path.read_text(encoding="utf-8-sig")
+    for fragment in (
+        "MIN_PREVIOUS_RATIO = 0.50",
+        "REQUIRE_NONEMPTY_PREVIOUS = True",
+        "def preserve_previous_channels(",
+        "def refresh_preserved_streams(",
+        "def build_latam(",
+        "if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):",
+    ):
+        if fragment not in generator:
+            fail(f"generate_multiregion.py: falta protección requerida: {fragment}")
 
     server_path = ROOT / "server.py"
     server = server_path.read_text(encoding="utf-8-sig")
