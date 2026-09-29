@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 import json
 from pathlib import Path
-from urllib.parse import urljoin, urlparse
+from urllib.parse import parse_qsl, urlencode, urljoin, urlparse, urlunparse
 
 import requests
 from flask import Flask, Response, abort, jsonify
@@ -54,6 +54,15 @@ def _allowed_upstream(url: str) -> bool:
         and (parsed.hostname or "").lower().endswith(".pluto.tv")
         and parsed.path.endswith((".m3u8", ".ts", ".m4s", ".mp4", ".aac", ".mp3"))
     )
+
+
+def _refresh_jwt(url: str) -> str:
+    parsed = urlparse(url)
+    query = parse_qsl(parsed.query, keep_blank_values=True)
+    if not client.session_token:
+        return url
+    query = [(key, client.session_token if key == "jwt" else value) for key, value in query]
+    return urlunparse(parsed._replace(query=urlencode(query)))
 
 
 def _upstream_headers() -> dict[str, str]:
@@ -242,6 +251,7 @@ def pluto_proxy(channel_id: str, encoded_url: str):
             last_error = exc
             try:
                 client.boot()
+                upstream = _refresh_jwt(upstream)
             except Exception as boot_exc:
                 last_error = boot_exc
 
