@@ -7,6 +7,7 @@ from atomic import atomic_write_json
 
 BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
+CATALOG = BASE / "config" / "catalog.json"
 OUTPUT = BASE / "data" / "channels.json"
 SOURCE_HEALTH_FILE = BASE / "data" / "source_health.json"
 TIMEOUT = 30
@@ -130,67 +131,79 @@ def main():
     if not successful_sources:
         raise SystemExit("Ninguna fuente independiente respondió correctamente.")
 
-    grouped = {}
+    catalog = load_json(CATALOG, {"channels": []})
+    catalog_channels = catalog.get("channels", [])
+    if not catalog_channels:
+        raise SystemExit("El catalogo propio esta vacio o no existe.")
 
-    # URL = identidad única. El nombre nunca crea duplicados.
+    # El catalogo propio es la fuente de verdad de QUE canales pertenecen
+    # a nuestra lista. Las fuentes externas solo pueden aportar endpoints
+    # que ya esten declarados en el catalogo; nunca pueden insertar canales
+    # nuevos automaticamente.
+    discovered = {}
     for entry in all_entries:
         url = str(entry.get("url") or "").strip()
-        name = str(entry.get("name") or "").strip()
-        if not url or not name:
+        if not url:
+            continue
+        discovered.setdefault(url, []).append(entry)
+
+    channels = []
+    for catalog_entry in catalog_channels:
+        item = {
+            "id": str(catalog_entry.get("id") or "").strip(),
+            "name": str(catalog_entry.get("name") or "").strip(),
+            "group": str(catalog_entry.get("group") or "Chile").strip() or "Chile",
+            "logo": str(catalog_entry.get("logo") or "").strip(),
+            "aliases": list(catalog_entry.get("aliases") or []),
+            "sources": [],
+        }
+        if not item["id"] or not item["name"]:
             continue
 
-        item = grouped.setdefault(
-            url,
-            {
-                "id": channel_id(url),
-                "name": name,
-                "group": str(entry.get("group") or "Chile").strip() or "Chile",
-                "logo": str(entry.get("logo") or "").strip(),
-                "sources": [],
-                "aliases": [],
-            },
-        )
+        # Conservamos los endpoints declarados por nosotros aunque una fuente
+        # externa este caida o deje de publicarlos. Asi el catalogo no se borra
+        # por un fallo temporal de terceros.
+        catalog_sources = catalog_entry.get("sources") or []
+        for catalog_source in catalog_sources:
+            url = str(catalog_source.get("url") or "").strip()
+            if not url:
+                continue
 
-        if name not in item["aliases"]:
-            item["aliases"].append(name)
+            candidates = discovered.get(url, [])
+            if candidates:
+                best = max(
+                    candidates,
+                    key=lambda x: int(x.get("priority") or 0),
+                )
+                source_name = str(best.get("source") or "EXTERNA").strip()
+                priority = int(best.get("priority") or catalog_source.get("priority") or 0)
+                if best.get("name") and best["name"] not in item["aliases"] and best["name"] != item["name"]:
+                    item["aliases"].append(best["name"])
+                if not item["logo"] and best.get("logo"):
+                    item["logo"] = str(best["logo"]).strip()
+            else:
+                source_name = "CATALOGO"
+                priority = int(catalog_source.get("priority") or 0)
 
-        if not item["logo"] and entry.get("logo"):
-            item["logo"] = str(entry["logo"]).strip()
-
-        source_name = str(entry.get("source") or "").strip()
-        source_priority = int(entry.get("priority") or 0)
-
-        # La URL es la identidad global del canal. Por tanto, una URL
-        # nunca puede aparecer dos veces dentro de sources[], aunque
-        # distintas fuentes externas la publiquen con nombres distintos.
-        existing = next(
-            (x for x in item["sources"] if x["url"] == url),
-            None,
-        )
-
-        if existing is None:
             item["sources"].append(
                 {
                     "url": url,
                     "source": source_name,
-                    "priority": source_priority,
+                    "priority": priority,
                 }
             )
-        elif source_priority > int(existing.get("priority") or 0):
-            # Conservamos como principal la fuente con mayor prioridad.
-            existing["source"] = source_name
-            existing["priority"] = source_priority
 
-    channels = list(grouped.values())
-
-    for url, item in grouped.items():
-        item["aliases"] = [x for x in item["aliases"] if x != item["name"]]
-        item["sources"].sort(
-            key=lambda x: int(x.get("priority") or 0),
-            reverse=True,
+        # Dedupe defensivo por URL.
+        unique_sources = {}
+        for source in item["sources"]:
+            unique_sources[source["url"]] = source
+        item["sources"] = sorted(
+            unique_sources.values(),
+            key=lambda x: (-int(x.get("priority") or 0), x["url"]),
         )
-        if not item["sources"]:
-            item["sources"] = [{"url": url, "source": "", "priority": 0}]
+
+        if item["sources"]:
+            channels.append(item)
 
     channels.sort(
         key=lambda x: (
