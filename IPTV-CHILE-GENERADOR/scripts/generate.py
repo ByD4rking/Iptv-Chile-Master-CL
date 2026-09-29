@@ -25,11 +25,11 @@ def clean(value):
     return str(value).replace("\n", " ").replace("\r", " ").strip()
 
 
-def quality_key(item):
+def quality_key(item, status_item):
     return (
         int(item.get("height") or 0),
         int(item.get("bitrate") or 0),
-        -int(item.get("response_time_ms") or 0),
+        -int(status_item.get("response_time_ms") or 999999),
     )
 
 
@@ -83,7 +83,7 @@ def main():
 
             candidates.append(
                 (
-                    quality_key(quality),
+                    quality_key(quality, online[url]),
                     priority,
                     url,
                 )
