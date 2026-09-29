@@ -98,7 +98,7 @@ def _rewrite_playlist(text: str, base_url: str, channel_id: str) -> str:
         else:
             output.append(line)
 
-    return "\\n".join(output) + "\\n"
+    return "\n".join(output) + "\n"
 
 
 @app.get("/")
