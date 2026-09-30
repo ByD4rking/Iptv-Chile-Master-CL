@@ -21,8 +21,10 @@ STATE_DIR = ROOT / "scripts" / "health"
 STATE_FILE = STATE_DIR / "principal_health.json"
 MAX_RECORDS = 5000
 MAX_HISTORY_SAMPLES = 5
-TIMEOUT = (3, 5)
-ATTEMPTS = 3
+TIMEOUT = (2, 3)
+ATTEMPTS = 2
+MAX_PROBES_PER_RUN = 1200
+DEFAULT_WORKERS = 48
 COOLDOWN_THRESHOLD = 5
 MAX_COOLDOWN = 6 * 60 * 60
 UA = "IPTV-Chile-Principal-Health/1.0"
@@ -165,7 +167,7 @@ def _cooldown_active(previous: dict, now: int) -> bool:
         return False
 
 
-def run(path: Path | None = None, workers: int = 32) -> dict:
+def run(path: Path | None = None, workers: int = DEFAULT_WORKERS) -> dict:
     playlist = path or ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
     entries = parse_m3u(playlist)
     STATE_DIR.mkdir(parents=True, exist_ok=True)
@@ -181,7 +183,7 @@ def run(path: Path | None = None, workers: int = 32) -> dict:
         if e["url"] not in unique:
             unique[e["url"]] = e
 
-    to_probe = {}
+    candidates = []
     skipped_cooldown = 0
     for url, entry in unique.items():
         previous = state.get(url, {})
@@ -194,8 +196,28 @@ def run(path: Path | None = None, workers: int = 32) -> dict:
                 "skipped_cooldown": True,
             }
             skipped_cooldown += 1
-        else:
-            to_probe[url] = entry
+            continue
+
+        try:
+            failures = int(previous.get("consecutive_failures", 0) or 0)
+        except (TypeError, ValueError):
+            failures = 0
+        try:
+            last_checked = int(previous.get("checked_at", 0) or 0)
+        except (TypeError, ValueError):
+            last_checked = 0
+
+        # Prioridad: fuentes con fallos primero, después fuentes nunca
+        # comprobadas y finalmente las más antiguas. Esto convierte el
+        # Health Score en un muestreo rotativo y evita bloquear el workflow
+        # intentando comprobar miles de URLs en una sola ejecución.
+        priority = 0 if failures > 0 else 1 if last_checked == 0 else 2
+        candidates.append((priority, last_checked, url, entry))
+
+    candidates.sort(key=lambda item: (item[0], item[1], item[2]))
+    selected = candidates[:MAX_PROBES_PER_RUN]
+    to_probe = {url: entry for _, _, url, entry in selected}
+    deferred = len(candidates) - len(selected)
 
     with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
         futures = {pool.submit(_probe, url): url for url in to_probe}
@@ -227,14 +249,17 @@ def run(path: Path | None = None, workers: int = 32) -> dict:
     tmp.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(STATE_FILE)
 
-    ok = sum(1 for x in results.values() if x.get("ok"))
+    ok = sum(1 for x in results.values() if x.get("ok") is True)
+    failed = sum(1 for x in results.values() if x.get("ok") is False)
     cooldown = sum(1 for x in results.values() if x.get("state") == "COOLDOWN")
     return {
+        "total_unique": len(unique),
         "checked": len(results),
         "probed": len(to_probe),
+        "deferred": deferred,
         "skipped_cooldown": skipped_cooldown,
         "ok": ok,
-        "failed": len(results) - ok,
+        "failed": failed,
         "cooldown": cooldown,
         "state": str(STATE_FILE),
     }
