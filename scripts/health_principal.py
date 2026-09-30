@@ -143,7 +143,7 @@ def _cooldown(failures: int) -> int:
     return min(MAX_COOLDOWN, 60 * (2 ** min(8, failures - COOLDOWN_THRESHOLD)))
 
 
-def run(path: Path | None = None, workers: int = 24) -> dict:
+def run(path: Path | None = None, workers: int = 32) -> dict:
     playlist = path or ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
     entries = parse_m3u(playlist)
     STATE_DIR.mkdir(parents=True, exist_ok=True)
