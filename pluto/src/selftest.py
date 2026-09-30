@@ -69,6 +69,12 @@ def main() -> None:
         fail("health.py: falta verificación HLS master -> variant -> segment")
     if "consecutive_failures" not in health:
         fail("health.py: falta persistencia de fallos consecutivos")
+    if "def _health_score(" not in health or '"health_score"' not in health:
+        fail("health.py: falta Health Score persistente 0-100")
+    if "def _cooldown_seconds(" not in health or '"cooldown_until"' not in health:
+        fail("health.py: falta circuito de cooldown")
+    if "BACKOFF_BASE" not in health:
+        fail("health.py: falta exponential backoff")
     for fragment in (
         "def _playlist_uri_candidates(",
         "def _segment_signature_ok(",
@@ -168,7 +174,7 @@ def main() -> None:
     print(f"SELFTEST OK: {len(py_files)} archivos Python sin errores de sintaxis.")
     print("SELFTEST OK: compileall correcto.")
     print("SELFTEST OK: servidor Pluto conserva proxy, renovación JWT y acceso LAN.")
-    print("SELFTEST OK: health.py verifica HLS real y persiste fallos consecutivos.")
+    print("SELFTEST OK: health.py verifica HLS real, score 0-100, backoff y cooldown.")
     print("SELFTEST OK: client.py renueva JWT con margen anticipado.")
 
 
