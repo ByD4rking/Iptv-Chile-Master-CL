@@ -189,6 +189,25 @@ jobs:
 
           echo "Las dos listas M3U son válidas."
 
+      - name: Motor Health Score independiente de la principal
+        run: |
+          set -e
+          python scripts/health_principal.py IPTV-CHILE-MAESTRA_CORREGIDO.m3u
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("scripts/health/principal_health.json")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          if not isinstance(data, dict):
+              raise SystemExit("ERROR: estado de health principal inválido")
+          if len(data) > 5000:
+              raise SystemExit("ERROR: health principal superó el límite de 5000 fuentes")
+          scores = [int(v.get("health_score", 0)) for v in data.values()]
+          if scores and min(scores) < 0 or scores and max(scores) > 100:
+              raise SystemExit("ERROR: Health Score fuera de 0-100")
+          print(f"Health principal: {len(data)} fuentes; OK={sum(1 for v in data.values() if v.get('ok'))}; cooldown={sum(1 for v in data.values() if v.get('state') == 'COOLDOWN')}")
+          PY
+
       - name: Verificar lista principal
         run: |
           python scripts/generar_reporte.py \
@@ -233,7 +252,8 @@ jobs:
             IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
             IPTV-CHILE-MAESTRA_GOD.m3u \
             REPORTE.md \
-            scripts/aprendizaje.json
+            scripts/aprendizaje.json \
+            scripts/health/principal_health.json
 
           if git diff --cached --quiet; then
             echo "No hay cambios nuevos."
