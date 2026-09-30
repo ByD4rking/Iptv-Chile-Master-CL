@@ -67,10 +67,6 @@ jobs:
         run: |
           python scripts/unificar_chile.py
 
-      - name: Generar lista GOD
-        run: |
-          python scripts/mega_lista.py
-
       - name: Auditoría de no regresión
         run: |
           python - <<'PY'
@@ -157,8 +153,7 @@ jobs:
           set -e
 
           for archivo in \
-            "IPTV-CHILE-MAESTRA_CORREGIDO.m3u" \
-            "IPTV-CHILE-MAESTRA_GOD.m3u"
+            "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
           do
             echo "========================================"
             echo "Validando: $archivo"
@@ -189,7 +184,7 @@ jobs:
             fi
           done
 
-          echo "Las dos listas M3U son válidas."
+          echo "La lista principal M3U es válida."
 
       - name: Selftest Health Score principal
         run: |
@@ -241,8 +236,7 @@ jobs:
           echo "========== RESUMEN =========="
 
           for archivo in \
-            "IPTV-CHILE-MAESTRA_CORREGIDO.m3u" \
-            "IPTV-CHILE-MAESTRA_GOD.m3u"
+            "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
           do
             CANALES=$(grep -c "^#EXTINF" "$archivo" || true)
             echo "$archivo -> $CANALES canales"
@@ -317,7 +311,7 @@ jobs:
           echo "=========================================="
           echo " ACTUALIZACIÓN IPTV COMPLETADA"
           echo "=========================================="
-          echo "Las listas fueron generadas y verificadas."
+          echo "La lista principal fue generada y verificada."
           echo "El resultado fue guardado en GitHub."
 
 
