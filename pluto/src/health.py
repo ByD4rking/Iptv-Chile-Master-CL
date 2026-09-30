@@ -21,7 +21,10 @@ OUTPUT = Path(__file__).resolve().parent.parent / "output" / "health"
 HISTORY = OUTPUT / "streams.json"
 TIMEOUT = (8, 15)
 ATTEMPTS = 3
-USER_AGENT = "Mozilla/5.0 Pluto-HLS-Health/1.0"
+BACKOFF_BASE = 1.0
+MAX_COOLDOWN_SECONDS = 6 * 60 * 60
+FAILURE_COOLDOWN_THRESHOLD = 5
+USER_AGENT = "Mozilla/5.0 Pluto-HLS-Health/2.0"
 
 
 def _uri_attribute(line: str) -> str:
@@ -133,8 +136,29 @@ def probe(url: str) -> dict:
         except Exception as exc:
             last = _safe_error(exc)
         if attempt < ATTEMPTS:
-            time.sleep(1.5 * attempt)
+            time.sleep(min(8.0, BACKOFF_BASE * (2 ** (attempt - 1))))
     return {"ok": False, "message": last, "latency_ms": None, "attempts": ATTEMPTS}
+
+
+def _health_score(record: dict, previous: dict) -> int:
+    """Bounded 0-100 score; diagnostic only, never removes a channel."""
+    stability = 100.0 if record.get("ok") else max(0.0, 100.0 - min(100.0, record.get("consecutive_failures", 0) * 20.0))
+    latency = record.get("latency_ms")
+    latency_score = 100.0 if latency is None and record.get("ok") else (
+        100.0 if latency <= 250 else 85.0 if latency <= 500 else 70.0 if latency <= 1000 else 50.0 if latency <= 2000 else 25.0
+    )
+    continuity = 100.0 if record.get("ok") else 20.0
+    recent = 100.0 if record.get("ok") else 0.0
+    consistency = 100.0 if previous.get("ok") == record.get("ok") else 60.0
+    score = stability * 0.35 + continuity * 0.25 + latency_score * 0.15 + recent * 0.15 + consistency * 0.10
+    return max(0, min(100, round(score)))
+
+
+def _cooldown_seconds(consecutive_failures: int) -> int:
+    if consecutive_failures < FAILURE_COOLDOWN_THRESHOLD:
+        return 0
+    exponent = min(8, consecutive_failures - FAILURE_COOLDOWN_THRESHOLD)
+    return min(MAX_COOLDOWN_SECONDS, int(60 * (2 ** exponent)))
 
 
 def audit(channels: list[dict], workers: int = 12) -> dict:
@@ -162,9 +186,18 @@ def audit(channels: list[dict], workers: int = 12) -> dict:
             failures = 0 if result["ok"] else int(previous.get("consecutive_failures", 0)) + 1
             if result["ok"]:
                 failures = 0
+            cooldown = _cooldown_seconds(failures)
+            previous_checked = int(previous.get("checked_at", 0) or 0)
+            cooldown_until = now + cooldown if cooldown else 0
+            scored = {**result, "consecutive_failures": failures}
             results[key] = {
                 **result,
                 "consecutive_failures": failures,
+                "health_score": _health_score(scored, previous),
+                "cooldown_seconds": cooldown,
+                "cooldown_until": cooldown_until,
+                "state": "COOLDOWN" if cooldown else ("HEALTHY" if result.get("ok") else "DEGRADED"),
+                "previous_checked_at": previous_checked,
                 "checked_at": now,
             }
 
