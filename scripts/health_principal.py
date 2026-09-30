@@ -94,6 +94,7 @@ def _score(result: dict, previous: dict, failures: int) -> int:
     stability = max(0, 100 - min(100, failures * 20))
     latency = result.get("latency_ms")
     latency_score = 100 if latency is None and result.get("ok") else (
+        0 if latency is None else
         100 if latency <= 250 else 85 if latency <= 500 else 70 if latency <= 1000 else 50 if latency <= 2000 else 25
     )
     continuity = 100 if result.get("kind") == "hls" else 80 if result.get("ok") else 20
