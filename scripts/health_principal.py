@@ -51,7 +51,7 @@ def parse_m3u(path: Path) -> list[dict]:
     return out
 
 
-def _probe(url: str) -> dict:
+def _probe_once(url: str) -> dict:
     started = time.monotonic()
     try:
         with requests.Session() as s:
@@ -65,6 +65,18 @@ def _probe(url: str) -> dict:
                 return {"ok": False, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "error": "no-m3u8"}
             variant = r.url
             vbody = body
+            best_variant = {"resolution": None, "bandwidth": None, "codecs": None, "fps": None}
+            master_lines = vbody.splitlines()
+            for idx, line in enumerate(master_lines):
+                if line.startswith("#EXT-X-STREAM-INF:") and idx + 1 < len(master_lines):
+                    attrs = line.split(":", 1)[1]
+                    rm = re.search(r"RESOLUTION=(\\d+x\\d+)", attrs)
+                    bm = re.search(r"BANDWIDTH=(\\d+)", attrs)
+                    cm = re.search(r'CODECS="([^"]+)"', attrs)
+                    fm = re.search(r"FRAME-RATE=([0-9.]+)", attrs)
+                    candidate = {"resolution": rm.group(1) if rm else None, "bandwidth": int(bm.group(1)) if bm else None, "codecs": cm.group(1) if cm else None, "fps": float(fm.group(1)) if fm else None}
+                    if (candidate["bandwidth"] or 0) > (best_variant["bandwidth"] or 0):
+                        best_variant = candidate
             for line_no, line in enumerate(vbody.splitlines()):
                 if line.startswith("#EXT-X-STREAM-INF") and line_no + 1 < len(vbody.splitlines()):
                     candidate = vbody.splitlines()[line_no + 1].strip()
@@ -84,9 +96,22 @@ def _probe(url: str) -> dict:
             sr.close()
             if not sample:
                 return {"ok": False, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "error": "empty-segment"}
-            return {"ok": True, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "kind": "hls"}
+            return {"ok": True, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "kind": "hls", **best_variant}
     except Exception as exc:
         return {"ok": False, "latency_ms": None, "error": type(exc).__name__}
+
+
+def _probe(url: str) -> dict:
+    last = {"ok": False, "latency_ms": None, "error": "sin intento"}
+    for attempt in range(1, ATTEMPTS + 1):
+        last = _probe_once(url)
+        if last.get("ok"):
+            last["attempts"] = attempt
+            return last
+        if attempt < ATTEMPTS:
+            time.sleep(min(8.0, 1.0 * (2 ** (attempt - 1))))
+    last["attempts"] = ATTEMPTS
+    return last
 
 
 def _score(result: dict, previous: dict, failures: int) -> int:
@@ -98,8 +123,18 @@ def _score(result: dict, previous: dict, failures: int) -> int:
         100 if latency <= 250 else 85 if latency <= 500 else 70 if latency <= 1000 else 50 if latency <= 2000 else 25
     )
     continuity = 100 if result.get("kind") == "hls" else 80 if result.get("ok") else 20
+    quality = 20
+    resolution = result.get("resolution") or ""
+    if "3840x2160" == resolution: quality = 100
+    elif "2560x1440" == resolution: quality = 95
+    elif "1920x1080" == resolution: quality = 90
+    elif "1280x720" == resolution: quality = 75
+    elif "854x480" == resolution: quality = 55
+    elif resolution: quality = 45
+    if result.get("bandwidth"):
+        quality = min(100, quality + (10 if result["bandwidth"] >= 5000000 else 5 if result["bandwidth"] >= 2500000 else 0))
     return max(0, min(100, round(
-        availability * 0.30 + stability * 0.30 + continuity * 0.20 + latency_score * 0.20
+        availability * 0.25 + stability * 0.30 + continuity * 0.15 + latency_score * 0.15 + quality * 0.15
     )))
 
 
