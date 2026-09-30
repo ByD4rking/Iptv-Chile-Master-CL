@@ -156,6 +156,15 @@ def _cooldown(failures: int) -> int:
     return min(MAX_COOLDOWN, 60 * (2 ** min(8, failures - COOLDOWN_THRESHOLD)))
 
 
+def _cooldown_active(previous: dict, now: int) -> bool:
+    if not isinstance(previous, dict):
+        return False
+    try:
+        return int(previous.get("cooldown_until", 0) or 0) > now
+    except (TypeError, ValueError):
+        return False
+
+
 def run(path: Path | None = None, workers: int = 32) -> dict:
     playlist = path or ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
     entries = parse_m3u(playlist)
@@ -176,8 +185,7 @@ def run(path: Path | None = None, workers: int = 32) -> dict:
     skipped_cooldown = 0
     for url, entry in unique.items():
         previous = state.get(url, {})
-        cooldown_until = int(previous.get("cooldown_until", 0) or 0) if isinstance(previous, dict) else 0
-        if cooldown_until > now:
+        if _cooldown_active(previous, now):
             results[url] = {
                 **previous,
                 "channel": entry["name"],
