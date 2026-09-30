@@ -17,6 +17,11 @@ def main() -> None:
     assert 0 <= h._score(ok, {}, 0) <= 100
     assert 0 <= h._score(bad, {}, 5) <= 100
 
+    # A recovery must still respect recent historical stability.
+    previous = {"history": [{"ok": False}, {"ok": False}, {"ok": True}]}
+    recovery = h._score(ok, previous, 0)
+    assert recovery < h._score(ok, {}, 0)
+
     with tempfile.TemporaryDirectory() as td:
         p = Path(td) / "test.m3u"
         p.write_text(
