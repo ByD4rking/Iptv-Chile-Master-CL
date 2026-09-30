@@ -23,7 +23,7 @@ MAX_RECORDS = 5000
 MAX_HISTORY_SAMPLES = 5
 TIMEOUT = (2, 3)
 ATTEMPTS = 2
-MAX_PROBES_PER_RUN = 1200
+MAX_PROBES_PER_RUN = 600
 DEFAULT_WORKERS = 48
 COOLDOWN_THRESHOLD = 5
 MAX_COOLDOWN = 6 * 60 * 60
@@ -221,6 +221,7 @@ def run(path: Path | None = None, workers: int = DEFAULT_WORKERS) -> dict:
 
     with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
         futures = {pool.submit(_probe, url): url for url in to_probe}
+        completed = 0
         for future in as_completed(futures):
             url = futures[future]
             result = future.result()
@@ -241,6 +242,9 @@ def run(path: Path | None = None, workers: int = DEFAULT_WORKERS) -> dict:
                 "cooldown_until": now + cooldown if cooldown else 0,
                 "checked_at": now,
             }
+            completed += 1
+            if completed % 100 == 0 or completed == len(to_probe):
+                print(f"Health Score progreso: {completed}/{len(to_probe)} sondeos completados", flush=True)
 
     # Bounded persistence: current URLs only, capped deterministically.
     if len(results) > MAX_RECORDS:
