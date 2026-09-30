@@ -3,9 +3,7 @@
 on:
   push:
     paths:
-      - "pluto/output/playlists/**"
       - "scripts/**"
-      - "pluto/src/**"
       - ".github/workflows/actualizar.yml"
   schedule:
     - cron: "0 */6 * * *"
