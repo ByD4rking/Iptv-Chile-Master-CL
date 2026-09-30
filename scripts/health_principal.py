@@ -20,7 +20,8 @@ ROOT = Path(__file__).resolve().parent.parent
 STATE_DIR = ROOT / "scripts" / "health"
 STATE_FILE = STATE_DIR / "principal_health.json"
 MAX_RECORDS = 5000
-TIMEOUT = (4, 8)
+MAX_HISTORY_SAMPLES = 5
+TIMEOUT = (3, 5)
 ATTEMPTS = 3
 COOLDOWN_THRESHOLD = 5
 MAX_COOLDOWN = 6 * 60 * 60
@@ -65,7 +66,7 @@ def _probe_once(url: str) -> dict:
                 return {"ok": False, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "error": "no-m3u8"}
             variant = r.url
             vbody = body
-            best_variant = {"resolution": None, "bandwidth": None, "codecs": None, "fps": None}
+            best_variant = {"resolution": None, "bandwidth": None, "codecs": None, "fps": None, "url": None}
             master_lines = vbody.splitlines()
             for idx, line in enumerate(master_lines):
                 if line.startswith("#EXT-X-STREAM-INF:") and idx + 1 < len(master_lines):
@@ -75,17 +76,14 @@ def _probe_once(url: str) -> dict:
                     cm = re.search(r'CODECS="([^"]+)"', attrs)
                     fm = re.search(r"FRAME-RATE=([0-9.]+)", attrs)
                     candidate = {"resolution": rm.group(1) if rm else None, "bandwidth": int(bm.group(1)) if bm else None, "codecs": cm.group(1) if cm else None, "fps": float(fm.group(1)) if fm else None}
+                    candidate["url"] = urljoin(r.url, master_lines[idx + 1].strip())
                     if (candidate["bandwidth"] or 0) > (best_variant["bandwidth"] or 0):
                         best_variant = candidate
-            for line_no, line in enumerate(vbody.splitlines()):
-                if line.startswith("#EXT-X-STREAM-INF") and line_no + 1 < len(vbody.splitlines()):
-                    candidate = vbody.splitlines()[line_no + 1].strip()
-                    if candidate and not candidate.startswith("#"):
-                        variant = urljoin(r.url, candidate)
-                        vr = s.get(variant, headers={"User-Agent": UA}, timeout=TIMEOUT)
-                        vr.raise_for_status()
-                        vbody = vr.text[:1_000_000]
-                        break
+            if best_variant.get("url"):
+                variant = best_variant["url"]
+                vr = s.get(variant, headers={"User-Agent": UA}, timeout=TIMEOUT)
+                vr.raise_for_status()
+                vbody = vr.text[:1_000_000]
             segment = next((urljoin(variant, x.strip()) for x in vbody.splitlines()
                             if x.strip() and not x.startswith("#")), None)
             if not segment:
@@ -96,6 +94,7 @@ def _probe_once(url: str) -> dict:
             sr.close()
             if not sample:
                 return {"ok": False, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "error": "empty-segment"}
+            best_variant.pop("url", None)
             return {"ok": True, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "kind": "hls", **best_variant}
     except Exception as exc:
         return {"ok": False, "latency_ms": None, "error": type(exc).__name__}
@@ -168,12 +167,16 @@ def run(path: Path | None = None, workers: int = 24) -> dict:
             previous = state.get(url, {})
             failures = 0 if result.get("ok") else int(previous.get("consecutive_failures", 0)) + 1
             cooldown = _cooldown(failures)
+            samples = list(previous.get("history", [])) if isinstance(previous.get("history", []), list) else []
+            samples.append({"checked_at": now, "ok": bool(result.get("ok")), "latency_ms": result.get("latency_ms"), "health_score": _score(result, previous, failures)})
+            samples = samples[-MAX_HISTORY_SAMPLES:]
             results[url] = {
                 **result,
                 "channel": unique[url]["name"],
                 "channel_id": unique[url]["id"],
                 "consecutive_failures": failures,
                 "health_score": _score(result, previous, failures),
+                "history": samples,
                 "state": "COOLDOWN" if cooldown else ("HEALTHY" if result.get("ok") else "DEGRADED"),
                 "cooldown_until": now + cooldown if cooldown else 0,
                 "checked_at": now,
