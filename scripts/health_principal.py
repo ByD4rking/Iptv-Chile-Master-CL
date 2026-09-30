@@ -86,7 +86,8 @@ def _probe_once(url: str) -> dict:
             status = r.status_code
             final_url = r.url
             r.raise_for_status()
-            body = _read_limited(r)
+            initial_limit = MAX_PLAYLIST_BYTES if (".m3u8" in url.lower() or "mpegurl" in (r.headers.get("Content-Type", "").lower())) else 16_384
+            body = _read_limited(r, initial_limit)
 
             # Direct media/HTTP sources are validated with only a bounded prefix.
             # The previous implementation could download the entire response,
