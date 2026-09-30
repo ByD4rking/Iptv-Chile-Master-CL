@@ -51,7 +51,8 @@ jobs:
             scripts/unificar_chile.py \
             scripts/mega_lista.py \
             scripts/generar_reporte.py \
-            scripts/health_principal.py
+            scripts/health_principal.py \
+            scripts/selftest_health_principal.py
 
       - name: Guardar estado previo de la principal
         run: |
@@ -189,6 +190,10 @@ jobs:
           done
 
           echo "Las dos listas M3U son válidas."
+
+      - name: Selftest Health Score principal
+        run: |
+          python scripts/selftest_health_principal.py
 
       - name: Motor Health Score independiente de la principal
         run: |
