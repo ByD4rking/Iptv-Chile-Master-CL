@@ -42,7 +42,7 @@ def main() -> None:
 
     assert h.MAX_HISTORY_SAMPLES == 5
     assert h.ATTEMPTS == 2
-    assert h.MAX_PROBES_PER_RUN == 1200
+    assert h.MAX_PROBES_PER_RUN == 600
     assert h.DEFAULT_WORKERS == 48
     print("SELFTEST OK: Health principal parser, score, cooldown y límites.")
 
