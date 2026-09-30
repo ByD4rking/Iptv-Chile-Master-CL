@@ -50,7 +50,8 @@ jobs:
             scripts/alimentar_principal.py \
             scripts/unificar_chile.py \
             scripts/mega_lista.py \
-            scripts/generar_reporte.py
+            scripts/generar_reporte.py \
+            scripts/health_principal.py
 
       - name: Guardar estado previo de la principal
         run: |
@@ -202,6 +203,8 @@ jobs:
               raise SystemExit("ERROR: estado de health principal inválido")
           if len(data) > 5000:
               raise SystemExit("ERROR: health principal superó el límite de 5000 fuentes")
+          if any(len(v.get("history", [])) > 5 for v in data.values()):
+              raise SystemExit("ERROR: historial por fuente superó 5 muestras")
           scores = [int(v.get("health_score", 0)) for v in data.values()]
           if scores and min(scores) < 0 or scores and max(scores) > 100:
               raise SystemExit("ERROR: Health Score fuera de 0-100")
