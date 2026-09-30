@@ -24,6 +24,7 @@ MAX_HISTORY_SAMPLES = 5
 TIMEOUT = (2, 3)
 ATTEMPTS = 2
 MAX_PROBES_PER_RUN = 600
+MAX_PLAYLIST_BYTES = 256_000
 DEFAULT_WORKERS = 48
 COOLDOWN_THRESHOLD = 5
 MAX_COOLDOWN = 6 * 60 * 60
@@ -54,50 +55,135 @@ def parse_m3u(path: Path) -> list[dict]:
     return out
 
 
+def _read_limited(response: requests.Response, limit: int = MAX_PLAYLIST_BYTES) -> str:
+    """Read only a bounded prefix; never download an entire media response."""
+    chunks = []
+    total = 0
+    try:
+        for chunk in response.iter_content(16_384):
+            if not chunk:
+                continue
+            remaining = limit - total
+            chunks.append(chunk[:remaining])
+            total += min(len(chunk), remaining)
+            if total >= limit:
+                break
+    finally:
+        response.close()
+    return b"".join(chunks).decode(response.encoding or "utf-8", errors="replace")
+
+
 def _probe_once(url: str) -> dict:
     started = time.monotonic()
     try:
         with requests.Session() as s:
-            r = s.get(url, headers={"User-Agent": UA, "Accept": "*/*"}, timeout=TIMEOUT)
+            r = s.get(
+                url,
+                headers={"User-Agent": UA, "Accept": "*/*"},
+                timeout=TIMEOUT,
+                stream=True,
+            )
             status = r.status_code
+            final_url = r.url
             r.raise_for_status()
-            body = r.text[:1_000_000]
+            body = _read_limited(r)
+
+            # Direct media/HTTP sources are validated with only a bounded prefix.
+            # The previous implementation could download the entire response,
+            # making one slow source stall the whole batch.
             if ".m3u8" not in url.lower() and "#EXTM3U" not in body:
-                return {"ok": True, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "kind": "http"}
+                return {
+                    "ok": True,
+                    "status": status,
+                    "latency_ms": round((time.monotonic()-started)*1000),
+                    "kind": "http",
+                }
             if "#EXTM3U" not in body:
-                return {"ok": False, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "error": "no-m3u8"}
-            variant = r.url
+                return {
+                    "ok": False,
+                    "status": status,
+                    "latency_ms": round((time.monotonic()-started)*1000),
+                    "error": "no-m3u8",
+                }
+
+            variant = final_url
             vbody = body
-            best_variant = {"resolution": None, "bandwidth": None, "codecs": None, "fps": None, "url": None}
+            best_variant = {
+                "resolution": None,
+                "bandwidth": None,
+                "codecs": None,
+                "fps": None,
+                "url": None,
+            }
             master_lines = vbody.splitlines()
             for idx, line in enumerate(master_lines):
-                if line.startswith("#EXT-X-STREAM-INF:") and idx + 1 < len(master_lines):
-                    attrs = line.split(":", 1)[1]
-                    rm = re.search(r"RESOLUTION=(\d+x\d+)", attrs)
-                    bm = re.search(r"BANDWIDTH=(\d+)", attrs)
-                    cm = re.search(r'CODECS="([^"]+)"', attrs)
-                    fm = re.search(r"FRAME-RATE=([0-9.]+)", attrs)
-                    candidate = {"resolution": rm.group(1) if rm else None, "bandwidth": int(bm.group(1)) if bm else None, "codecs": cm.group(1) if cm else None, "fps": float(fm.group(1)) if fm else None}
-                    candidate["url"] = urljoin(r.url, master_lines[idx + 1].strip())
-                    if (candidate["bandwidth"] or 0) > (best_variant["bandwidth"] or 0):
-                        best_variant = candidate
+                if not line.startswith("#EXT-X-STREAM-INF:") or idx + 1 >= len(master_lines):
+                    continue
+                uri = master_lines[idx + 1].strip()
+                if not uri or uri.startswith("#"):
+                    continue
+                attrs = line.split(":", 1)[1]
+                rm = re.search(r"RESOLUTION=(\d+x\d+)", attrs)
+                bm = re.search(r"BANDWIDTH=(\d+)", attrs)
+                cm = re.search(r'CODECS="([^"]+)"', attrs)
+                fm = re.search(r"FRAME-RATE=([0-9.]+)", attrs)
+                candidate = {
+                    "resolution": rm.group(1) if rm else None,
+                    "bandwidth": int(bm.group(1)) if bm else None,
+                    "codecs": cm.group(1) if cm else None,
+                    "fps": float(fm.group(1)) if fm else None,
+                    "url": urljoin(final_url, uri),
+                }
+                if (candidate["bandwidth"] or 0) > (best_variant["bandwidth"] or 0):
+                    best_variant = candidate
+
             if best_variant.get("url"):
                 variant = best_variant["url"]
-                vr = s.get(variant, headers={"User-Agent": UA}, timeout=TIMEOUT)
+                vr = s.get(
+                    variant,
+                    headers={"User-Agent": UA},
+                    timeout=TIMEOUT,
+                    stream=True,
+                )
                 vr.raise_for_status()
-                vbody = vr.text[:1_000_000]
-            segment = next((urljoin(variant, x.strip()) for x in vbody.splitlines()
-                            if x.strip() and not x.startswith("#")), None)
+                vbody = _read_limited(vr)
+
+            segment = next(
+                (
+                    urljoin(variant, x.strip())
+                    for x in vbody.splitlines()
+                    if x.strip() and not x.startswith("#")
+                ),
+                None,
+            )
             if not segment:
-                return {"ok": False, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "error": "no-segment"}
+                return {
+                    "ok": False,
+                    "status": status,
+                    "latency_ms": round((time.monotonic()-started)*1000),
+                    "error": "no-segment",
+                }
+
             sr = s.get(segment, headers={"User-Agent": UA}, timeout=TIMEOUT, stream=True)
             sr.raise_for_status()
             sample = next(sr.iter_content(4096), b"")
             sr.close()
             if not sample:
-                return {"ok": False, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "error": "empty-segment"}
+                return {
+                    "ok": False,
+                    "status": status,
+                    "latency_ms": round((time.monotonic()-started)*1000),
+                    "error": "empty-segment",
+                }
+
             best_variant.pop("url", None)
-            return {"ok": True, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "kind": "hls", **best_variant}
+            return {
+                "ok": True,
+                "status": status,
+                "latency_ms": round((time.monotonic()-started)*1000),
+                "kind": "hls",
+                **best_variant,
+            }
     except Exception as exc:
         return {"ok": False, "latency_ms": None, "error": type(exc).__name__}
 
