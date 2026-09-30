@@ -16,6 +16,9 @@ def main() -> None:
     assert h._cooldown(4) == 0
     assert h._cooldown(5) == 60
     assert h._cooldown(13) <= h.MAX_COOLDOWN
+    assert h._cooldown_active({"cooldown_until": 200}, 199) is True
+    assert h._cooldown_active({"cooldown_until": 200}, 200) is False
+    assert h._cooldown_active({"cooldown_until": "invalid"}, 199) is False
 
     ok = {"ok": True, "latency_ms": 200, "kind": "hls", "resolution": "1920x1080", "bandwidth": 5000000}
     bad = {"ok": False, "latency_ms": None, "kind": "hls"}
