@@ -172,8 +172,25 @@ def run(path: Path | None = None, workers: int = 32) -> dict:
         if e["url"] not in unique:
             unique[e["url"]] = e
 
+    to_probe = {}
+    skipped_cooldown = 0
+    for url, entry in unique.items():
+        previous = state.get(url, {})
+        cooldown_until = int(previous.get("cooldown_until", 0) or 0) if isinstance(previous, dict) else 0
+        if cooldown_until > now:
+            results[url] = {
+                **previous,
+                "channel": entry["name"],
+                "channel_id": entry["id"],
+                "state": "COOLDOWN",
+                "skipped_cooldown": True,
+            }
+            skipped_cooldown += 1
+        else:
+            to_probe[url] = entry
+
     with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-        futures = {pool.submit(_probe, url): url for url in unique}
+        futures = {pool.submit(_probe, url): url for url in to_probe}
         for future in as_completed(futures):
             url = futures[future]
             result = future.result()
@@ -204,7 +221,15 @@ def run(path: Path | None = None, workers: int = 32) -> dict:
 
     ok = sum(1 for x in results.values() if x.get("ok"))
     cooldown = sum(1 for x in results.values() if x.get("state") == "COOLDOWN")
-    return {"checked": len(results), "ok": ok, "failed": len(results)-ok, "cooldown": cooldown, "state": str(STATE_FILE)}
+    return {
+        "checked": len(results),
+        "probed": len(to_probe),
+        "skipped_cooldown": skipped_cooldown,
+        "ok": ok,
+        "failed": len(results) - ok,
+        "cooldown": cooldown,
+        "state": str(STATE_FILE),
+    }
 
 
 if __name__ == "__main__":
