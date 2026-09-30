@@ -70,8 +70,8 @@ def _probe_once(url: str) -> dict:
             for idx, line in enumerate(master_lines):
                 if line.startswith("#EXT-X-STREAM-INF:") and idx + 1 < len(master_lines):
                     attrs = line.split(":", 1)[1]
-                    rm = re.search(r"RESOLUTION=(\\d+x\\d+)", attrs)
-                    bm = re.search(r"BANDWIDTH=(\\d+)", attrs)
+                    rm = re.search(r"RESOLUTION=(\d+x\d+)", attrs)
+                    bm = re.search(r"BANDWIDTH=(\d+)", attrs)
                     cm = re.search(r'CODECS="([^"]+)"', attrs)
                     fm = re.search(r"FRAME-RATE=([0-9.]+)", attrs)
                     candidate = {"resolution": rm.group(1) if rm else None, "bandwidth": int(bm.group(1)) if bm else None, "codecs": cm.group(1) if cm else None, "fps": float(fm.group(1)) if fm else None}
