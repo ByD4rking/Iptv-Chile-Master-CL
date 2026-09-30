@@ -9,6 +9,11 @@ VERSION = 2
 RETENCION_DIAS = 120
 MAX_ENTRADAS = 12000
 
+# El workflow exige que el historial sea menor de 5 MB.
+# Dejamos margen para evitar fallos por metadatos/codificación y para
+# que el siguiente ciclo tenga espacio para nuevas observaciones.
+MAX_BYTES = 4_700_000
+
 
 def _ahora():
     return datetime.now(timezone.utc)
@@ -16,6 +21,63 @@ def _ahora():
 
 def _iso(dt):
     return dt.isoformat()
+
+
+def _serializar(datos, ahora=None):
+    ahora = ahora or _ahora()
+    salida = {
+        "_meta": {
+            "version": VERSION,
+            "actualizado": _iso(ahora),
+            "entradas": len(datos),
+        }
+    }
+    salida.update(datos)
+    return json.dumps(
+        salida,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+
+def _bytes_serializados(datos, ahora=None):
+    return len(_serializar(datos, ahora).encode("utf-8"))
+
+
+def _ajustar_presupuesto(datos, ahora):
+    """Conserva las observaciones más recientes dentro del presupuesto."""
+    if _bytes_serializados(datos, ahora) <= MAX_BYTES:
+        return datos
+
+    ordenados = sorted(
+        datos.items(),
+        key=lambda x: x[1].get("last", "") if isinstance(x[1], dict) else "",
+        reverse=True,
+    )
+
+    # Busca la mayor cantidad de entradas recientes que cabe en el límite.
+    lo, hi = 0, len(ordenados)
+    mejor = {}
+
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        candidato = dict(ordenados[:mid])
+
+        if _bytes_serializados(candidato, ahora) <= MAX_BYTES:
+            mejor = candidato
+            lo = mid + 1
+        else:
+            hi = mid - 1
+
+    descartadas = len(datos) - len(mejor)
+    if descartadas:
+        print(
+            f"[APRENDIZAJE] Presupuesto de {MAX_BYTES} bytes: "
+            f"se conservan {len(mejor)} URLs recientes y se depuran "
+            f"{descartadas} URLs antiguas."
+        )
+
+    return mejor
 
 
 def cargar():
@@ -55,24 +117,19 @@ def _guardar(datos):
     ARCHIVO.parent.mkdir(parents=True, exist_ok=True)
 
     ahora = _ahora()
-    salida = {
-        "_meta": {
-            "version": VERSION,
-            "actualizado": _iso(ahora),
-            "entradas": len(datos),
-        }
-    }
-    salida.update(datos)
+    datos = _ajustar_presupuesto(datos, ahora)
+    texto = _serializar(datos, ahora)
+
+    # Protección final: nunca publicamos un historial fuera del presupuesto.
+    tamano = len(texto.encode("utf-8"))
+    if tamano > MAX_BYTES:
+        raise RuntimeError(
+            f"El historial no pudo ajustarse al límite: "
+            f"{tamano} > {MAX_BYTES} bytes"
+        )
 
     temporal = ARCHIVO.with_suffix(".tmp")
-    temporal.write_text(
-        json.dumps(
-            salida,
-            ensure_ascii=False,
-            separators=(",", ":"),
-        ),
-        encoding="utf-8",
-    )
+    temporal.write_text(texto, encoding="utf-8")
     temporal.replace(ARCHIVO)
 
 
@@ -295,4 +352,18 @@ if __name__ == "__main__":
     print("=" * 60)
     print(" IPTV CHILE MASTER - SISTEMA DE APRENDIZAJE v2")
     print("=" * 60)
+
+    # Normaliza también un historial ya existente que haya superado 5 MB,
+    # incluso si en este ciclo no hubo nuevas observaciones.
+    datos = cargar()
+    if datos:
+        _guardar(datos)
+
     print(json.dumps(resumen(), ensure_ascii=False, indent=2))
+    if ARCHIVO.exists():
+        tamano = ARCHIVO.stat().st_size
+        print(f"Tamaño aprendizaje.json: {tamano} bytes")
+        if tamano >= 5_000_000:
+            raise SystemExit(
+                f"ERROR: aprendizaje.json sigue superando 5 MB ({tamano} bytes)."
+            )
