@@ -115,7 +115,20 @@ def _probe(url: str) -> dict:
 
 def _score(result: dict, previous: dict, failures: int) -> int:
     availability = 100 if result.get("ok") else 0
-    stability = max(0, 100 - min(100, failures * 20))
+
+    # Historical stability uses bounded recent history instead of only the
+    # current consecutive-failure counter. This prevents a single recovery
+    # probe from immediately restoring a perfect stability score.
+    history = previous.get("history", []) if isinstance(previous, dict) else []
+    recent = [x for x in history[-MAX_HISTORY_SAMPLES:] if isinstance(x, dict)]
+    if recent:
+        success_count = sum(1 for x in recent if x.get("ok") is True)
+        stability = round((success_count / len(recent)) * 100)
+    else:
+        stability = 100 if result.get("ok") else 0
+
+    if not result.get("ok"):
+        stability = min(stability, max(0, 100 - min(100, failures * 20)))
     latency = result.get("latency_ms")
     latency_score = 100 if latency is None and result.get("ok") else (
         0 if latency is None else
