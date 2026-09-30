@@ -145,6 +145,7 @@ def _health_score(record: dict, previous: dict) -> int:
     stability = 100.0 if record.get("ok") else max(0.0, 100.0 - min(100.0, record.get("consecutive_failures", 0) * 20.0))
     latency = record.get("latency_ms")
     latency_score = 100.0 if latency is None and record.get("ok") else (
+        0.0 if latency is None else
         100.0 if latency <= 250 else 85.0 if latency <= 500 else 70.0 if latency <= 1000 else 50.0 if latency <= 2000 else 25.0
     )
     continuity = 100.0 if record.get("ok") else 20.0
