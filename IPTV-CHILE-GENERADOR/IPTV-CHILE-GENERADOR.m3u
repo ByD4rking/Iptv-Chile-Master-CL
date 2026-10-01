@@ -1,6 +1,10 @@
 #EXTM3U
 # IPTV-CHILE-GENERADOR | 2026-10-01
 # IPTV-CHILE-GENERADOR-CHANNELS-SHA256: 58fffd6f1f474feb2f6f6acaeed93f34cdd569f872bf66d4f680f01985d8e670
+#EXTINF:-1 tvg-name="EnerGeek FAN (1080p)" tvg-id="67d6892f14e2159daa35" tvg-logo="https://cdn.energeek.cl/logos/EG-Fan-2025_pfp.png" group-title="Animation",EnerGeek FAN (1080p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=1500
+https://cl-2.backend.energeek.cl/bkp/egfanweb/index.m3u8?token=W3bEnerG33k2026
 #EXTINF:-1 tvg-name="ETC TV (1080p)" tvg-id="d21df815d109d470c4de" tvg-logo="https://i.postimg.cc/RVYgh7h9/ETC-Logo.png" group-title="Animation",ETC TV (1080p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
@@ -213,10 +217,6 @@ https://live-evg10.tv360.bitel.com.pe/bitel/epatv/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
 https://v2.tustreaming.cl/frecuencia7/index.m3u8
-#EXTINF:-1 tvg-name="Iquique TV (1080p)" tvg-id="eb90b200fb82bcfb3908" tvg-logo="https://i.imgur.com/ZpXXLox.png" group-title="General",Iquique TV (1080p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=1500
-https://origin.skarnetchile.com:8081/iquiquetv-hd/index.m3u8
 #EXTINF:-1 tvg-name="Islita TV (1080p)" tvg-id="b1308e51f2cfc030a2ff" tvg-logo="https://i.imgur.com/YGLbCeC.png" group-title="General",Islita TV (1080p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
@@ -277,10 +277,6 @@ https://scl.edge.grupoz.cl/miradio2/live/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
 https://video.ipstream.cl:3710/hybrid/play.m3u8
-#EXTINF:-1 tvg-name="Nina TV (720p)" tvg-id="afb0f71f7cc01a896520" tvg-logo="https://cdn.m3u.cl/logo/1552_Nina_TV.png" group-title="General",Nina TV (720p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=1500
-https://tv1.ninatv.cl/hls/stream.m3u8
 #EXTINF:-1 tvg-name="Odisea TV (720p)" tvg-id="46c810103e80490338a7" tvg-logo="https://i.imgur.com/8SCnoiZ.png" group-title="General",Odisea TV (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
@@ -305,6 +301,10 @@ https://v2.tustreaming.cl/radioancoatv/index.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
 https://tv.arkeo.cl:19360/8046/8046.m3u8
+#EXTINF:-1 tvg-name="Radio Fantasia TV (720p)" tvg-id="4504c20b84dd00208eea" tvg-logo="https://cdn.m3u.cl/logo/389_Radio_Fantasia_TV.png" group-title="General",Radio Fantasia TV (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=1500
+https://v2.tustreaming.cl/fantasiatv/index.m3u8
 #EXTINF:-1 tvg-name="Radio Frecuencia Uno (720p)" tvg-id="13e463c187ed304969d2" tvg-logo="https://cdn.m3u.cl/logo/1646_Radio_Frecuencia_Uno.png" group-title="General",Radio Frecuencia Uno (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
@@ -333,6 +333,10 @@ https://rusach2.janus.cl/playlist/stream.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
 https://live20.bozztv.com/akamaissh101/ssh101/vialibretv/playlist.m3u8
+#EXTINF:-1 tvg-name="Radio Vida Curico (720p)" tvg-id="5d99099aa551a98a5f7f" tvg-logo="https://cdn.m3u.cl/logo/167_Radio_Vida_Curico.png" group-title="General",Radio Vida Curico (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=1500
+https://v2.tustreaming.cl/radiovidacurico/index.m3u8
 #EXTINF:-1 tvg-name="Rial TV (720p)" tvg-id="6ae2d1284850ddbf205e" tvg-logo="https://i.imgur.com/zcwQyPI.png" group-title="General",Rial TV (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
@@ -360,7 +364,7 @@ https://pantera1-100gb-cl-movistar.dps.live/teleangol/teleangol.smil/playlist.m3
 #EXTINF:-1 tvg-name="Telemundo Internacional (1080p)" tvg-id="aa4d3572b5cbe3878171" tvg-logo="https://i.imgur.com/j2O4ndp.png" group-title="General",Telemundo Internacional (1080p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
-http://190.60.46.156:8089/TELEMUNDO/index.m3u8
+http://190.93.224.42/TELEMUNDO/index.m3u8
 #EXTINF:-1 tvg-name="TV Chile (720p)" tvg-id="f3ba4cd7045c9f614acb" tvg-logo="https://i.imgur.com/oYFto0V.png" group-title="General",TV Chile (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
@@ -513,6 +517,10 @@ https://5eaccbab48461.streamlock.net:1936/8112/8112/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
 http://187.102.208.209:8000/play/a0a1/index.m3u8
+#EXTINF:-1 tvg-name="ADN TV (720p)" tvg-id="f2a618c8588e4062d247" tvg-logo="https://i.imgur.com/AVfTwNw.png" group-title="News",ADN TV (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=1500
+https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8
 #EXTINF:-1 tvg-name="Atacama Noticias (720p) [Not 24/7]" tvg-id="09d3ecb42296552fb4bc" tvg-logo="https://i.imgur.com/Avx4Ecf.png" group-title="News",Atacama Noticias (720p) [Not 24/7]
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
@@ -609,6 +617,10 @@ https://v2.tustreaming.cl/tnetv/index.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
 https://origin.dpsgo.com/ssai/event/f4TrySe8SoiGF8Lu3EIq1g/master.m3u8
+#EXTINF:-1 tvg-name="CRTV (Chile) (720p)" tvg-id="f9036fdbff38d9141603" tvg-logo="https://i2.paste.pics/bf68b159547597c39574aec9dd7c626a.png" group-title="Sports",CRTV (Chile) (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=1500
+https://stmv2.voxtvhd.com.br/crtvchile/crtvchile/playlist.m3u8
 #EXTINF:-1 tvg-name="DSports (1080p)" tvg-id="d1febdf0ef75af9e42f5" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/DirecTV_Sports_Latin_America_%282018%29.png/960px-DirecTV_Sports_Latin_America_%282018%29.png" group-title="Sports",DSports (1080p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
@@ -621,6 +633,10 @@ https://unlimited6-cl.dps.live/sportinghd/sportinghd.smil/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
 https://tvturf4.janus.cl/playlist/stream.m3u8?d=w&id=
+#EXTINF:-1 tvg-name="Turismo Travel TV" tvg-id="080a33a09838916bb017" tvg-logo="https://i.imgur.com/4ixl8Px.png" group-title="Travel",Turismo Travel TV
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=1500
+https://stmv3.voxtvhd.com.br/turismotraveltv/turismotraveltv/playlist.m3u8
 #EXTINF:-1 tvg-name="Alternativa TV (720p)" tvg-id="13d4870a2a05f2ef39e7" tvg-logo="https://i.imgur.com/KCrSbgv.png" group-title="Undefined",Alternativa TV (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=1500
