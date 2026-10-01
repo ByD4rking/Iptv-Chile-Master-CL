@@ -15,6 +15,9 @@ HISTORY_FILE = BASE / "data" / "history.json"
 TIMEOUT = 8
 WORKERS = 40
 MAX_HISTORY = 5000
+RETRIES = 3
+RETRY_BACKOFF_SECONDS = (0.8, 1.8, 3.5)
+RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
 def load_json(path, default):
@@ -48,28 +51,42 @@ def check_url(item):
         return result
 
     start = time.perf_counter()
-    try:
-        request = Request(
-            url,
-            headers={
-                "User-Agent": "IPTV-CHILE-GENERADOR/CHECK-4.0",
-                "Accept": "*/*",
-            },
-        )
-        with urlopen(request, timeout=TIMEOUT) as response:
-            result["status_code"] = response.status
-            response.read(2048)
-            result["response_time_ms"] = round(
-                (time.perf_counter() - start) * 1000, 2
+    last_error = None
+    for attempt in range(RETRIES):
+        try:
+            request = Request(
+                url,
+                headers={
+                    "User-Agent": "IPTV-CHILE-GENERADOR/CHECK-5.0",
+                    "Accept": "*/*",
+                },
             )
-            result["online"] = 200 <= response.status < 400
-    except HTTPError as error:
-        result["status_code"] = error.code
-        result["error"] = f"HTTP {error.code}"
-    except URLError as error:
-        result["error"] = str(error.reason)
-    except Exception as error:
-        result["error"] = str(error)
+            with urlopen(request, timeout=TIMEOUT) as response:
+                result["status_code"] = response.status
+                response.read(2048)
+                result["response_time_ms"] = round(
+                    (time.perf_counter() - start) * 1000, 2
+                )
+                result["online"] = 200 <= response.status < 400
+                if result["online"] or response.status not in RETRYABLE_HTTP:
+                    return result
+                last_error = f"HTTP {response.status}"
+        except HTTPError as error:
+            result["status_code"] = error.code
+            last_error = f"HTTP {error.code}"
+            if error.code not in RETRYABLE_HTTP:
+                break
+        except (URLError, TimeoutError) as error:
+            last_error = str(getattr(error, "reason", error))
+        except Exception as error:
+            last_error = str(error)
+            break
+        if attempt < RETRIES - 1:
+            time.sleep(RETRY_BACKOFF_SECONDS[attempt])
+
+    result["response_time_ms"] = round((time.perf_counter() - start) * 1000, 2)
+    result["error"] = last_error or "Error desconocido"
+    return result
 
     return result
 
