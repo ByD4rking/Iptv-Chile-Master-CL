@@ -1873,11 +1873,6 @@ def main():
 
     bloques_no_pluto_iniciales = extraer_bloques_no_pluto_por_url(lineas)
 
-    # Blindaje de estabilidad: solo añadimos directivas al bloque del mismo
-    # canal. No se crean endpoints alternativos ni se cruzan canales.
-    lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
-    print(f"Reconexión/caché aplicados: {reconexiones_agregadas}")
-
     # 1) Pluto: sustituir automáticamente cualquier enlace de terceros
     # por nuestra URL vigente. Solo se elimina un Pluto tercero cuando no
     # existe reemplazo propio; los canales no-Pluto no se tocan.
@@ -2313,15 +2308,15 @@ def main():
             + ", ".join(sorted(repetidas_post))
         )
 
+    # SOLO AHORA se publica la principal: aplicar las directivas sobre la
+    # representación final, para que ninguna transformación posterior las
+    # elimine. Pluto queda excluido por diseño.
+    lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+    print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
+
     texto_final = "\n".join(lineas)
     if not texto_final.endswith("\n"):
         texto_final += "\n"
-
-    # SOLO AHORA se publica la principal. Aplicar antes las directivas de
-    # reconexión para que el reproductor pueda recuperar cortes transitorios.
-    lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
-    if reconexiones_agregadas:
-        print(f"Directivas de reconexión agregadas: {reconexiones_agregadas}")
 
     PRINCIPAL.write_text(
         texto_final,
