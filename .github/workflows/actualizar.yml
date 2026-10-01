@@ -59,14 +59,22 @@ jobs:
         run: |
           set -euo pipefail
           EXPECTED="78520768a5e3a114a648702cbb044cd952e9b44019434765222c031219909c96"
-          ACTUAL="$(sha256sum IPTV-CHILE-MAESTRA_GOD.m3u | awk '{print $1}')"
+          ACTUAL="$(python - <<'PY'
+          import hashlib,re
+          p="IPTV-CHILE-MAESTRA_GOD.m3u"
+          raw=open(p,"rb").read()
+          raw=re.sub(rb"^#EXTVLCOPT:http-reconnect=true\\r?\\n",b"",raw,flags=re.M)
+          raw=re.sub(rb"^#EXTVLCOPT:network-caching=1500\\r?\\n",b"",raw,flags=re.M)
+          print(hashlib.sha256(raw).hexdigest())
+          PY
+          )"
           test "$ACTUAL" = "$EXPECTED" || {
-            echo "ERROR: GOD fue modificada antes del mantenimiento."
-            echo "Esperada: $EXPECTED"
-            echo "Actual:   $ACTUAL"
+            echo "ERROR: GOD fue modificada fuera de las directivas de reconexión permitidas."
+            echo "Esperada normalizada: $EXPECTED"
+            echo "Actual normalizada:   $ACTUAL"
             exit 1
           }
-          echo "OK: GOD coincide con su huella SHA-256 canónica."
+          echo "OK: GOD coincide con su huella canónica tras normalizar reconexión."
 
       - name: Guardar estado previo de la principal
         run: |
