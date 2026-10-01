@@ -1,3 +1,4 @@
+import hashlib
 import json
 import re
 from datetime import datetime, timezone
@@ -72,7 +73,7 @@ def main():
         category = meta.get("category") or "Sin clasificar"
         profile = meta.get("profile") or "unclassified"
         group = f"Teleon | {region} | {category}"
-        tvg_id = "teleon-" + re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+        tvg_id = "teleon-" + hashlib.sha1(url.encode("utf-8")).hexdigest()[:16]
         lines = [
             f'#EXTINF:-1 tvg-id="{safe(tvg_id)}" tvg-name="{safe(name)}" group-title="{safe(group)}",{name}',
             "#EXTVLCOPT:http-reconnect=true",
