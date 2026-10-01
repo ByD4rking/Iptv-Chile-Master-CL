@@ -1,12 +1,30 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-01T16:09:39.920054+00:00",
+  "generated_at": "2026-10-01T16:22:08.525847+00:00",
   "mode": "discovery_validation_only",
   "published_automatically": false,
-  "total_candidates": 29,
-  "playback_ok": 22,
-  "playback_failed": 7,
+  "total_candidates": 34,
+  "playback_ok": 26,
+  "playback_failed": 8,
   "results": [
+    {
+      "page_url": "https://teleon.tv/ar/channel/24-7-canal-de-noticias-ar/",
+      "stream_url": "https://panel.host-live.com:19360/cn247tv/cn247tv.m3u8",
+      "headers_used": [
+        "Referer"
+      ],
+      "playback_checked": true,
+      "playback_ok": true,
+      "playback_type": "hls",
+      "http_status": 200,
+      "error": null,
+      "validated_url": "https://panel.host-live.com:19360/cn247tv/cn247tv.m3u8",
+      "variant_count": 3,
+      "variant_index": 1,
+      "resolution": "640x360",
+      "bitrate": 910800,
+      "segment_bytes": 65536
+    },
     {
       "page_url": "https://teleon.tv/channel/15-animation-ru/",
       "stream_url": "https://live.15plusmg.ru/memfs/3546fc09-2eba-459d-9a1f-9a2fc39e50bd.m3u8",
@@ -320,16 +338,16 @@
         "Referer"
       ],
       "playback_checked": true,
-      "playback_ok": false,
+      "playback_ok": true,
       "playback_type": "hls",
       "http_status": 200,
-      "error": "Playlist HLS accesible pero ninguna variante/segmento pasó la validación.",
+      "error": null,
       "validated_url": "https://daiconnect.com/live/hls/tvup/rk-cartoonclassics/.m3u8",
       "variant_count": 3,
-      "variant_index": null,
-      "resolution": null,
-      "bitrate": null,
-      "segment_bytes": null
+      "variant_index": 1,
+      "resolution": "1920x1080",
+      "bitrate": 4172199,
+      "segment_bytes": 65536
     },
     {
       "page_url": "https://teleon.tv/channel/duck-tv-uk/",
@@ -382,7 +400,7 @@
       "variant_count": 1,
       "variant_index": 1,
       "resolution": "853x480",
-      "bitrate": 2331538,
+      "bitrate": 2994470,
       "segment_bytes": 65536
     },
     {
@@ -410,16 +428,16 @@
         "Referer"
       ],
       "playback_checked": true,
-      "playback_ok": true,
+      "playback_ok": false,
       "playback_type": "hls",
       "http_status": 200,
-      "error": null,
+      "error": "Playlist HLS accesible pero ninguna variante/segmento pasó la validación.",
       "validated_url": "https://arabbrics.mediacdn.ru/cdn/brics/arab/tracks-v1a1/mono.ts.m3u8",
       "variant_count": 0,
-      "variant_index": 1,
+      "variant_index": null,
       "resolution": null,
-      "bitrate": 0,
-      "segment_bytes": 65536
+      "bitrate": null,
+      "segment_bytes": null
     },
     {
       "page_url": "https://teleon.tv/channel/tvokids-ca/",
@@ -440,24 +458,6 @@
       "segment_bytes": 65536
     },
     {
-      "page_url": "https://teleon.tv/channel/who-wants-to-be-a-millionaire-uk/",
-      "stream_url": "https://90d31962469d4f299a6f486800e625ec.mediatailor.us-west-2.amazonaws.com/v1/master/ba62fe743df0fe93366eba3a257d792884136c7f/LINEAR-1233-3220-UK-WHOWANTSTOBEAMILLIONAIRE-LG_UK/playlist.m3u8",
-      "headers_used": [
-        "Referer"
-      ],
-      "playback_checked": true,
-      "playback_ok": true,
-      "playback_type": "hls",
-      "http_status": 200,
-      "error": null,
-      "validated_url": "https://90d31962469d4f299a6f486800e625ec.mediatailor.us-west-2.amazonaws.com/v1/master/ba62fe743df0fe93366eba3a257d792884136c7f/LINEAR-1233-3220-UK-WHOWANTSTOBEAMILLIONAIRE-LG_UK/playlist.m3u8",
-      "variant_count": 5,
-      "variant_index": 1,
-      "resolution": "1920x1080",
-      "bitrate": 5057448,
-      "segment_bytes": 65536
-    },
-    {
       "page_url": "https://teleon.tv/cl/channel/13c-cl/",
       "stream_url": "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
       "headers_used": [
@@ -468,11 +468,11 @@
       "playback_type": "hls",
       "http_status": 200,
       "error": null,
-      "validated_url": "https://dai.google.com/linear/hls/pa/event/GI-9cp_bT8KcerLpZwkuhw/stream/963d378e-da41-464a-8aae-adb21fc1bbb7:TUL/master.m3u8",
+      "validated_url": "https://dai.google.com/linear/hls/pa/event/GI-9cp_bT8KcerLpZwkuhw/stream/6f380de5-b01f-46b9-97e5-3897b6aefb4d:TUL/master.m3u8",
       "variant_count": 4,
       "variant_index": 1,
       "resolution": "1920x1080",
-      "bitrate": 5820479,
+      "bitrate": 4805152,
       "segment_bytes": 65536
     },
     {
@@ -528,6 +528,96 @@
       "resolution": null,
       "bitrate": null,
       "segment_bytes": null
+    },
+    {
+      "page_url": "https://teleon.tv/gt/channel/who-wants-to-be-a-millionaire-uk/",
+      "stream_url": "https://90d31962469d4f299a6f486800e625ec.mediatailor.us-west-2.amazonaws.com/v1/master/ba62fe743df0fe93366eba3a257d792884136c7f/LINEAR-1233-3220-UK-WHOWANTSTOBEAMILLIONAIRE-LG_UK/playlist.m3u8",
+      "headers_used": [
+        "Referer"
+      ],
+      "playback_checked": true,
+      "playback_ok": true,
+      "playback_type": "hls",
+      "http_status": 200,
+      "error": null,
+      "validated_url": "https://90d31962469d4f299a6f486800e625ec.mediatailor.us-west-2.amazonaws.com/v1/master/ba62fe743df0fe93366eba3a257d792884136c7f/LINEAR-1233-3220-UK-WHOWANTSTOBEAMILLIONAIRE-LG_UK/playlist.m3u8",
+      "variant_count": 5,
+      "variant_index": 1,
+      "resolution": "1920x1080",
+      "bitrate": 5057448,
+      "segment_bytes": 65536
+    },
+    {
+      "page_url": "https://teleon.tv/hn/channel/3abn-latino-us/",
+      "stream_url": "https://3abn.bozztv.com/3abn2/Lat_live/smil:Lat_live.smil/playlist.m3u8",
+      "headers_used": [
+        "Referer"
+      ],
+      "playback_checked": true,
+      "playback_ok": true,
+      "playback_type": "hls",
+      "http_status": 200,
+      "error": null,
+      "validated_url": "https://3abn.bozztv.com/3abn2/Lat_live/smil:Lat_live.smil/playlist.m3u8",
+      "variant_count": 3,
+      "variant_index": 1,
+      "resolution": "1280x720",
+      "bitrate": 2328000,
+      "segment_bytes": 65536
+    },
+    {
+      "page_url": "https://teleon.tv/hn/channel/telemundo-al-dia-us/",
+      "stream_url": "https://d1rqgw5gocwo9i.cloudfront.net/10009/99993040/hls/master.m3u8?ads.xumo_channelId=99993040&ads.asnw=169843&ads.afid=137391198&ads.sfid=19051598&ads.caid=telemundoaldia_linear&ads.csid=lgchannels_us_telemundoaldia_ssai_cro&ads._fw_is_lat=[LMT]&ads._fw_us_privacy=[US_PRIVACY]&ads._fw_coppa=0&ads._fw_did=[IFA]&ads._fw_vcid2=512116:[IFA]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads._fw_content_category=IAB12&ads._fw_content_genre=news&ads._fw_content_language=es&ads._fw_content_rating=tv-g&ads._fw_deviceMake=[DEVICE_MAKE]&ads._fw_device_model=[DEVICE_MODEL]&ads._fw_deviceType=3-Connected_TV&ads.appVersion=[APP_VERSION]&ads.appName=lgchannels&ads.xumo_contentId=2561&ads.xumo_contentName=TelemundoNewsSports&ads.xumo_providerId=2561&ads.xumo_providerName=TelemundoNewsSports&ads.channelId=99993040&ads._fw_ifa_type=[IFA_TYPE]",
+      "headers_used": [
+        "Referer"
+      ],
+      "playback_checked": true,
+      "playback_ok": true,
+      "playback_type": "hls",
+      "http_status": 200,
+      "error": null,
+      "validated_url": "https://d1rqgw5gocwo9i.cloudfront.net/10009/99993040/hls/master.m3u8?ads.xumo_channelId=99993040&ads.asnw=169843&ads.afid=137391198&ads.sfid=19051598&ads.caid=telemundoaldia_linear&ads.csid=lgchannels_us_telemundoaldia_ssai_cro&ads._fw_is_lat=[LMT]&ads._fw_us_privacy=[US_PRIVACY]&ads._fw_coppa=0&ads._fw_did=[IFA]&ads._fw_vcid2=512116:[IFA]&ads._fw_app_bundle=[app_bundle]&ads._fw_app_store_url=[app_store_url]&ads._fw_content_category=IAB12&ads._fw_content_genre=news&ads._fw_content_language=es&ads._fw_content_rating=tv-g&ads._fw_deviceMake=[DEVICE_MAKE]&ads._fw_device_model=[DEVICE_MODEL]&ads._fw_deviceType=3-Connected_TV&ads.appVersion=[APP_VERSION]&ads.appName=lgchannels&ads.xumo_contentId=2561&ads.xumo_contentName=TelemundoNewsSports&ads.xumo_providerId=2561&ads.xumo_providerName=TelemundoNewsSports&ads.channelId=99993040&ads._fw_ifa_type=[IFA_TYPE]",
+      "variant_count": 6,
+      "variant_index": 1,
+      "resolution": "1280x720",
+      "bitrate": 5000000,
+      "segment_bytes": 65536
+    },
+    {
+      "page_url": "https://teleon.tv/mx/channel/estrella-games-mx/",
+      "stream_url": "https://estrella-games-oando.amagi.tv/playlist.m3u8",
+      "headers_used": [
+        "Referer"
+      ],
+      "playback_checked": true,
+      "playback_ok": false,
+      "playback_type": "hls",
+      "http_status": 200,
+      "error": "Playlist HLS accesible pero ninguna variante/segmento pasó la validación.",
+      "validated_url": "https://estrella-games-oando.amagi.tv/playlist.m3u8",
+      "variant_count": 8,
+      "variant_index": null,
+      "resolution": null,
+      "bitrate": null,
+      "segment_bytes": null
+    },
+    {
+      "page_url": "https://teleon.tv/mx/channel/estrella-news-mx/",
+      "stream_url": "https://estrella-news-oando.amagi.tv/playlist.m3u8",
+      "headers_used": [
+        "Referer"
+      ],
+      "playback_checked": true,
+      "playback_ok": true,
+      "playback_type": "hls",
+      "http_status": 200,
+      "error": null,
+      "validated_url": "https://estrella-news-oando.amagi.tv/playlist.m3u8",
+      "variant_count": 6,
+      "variant_index": 1,
+      "resolution": "1920x1080",
+      "bitrate": 5253600,
+      "segment_bytes": 65536
     }
   ]
 }

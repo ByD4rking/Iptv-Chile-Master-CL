@@ -10,12 +10,12 @@
     "comparison_against": "data/teleon_discovery.json"
   },
   "metrics": {
-    "entries_parsed": 183,
-    "unique_urls": 183,
+    "entries_parsed": 202,
+    "unique_urls": 202,
     "duplicate_urls": 0,
-    "known_to_teleon": 0,
-    "new_urls_vs_teleon": 183,
-    "new_url_candidates": 183
+    "known_to_teleon": 22,
+    "new_urls_vs_teleon": 180,
+    "new_url_candidates": 180
   },
   "duplicates": [],
   "entries": [
@@ -174,6 +174,19 @@
         "Culture"
       ],
       "url": "https://unlimited2-cl-isp.dps.live/ucvtv2/ucvtv2.smil/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "ClickTV Chile (720p)",
+      "tvg_name": "ClickTV Chile (720p)",
+      "tvg_id": "77bba8c91f8aff6de79e",
+      "logo": "https://i.imgur.com/H0XNbMS.png",
+      "groups": [
+        "Documentary"
+      ],
+      "url": "https://v2.tustreaming.cl/clicktv/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -414,6 +427,32 @@
       }
     },
     {
+      "name": "Canal 30 Loncomilla (720p)",
+      "tvg_name": "Canal 30 Loncomilla (720p)",
+      "tvg_id": "7e4f71c67ed77c29cc49",
+      "logo": "https://i.imgur.com/dgUHqrQ.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v1.tustreaming.cl/canal30loncomilla/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Canal Local (720p)",
+      "tvg_name": "Canal Local (720p)",
+      "tvg_id": "f64c7b5b7402f3f255e6",
+      "logo": "https://i.imgur.com/ReZXqWR.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v2.tustreaming.cl/canallocalcl/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Central TV (Chile) (720p)",
       "tvg_name": "Central TV (Chile) (720p)",
       "tvg_id": "c06b052f1896618f5a7a",
@@ -422,19 +461,6 @@
         "General"
       ],
       "url": "https://freya.mivideo.pro/centraltv/video.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "China Channel (720p)",
-      "tvg_name": "China Channel (720p)",
-      "tvg_id": "b3fae0e020c6f740bf77",
-      "logo": "https://cdn.m3u.cl/logo/1769_China_Channel.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/chinachannel/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -474,19 +500,6 @@
         "General"
       ],
       "url": "https://v2.tustreaming.cl/coyhaiquetv/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "DCH TV (1080p)",
-      "tvg_name": "DCH TV (1080p)",
-      "tvg_id": "380c95571d1f17304e17",
-      "logo": "https://i.imgur.com/65Xk6oI.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/dchtv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -674,19 +687,6 @@
       }
     },
     {
-      "name": "La Metro TV (1080p)",
-      "tvg_name": "La Metro TV (1080p)",
-      "tvg_id": "835a1b9714b398daeec3",
-      "logo": "https://i.imgur.com/0aoI5Zd.jpeg",
-      "groups": [
-        "General"
-      ],
-      "url": "https://jireh-8-hls-video-us-isp.dps.live/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/metropolitanatv/metropolitanatv.smil/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "La Popular TV",
       "tvg_name": "La Popular TV",
       "tvg_id": "9ea9527157d330a243df",
@@ -864,19 +864,6 @@
         "General"
       ],
       "url": "https://tv.arkeo.cl:19360/8046/8046.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Radio Fantasia TV (720p)",
-      "tvg_name": "Radio Fantasia TV (720p)",
-      "tvg_id": "4504c20b84dd00208eea",
-      "logo": "https://cdn.m3u.cl/logo/389_Radio_Fantasia_TV.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/fantasiatv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1116,6 +1103,19 @@
       }
     },
     {
+      "name": "TVN (1080p)",
+      "tvg_name": "TVN (1080p)",
+      "tvg_id": "9b5bdbcfbfb41b220e9c",
+      "logo": "https://i.imgur.com/3FKZHL4.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://iptv.bitred.cl/tvn/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "TVU (1080p)",
       "tvg_name": "TVU (1080p)",
       "tvg_id": "28232c1b59f81a1a7cf7",
@@ -1168,14 +1168,14 @@
       }
     },
     {
-      "name": "Cinecanal Pacific (1080p)",
-      "tvg_name": "Cinecanal Pacific (1080p)",
-      "tvg_id": "8c90f71d588692ff063f",
-      "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/CinecanalLA.png/960px-CinecanalLA.png",
+      "name": "Wapp (720p)",
+      "tvg_name": "Wapp (720p)",
+      "tvg_id": "8ba0e1dd0d0865d7f79f",
+      "logo": "https://i.imgur.com/Bv1yJ1d.png",
       "groups": [
-        "Movies"
+        "Lifestyle"
       ],
-      "url": "http://138.121.15.230:9002/CINECANAL/index.m3u8",
+      "url": "https://stream.wapptv.cl/video/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1455,6 +1455,19 @@
       }
     },
     {
+      "name": "Sabor TV (720p)",
+      "tvg_name": "Sabor TV (720p)",
+      "tvg_id": "7fdb187ec211f1621619",
+      "logo": "https://cdn.m3u.cl/logo/416_Sabor_TV.png",
+      "groups": [
+        "Music"
+      ],
+      "url": "https://v1.tustreaming.cl/sabortv/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Sensacion Costa",
       "tvg_name": "Sensacion Costa",
       "tvg_id": "10011e695e06cf01f221",
@@ -1715,19 +1728,6 @@
       }
     },
     {
-      "name": "Fortaleza TV (1080p)",
-      "tvg_name": "Fortaleza TV (1080p)",
-      "tvg_id": "08af89967f39d963b3d5",
-      "logo": "https://i.imgur.com/BJpop5n.png",
-      "groups": [
-        "Religious"
-      ],
-      "url": "https://multimedia.fortalezatv.cl/video/video.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "ISA TV",
       "tvg_name": "ISA TV",
       "tvg_id": "f3158a288aedc6f67e97",
@@ -1819,19 +1819,6 @@
       }
     },
     {
-      "name": "TNE (720p) [Not 24/7]",
-      "tvg_name": "TNE (720p) [Not 24/7]",
-      "tvg_id": "cd3a6eb1b42257a82213",
-      "logo": "https://i.imgur.com/8QbvXva.png",
-      "groups": [
-        "Religious"
-      ],
-      "url": "https://v2.tustreaming.cl/tnetv/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "13T (720p)",
       "tvg_name": "13T (720p)",
       "tvg_id": "47605f06cad18dc3aa2f",
@@ -1891,7 +1878,7 @@
       "groups": [
         "Sports"
       ],
-      "url": "https://tvturf4.janus.cl/playlist/stream.m3u8",
+      "url": "https://tvturf4.janus.cl/playlist/stream.m3u8?d=w&id=",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1931,19 +1918,6 @@
         "Undefined"
       ],
       "url": "https://v2.tustreaming.cl/atacamatv/tracks-v1a1/mono.ts.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Atacama TV (720p)",
-      "tvg_name": "Atacama TV (720p)",
-      "tvg_id": "626d3967e440d0989d2f",
-      "logo": "https://i.postimg.cc/rwS082hL/atacama-tv.png",
-      "groups": [
-        "Undefined"
-      ],
-      "url": "https://v2.tustreaming.cl/atacamatv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -2401,6 +2375,300 @@
       "url": "http://45.170.130.224:8000/play/a00x/index.m3u8",
       "headers": {
         "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "7Tv Aljarafe Es",
+      "tvg_name": "7Tv Aljarafe Es",
+      "tvg_id": "teleon-24245c50fc522205",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://streaming004.gestec-video.com/hls/7TVALJARAFE.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjQzNGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Almera Es",
+      "tvg_name": "7Tv Almera Es",
+      "tvg_id": "teleon-69b67738df81e67a",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://especial7tv.gestec-video.com/hls/7TVALMERIA.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjU1NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Arcos Es",
+      "tvg_name": "7Tv Arcos Es",
+      "tvg_id": "teleon-eb318a4ab0f479b2",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://streaming004.gestec-video.com/hls/7TVARCOS.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjU2NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Cadiz Es",
+      "tvg_name": "7Tv Cadiz Es",
+      "tvg_id": "teleon-592cfa166df56de7",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://especial7tv.gestec-video.com/hls/7TVCADIZ.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjUxNGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Cordoba Es",
+      "tvg_name": "7Tv Cordoba Es",
+      "tvg_id": "teleon-b5f1df274c43942b",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://especial7tv.gestec-video.com/hls/7TVCORDOBA.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjQ2NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Jaen Es",
+      "tvg_name": "7Tv Jaen Es",
+      "tvg_id": "teleon-90c3839581b9b204",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://especial7tv.gestec-video.com/hls/7TVJAEN.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjUzNGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Jerez Es",
+      "tvg_name": "7Tv Jerez Es",
+      "tvg_id": "teleon-f132780f75cd1e3e",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://streaming004.gestec-video.com/hls/7TVJEREZ.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjUwNGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Linares Es",
+      "tvg_name": "7Tv Linares Es",
+      "tvg_id": "teleon-82788b0afb16a0d1",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://streaming004.gestec-video.com/hls/7TVLINARES.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjU0NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Malaga Es",
+      "tvg_name": "7Tv Malaga Es",
+      "tvg_id": "teleon-270f19bd70844d51",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://especial7tv.gestec-video.com/hls/7TVMALAGA.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjQ5NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Rota Es",
+      "tvg_name": "7Tv Rota Es",
+      "tvg_id": "teleon-3794ab4524066b9e",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://streaming004.gestec-video.com/hls/7TVROTA.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjQ4NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv San Fernando Es",
+      "tvg_name": "7Tv San Fernando Es",
+      "tvg_id": "teleon-de2eda212e47bd3d",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://streaming004.gestec-video.com/hls/7TVSANFERNANDO.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjQ3NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "7Tv Sevilla Es",
+      "tvg_name": "7Tv Sevilla Es",
+      "tvg_id": "teleon-adfc85b2d0e974ef",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://especial7tv.gestec-video.com/hls/7TVSEVILLA.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NjQ0NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "Amc Cupid Uk",
+      "tvg_name": "Amc Cupid Uk",
+      "tvg_id": "teleon-6ef8bbbbfa1e9468",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://amg30886-amg30886c2-amgplt0029.playout.now3.amagi.tv/ts-eu-w1-n2/playlist/amg30886-amg30886c2-amgplt0029/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA4ODM3NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "Amc Reality Uk",
+      "tvg_name": "Amc Reality Uk",
+      "tvg_id": "teleon-1e9e389992791281",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://amg30886-amg30886c3-amgplt0029.playout.now3.amagi.tv/ts-eu-w1-n2/playlist/amg30886-amg30886c3-amgplt0029/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA4ODM5NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "Duck Tv Uk",
+      "tvg_name": "Duck Tv Uk",
+      "tvg_id": "teleon-ea16554ad24e95ac",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://stream.ads.ottera.tv/playlist.m3u8?network_id=13170&avod=1&coppa=0&td=6&is_lat=[LMT]&dnt=[DNS]&us_privacy=[US_PRIVACY]&did=[DEVICE_ID]&ip=[IP]&ua=[UA]&ifa_type=[IFA_TYPE]&app_bundle=[APP_BUNDLE]&app_store_url=[APP_STOREURL]&app_name=[APP_NAME]&custom_targeting=html5&custom_4=lg_channels_uk&player_height=720&player_width=1280&content_channel=lg_channels&content_dist_name=lg_channels&device_make=[DEVICE_MAKE]&device_model=[DEVICE_MODEL]&device_os=html5&consent=[GDPR_CONSENT]&gdpr=[GDPR]&gender=not_specified&yob=0&livestream=1&custom_param_0=[DEVICE_MODEL]&custom_param_1=tv&custom_param_2=[DEVICE_MAKE]&custom_param_3=[DEVICE_ID]&custom_param_4=lg_channels&custom_param_5=html5&fck=[FCK]&viewsize=[VIEWSIZE]&nonce=[NONCE]&keep_scte=1&preroll_duration=30&preroll=1",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA4ODY2NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "Talkin Live Classics Tv Us",
+      "tvg_name": "Talkin Live Classics Tv Us",
+      "tvg_id": "teleon-5d09101a7696cbc7",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://2-fss-1.streamhoster.com/pl_122/206338-3120682-1/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhOTg2MDk0ZjNjMmEAOF/?lang=ww"
+      }
+    },
+    {
+      "name": "Thalaa Tv In",
+      "tvg_name": "Thalaa Tv In",
+      "tvg_id": "teleon-705fb2bd1e7de627",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://streams2.sofast.tv/v1/master/611d79b11b77e2f571934fd80ca1413453772ac7/2069c593-3c07-4d62-9d44-746be5c3a5d6/manifest.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2MTk0NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "Tv Brics Arabic Ru",
+      "tvg_name": "Tv Brics Arabic Ru",
+      "tvg_id": "teleon-5d3d2aaf60e4d225",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://arabbrics.mediacdn.ru/cdn/brics/arab/tracks-v1a1/mono.ts.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA2NzY4NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "Tvokids Ca",
+      "tvg_name": "Tvokids Ca",
+      "tvg_id": "teleon-509eede39f8b3b6f",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://fastly.live.brightcove.com/6369851620112/us-east-1/15364602001/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJob3N0IjoicGZncmlmLmVncmVzcy50N2M3emwiLCJhY2NvdW50X2lkIjoiMTUzNjQ2MDIwMDEiLCJlaG4iOiJmYXN0bHkubGl2ZS5icmlnaHRjb3ZlLmNvbSIsImlzcyI6ImJsaXZlLXBsYXliYWNrLXNvdXJjZS1hcGkiLCJzdWIiOiJwYXRobWFwdG9rZW4iLCJhdWQiOlsiMTUzNjQ2MDIwMDEiXSwianRpIjoiNjM2OTg1MTYyMDExMiJ9.zRE6fD9JwdbNLUIK5zgvlTAvXCQ3HeeE5p0yH0Pd3-Q/playlist-hls.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhOTk2MzI0ZjNjMmEAOF/?lang=ww"
+      }
+    },
+    {
+      "name": "Who Wants To Be A Millionaire Uk",
+      "tvg_name": "Who Wants To Be A Millionaire Uk",
+      "tvg_id": "teleon-b7a3a20a8104fc05",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://90d31962469d4f299a6f486800e625ec.mediatailor.us-west-2.amazonaws.com/v1/master/ba62fe743df0fe93366eba3a257d792884136c7f/LINEAR-1233-3220-UK-WHOWANTSTOBEAMILLIONAIRE-LG_UK/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/embed/NGYzYzJhMTA4OTc4NGYzYzJh/?lang=ww"
+      }
+    },
+    {
+      "name": "Estrella Games Us",
+      "tvg_name": "Estrella Games Us",
+      "tvg_id": "teleon-8d0b4c8181974ccb",
+      "logo": null,
+      "groups": [
+        "Teleon | Latinoamérica | Anime"
+      ],
+      "url": "https://amg00567-estrellamedia-amg00567c1-lg-us-809.playouts.now.amagi.tv/playlist/amg00567-estrellamediafast-estrellagames-lgus/playlist.m3u8?ads.deviceid=[DEVICE_ID]&ads.ifa=[IFA]&ads.ifatype=[IFA_TYPE]&ads.lat=[LMT]&ads.donotsell=[DNS]&ads.ua=[UA]&ads.ip=[IP]&ads.gdpr=[GDPR]&ads.gdprconsent=[GDPR_CONSENT]&ads.country=[COUNTRY]&ads.usprivacy=[US_PRIVACY]&ads.appstoreurl=[APP_STOREURL]&ads.bundleid=[APP_BUNDLE]&ads.appname=[APP_NAME]&ads.appversion=[APP_VERSION]&ads.devicetype=[DEVICE_TYPE]&ads.devicemake=[DEVICE_MAKE]&ads.devicemodel=[DEVICE_MODEL]&ads.targetad=[TARGETAD_ALLOWED]&fck=[FCK]&viewsize=[VIEWSIZE]&givn=[NONCE]",
+      "headers": {
+        "http-reconnect": "true",
+        "http-referrer": "https://teleon.tv/gt/embed/NGYzYzJhODU5ODk0ZjNjMmEAOF/?lang=gt"
       }
     }
   ]
