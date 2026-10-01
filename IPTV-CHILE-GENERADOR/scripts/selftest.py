@@ -208,8 +208,11 @@ def main():
 
     # La salida debe seleccionar como máximo un endpoint por canal y cada
     # combinación canal/endpoint debe existir exactamente entre los candidatos.
+    # Entre EXTINF y la URL puede haber directivas #EXTVLCOPT u otras
+    # etiquetas M3U compatibles. El parser del selftest debe tratarlas como
+    # metadatos del mismo bloque, no como una entrada sin URL.
     blocks = re.findall(
-        r'^#EXTINF:[^\n]*\btvg-id="([^"]+)"[^\n]*\n(https?://[^\n]+)',
+        r'^#EXTINF:[^\n]*\btvg-id="([^"]+)"[^\n]*(?:\n#[^\n]*)*\n(https?://[^\n]+)',
         text,
         flags=re.MULTILINE,
     )
