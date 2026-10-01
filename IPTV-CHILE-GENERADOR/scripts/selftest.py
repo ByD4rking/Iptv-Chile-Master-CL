@@ -14,6 +14,7 @@ STATUS = BASE / "data" / "status.json"
 SOURCE_HEALTH = BASE / "data" / "source_health.json"
 ENDPOINT_HEALTH = BASE / "data" / "endpoint_health.json"
 MANIFEST = BASE / "data" / "pipeline_manifest.json"
+DISCOVERY = BASE / "data" / "discovered_channels.json"
 
 
 def load(path):
@@ -51,6 +52,21 @@ def main():
     assert len(catalog_urls) == len(set(catalog_urls)), (
         "El catalogo propio contiene endpoints duplicados."
     )
+
+    discovery = load(DISCOVERY)
+    assert discovery.get("mode") == "discovery_only", "El descubrimiento no está en modo seguro."
+    assert discovery.get("published_automatically") is False, "El descubrimiento no puede publicar automaticamente."
+    assert isinstance(discovery.get("profiles"), dict), "Descubrimiento sin perfiles."
+    for profile, items in discovery.get("profiles", {}).items():
+        assert isinstance(items, list), f"Perfil de descubrimiento inválido: {profile}"
+        seen_discovery_urls = set()
+        for item in items:
+            url = str(item.get("url") or "").strip()
+            assert url.startswith(("http://", "https://")), f"Descubrimiento: URL inválida: {url}"
+            assert url not in seen_discovery_urls, f"Descubrimiento: URL duplicada: {url}"
+            seen_discovery_urls.add(url)
+            assert item.get("safe_to_publish_automatically") is False, "Candidato marcado para publicación automática."
+            assert item.get("requires_validation") is True, "Candidato sin validación obligatoria."
 
     channels = load(CHANNELS)
     quality = load(QUALITY)
