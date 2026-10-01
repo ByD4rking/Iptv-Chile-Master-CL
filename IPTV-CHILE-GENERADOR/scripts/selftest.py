@@ -71,7 +71,7 @@ def main():
     teleon = load(BASE / "data" / "teleon_discovery.json")
     assert teleon.get("mode") == "discovery_only", "Teleon no está en modo seguro."
     assert teleon.get("published_automatically") is False, "Teleon no puede publicar automáticamente."
-    assert teleon.get("stream_extraction") == "explicit_only", "Teleon debe limitarse a streams explícitos."
+    assert teleon.get("stream_extraction") == "public_html_and_embedded_player_explicit_only", "Teleon debe limitarse a streams expuestos públicamente en HTML/player embed."
     for profile, items in teleon.get("profiles", {}).items():
         assert isinstance(items, list), f"Teleon: perfil inválido {profile}."
         seen_pages = set()
