@@ -253,7 +253,7 @@ def main():
     # reintentos y backoff para no descartar un endpoint por un corte transitorio.
     for script_name in ("check.py", "collect.py", "quality.py"):
         script_text = (BASE / "scripts" / script_name).read_text(encoding="utf-8")
-        assert re.search(r"^RETRIES\\s*=\\s*[2-9]\\d*$", script_text, re.MULTILINE), (
+        assert re.search(r"^RETRIES\s*=\s*[2-9]\d*$", script_text, re.MULTILINE), (
             f"{script_name} perdió la política mínima de reintentos."
         )
         assert "RETRY_BACKOFF_SECONDS" in script_text, (
