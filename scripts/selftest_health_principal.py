@@ -47,7 +47,16 @@ def main() -> None:
     assert h.MIN_THROUGHPUT_BPS == 128_000
     assert h._aggregate([{"ok": True, "latency_ms": 100}, {"ok": False, "latency_ms": 300}])["uptime_ratio"] == 50.0
     assert h.DEFAULT_WORKERS == 48
-    print("SELFTEST OK: Health principal parser, score, cooldown y límites.")
+
+    # El estado debe distinguir degradación, sospecha y caída persistente.
+    assert h._aggregate([{"ok": False}, {"ok": True}])["current_failure_streak"] == 0
+    assert h._cooldown(5) > 0
+
+    # La selección multi-variante está acotada y no puede exceder el límite.
+    assert h.MAX_VARIANT_CHECKS == 2
+    assert h.MIN_THROUGHPUT_BPS > 0
+
+    print("SELFTEST OK: parser, score, cooldown, historial, estados y límites.")
 
 
 if __name__ == "__main__":
