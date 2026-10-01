@@ -55,11 +55,17 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/generador-guard
-          sha256sum IPTV-CHILE-MAESTRA_CORREGIDO.m3u IPTV-CHILE-MAESTRA_GOD.m3u > /tmp/generador-guard/maestras.sha256
+          sha256sum IPTV-CHILE-MAESTRA_CORREGIDO.m3u > /tmp/generador-guard/maestras.sha256
           find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/pluto.sha256
           find scripts -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/scripts.sha256
 
       - name: Auditar aislamiento inicial
+        run: python IPTV-CHILE-GENERADOR/scripts/guard.py
+
+      - name: Aplicar reconexión y estabilidad a GOD
+        run: python IPTV-CHILE-GENERADOR/scripts/aplicar_reconexion_god.py
+
+      - name: Verificar GOD tras aplicar reconexión
         run: python IPTV-CHILE-GENERADOR/scripts/guard.py
 
       - name: Recopilar fuentes independientes
@@ -89,6 +95,7 @@ jobs:
         run: |
           set -euo pipefail
           sha256sum -c /tmp/generador-guard/maestras.sha256
+          python IPTV-CHILE-GENERADOR/scripts/guard.py
           sha256sum -c /tmp/generador-guard/pluto.sha256
           sha256sum -c /tmp/generador-guard/scripts.sha256
 
@@ -108,7 +115,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add IPTV-CHILE-GENERADOR
+          git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u
 
           if git diff --cached --quiet; then
             echo "No hay cambios nuevos en el generador."
@@ -156,7 +163,7 @@ jobs:
             sha256sum -c /tmp/generador-guard/pluto.sha256
             sha256sum -c /tmp/generador-guard/scripts.sha256
 
-            git add IPTV-CHILE-GENERADOR
+            git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u
             if git diff --cached --quiet; then
               echo "La regeneración sobre main no produjo cambios nuevos."
               exit 0
