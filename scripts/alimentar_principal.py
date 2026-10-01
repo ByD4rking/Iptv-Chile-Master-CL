@@ -1818,6 +1818,40 @@ def restaurar_no_pluto_existente(lineas, iniciales):
     return lineas, restaurados
 
 
+def aplicar_reconexion_por_canal(lineas):
+    """Añade directivas opcionales de reconexión a cada entrada no-Pluto.
+
+    Son comentarios M3U/EXTVLCOPT: reproductores compatibles pueden usarlos
+    para reabrir la conexión ante cortes transitorios. No cambia URLs, no
+    mezcla canales y no se aplica a Pluto porque Pluto ya tiene su proxy propio.
+    """
+    salida = []
+    agregados = 0
+    i = 0
+    while i < len(lineas):
+        linea = lineas[i]
+        if not linea.startswith("#EXTINF"):
+            salida.append(linea)
+            i += 1
+            continue
+        salida.append(linea)
+        bloque = []
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            bloque.append(lineas[j])
+            j += 1
+        es_pluto = any("pluto" in x.lower() for x in bloque if x.startswith("#"))
+        if not es_pluto:
+            if not any(x.strip().lower() == "#extvlcopt:http-reconnect=true" for x in bloque):
+                salida.append("#EXTVLCOPT:http-reconnect=true")
+                agregados += 1
+            if not any(x.strip().lower() == "#extvlcopt:network-caching=1500" for x in bloque):
+                salida.append("#EXTVLCOPT:network-caching=1500")
+        salida.extend(bloque)
+        i = j
+    return salida, agregados
+
+
 def main():
     print("=" * 72)
     print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
@@ -2278,7 +2312,12 @@ def main():
     if not texto_final.endswith("\n"):
         texto_final += "\n"
 
-    # SOLO AHORA se publica la principal.
+    # SOLO AHORA se publica la principal. Aplicar antes las directivas de
+    # reconexión para que el reproductor pueda recuperar cortes transitorios.
+    lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+    if reconexiones_agregadas:
+        print(f"Directivas de reconexión agregadas: {reconexiones_agregadas}")
+
     PRINCIPAL.write_text(
         texto_final,
         encoding="utf-8",
