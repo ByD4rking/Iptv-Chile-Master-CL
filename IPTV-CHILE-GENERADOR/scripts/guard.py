@@ -4,6 +4,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 GENERATOR = ROOT / "IPTV-CHILE-GENERADOR"
+GOD_CANONICAL_SHA256 = "78520768a5e3a114a648702cbb044cd952e9b44019434765222c031219909c96"
+
 PROTECTED = (
     ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u",
     ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u",
@@ -45,9 +47,26 @@ def validate_m3u(path, reject_duplicates=True):
     return extinf, len(urls)
 
 
+def assert_god_immutable():
+    god = ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"
+    if not god.exists() or not god.is_file():
+        raise SystemExit("PROTECCION GOD: IPTV-CHILE-MAESTRA_GOD.m3u no existe.")
+    actual = file_sha256(god)
+    if actual != GOD_CANONICAL_SHA256:
+        raise SystemExit(
+            "PROTECCION GOD: la maestra histórica fue modificada, reemplazada o truncada. "
+            f"SHA esperado={GOD_CANONICAL_SHA256} SHA actual={actual}"
+        )
+    print(f"BLINDAJE GOD: SHA-256 canónico verificado ({actual}).")
+
+
 def main():
     if not GENERATOR.is_dir():
         raise SystemExit(f"No existe el generador: {GENERATOR}")
+
+    # GOD tiene además una huella SHA-256 canónica e inmutable. Si cambia un solo byte,
+    # el generador se detiene antes de publicar cualquier artefacto.
+    assert_god_immutable()
 
     # Estas dos maestras reciben las mismas barreras estructurales del generador:
     # integridad M3U, correspondencia EXTINF/URL y ausencia de duplicados.
