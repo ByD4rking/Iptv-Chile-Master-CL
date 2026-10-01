@@ -1,28 +1,14 @@
 {
-  "schema_version": 1,
-  "description": "Directorios públicos usados solo para descubrir páginas de canales. Nunca publican canales automáticamente.",
+  "schema_version": 2,
+  "description": "Directorios públicos de Teleon usados solo para descubrir fichas. Nunca publican canales automáticamente.",
   "sources": [
-    {
-      "name": "TELEON-CHILDREN",
-      "url": "https://teleon.tv/tv-by-genre/children/",
-      "profiles": ["anime_kids"]
-    },
-    {
-      "name": "TELEON-LIFESTYLE",
-      "url": "https://teleon.tv/tv-by-genre/lifestyle/",
-      "profiles": ["anime_kids", "competition_entertainment"]
-    },
-    {
-      "name": "TELEON-EDUCATIONAL",
-      "url": "https://teleon.tv/tv-by-genre/educational/",
-      "profiles": ["anime_kids", "competition_entertainment"]
-    },
-    {
-      "name": "TELEON-CHILE",
-      "url": "https://teleon.tv/cl/tv-guide/",
-      "profiles": ["anime_kids", "competition_entertainment"]
-    }
+    {"name": "TELEON-CHILDREN", "url": "https://teleon.tv/tv-by-genre/children/", "profiles": ["anime_kids"]},
+    {"name": "TELEON-LIFESTYLE", "url": "https://teleon.tv/tv-by-genre/lifestyle/", "profiles": ["anime_kids", "competition_entertainment"]},
+    {"name": "TELEON-EDUCATIONAL", "url": "https://teleon.tv/tv-by-genre/educational/", "profiles": ["anime_kids", "competition_entertainment"]},
+    {"name": "TELEON-GAMING", "url": "https://teleon.tv/gt/tv-by-genre/gaming/", "profiles": ["anime_kids", "competition_entertainment"]},
+    {"name": "TELEON-CHILE", "url": "https://teleon.tv/cl/tv-guide/", "profiles": ["anime_kids", "competition_entertainment"]}
   ],
-  "max_pages": 4,
-  "max_channels_per_profile": 150
+  "max_sources": 5,
+  "max_pages_per_source": 80,
+  "max_channel_pages": 150
 }
