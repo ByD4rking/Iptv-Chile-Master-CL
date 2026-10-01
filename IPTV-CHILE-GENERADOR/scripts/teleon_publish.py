@@ -45,6 +45,17 @@ def main():
     metadata = {}
     for items in (discovery.get("profiles") or {}).values():
         for item in items:
+            # Solo publicar fichas cuya propia página de Teleon declara español.
+            # La URL regional de /mx, /cl, /gt, etc. no es evidencia suficiente:
+            # Teleon puede mostrar allí canales UK/US/otros idiomas.
+            if not item.get("language_verified"):
+                continue
+            source_profiles = {
+                clean(x) for x in (item.get("source_profiles") or [])
+                if clean(x)
+            }
+            if not source_profiles.intersection({"spanish_latam", "spanish_spain"}):
+                continue
             for url in item.get("stream_urls") or []:
                 url = clean(url)
                 if url and url not in metadata:
@@ -53,8 +64,10 @@ def main():
                         "name": clean(item.get("channel_path", "").rstrip("/").rsplit("/", 1)[-1]).replace("-", " ").title() or "Teleon",
                         "page_url": clean(item.get("page_url")),
                         "source": clean(item.get("source")) or "TELEON",
-                        "language": clean(item.get("language")) or "es-419",
+                        "language": clean(item.get("language")) or "Español",
                         "region": clean(item.get("region")) or "LATAM",
+                        "country": clean(item.get("country")),
+                        "languages": clean(item.get("languages")),
                         "category": clean(classification.get("category")) or "Sin clasificar",
                         "profile": clean(classification.get("profile")) or "unclassified",
                         "confidence": classification.get("confidence", 0),
@@ -63,8 +76,12 @@ def main():
 
     additions = []
     added_count = 0
+    rejected_language = 0
     for url, q in by_url.items():
         if url in existing:
+            continue
+        if url not in metadata:
+            rejected_language += 1
             continue
         meta = metadata.get(url, {})
         name = meta.get("name") or "Teleon"
@@ -106,7 +123,8 @@ def main():
     atomic_write_json(MANIFEST, manifest)
 
     print(f"Teleon directo: {added_count} streams añadidos a la M3U.")
-    print("Solo se añaden streams con validación HLS/segmento correcta.")
+    print(f"Teleon rechazados por idioma/perfil: {rejected_language}.")
+    print("Solo se añaden streams HLS validados cuya ficha declara español y proviene de un perfil español.")
     print(f"Salida: {OUTPUT}")
 
 if __name__ == "__main__":
