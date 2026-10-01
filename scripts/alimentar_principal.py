@@ -1840,7 +1840,7 @@ def aplicar_reconexion_por_canal(lineas):
         while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
             bloque.append(lineas[j])
             j += 1
-        es_pluto = any("pluto" in x.lower() for x in bloque if x.startswith("#"))
+        es_pluto = any(es_url_pluto(x.strip()) for x in bloque if url_es_valida(x.strip()))
         if not es_pluto:
             if not any(x.strip().lower() == "#extvlcopt:http-reconnect=true" for x in bloque):
                 salida.append("#EXTVLCOPT:http-reconnect=true")
