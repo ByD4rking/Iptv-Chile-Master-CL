@@ -85,6 +85,40 @@ def main():
             for stream in item.get("stream_urls") or []:
                 assert str(stream).startswith(("http://", "https://")), "Teleon: stream inválido."
 
+    teleon_health = load(BASE / "data" / "teleon_source_health.json")
+    teleon_quality = load(BASE / "data" / "teleon_quality.json")
+
+    assert isinstance(teleon_health, dict), "Teleon: historial de fuentes inválido."
+    for source_name, state in teleon_health.items():
+        checks = int(state.get("checks") or 0)
+        successes = int(state.get("successes") or 0)
+        failures = int(state.get("failures") or 0)
+        assert checks >= 0 and successes >= 0 and failures >= 0
+        assert successes + failures == checks, (
+            f"Teleon health inconsistente para {source_name}."
+        )
+        assert int(state.get("consecutive_failures") or 0) >= 0
+
+    assert teleon_quality.get("mode") == "discovery_validation_only", (
+        "Teleon quality no está en modo de validación aislada."
+    )
+    assert teleon_quality.get("published_automatically") is False, (
+        "Teleon quality no puede publicar automáticamente."
+    )
+    teleon_quality_urls = [
+        str(item.get("stream_url") or "").strip()
+        for item in teleon_quality.get("results", [])
+    ]
+    assert len(teleon_quality_urls) == len(set(teleon_quality_urls)), (
+        "Teleon quality contiene streams duplicados."
+    )
+    assert teleon_quality.get("total_candidates") == len(teleon_quality_urls), (
+        "Teleon quality: total_candidates inconsistente."
+    )
+    assert teleon_quality.get("playback_ok", 0) + teleon_quality.get("playback_failed", 0) == len(
+        teleon_quality_urls
+    ), "Teleon quality: métricas de reproducción inconsistentes."
+
     channels = load(CHANNELS)
     quality = load(QUALITY)
     status = load(STATUS)
