@@ -119,6 +119,12 @@ def main():
         teleon_quality_urls
     ), "Teleon quality: métricas de reproducción inconsistentes."
 
+    teleon_direct_urls = {
+        str(item.get("stream_url") or "").strip()
+        for item in teleon_quality.get("results", [])
+        if item.get("playback_checked") and item.get("playback_ok") and str(item.get("stream_url") or "").strip()
+    }
+
     channels = load(CHANNELS)
     quality = load(QUALITY)
     status = load(STATUS)
@@ -244,8 +250,12 @@ def main():
 
     assert output_urls, "La M3U no contiene URLs."
     assert len(output_urls) == len(set(output_urls)), "La M3U contiene URLs duplicadas."
-    assert set(output_urls) <= set(urls), (
-        "La M3U contiene una URL que no pertenece a los endpoints candidatos."
+    standard_output_urls = set(output_urls) - teleon_direct_urls
+    assert standard_output_urls <= set(urls), (
+        "La M3U contiene una URL que no pertenece a los endpoints candidatos ni a Teleon validado."
+    )
+    assert set(output_urls) & teleon_direct_urls <= teleon_direct_urls, (
+        "La M3U contiene una URL Teleon no validada."
     )
 
     expected_with_candidates = sum(1 for channel in channels if channel.get("sources"))
@@ -358,9 +368,13 @@ def main():
             f"pero el candidato óptimo auditado es {expected_url}."
         )
 
-    assert selected_pairs <= candidate_pairs, (
+    standard_selected_pairs = {(cid, url) for cid, url in selected_pairs if url not in teleon_direct_urls}
+    assert standard_selected_pairs <= candidate_pairs, (
         "La M3U seleccionó una combinación canal/endpoint que no existe en channels.json."
     )
+    for _cid, url in selected_pairs:
+        if url in teleon_direct_urls:
+            assert url in teleon_direct_urls, f"Teleon directo no validado: {url}"
 
     # Estabilidad de red: las etapas de adquisición/validación deben conservar
     # reintentos y backoff para no descartar un endpoint por un corte transitorio.
