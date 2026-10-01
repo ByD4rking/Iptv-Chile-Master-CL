@@ -64,13 +64,7 @@ jobs:
       - name: Guardar estado previo de la principal
         run: |
           cp IPTV-CHILE-MAESTRA_CORREGIDO.m3u /tmp/principal_before.m3u
-          python - <<'PY'
-          from pathlib import Path
-          import sys
-          sys.path.insert(0, "IPTV-CHILE-GENERADOR/scripts")
-          from guard import god_normalized_sha256
-          print(god_normalized_sha256(Path("IPTV-CHILE-MAESTRA_GOD.m3u")), file=open("/tmp/god_before.normalized.sha256","w"))
-          PY
+          sha256sum IPTV-CHILE-MAESTRA_GOD.m3u > /tmp/god_before.sha256
           find IPTV-CHILE-GENERADOR -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador_before.sha256
           find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/pluto_before.sha256
           grep '^#EXTINF' IPTV-CHILE-MAESTRA_CORREGIDO.m3u | sed -n 's/.*$//p' >/dev/null
