@@ -125,6 +125,29 @@ def main():
         if item.get("playback_checked") and item.get("playback_ok") and str(item.get("stream_url") or "").strip()
     }
 
+    # Auditoría crítica de idioma: la URL regional de Teleon no basta para
+    # afirmar que el canal sea español. La ficha debe declarar explícitamente
+    # español y pertenecer a un perfil español.
+    teleon_meta_by_url = {}
+    for items in (teleon.get("profiles") or {}).values():
+        for item in items:
+            if not item.get("language_verified"):
+                continue
+            source_profiles = {
+                str(x).strip() for x in (item.get("source_profiles") or [])
+                if str(x).strip()
+            }
+            if not source_profiles.intersection({"spanish_latam", "spanish_spain"}):
+                continue
+            for stream in item.get("stream_urls") or []:
+                stream = str(stream).strip()
+                if stream:
+                    teleon_meta_by_url[stream] = item
+
+    assert teleon_direct_urls <= set(teleon_meta_by_url), (
+        "Teleon: existe un stream validado sin ficha declarada en español."
+    )
+
     channels = load(CHANNELS)
     quality = load(QUALITY)
     status = load(STATUS)
@@ -260,6 +283,16 @@ def main():
         assert teleon_item, f"La M3U contiene una URL sin resultado de calidad: {url}"
         assert teleon_item.get("playback_checked") and teleon_item.get("playback_ok"), (
             f"La M3U contiene una URL Teleon sin reproducción verificada: {url}"
+        )
+        teleon_meta = teleon_meta_by_url.get(url)
+        assert teleon_meta, (
+            f"La M3U contiene un Teleon no declarado como español: {url}"
+        )
+        assert teleon_meta.get("language_verified") is True, (
+            f"Teleon publicado sin idioma español verificado: {url}"
+        )
+        assert str(teleon_meta.get("languages") or "").strip(), (
+            f"Teleon publicado sin metadato de idioma: {url}"
         )
 
     assert output_urls, "La M3U no contiene URLs."
