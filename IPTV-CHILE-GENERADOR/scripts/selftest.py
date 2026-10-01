@@ -245,6 +245,52 @@ def main():
     )
 
     selected_pairs = {(channel_id, url) for channel_id, url in blocks}
+    # Regresión crítica: la salida debe elegir exactamente el candidato que
+    # generate.py considera óptimo para cada canal. Así evitamos que una
+    # modificación futura del generador vuelva a preferir calidad nominal
+    # sobre estabilidad real, o cambie el criterio entre etapas.
+    status_by_url = {
+        str(x.get("url") or "").strip(): x
+        for x in status.get("results", [])
+    }
+    quality_by_url = {
+        str(x.get("url") or "").strip(): x
+        for x in quality.get("results", [])
+    }
+
+    def selection_key(quality_item, status_item, source):
+        checks = int(quality_item.get("endpoint_checks") or 0)
+        successes = int(quality_item.get("endpoint_successes") or 0)
+        reliability = (successes + 1) / (checks + 2)
+        return (
+            -int(quality_item.get("endpoint_consecutive_failures") or 0),
+            reliability,
+            checks,
+            int(quality_item.get("height") or 0),
+            int(quality_item.get("bitrate") or 0),
+            -int(status_item.get("response_time_ms") or 999999),
+            int(source.get("priority") or 0),
+        )
+
+    channels_by_id = {str(c.get("id") or "").strip(): c for c in channels}
+    for channel_id, selected_url in selected_pairs:
+        channel = channels_by_id[channel_id]
+        candidates = []
+        for source in channel.get("sources", []):
+            url = str(source.get("url") or "").strip()
+            item = quality_by_url.get(url)
+            if not item or item.get("quarantined"):
+                continue
+            if not item.get("playback_checked") or not item.get("playback_ok"):
+                continue
+            candidates.append((selection_key(item, status_by_url.get(url, {}), source), url))
+        assert candidates, f"Canal {channel_id} publicado sin candidatos reproducibles."
+        expected_url = max(candidates, key=lambda pair: pair[0])[1]
+        assert selected_url == expected_url, (
+            f"Canal {channel_id}: generate.py seleccionó {selected_url}, "
+            f"pero el candidato óptimo auditado es {expected_url}."
+        )
+
     assert selected_pairs <= candidate_pairs, (
         "La M3U seleccionó una combinación canal/endpoint que no existe en channels.json."
     )
