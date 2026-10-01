@@ -102,7 +102,7 @@ jobs:
           while IFS= read -r line; do
             file="${line:3}"
             case "$file" in
-              IPTV-CHILE-GENERADOR/*|.github/workflows/generador.yml) ;;
+              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|.github/workflows/generador.yml) ;;
               "") ;;
               *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
             esac
