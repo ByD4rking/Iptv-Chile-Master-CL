@@ -85,6 +85,9 @@ def channel_pages(html, base_url):
         path = parsed.path.rstrip("/")
         if not path or path == base_path:
             continue
+        # Solo fichas de canal/live-tv: evitamos navegación, noticias y páginas administrativas.
+        if "/channel/" not in path.lower() and "/live-tv/" not in path.lower():
+            continue
         # Discovery is deliberately limited to Teleon pages. Assets, downloads,
         # query-only URLs and unrelated hosts are excluded.
         if any(path.lower().endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".gif", ".css", ".js", ".xml", ".json")):
@@ -96,11 +99,13 @@ def channel_pages(html, base_url):
 def main():
     cfg = load(CONFIG, {})
     sources = cfg.get("sources") or []
-    max_pages = max(1, int(cfg.get("max_pages", 4)))
+    max_sources = max(1, int(cfg.get("max_sources", len(sources))))
+    max_pages_per_source = max(1, int(cfg.get("max_pages_per_source", 4)))
+    max_channel_pages = max(1, int(cfg.get("max_channel_pages", 100)))
     max_per_profile = max(1, int(cfg.get("max_channels_per_profile", 150)))
 
     result = {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat(),
         "mode": "discovery_only",
         "published_automatically": False,
@@ -113,7 +118,7 @@ def main():
         raise SystemExit("Teleon no tiene fuentes configuradas.")
 
     seen_pages = set()
-    for source in sources[:max_pages]:
+    for source in sources[:max_sources]:
         name = str(source.get("name") or "TELEON").strip()
         profile_names = [str(x).strip() for x in source.get("profiles") or [] if str(x).strip()]
         source_url = str(source.get("url") or "").strip()
@@ -127,7 +132,8 @@ def main():
             result["errors"].append({"source": name, "url": source_url, "error": str(exc)})
             continue
 
-        pages = ([source_url] + channel_pages(html, source_url))[:max_pages]
+        pages = ([source_url] + channel_pages(html, source_url))[:max_pages_per_source]
+        pages = pages[:max_channel_pages]
         for page in pages:
             if page in seen_pages:
                 continue
@@ -138,13 +144,13 @@ def main():
                 continue
 
             streams = explicit_streams(page_html, page)
-            if not streams:
-                continue
-
+            path = urlparse(page).path.rstrip("/")
             item = {
                 "page_url": page,
+                "channel_path": path,
                 "source": name,
                 "stream_urls": streams,
+                "has_explicit_stream": bool(streams),
                 "requires_validation": True,
                 "safe_to_publish_automatically": False,
             }
@@ -158,7 +164,9 @@ def main():
     total = sum(len(v) for v in result["profiles"].values())
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Teleon discovery: {total} páginas con streams explícitos.")
+    explicit_total = sum(1 for items in result["profiles"].values() for item in items if item.get("has_explicit_stream"))
+    print(f"Teleon discovery: {total} fichas candidatas.")
+    print(f"Teleon discovery: {explicit_total} fichas contienen streams explícitos.")
     print(f"Teleon discovery: {len(seen_pages)} páginas inspeccionadas.")
     if result["errors"]:
         print(f"Teleon discovery: {len(result['errors'])} fuentes con error; no se publican candidatos.")
