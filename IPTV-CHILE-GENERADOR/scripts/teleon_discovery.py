@@ -100,8 +100,8 @@ def fetch(url):
 def explicit_streams(html):
     found = set()
     patterns = [
-        r"""https?://[^"\\'<>\\s]+\\.m3u8(?:\\?[^"\\'<>\\s]*)?""",
-        r"""https?://[^"\\'<>\\s]+\\.mpd(?:\\?[^"\\'<>\\s]*)?""",
+        r"""https?://[^"'<>\s]+\.m3u8(?:\?[^"'<>\s]*)?""",
+        r"""https?://[^"'<>\s]+\.mpd(?:\?[^"'<>\s]*)?""",
     ]
     for pattern in patterns:
         for match in re.findall(pattern, html, flags=re.IGNORECASE):
