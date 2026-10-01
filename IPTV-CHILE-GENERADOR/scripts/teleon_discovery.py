@@ -127,7 +127,7 @@ def main():
             result["errors"].append({"source": name, "url": source_url, "error": str(exc)})
             continue
 
-        pages = [source_url] + channel_pages(html, source_url)
+        pages = ([source_url] + channel_pages(html, source_url))[:max_pages]
         for page in pages:
             if page in seen_pages:
                 continue
