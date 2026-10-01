@@ -164,7 +164,7 @@ def _probe_once(url: str) -> dict:
                 }
 
             variants = []
-            master_lines = vbody.splitlines()
+            master_lines = body.splitlines()
             for idx, line in enumerate(master_lines):
                 if not line.startswith("#EXT-X-STREAM-INF:") or idx + 1 >= len(master_lines):
                     continue
