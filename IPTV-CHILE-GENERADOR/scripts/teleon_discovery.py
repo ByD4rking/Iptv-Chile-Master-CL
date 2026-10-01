@@ -39,7 +39,7 @@ class LinkParser(HTMLParser):
             if href:
                 href = href.strip()
                 self.links.append(href)
-                if "/embed/" in href.lower():
+                if "/embed/" in href.lower() or "/live-tv/" in href.lower():
                     self.player_urls.append(href)
         elif tag in {"iframe", "frame", "video", "source"}:
             for key in ("src", "data-src", "data-url", "data-stream"):
@@ -127,25 +127,43 @@ def explicit_streams(html, base_url=""):
 
 
 def public_player_documents(html, page_url):
-    """Follow one explicitly embedded public player page; no auth/DRM bypass."""
+    """Follow public channel -> live-tv -> embed documents, at most two hops."""
     parser = LinkParser()
     parser.feed(html)
+    queue = [(urljoin(page_url, raw), 0) for raw in parser.player_urls]
     documents = []
     seen = set()
-    for raw in parser.player_urls:
-        player_url = urljoin(page_url, raw)
+
+    while queue:
+        player_url, depth = queue.pop(0)
         parsed = urlparse(player_url)
         if parsed.scheme not in {"http", "https"} or player_url in seen:
+            continue
+        path = parsed.path.lower()
+        if "/live-tv/" not in path and "/embed/" not in path:
             continue
         seen.add(player_url)
         try:
             player_html = fetch(player_url)
         except Exception:
             continue
+
+        streams = explicit_streams(player_html, player_url)
         documents.append({
             "url": player_url,
-            "streams": explicit_streams(player_html, player_url),
+            "streams": streams,
         })
+
+        # A live-tv page publicly links its embed player. Follow that second
+        # document only; do not execute JS or recover private session data.
+        if depth < 1:
+            child_parser = LinkParser()
+            child_parser.feed(player_html)
+            for raw in child_parser.player_urls:
+                child_url = urljoin(player_url, raw)
+                child_path = urlparse(child_url).path.lower()
+                if "/embed/" in child_path:
+                    queue.append((child_url, depth + 1))
     return documents
 
 
