@@ -94,8 +94,11 @@ def main():
         OUTPUT.write_text(text, encoding="utf-8")
 
     manifest = load(MANIFEST, {})
+    added_count = len(additions) // 4 if additions else 0
     manifest["m3u_sha256"] = file_sha256(OUTPUT)
-    manifest["teleon_direct_candidates"] = len(additions) // 4 if additions else 0
+    manifest["teleon_direct_candidates"] = added_count
+    manifest["generated_channels"] = int(manifest.get("generated_channels") or 0) + added_count
+    manifest["output_urls"] = int(manifest.get("output_urls") or 0) + added_count
     manifest["teleon_direct_published"] = True
     manifest["teleon_policy"] = "solo_playback_ok; sin DRM/auth bypass; categoria+idioma conservados"
     atomic_write_json(MANIFEST, manifest)
