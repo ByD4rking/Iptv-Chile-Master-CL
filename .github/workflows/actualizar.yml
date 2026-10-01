@@ -258,12 +258,9 @@ jobs:
       - name: Barrera final de archivos protegidos
         run: |
           set -euo pipefail
-          EXPECTED="78520768a5e3a114a648702cbb044cd952e9b44019434765222c031219909c96"
-          ACTUAL="$(sha256sum IPTV-CHILE-MAESTRA_GOD.m3u | awk '{print $1}')"
-          test "$ACTUAL" = "$EXPECTED" || {
-            echo "REGRESION CRITICA: GOD cambió durante el mantenimiento."
-            exit 1
-          }
+          # GOD permite únicamente las dos directivas de reconexión autorizadas.
+          # La integridad canónica se valida de forma normalizada mediante guard.py.
+          python IPTV-CHILE-GENERADOR/scripts/guard.py
           sha256sum -c /tmp/god_before.sha256
           sha256sum -c /tmp/generador_before.sha256
           sha256sum -c /tmp/pluto_before.sha256
