@@ -206,6 +206,24 @@ def main():
     extinf = len(re.findall(r"^#EXTINF:", text, re.MULTILINE))
     assert extinf == len(output_urls), f"EXTINF ({extinf}) != URLs ({len(output_urls)})."
 
+    # Estabilidad: cada canal publicado debe conservar las directivas de
+    # reconexión/caché. No se altera la URL ni se permite fallback cruzado.
+    reconnect_blocks = re.findall(
+        r"^#EXTINF:[^\n]*\n((?:#[^\n]*\n)*)(https?://[^\n]+)",
+        text,
+        flags=re.MULTILINE,
+    )
+    assert len(reconnect_blocks) == len(output_urls), (
+        "No se pudo asociar cada canal con su bloque de reproducción."
+    )
+    for metadata, _url in reconnect_blocks:
+        assert "#EXTVLCOPT:http-reconnect=true" in metadata, (
+            "Canal publicado sin http-reconnect=true."
+        )
+        assert "#EXTVLCOPT:network-caching=1500" in metadata, (
+            "Canal publicado sin network-caching=1500."
+        )
+
     # La salida debe seleccionar como máximo un endpoint por canal y cada
     # combinación canal/endpoint debe existir exactamente entre los candidatos.
     # Entre EXTINF y la URL puede haber directivas #EXTVLCOPT u otras
