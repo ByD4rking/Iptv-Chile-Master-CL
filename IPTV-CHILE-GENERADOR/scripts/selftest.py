@@ -68,6 +68,23 @@ def main():
             assert item.get("safe_to_publish_automatically") is False, "Candidato marcado para publicación automática."
             assert item.get("requires_validation") is True, "Candidato sin validación obligatoria."
 
+    teleon = load(BASE / "data" / "teleon_discovery.json")
+    assert teleon.get("mode") == "discovery_only", "Teleon no está en modo seguro."
+    assert teleon.get("published_automatically") is False, "Teleon no puede publicar automáticamente."
+    assert teleon.get("stream_extraction") == "explicit_only", "Teleon debe limitarse a streams explícitos."
+    for profile, items in teleon.get("profiles", {}).items():
+        assert isinstance(items, list), f"Teleon: perfil inválido {profile}."
+        seen_pages = set()
+        for item in items:
+            page = str(item.get("page_url") or "").strip()
+            assert page.startswith(("http://", "https://")), "Teleon: página inválida."
+            assert page not in seen_pages, f"Teleon: página duplicada: {page}"
+            seen_pages.add(page)
+            assert item.get("requires_validation") is True, "Teleon: candidato sin validación obligatoria."
+            assert item.get("safe_to_publish_automatically") is False, "Teleon: publicación automática prohibida."
+            for stream in item.get("stream_urls") or []:
+                assert str(stream).startswith(("http://", "https://")), "Teleon: stream inválido."
+
     channels = load(CHANNELS)
     quality = load(QUALITY)
     status = load(STATUS)
