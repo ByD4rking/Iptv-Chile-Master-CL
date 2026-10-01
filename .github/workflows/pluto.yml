@@ -156,8 +156,9 @@ jobs:
           set -euo pipefail
           git status --porcelain | while IFS= read -r line; do
             file="${line:3}"
+            file="${file%/}"
             case "$file" in
-              pluto/output/playlists/pluto_*.m3u|pluto/output/regional/channels_*.json|pluto/output/health/streams.json)
+              pluto/output/playlists/pluto_*.m3u|pluto/output/regional|pluto/output/regional/channels_*.json|pluto/output/health/streams.json)
                 ;;
               "")
                 ;;
