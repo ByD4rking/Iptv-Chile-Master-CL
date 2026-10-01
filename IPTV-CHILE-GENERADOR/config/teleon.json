@@ -1,15 +1,154 @@
 {
-  "schema_version": 3,
-  "description": "Directorios públicos de Teleon usados para descubrir y probar fichas. La publicación directa solo acepta streams HLS validados.",
+  "schema_version": 4,
+  "description": "Directorios públicos de Teleon para descubrir y probar fichas. Se amplía la cobertura de países hispanohablantes de Latinoamérica; la publicación directa solo acepta streams HLS públicos y validados.",
   "sources": [
-    {"name": "TELEON-CHILDREN", "url": "https://teleon.tv/tv-by-genre/children/", "profiles": ["anime_kids"], "language": "es-419", "region": "Latinoamérica"},
-    {"name": "TELEON-LIFESTYLE", "url": "https://teleon.tv/tv-by-genre/lifestyle/", "profiles": ["anime_kids", "competition_entertainment"], "language": "es-419", "region": "Latinoamérica"},
-    {"name": "TELEON-EDUCATIONAL", "url": "https://teleon.tv/tv-by-genre/educational/", "profiles": ["anime_kids", "competition_entertainment"], "language": "es-419", "region": "Latinoamérica"},
-    {"name": "TELEON-GAMING", "url": "https://teleon.tv/gt/tv-by-genre/gaming/", "profiles": ["anime_kids", "competition_entertainment"], "language": "es-419", "region": "Latinoamérica"},
-    {"name": "TELEON-CHILE", "url": "https://teleon.tv/cl/tv-guide/", "profiles": ["anime_kids", "competition_entertainment"], "language": "es-419", "region": "Latinoamérica"},
-    {"name": "TELEON-SPAIN", "url": "https://teleon.tv/es/tv-guide/", "profiles": ["anime_kids", "competition_entertainment"], "language": "es-ES", "region": "España"}
+    {
+      "name": "TELEON-MEXICO",
+      "url": "https://teleon.tv/mx/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-REPUBLICA-DOMINICANA",
+      "url": "https://teleon.tv/do/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-GUATEMALA",
+      "url": "https://teleon.tv/gt/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-HONDURAS",
+      "url": "https://teleon.tv/hn/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-EL-SALVADOR",
+      "url": "https://teleon.tv/sv/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-PANAMA",
+      "url": "https://teleon.tv/pa/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-COLOMBIA",
+      "url": "https://teleon.tv/co/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-ECUADOR",
+      "url": "https://teleon.tv/ec/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-CHILE",
+      "url": "https://teleon.tv/cl/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-ARGENTINA",
+      "url": "https://teleon.tv/ar/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-URUGUAY",
+      "url": "https://teleon.tv/uy/tv-guide/",
+      "profiles": [
+        "spanish_latam"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-CHILDREN",
+      "url": "https://teleon.tv/tv-by-genre/children/",
+      "profiles": [
+        "genre"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-LIFESTYLE",
+      "url": "https://teleon.tv/tv-by-genre/lifestyle/",
+      "profiles": [
+        "genre"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-EDUCATIONAL",
+      "url": "https://teleon.tv/tv-by-genre/educational/",
+      "profiles": [
+        "genre"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-GAMING",
+      "url": "https://teleon.tv/gt/tv-by-genre/gaming/",
+      "profiles": [
+        "genre"
+      ],
+      "language": "es-419",
+      "region": "Latinoamérica"
+    },
+    {
+      "name": "TELEON-SPAIN",
+      "url": "https://teleon.tv/es/tv-guide/",
+      "profiles": [
+        "spanish_spain"
+      ],
+      "language": "es-ES",
+      "region": "España"
+    }
   ],
-  "max_sources": 6,
+  "max_sources": 16,
   "max_pages_per_source": 80,
-  "max_channel_pages": 150
+  "max_channel_pages": 150,
+  "max_channels_per_profile": 500
 }
