@@ -32,6 +32,20 @@ class LinkParser(HTMLParser):
         self.player_urls = []
 
     def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        tag = tag.lower()
+        if tag == "a":
+            href = attrs.get("href")
+            if href:
+                href = href.strip()
+                self.links.append(href)
+                if "/embed/" in href.lower() or "/live-tv/" in href.lower():
+                    self.player_urls.append(href)
+        elif tag in {"iframe", "frame", "video", "source"}:
+            for key in ("src", "data-src", "data-url", "data-stream"):
+                value = attrs.get(key)
+                if value:
+                    self.player_urls.append(value.strip())
 
 
 class VisibleTextParser(HTMLParser):
@@ -97,22 +111,6 @@ def normalize_meta(value):
     text = text.lower()
     text = re.sub(r"[^a-z0-9]+", " ", text)
     return " ".join(text.split())
-        attrs = dict(attrs)
-        tag = tag.lower()
-        if tag == "a":
-            href = attrs.get("href")
-            if href:
-                href = href.strip()
-                self.links.append(href)
-                if "/embed/" in href.lower() or "/live-tv/" in href.lower():
-                    self.player_urls.append(href)
-        elif tag in {"iframe", "frame", "video", "source"}:
-            for key in ("src", "data-src", "data-url", "data-stream"):
-                value = attrs.get(key)
-                if value:
-                    self.player_urls.append(value.strip())
-
-
 def load(path, default):
     if not path.exists():
         return default
