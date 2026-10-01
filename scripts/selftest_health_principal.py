@@ -5,6 +5,7 @@ import tempfile
 from pathlib import Path
 
 import sys
+
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,6 +56,9 @@ def main() -> None:
     # La selección multi-variante está acotada y no puede exceder el límite.
     assert h.MAX_VARIANT_CHECKS == 2
     assert h.MIN_THROUGHPUT_BPS > 0
+
+    assert h._cooldown(4) == 0
+    assert h._cooldown(5) == 60
 
     print("SELFTEST OK: parser, score, cooldown, historial, estados y límites.")
 
