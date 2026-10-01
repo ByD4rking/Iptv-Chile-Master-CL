@@ -9,6 +9,8 @@ cooldown/circuit-breaker state and a deterministic 0-100 score.
 
 import json
 import re
+import socket
+import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -24,6 +26,9 @@ MAX_HISTORY_SAMPLES = 5
 TIMEOUT = (2, 3)
 ATTEMPTS = 2
 MAX_PROBES_PER_RUN = 600
+MAX_VARIANT_CHECKS = 2
+FFPROBE_TIMEOUT = 4
+MIN_THROUGHPUT_BPS = 128_000
 MAX_PLAYLIST_BYTES = 256_000
 DEFAULT_WORKERS = 48
 COOLDOWN_THRESHOLD = 5
@@ -73,6 +78,54 @@ def _read_limited(response: requests.Response, limit: int = MAX_PLAYLIST_BYTES) 
     return b"".join(chunks).decode(response.encoding or "utf-8", errors="replace")
 
 
+def _classify_error(exc: Exception) -> str:
+    if isinstance(exc, requests.exceptions.Timeout):
+        return "timeout"
+    if isinstance(exc, requests.exceptions.SSLError):
+        return "tls"
+    if isinstance(exc, requests.exceptions.ConnectionError):
+        if isinstance(getattr(exc, "__cause__", None), socket.gaierror) or "Name or service not known" in str(exc):
+            return "dns"
+        return "connection"
+    if isinstance(exc, requests.exceptions.HTTPError):
+        status = getattr(getattr(exc, "response", None), "status_code", None)
+        return {403:"http-403",404:"http-404",410:"http-410",429:"http-429"}.get(status, f"http-{status}" if status else "http-error")
+    return type(exc).__name__
+
+
+def _ffprobe(url: str) -> dict:
+    try:
+        proc = subprocess.run(
+            ["ffprobe", "-v", "error", "-select_streams", "v:0",
+             "-show_entries", "stream=codec_name,width,height,r_frame_rate,bit_rate",
+             "-of", "json", url],
+            capture_output=True, text=True, timeout=FFPROBE_TIMEOUT, check=False,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        return {}
+    if proc.returncode != 0:
+        return {"ffprobe_error": "decoder-error"}
+    try:
+        streams = json.loads(proc.stdout).get("streams", [])
+        if not streams:
+            return {}
+        s = streams[0]
+        fps = None
+        rate = s.get("r_frame_rate")
+        if rate and "/" in rate:
+            a, b = rate.split("/", 1)
+            if float(b):
+                fps = round(float(a) / float(b), 3)
+        return {
+            "codec_observed": s.get("codec_name"),
+            "resolution_observed": f'{s["width"]}x{s["height"]}' if s.get("width") and s.get("height") else None,
+            "fps_observed": fps,
+            "bitrate_observed": int(s["bit_rate"]) if str(s.get("bit_rate", "")).isdigit() else None,
+        }
+    except (ValueError, TypeError, KeyError, json.JSONDecodeError):
+        return {"ffprobe_error": "decoder-error"}
+
+
 def _probe_once(url: str) -> dict:
     started = time.monotonic()
     try:
@@ -85,7 +138,10 @@ def _probe_once(url: str) -> dict:
             )
             status = r.status_code
             final_url = r.url
-            r.raise_for_status()
+            if status >= 400:
+                error = {403:"http-403",404:"http-404",410:"http-410",429:"http-429"}.get(status, f"http-{status}" if status >= 500 else "http-error")
+                r.close()
+                return {"ok": False, "status": status, "latency_ms": round((time.monotonic()-started)*1000), "error": error}
             initial_limit = MAX_PLAYLIST_BYTES if (".m3u8" in url.lower() or "mpegurl" in (r.headers.get("Content-Type", "").lower())) else 16_384
             body = _read_limited(r, initial_limit)
 
@@ -165,9 +221,15 @@ def _probe_once(url: str) -> dict:
                     "error": "no-segment",
                 }
 
+            sr_started = time.monotonic()
             sr = s.get(segment, headers={"User-Agent": UA}, timeout=TIMEOUT, stream=True)
-            sr.raise_for_status()
-            sample = next(sr.iter_content(4096), b"")
+            if sr.status_code >= 400:
+                status_error = {403:"http-403",404:"http-404",410:"http-410",429:"http-429"}.get(sr.status_code, f"http-{sr.status_code}" if sr.status_code >= 500 else "http-error")
+                sr.close()
+                return {"ok": False, "status": sr.status_code, "latency_ms": round((time.monotonic()-started)*1000), "error": status_error}
+            sample = next(sr.iter_content(64 * 1024), b"")
+            elapsed = max(time.monotonic() - sr_started, 0.001)
+            throughput_bps = round(len(sample) * 8 / elapsed)
             sr.close()
             if not sample:
                 return {
@@ -176,17 +238,28 @@ def _probe_once(url: str) -> dict:
                     "latency_ms": round((time.monotonic()-started)*1000),
                     "error": "empty-segment",
                 }
+            if throughput_bps < MIN_THROUGHPUT_BPS:
+                return {
+                    "ok": False,
+                    "status": status,
+                    "latency_ms": round((time.monotonic()-started)*1000),
+                    "error": "low-throughput",
+                    "throughput_bps": throughput_bps,
+                }
 
             best_variant.pop("url", None)
+            observed = _ffprobe(variant)
             return {
                 "ok": True,
                 "status": status,
                 "latency_ms": round((time.monotonic()-started)*1000),
                 "kind": "hls",
                 **best_variant,
+                "throughput_bps": throughput_bps,
+                **observed,
             }
     except Exception as exc:
-        return {"ok": False, "latency_ms": None, "error": type(exc).__name__}
+        return {"ok": False, "latency_ms": None, "error": _classify_error(exc)}
 
 
 def _probe(url: str) -> dict:
@@ -204,39 +277,26 @@ def _probe(url: str) -> dict:
 
 def _score(result: dict, previous: dict, failures: int) -> int:
     availability = 100 if result.get("ok") else 0
-
-    # Historical stability uses bounded recent history instead of only the
-    # current consecutive-failure counter. This prevents a single recovery
-    # probe from immediately restoring a perfect stability score.
     history = previous.get("history", []) if isinstance(previous, dict) else []
     recent = [x for x in history[-MAX_HISTORY_SAMPLES:] if isinstance(x, dict)]
-    if recent:
-        success_count = sum(1 for x in recent if x.get("ok") is True)
-        stability = round((success_count / len(recent)) * 100)
-    else:
-        stability = 100 if result.get("ok") else 0
-
+    stability = round(sum(1 for x in recent if x.get("ok") is True) / len(recent) * 100) if recent else (100 if result.get("ok") else 0)
     if not result.get("ok"):
         stability = min(stability, max(0, 100 - min(100, failures * 20)))
     latency = result.get("latency_ms")
-    latency_score = 100 if latency is None and result.get("ok") else (
-        0 if latency is None else
-        100 if latency <= 250 else 85 if latency <= 500 else 70 if latency <= 1000 else 50 if latency <= 2000 else 25
-    )
+    latency_score = 100 if latency is None and result.get("ok") else (0 if latency is None else 100 if latency <= 250 else 85 if latency <= 500 else 70 if latency <= 1000 else 50 if latency <= 2000 else 25)
     continuity = 100 if result.get("kind") == "hls" else 80 if result.get("ok") else 20
-    quality = 20
-    resolution = result.get("resolution") or ""
-    if "3840x2160" == resolution: quality = 100
-    elif "2560x1440" == resolution: quality = 95
-    elif "1920x1080" == resolution: quality = 90
-    elif "1280x720" == resolution: quality = 75
-    elif "854x480" == resolution: quality = 55
-    elif resolution: quality = 45
-    if result.get("bandwidth"):
-        quality = min(100, quality + (10 if result["bandwidth"] >= 5000000 else 5 if result["bandwidth"] >= 2500000 else 0))
-    return max(0, min(100, round(
-        availability * 0.25 + stability * 0.30 + continuity * 0.15 + latency_score * 0.15 + quality * 0.15
-    )))
+    resolution = result.get("resolution_observed") or result.get("resolution") or ""
+    quality = {"3840x2160":100,"2560x1440":95,"1920x1080":90,"1280x720":75,"854x480":55}.get(resolution, 45 if resolution else 20)
+    bitrate = result.get("bitrate_observed") or result.get("bandwidth") or 0
+    if bitrate >= 5_000_000: quality += 10
+    elif bitrate >= 2_500_000: quality += 5
+    if result.get("fps_observed") is not None and result["fps_observed"] >= 25: quality += 5
+    if result.get("throughput_bps") is not None:
+        if result["throughput_bps"] < MIN_THROUGHPUT_BPS * 2: quality -= 15
+        elif result["throughput_bps"] >= 2_000_000: quality += 5
+    if result.get("codec_observed") in {"h264", "hevc", "av1", "vp9"}: quality += 5
+    quality = max(0, min(100, quality))
+    return max(0, min(100, round(availability * 0.25 + stability * 0.30 + continuity * 0.15 + latency_score * 0.15 + quality * 0.15)))
 
 
 def _cooldown(failures: int) -> int:
@@ -252,6 +312,35 @@ def _cooldown_active(previous: dict, now: int) -> bool:
         return int(previous.get("cooldown_until", 0) or 0) > now
     except (TypeError, ValueError):
         return False
+
+
+def _aggregate(history: list[dict]) -> dict:
+    rows = [x for x in history if isinstance(x, dict)]
+    latencies = sorted(x["latency_ms"] for x in rows if isinstance(x.get("latency_ms"), (int, float)))
+    successes = sum(1 for x in rows if x.get("ok") is True)
+    def pct(p):
+        if not latencies:
+            return None
+        idx = min(len(latencies)-1, max(0, round((p/100)*(len(latencies)-1))))
+        return latencies[idx]
+    current = longest = 0
+    for x in rows:
+        if x.get("ok") is True:
+            current = 0
+        else:
+            current += 1
+            longest = max(longest, current)
+    return {
+        "total_checks": len(rows),
+        "successful_checks": successes,
+        "failed_checks": len(rows) - successes,
+        "uptime_ratio": round(successes / len(rows) * 100, 2) if rows else None,
+        "latency_p50_ms": pct(50),
+        "latency_p95_ms": pct(95),
+        "latency_p99_ms": pct(99),
+        "current_failure_streak": current,
+        "longest_failure_streak": longest,
+    }
 
 
 def run(path: Path | None = None, workers: int = DEFAULT_WORKERS) -> dict:
@@ -318,6 +407,9 @@ def run(path: Path | None = None, workers: int = DEFAULT_WORKERS) -> dict:
             samples = list(previous.get("history", [])) if isinstance(previous.get("history", []), list) else []
             samples.append({"checked_at": now, "ok": bool(result.get("ok")), "latency_ms": result.get("latency_ms"), "health_score": _score(result, previous, failures)})
             samples = samples[-MAX_HISTORY_SAMPLES:]
+            aggregate = _aggregate(samples)
+            previous_failures = int(previous.get("consecutive_failures", 0) or 0)
+            state_name = "RECOVERING" if result.get("ok") and previous_failures > 0 else ("HEALTHY" if result.get("ok") else "DEGRADED")
             results[url] = {
                 **result,
                 "channel": unique[url]["name"],
@@ -325,7 +417,8 @@ def run(path: Path | None = None, workers: int = DEFAULT_WORKERS) -> dict:
                 "consecutive_failures": failures,
                 "health_score": _score(result, previous, failures),
                 "history": samples,
-                "state": "COOLDOWN" if cooldown else ("HEALTHY" if result.get("ok") else "DEGRADED"),
+                "aggregate": aggregate,
+                "state": "COOLDOWN" if cooldown else state_name,
                 "cooldown_until": now + cooldown if cooldown else 0,
                 "checked_at": now,
             }
