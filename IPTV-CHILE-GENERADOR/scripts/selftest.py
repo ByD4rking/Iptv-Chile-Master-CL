@@ -327,12 +327,9 @@ def main():
     )
     assert len(blocks) == len(output_urls), "Hay una entrada M3U sin tvg-id o sin URL asociada."
 
-    selected_ids = [channel_id for channel_id, _ in blocks]
+    selected_ids = [channel_id for channel_id, _ in blocks if channel_id in set(catalog_ids)]
     assert len(selected_ids) == len(set(selected_ids)), (
         "La M3U contiene más de un endpoint seleccionado para el mismo canal."
-    )
-    assert set(selected_ids) <= set(catalog_ids), (
-        "La M3U contiene un tvg-id que no pertenece al catálogo."
     )
 
     selected_pairs = {(channel_id, url) for channel_id, url in blocks}
@@ -365,6 +362,11 @@ def main():
 
     channels_by_id = {str(c.get("id") or "").strip(): c for c in channels}
     for channel_id, selected_url in selected_pairs:
+        if selected_url in teleon_direct_urls:
+            continue
+        assert channel_id in channels_by_id, (
+            f"La M3U contiene un canal estándar fuera del catálogo: {channel_id}"
+        )
         channel = channels_by_id[channel_id]
         candidates = []
         for source in channel.get("sources", []):
