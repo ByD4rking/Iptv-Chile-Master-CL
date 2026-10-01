@@ -69,6 +69,9 @@ jobs:
       - name: Verificar GOD tras aplicar reconexión
         run: python IPTV-CHILE-GENERADOR/scripts/guard.py
 
+      - name: Descubrir candidatos Teleon
+        run: python IPTV-CHILE-GENERADOR/scripts/teleon_discovery.py
+
       - name: Recopilar fuentes independientes
         run: python IPTV-CHILE-GENERADOR/scripts/collect.py
 
