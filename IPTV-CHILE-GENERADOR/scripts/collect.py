@@ -14,6 +14,9 @@ OUTPUT = BASE / "data" / "channels.json"
 SOURCE_HEALTH_FILE = BASE / "data" / "source_health.json"
 ENDPOINT_HEALTH_FILE = BASE / "data" / "endpoint_health.json"
 TIMEOUT = 30
+RETRIES = 3
+RETRY_BACKOFF_SECONDS = (1.0, 2.0, 4.0)
+RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 SOURCE_QUARANTINE_AFTER = 6
 SOURCE_QUARANTINE_HOURS = 24
 
@@ -33,12 +36,30 @@ def read_source(source):
     url = str(source.get("url") or "").strip()
     if not url.startswith(("http://", "https://")):
         raise ValueError("La fuente debe usar una URL HTTP/HTTPS.")
-    request = Request(
-        url,
-        headers={"User-Agent": "IPTV-CHILE-GENERADOR/3.0"},
-    )
-    with urlopen(request, timeout=TIMEOUT) as response:
-        return response.read().decode("utf-8", errors="replace")
+    last_error = None
+    for attempt in range(RETRIES):
+        try:
+            request = Request(
+                url,
+                headers={
+                    "User-Agent": "IPTV-CHILE-GENERADOR/COLLECT-5.0",
+                    "Accept": "application/vnd.apple.mpegurl, application/x-mpegURL, text/plain, */*",
+                },
+            )
+            with urlopen(request, timeout=TIMEOUT) as response:
+                if response.status >= 400:
+                    raise RuntimeError(f"HTTP {response.status}")
+                return response.read().decode("utf-8", errors="replace")
+        except HTTPError as error:
+            last_error = f"HTTP {error.code}"
+            if error.code not in RETRYABLE_HTTP:
+                raise
+        except Exception as error:
+            last_error = str(error)
+        if attempt < RETRIES - 1:
+            import time
+            time.sleep(RETRY_BACKOFF_SECONDS[attempt])
+    raise RuntimeError(f"Fuente no disponible tras {RETRIES} intentos: {last_error}")
 
 
 def parse_m3u(text, source_name, priority):
@@ -177,7 +198,7 @@ def main():
             if state["consecutive_failures"] >= SOURCE_QUARANTINE_AFTER:
                 from datetime import timedelta
                 state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=SOURCE_QUARANTINE_HOURS)).isoformat()
-                print(f"[QUARANTINE] {name}: {state["consecutive_failures"]} fallos consecutivos; pausa hasta {state["quarantine_until"]}")
+                print(f"[QUARANTINE] {name}: {state['consecutive_failures']} fallos consecutivos; pausa hasta {state['quarantine_until']}")
 
     if not successful_sources:
         raise SystemExit("Ninguna fuente independiente respondió correctamente (las fuentes en cuarentena no cuentan como fuente disponible).")
