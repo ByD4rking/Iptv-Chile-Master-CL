@@ -258,6 +258,8 @@ def main():
                     "page_url": page,
                     "channel_path": path,
                     "source": name,
+                    "language": str(source.get("language") or "es-419").strip(),
+                    "region": str(source.get("region") or ("España" if source.get("language") == "es-ES" else "Latinoamérica")).strip(),
                     "stream_urls": streams,
                     "stream_headers": {"Referer": "https://teleon.tv/"} if streams else {},
                     "has_explicit_stream": bool(streams),
