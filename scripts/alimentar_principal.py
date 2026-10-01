@@ -1873,6 +1873,11 @@ def main():
 
     bloques_no_pluto_iniciales = extraer_bloques_no_pluto_por_url(lineas)
 
+    # Blindaje de estabilidad: solo añadimos directivas al bloque del mismo
+    # canal. No se crean endpoints alternativos ni se cruzan canales.
+    lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+    print(f"Reconexión/caché aplicados: {reconexiones_agregadas}")
+
     # 1) Pluto: sustituir automáticamente cualquier enlace de terceros
     # por nuestra URL vigente. Solo se elimina un Pluto tercero cuando no
     # existe reemplazo propio; los canales no-Pluto no se tocan.
