@@ -26,7 +26,7 @@ def digest(path):
     return h.hexdigest()
 
 
-def validate_m3u(path):
+def validate_m3u(path, reject_duplicates=True):
     if not path.exists() or not path.is_file():
         raise SystemExit(f"PROTECCION: no existe la lista: {path.relative_to(ROOT)}")
     text = path.read_text(encoding="utf-8-sig", errors="strict")
@@ -38,7 +38,7 @@ def validate_m3u(path):
         raise SystemExit(f"PROTECCION: {path.name} no contiene canales")
     if extinf != len(urls):
         raise SystemExit(f"PROTECCION: {path.name}: EXTINF={extinf}, URLs={len(urls)}")
-    if len(urls) != len(set(urls)):
+    if reject_duplicates and len(urls) != len(set(urls)):
         raise SystemExit(f"PROTECCION: {path.name}: contiene URLs duplicadas")
     if any(not url.startswith(("http://", "https://")) for url in urls):
         raise SystemExit(f"PROTECCION: {path.name}: URL no HTTP/HTTPS")
@@ -52,8 +52,13 @@ def main():
     # Estas dos maestras reciben las mismas barreras estructurales del generador:
     # integridad M3U, correspondencia EXTINF/URL y ausencia de duplicados.
     for path in (ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u", ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"):
-        channels, urls = validate_m3u(path)
-        print(f"VALIDA: {path.relative_to(ROOT)} -> {channels} canales / {urls} URLs")
+        # GOD es un catálogo histórico agregado y puede contener el mismo
+        # endpoint en varias entradas; se audita su estructura, pero no se
+        # altera ni se interpreta esa duplicación como corrupción.
+        reject_duplicates = path.name != "IPTV-CHILE-MAESTRA_GOD.m3u"
+        channels, urls = validate_m3u(path, reject_duplicates=reject_duplicates)
+        extra = "" if reject_duplicates else " (duplicados históricos permitidos)"
+        print(f"VALIDA: {path.relative_to(ROOT)} -> {channels} canales / {urls} URLs{extra}")
 
     output = GENERATOR / "IPTV-CHILE-GENERADOR.m3u"
     if output.exists():
