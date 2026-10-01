@@ -63,12 +63,12 @@ def same_host(url):
 def explicit_streams(html, page_url):
     found = set()
     patterns = [
-        r'https?://[^"\\'<>\\s]+\\.m3u8(?:\\?[^"\\'<>\\s]*)?',
-        r'https?://[^"\\'<>\\s]+\\.mpd(?:\\?[^"\\'<>\\s]*)?',
+        r"""https?://[^"\\'<>\\s]+\\.m3u8(?:\\?[^"\\'<>\\s]*)?""",
+        r"""https?://[^"\\'<>\\s]+\\.mpd(?:\\?[^"\\'<>\\s]*)?""",
     ]
     for pattern in patterns:
         for match in re.findall(pattern, html, flags=re.IGNORECASE):
-            found.add(match.replace("\\/", "/"))
+            found.add(match.replace("\\/","/"))
     return sorted(found)
 
 
