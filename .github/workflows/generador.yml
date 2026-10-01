@@ -52,8 +52,14 @@ jobs:
               print(f"OK: {path}")
           PY
 
+      - name: Prueba inventario M3U del generador
+        run: python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
+
       - name: Pruebas unitarias Teleon
         run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
+
+      - name: Inventariar M3U generada sin reingestión
+        run: python IPTV-CHILE-GENERADOR/scripts/m3u_inventory.py
 
       - name: Guardar huellas protegidas
         run: |
