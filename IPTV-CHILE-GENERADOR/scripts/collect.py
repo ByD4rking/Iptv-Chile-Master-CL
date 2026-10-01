@@ -116,6 +116,65 @@ def candidate_keys(entry):
     return {normalize_label(value) for value in values if normalize_label(value)}
 
 
+def discover_new_candidates(all_entries, catalog_channels):
+    discovery_cfg = load_json(BASE / "config" / "discovery.json", {})
+    profiles = discovery_cfg.get("profiles", {})
+    max_per_profile = int(discovery_cfg.get("max_candidates_per_profile", 250))
+
+    catalog_names = set()
+    catalog_urls = set()
+    for item in catalog_channels:
+        for key in candidate_keys(item):
+            catalog_names.add(key)
+        for source in item.get("sources") or []:
+            url = str(source.get("url") or "").strip()
+            if url:
+                catalog_urls.add(url)
+
+    result = {
+        "schema_version": 1,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "mode": "discovery_only",
+        "published_automatically": False,
+        "profiles": {},
+    }
+
+    for profile, terms in profiles.items():
+        found = {}
+        for entry in all_entries:
+            url = str(entry.get("url") or "").strip()
+            if not url or url in catalog_urls:
+                continue
+
+            haystack = normalize_label(
+                f"{entry.get('name', '')} {entry.get('group', '')}"
+            )
+            matches = [term for term in terms if normalize_label(term) in haystack]
+            if not matches:
+                continue
+
+            found.setdefault(url, {
+                "name": str(entry.get("name") or "").strip(),
+                "group": str(entry.get("group") or "").strip(),
+                "logo": str(entry.get("logo") or "").strip(),
+                "url": url,
+                "source": str(entry.get("source") or "").strip(),
+                "matched_terms": sorted(set(matches)),
+                "requires_validation": True,
+                "safe_to_publish_automatically": False,
+            })
+
+            if len(found) >= max_per_profile:
+                break
+
+        result["profiles"][profile] = list(found.values())
+
+    save_json(BASE / "data" / "discovered_channels.json", result)
+    total = sum(len(items) for items in result["profiles"].values())
+    print(f"Descubrimiento: {total} candidatos nuevos guardados en data/discovered_channels.json")
+    print("IMPORTANTE: descubrimiento separado; no modifica catalog.json ni publica candidatos.")
+
+
 def main():
     config = load_json(CONFIG, {"sources": []})
     sources = config.get("sources", [])
@@ -207,6 +266,8 @@ def main():
     catalog_channels = catalog.get("channels", [])
     if not catalog_channels:
         raise SystemExit("El catalogo propio esta vacio o no existe.")
+
+    discover_new_candidates(all_entries, catalog_channels)
 
     # El catalogo propio es la fuente de verdad de QUE canales pertenecen
     # a nuestra lista. Las fuentes externas solo pueden aportar endpoints
