@@ -11,6 +11,7 @@ M3U = BASE / "IPTV-CHILE-GENERADOR.m3u"
 TELEON = BASE / "data" / "teleon_discovery.json"
 OUTPUT = BASE / "data" / "m3u_inventory.json"
 CANDIDATES = BASE / "data" / "m3u_new_candidates.json"
+CANDIDATE_M3U = BASE / "data" / "m3u_new_candidates.m3u"
 
 
 def clean_url(url):
@@ -139,7 +140,7 @@ def main():
         )
         is_new_url = item["url"] not in known_urls
         is_new_name = bool(name_key) and name_key not in known_names
-        if is_new_url and is_new_name:
+        if is_new_url:
             new_candidates.append({
                 **item,
                 "origin": "IPTV-CHILE-GENERADOR.m3u",
@@ -167,7 +168,7 @@ def main():
             "duplicate_urls": len(duplicates),
             "known_to_teleon": sum(1 for x in unique if x["url"] in known_urls),
             "new_urls_vs_teleon": sum(1 for x in unique if x["url"] not in known_urls),
-            "new_name_and_url_candidates": len(new_candidates),
+            "new_url_candidates": len(new_candidates),
         },
         "duplicates": duplicates,
         "entries": unique,
@@ -182,12 +183,35 @@ def main():
         "candidates": new_candidates,
     })
 
+    lines = ["#EXTM3U", "# IPTV-CHILE-GENERADOR | candidatos secundarios M3U | NO PUBLICAR AUTOMATICAMENTE"]
+    for item in new_candidates:
+        groups = ";".join(item.get("groups") or ["M3U Discovery"])
+        name = item.get("name") or item.get("tvg_name") or "Canal sin nombre"
+        tvg_name = item.get("tvg_name") or name
+        logo = item.get("logo") or ""
+        safe_name = tvg_name.replace('"', "'")
+        safe_groups = groups.replace('"', "'")
+        extinf = f'#EXTINF:-1 tvg-name="{safe_name}"'
+        if logo:
+            extinf += f' tvg-logo="{logo}"'
+        extinf += f' group-title="{safe_groups}",{name}'
+        lines.append(extinf)
+        for key, value in (item.get("headers") or {}).items():
+            if key.lower() == "http-referrer":
+                lines.append(f"#EXTVLCOPT:http-referrer={value}")
+            elif key.lower() == "http-user-agent":
+                lines.append(f"#EXTVLCOPT:http-user-agent={value}")
+        lines.append(item["url"])
+    from atomic import atomic_write_text
+    atomic_write_text(CANDIDATE_M3U, "\n".join(lines) + "\n")
+
     print(f"M3U inventario: {len(entries)} entradas, {len(unique)} URLs únicas.")
     print(f"Duplicadas: {len(duplicates)}.")
     print(f"URLs no vistas por Teleon: {output['metrics']['new_urls_vs_teleon']}.")
-    print(f"Candidatos nuevos nombre+URL: {len(new_candidates)}.")
+    print(f"Candidatos URL nuevos frente a Teleon: {len(new_candidates)}.")
     print(f"Inventario: {OUTPUT}")
-    print(f"Candidatos: {CANDIDATES}")
+    print(f"Candidatos JSON: {CANDIDATES}")
+    print(f"Candidatos M3U: {CANDIDATE_M3U}")
 
 
 if __name__ == "__main__":
