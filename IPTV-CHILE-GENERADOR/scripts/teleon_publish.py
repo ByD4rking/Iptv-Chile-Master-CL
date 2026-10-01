@@ -87,6 +87,7 @@ def main():
         lines.append(url)
         additions.extend(lines)
         existing.add(url)
+        added_count += 1
 
     if additions:
         if not text.endswith("\n"):
