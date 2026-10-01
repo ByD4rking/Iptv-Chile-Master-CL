@@ -508,10 +508,13 @@ def main():
             "channel_name": result["channel_name"],
             "source": result["source"],
             "priority": result["source_priority"],
-            "checks": int(state.get("checks") or 0) + 1,
         })
+        # Una fuente en cuarentena no fue comprobada en esta ejecución.
+        # No incrementamos checks para evitar falsificar el histórico y para
+        # mantener siempre: checks == successes + failures.
         if result.get("quarantined"):
             continue
+        state["checks"] = int(state.get("checks") or 0) + 1
         if result["playback_ok"]:
             state["successes"] = int(state.get("successes") or 0) + 1
             state["consecutive_failures"] = 0
