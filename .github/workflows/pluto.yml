@@ -24,15 +24,16 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
 
       - name: Configurar Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
         with:
           python-version: "3.12"
 
@@ -152,7 +153,21 @@ jobs:
 
       - name: Verificar que el generador no tocó archivos ajenos
         run: |
-          set -e
+          set -euo pipefail
+          git status --porcelain | while IFS= read -r line; do
+            file="${line:3}"
+            case "$file" in
+              pluto/output/playlists/pluto_*.m3u|pluto/output/regional/channels_*.json|pluto/output/health/streams.json)
+                ;;
+              "")
+                ;;
+              *)
+                echo "REGRESION: el generador creó o modificó un archivo no autorizado: $file"
+                exit 1
+                ;;
+            esac
+          done
+
           git diff --name-only | while IFS= read -r file; do
             case "$file" in
               pluto/output/playlists/pluto_*.m3u|pluto/output/regional/channels_*.json|pluto/output/health/streams.json)
