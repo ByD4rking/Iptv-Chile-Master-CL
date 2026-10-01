@@ -37,7 +37,10 @@ class LinkParser(HTMLParser):
         if tag == "a":
             href = attrs.get("href")
             if href:
-                self.links.append(href.strip())
+                href = href.strip()
+                self.links.append(href)
+                if "/embed/" in href.lower():
+                    self.player_urls.append(href)
         elif tag in {"iframe", "frame", "video", "source"}:
             for key in ("src", "data-src", "data-url", "data-stream"):
                 value = attrs.get(key)
@@ -115,7 +118,7 @@ def explicit_streams(html, base_url=""):
     for pattern in patterns:
         for match in re.findall(pattern, html, flags=re.IGNORECASE):
             value = match if isinstance(match, str) else match[0]
-            value = value.replace("\\/", "/").replace("\/", "/").strip()
+            value = value.replace("\\/", "/").strip()
             if value.startswith(("http://", "https://")):
                 found.add(value)
             elif base_url and value.startswith("/"):
