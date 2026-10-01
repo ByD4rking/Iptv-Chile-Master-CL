@@ -99,6 +99,9 @@ jobs:
       - name: Generar M3U
         run: python IPTV-CHILE-GENERADOR/scripts/generate.py
 
+      - name: Añadir directamente a la M3U los Teleon validados
+        run: python IPTV-CHILE-GENERADOR/scripts/teleon_publish.py
+
       - name: Self-test del generador
         run: python IPTV-CHILE-GENERADOR/scripts/selftest.py
 
