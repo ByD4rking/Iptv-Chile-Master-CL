@@ -29,13 +29,20 @@ class LinkParser(HTMLParser):
     def __init__(self):
         super().__init__()
         self.links = []
+        self.player_urls = []
 
     def handle_starttag(self, tag, attrs):
-        if tag.lower() != "a":
-            return
-        href = dict(attrs).get("href")
-        if href:
-            self.links.append(href.strip())
+        attrs = dict(attrs)
+        tag = tag.lower()
+        if tag == "a":
+            href = attrs.get("href")
+            if href:
+                self.links.append(href.strip())
+        elif tag in {"iframe", "frame", "video", "source"}:
+            for key in ("src", "data-src", "data-url", "data-stream"):
+                value = attrs.get(key)
+                if value:
+                    self.player_urls.append(value.strip())
 
 
 def load(path, default):
@@ -97,16 +104,57 @@ def fetch(url):
     raise RuntimeError(last_error or "error de descarga")
 
 
-def explicit_streams(html):
+def explicit_streams(html, base_url=""):
+    """Extract only stream URLs explicitly exposed by public HTML."""
     found = set()
     patterns = [
-        r"""https?://[^"'<>\s]+\.m3u8(?:\?[^"'<>\s]*)?""",
-        r"""https?://[^"'<>\s]+\.mpd(?:\?[^"'<>\s]*)?""",
+        r"""https?://[^"'<>\s]+(?:\.m3u8|\.mpd)(?:\?[^"'<>\s]*)?""",
+        r"""https?://[^"'<>\s]*(?:m3u8|mpd)[^"'<>\s]*""",
+        r"""(?:src|file|url|stream|source|hls|dash)\s*[:=]\s*["']([^"']+(?:m3u8|mpd)[^"']*)["']""",
     ]
     for pattern in patterns:
         for match in re.findall(pattern, html, flags=re.IGNORECASE):
-            found.add(match.replace("\\/","/"))
+            value = match if isinstance(match, str) else match[0]
+            value = value.replace("\\/", "/").replace("\/", "/").strip()
+            if value.startswith(("http://", "https://")):
+                found.add(value)
+            elif base_url and value.startswith("/"):
+                found.add(urljoin(base_url, value))
     return sorted(found)
+
+
+def public_player_documents(html, page_url):
+    """Follow one explicitly embedded public player page; no auth/DRM bypass."""
+    parser = LinkParser()
+    parser.feed(html)
+    documents = []
+    seen = set()
+    for raw in parser.player_urls:
+        player_url = urljoin(page_url, raw)
+        parsed = urlparse(player_url)
+        if parsed.scheme not in {"http", "https"} or player_url in seen:
+            continue
+        seen.add(player_url)
+        try:
+            player_html = fetch(player_url)
+        except Exception:
+            continue
+        documents.append({
+            "url": player_url,
+            "streams": explicit_streams(player_html, player_url),
+        })
+    return documents
+
+
+def discover_public_streams(html, page_url):
+    streams = set(explicit_streams(html, page_url))
+    player_headers = {}
+    players = public_player_documents(html, page_url)
+    for player in players:
+        for stream in player["streams"]:
+            streams.add(stream)
+            player_headers.setdefault(stream, {"Referer": player["url"]})
+    return sorted(streams), player_headers, len(players)
 
 
 def channel_pages(html, base_url):
@@ -188,7 +236,7 @@ def main():
         "generated_at": now.isoformat(),
         "mode": "discovery_only",
         "published_automatically": False,
-        "stream_extraction": "explicit_only",
+        "stream_extraction": "public_html_and_embedded_player_explicit_only",
         "classification": "teleon_classifier_v1",
         "errors": [],
         "profiles": {},
@@ -245,7 +293,7 @@ def main():
                 html = page_html.get(page)
                 if html is None:
                     continue
-                streams = explicit_streams(html)
+                streams, player_headers, player_count = discover_public_streams(html, page)
                 path = urlparse(page).path.rstrip("/")
                 slug = path.rsplit("/", 1)[-1] if path else ""
                 classification = classify(
@@ -261,8 +309,12 @@ def main():
                     "language": str(source.get("language") or "es-419").strip(),
                     "region": str(source.get("region") or ("España" if source.get("language") == "es-ES" else "Latinoamérica")).strip(),
                     "stream_urls": streams,
-                    "stream_headers": {"Referer": "https://teleon.tv/"} if streams else {},
+                    "stream_headers": (
+                        player_headers.get(streams[0], {"Referer": page})
+                        if streams else {}
+                    ),
                     "has_explicit_stream": bool(streams),
+                    "embedded_player_count": player_count,
                     "classification": classification,
                     "requires_validation": True,
                     "safe_to_publish_automatically": False,
@@ -329,6 +381,11 @@ def main():
         "pages_inspected": len(pages_seen),
         "candidate_items": total,
         "explicit_stream_candidates": explicit_total,
+        "embedded_player_pages": sum(
+            int(item.get("embedded_player_count") or 0)
+            for items in result["profiles"].values()
+            for item in items
+        ),
         "errors": len(result["errors"]),
         "sources_ok": sum(1 for x in result["sources"] if x.get("status") == "ok"),
         "sources_quarantined": sum(1 for x in result["sources"] if x.get("status") == "quarantined"),
