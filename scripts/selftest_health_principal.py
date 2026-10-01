@@ -43,6 +43,9 @@ def main() -> None:
     assert h.MAX_HISTORY_SAMPLES == 5
     assert h.ATTEMPTS == 2
     assert h.MAX_PROBES_PER_RUN == 600
+    assert h.MAX_VARIANT_CHECKS == 2
+    assert h.MIN_THROUGHPUT_BPS == 128_000
+    assert h._aggregate([{"ok": True, "latency_ms": 100}, {"ok": False, "latency_ms": 300}])["uptime_ratio"] == 50.0
     assert h.DEFAULT_WORKERS == 48
     print("SELFTEST OK: Health principal parser, score, cooldown y límites.")
 
