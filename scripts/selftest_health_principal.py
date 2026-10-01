@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import json
 import tempfile
-from pathlib import Path
-
 import sys
-
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,6 +17,9 @@ def main() -> None:
     assert h._cooldown_active({"cooldown_until": 200}, 199) is True
     assert h._cooldown_active({"cooldown_until": 200}, 200) is False
     assert h._cooldown_active({"cooldown_until": "invalid"}, 199) is False
+    assert h._direct_body_is_valid("video-bytes", "video/mp2t")[0] is True
+    assert h._direct_body_is_valid("", "video/mp2t")[1] == "empty-body"
+    assert h._direct_body_is_valid("<html>error</html>", "text/html")[1] == "invalid-content-type"
 
     ok = {"ok": True, "latency_ms": 200, "kind": "hls", "resolution": "1920x1080", "bandwidth": 5000000}
     bad = {"ok": False, "latency_ms": None, "kind": "hls"}
