@@ -52,6 +52,9 @@ jobs:
               print(f"OK: {path}")
           PY
 
+      - name: Pruebas unitarias Teleon
+        run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
+
       - name: Guardar huellas protegidas
         run: |
           set -euo pipefail
@@ -71,6 +74,9 @@ jobs:
 
       - name: Descubrir candidatos Teleon
         run: python IPTV-CHILE-GENERADOR/scripts/teleon_discovery.py
+
+      - name: Validar HLS explícitos de Teleon
+        run: python IPTV-CHILE-GENERADOR/scripts/teleon_validate.py
 
       - name: Recopilar fuentes independientes
         run: python IPTV-CHILE-GENERADOR/scripts/collect.py
@@ -156,6 +162,8 @@ jobs:
 
             # No mezclamos M3U/JSON generados de dos ejecuciones distintas.
             git reset --hard origin/main
+            python IPTV-CHILE-GENERADOR/scripts/teleon_discovery.py
+            python IPTV-CHILE-GENERADOR/scripts/teleon_validate.py
             python IPTV-CHILE-GENERADOR/scripts/collect.py
             python IPTV-CHILE-GENERADOR/scripts/fix_encoding.py
             python IPTV-CHILE-GENERADOR/scripts/check.py
