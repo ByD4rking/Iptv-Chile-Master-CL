@@ -249,6 +249,17 @@ def main():
         "La M3U seleccionó una combinación canal/endpoint que no existe en channels.json."
     )
 
+    # Estabilidad de red: las etapas de adquisición/validación deben conservar
+    # reintentos y backoff para no descartar un endpoint por un corte transitorio.
+    for script_name in ("check.py", "collect.py", "quality.py"):
+        script_text = (BASE / "scripts" / script_name).read_text(encoding="utf-8")
+        assert re.search(r"^RETRIES\\s*=\\s*[2-9]\\d*$", script_text, re.MULTILINE), (
+            f"{script_name} perdió la política mínima de reintentos."
+        )
+        assert "RETRY_BACKOFF_SECONDS" in script_text, (
+            f"{script_name} perdió el backoff de reintentos."
+        )
+
     temp_files = list((BASE / "data").glob(".*.tmp"))
     temp_files += list(BASE.glob(".*.tmp"))
     assert not temp_files, f"Quedaron temporales atómicos: {temp_files}"
