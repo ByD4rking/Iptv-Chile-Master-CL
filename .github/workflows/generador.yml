@@ -80,6 +80,11 @@ jobs:
       - name: Self-test del generador
         run: python IPTV-CHILE-GENERADOR/scripts/selftest.py
 
+      - name: Revalidar blindaje canónico de GOD
+        run: |
+          set -euo pipefail
+          python IPTV-CHILE-GENERADOR/scripts/guard.py
+
       - name: Validar aislamiento final
         run: |
           set -euo pipefail
