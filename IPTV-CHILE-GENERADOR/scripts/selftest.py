@@ -240,12 +240,26 @@ def main():
         str(x.get("url") or "").strip(): x
         for x in quality.get("results", [])
     }
+    teleon_quality_by_url = {
+        str(x.get("stream_url") or "").strip(): x
+        for x in teleon_quality.get("results", [])
+        if str(x.get("stream_url") or "").strip()
+    }
 
     for url in output_urls:
         item = quality_by_url.get(url)
-        assert item, f"La M3U contiene una URL sin resultado de calidad: {url}"
-        assert item.get("playback_checked") and item.get("playback_ok"), (
-            f"La M3U contiene una URL sin reproducción verificada: {url}"
+        if item is not None:
+            assert item.get("playback_checked") and item.get("playback_ok"), (
+                f"La M3U contiene una URL sin reproducción verificada: {url}"
+            )
+            continue
+
+        # Los streams Teleon se validan en su pipeline aislado y se publican
+        # después de esa validación; no forman parte de quality.json propio.
+        teleon_item = teleon_quality_by_url.get(url)
+        assert teleon_item, f"La M3U contiene una URL sin resultado de calidad: {url}"
+        assert teleon_item.get("playback_checked") and teleon_item.get("playback_ok"), (
+            f"La M3U contiene una URL Teleon sin reproducción verificada: {url}"
         )
 
     assert output_urls, "La M3U no contiene URLs."
