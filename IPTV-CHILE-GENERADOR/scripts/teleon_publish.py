@@ -61,6 +61,7 @@ def main():
                     }
 
     additions = []
+    added_count = 0
     for url, q in by_url.items():
         if url in existing:
             continue
@@ -94,7 +95,6 @@ def main():
         OUTPUT.write_text(text, encoding="utf-8")
 
     manifest = load(MANIFEST, {})
-    added_count = len(additions) // 4 if additions else 0
     manifest["m3u_sha256"] = file_sha256(OUTPUT)
     manifest["teleon_direct_candidates"] = added_count
     manifest["generated_channels"] = int(manifest.get("generated_channels") or 0) + added_count
@@ -103,7 +103,7 @@ def main():
     manifest["teleon_policy"] = "solo_playback_ok; sin DRM/auth bypass; categoria+idioma conservados"
     atomic_write_json(MANIFEST, manifest)
 
-    print(f"Teleon directo: {manifest['teleon_direct_candidates']} streams añadidos a la M3U.")
+    print(f"Teleon directo: {added_count} streams añadidos a la M3U.")
     print("Solo se añaden streams con validación HLS/segmento correcta.")
     print(f"Salida: {OUTPUT}")
 
