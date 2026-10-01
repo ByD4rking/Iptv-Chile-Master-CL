@@ -32,6 +32,71 @@ class LinkParser(HTMLParser):
         self.player_urls = []
 
     def handle_starttag(self, tag, attrs):
+
+
+class VisibleTextParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+        self._hidden = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() in {"script", "style", "noscript"}:
+            self._hidden += 1
+
+    def handle_endtag(self, tag):
+        if tag.lower() in {"script", "style", "noscript"} and self._hidden:
+            self._hidden -= 1
+
+    def handle_data(self, data):
+        if not self._hidden:
+            value = " ".join(str(data).split())
+            if value:
+                self.parts.append(value)
+
+    def text(self):
+        return " ".join(self.parts)
+
+
+def teleon_channel_metadata(html):
+    parser = VisibleTextParser()
+    parser.feed(html)
+    text = " ".join(parser.text().split())
+    country = ""
+    languages = ""
+
+    patterns = (
+        r"(?:País|Country)\s+(.+?)\s+(?:Idiomas|Languages)\s+(.+?)\s+(?:Géneros|Genres)\s+",
+        r"(?:País|Country)\s+(.+?)\s+(?:Idiomas|Languages)\s+(.+?)(?:\s+(?:Calificación|Rating|Vistas|Views|Dónde ver|Where to watch)|$)",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            country = " ".join(match.group(1).split())
+            languages = " ".join(match.group(2).split())
+            break
+
+    normalized_languages = normalize_meta(languages)
+    normalized_country = normalize_meta(country)
+    spanish = any(
+        token in normalized_languages
+        for token in ("espanol", "spanish", "castellano")
+    )
+    return {
+        "country": country,
+        "languages": languages,
+        "language_verified": spanish,
+        "country_normalized": normalized_country,
+    }
+
+
+def normalize_meta(value):
+    import unicodedata
+    text = unicodedata.normalize("NFKD", str(value or ""))
+    text = "".join(ch for ch in text if not unicodedata.combining(ch))
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return " ".join(text.split())
         attrs = dict(attrs)
         tag = tag.lower()
         if tag == "a":
@@ -317,6 +382,7 @@ def main():
                 streams, player_headers, player_count = discover_public_streams(html, page)
                 path = urlparse(page).path.rstrip("/")
                 slug = path.rsplit("/", 1)[-1] if path else ""
+                channel_meta = teleon_channel_metadata(html)
                 classification = classify(
                     name=slug.replace("-", " "),
                     group=" ".join(profile_names),
@@ -327,8 +393,16 @@ def main():
                     "page_url": page,
                     "channel_path": path,
                     "source": name,
-                    "language": str(source.get("language") or "es-419").strip(),
-                    "region": str(source.get("region") or ("España" if source.get("language") == "es-ES" else "Latinoamérica")).strip(),
+                    "language": channel_meta["languages"] or str(source.get("language") or "es-419").strip(),
+                    "region": (
+                        "España"
+                        if normalize_meta(channel_meta["country"]) in {"espana", "spain"}
+                        else str(source.get("region") or ("España" if source.get("language") == "es-ES" else "Latinoamérica")).strip()
+                    ),
+                    "country": channel_meta["country"],
+                    "languages": channel_meta["languages"],
+                    "language_verified": channel_meta["language_verified"],
+                    "source_profiles": profile_names,
                     "stream_urls": streams,
                     "stream_headers": (
                         player_headers.get(streams[0], {"Referer": page})
@@ -398,10 +472,22 @@ def main():
         1 for items in result["profiles"].values()
         for item in items if item.get("has_explicit_stream")
     )
+    spanish_verified_total = sum(
+        1 for items in result["profiles"].values()
+        for item in items
+        if item.get("has_explicit_stream") and item.get("language_verified")
+    )
+    spanish_rejected_total = sum(
+        1 for items in result["profiles"].values()
+        for item in items
+        if item.get("has_explicit_stream") and not item.get("language_verified")
+    )
     result["metrics"] = {
         "pages_inspected": len(pages_seen),
         "candidate_items": total,
         "explicit_stream_candidates": explicit_total,
+        "spanish_verified_stream_candidates": spanish_verified_total,
+        "non_spanish_stream_candidates": spanish_rejected_total,
         "embedded_player_pages": sum(
             int(item.get("embedded_player_count") or 0)
             for items in result["profiles"].values()
