@@ -163,15 +163,7 @@ def _probe_once(url: str) -> dict:
                     "error": "no-m3u8",
                 }
 
-            variant = final_url
-            vbody = body
-            best_variant = {
-                "resolution": None,
-                "bandwidth": None,
-                "codecs": None,
-                "fps": None,
-                "url": None,
-            }
+            variants = []
             master_lines = vbody.splitlines()
             for idx, line in enumerate(master_lines):
                 if not line.startswith("#EXT-X-STREAM-INF:") or idx + 1 >= len(master_lines):
@@ -184,80 +176,90 @@ def _probe_once(url: str) -> dict:
                 bm = re.search(r"BANDWIDTH=(\d+)", attrs)
                 cm = re.search(r'CODECS="([^"]+)"', attrs)
                 fm = re.search(r"FRAME-RATE=([0-9.]+)", attrs)
-                candidate = {
+                variants.append({
                     "resolution": rm.group(1) if rm else None,
                     "bandwidth": int(bm.group(1)) if bm else None,
                     "codecs": cm.group(1) if cm else None,
                     "fps": float(fm.group(1)) if fm else None,
                     "url": urljoin(final_url, uri),
-                }
-                if (candidate["bandwidth"] or 0) > (best_variant["bandwidth"] or 0):
-                    best_variant = candidate
+                })
 
-            if best_variant.get("url"):
-                variant = best_variant["url"]
-                vr = s.get(
-                    variant,
-                    headers={"User-Agent": UA},
-                    timeout=TIMEOUT,
-                    stream=True,
+            variants.sort(key=lambda x: (x.get("bandwidth") or 0), reverse=True)
+            variants = variants[:MAX_VARIANT_CHECKS] or [{
+                "resolution": None, "bandwidth": None, "codecs": None,
+                "fps": None, "url": final_url,
+            }]
+
+            last_variant_error = "no-segment"
+            for variant_meta in variants:
+                variant = variant_meta["url"]
+                vbody = body
+                if variant != final_url:
+                    try:
+                        vr = s.get(variant, headers={"User-Agent": UA}, timeout=TIMEOUT, stream=True)
+                        vr.raise_for_status()
+                        vbody = _read_limited(vr)
+                    except Exception as exc:
+                        last_variant_error = _classify_error(exc)
+                        continue
+
+                segment = next(
+                    (
+                        urljoin(variant, x.strip())
+                        for x in vbody.splitlines()
+                        if x.strip() and not x.startswith("#")
+                    ),
+                    None,
                 )
-                vr.raise_for_status()
-                vbody = _read_limited(vr)
+                if not segment:
+                    last_variant_error = "no-segment"
+                    continue
 
-            segment = next(
-                (
-                    urljoin(variant, x.strip())
-                    for x in vbody.splitlines()
-                    if x.strip() and not x.startswith("#")
-                ),
-                None,
-            )
-            if not segment:
-                return {
-                    "ok": False,
-                    "status": status,
-                    "latency_ms": round((time.monotonic()-started)*1000),
-                    "error": "no-segment",
-                }
+                sr_started = time.monotonic()
+                try:
+                    sr = s.get(segment, headers={"User-Agent": UA}, timeout=TIMEOUT, stream=True)
+                    if sr.status_code >= 400:
+                        last_variant_error = {403:"http-403",404:"http-404",410:"http-410",429:"http-429"}.get(
+                            sr.status_code, f"http-{sr.status_code}" if sr.status_code >= 500 else "http-error"
+                        )
+                        sr.close()
+                        continue
+                    sample = next(sr.iter_content(64 * 1024), b"")
+                    elapsed = max(time.monotonic() - sr_started, 0.001)
+                    throughput_bps = round(len(sample) * 8 / elapsed)
+                    sr.close()
+                except Exception as exc:
+                    last_variant_error = _classify_error(exc)
+                    continue
 
-            sr_started = time.monotonic()
-            sr = s.get(segment, headers={"User-Agent": UA}, timeout=TIMEOUT, stream=True)
-            if sr.status_code >= 400:
-                status_error = {403:"http-403",404:"http-404",410:"http-410",429:"http-429"}.get(sr.status_code, f"http-{sr.status_code}" if sr.status_code >= 500 else "http-error")
-                sr.close()
-                return {"ok": False, "status": sr.status_code, "latency_ms": round((time.monotonic()-started)*1000), "error": status_error}
-            sample = next(sr.iter_content(64 * 1024), b"")
-            elapsed = max(time.monotonic() - sr_started, 0.001)
-            throughput_bps = round(len(sample) * 8 / elapsed)
-            sr.close()
-            if not sample:
+                if not sample:
+                    last_variant_error = "empty-segment"
+                    continue
+                if throughput_bps < MIN_THROUGHPUT_BPS:
+                    last_variant_error = "low-throughput"
+                    continue
+
+                observed = _ffprobe(variant)
+                variant_meta = {k: v for k, v in variant_meta.items() if k != "url"}
                 return {
-                    "ok": False,
+                    "ok": True,
                     "status": status,
                     "latency_ms": round((time.monotonic()-started)*1000),
-                    "error": "empty-segment",
-                }
-            if throughput_bps < MIN_THROUGHPUT_BPS:
-                return {
-                    "ok": False,
-                    "status": status,
-                    "latency_ms": round((time.monotonic()-started)*1000),
-                    "error": "low-throughput",
+                    "kind": "hls",
+                    **variant_meta,
                     "throughput_bps": throughput_bps,
+                    "variants_checked": len(variants),
+                    **observed,
                 }
 
-            best_variant.pop("url", None)
-            observed = _ffprobe(variant)
             return {
-                "ok": True,
+                "ok": False,
                 "status": status,
                 "latency_ms": round((time.monotonic()-started)*1000),
-                "kind": "hls",
-                **best_variant,
-                "throughput_bps": throughput_bps,
-                **observed,
+                "error": last_variant_error,
+                "variants_checked": len(variants),
             }
+
     except Exception as exc:
         return {"ok": False, "latency_ms": None, "error": _classify_error(exc)}
 
@@ -409,12 +411,24 @@ def run(path: Path | None = None, workers: int = DEFAULT_WORKERS) -> dict:
             samples = samples[-MAX_HISTORY_SAMPLES:]
             aggregate = _aggregate(samples)
             previous_failures = int(previous.get("consecutive_failures", 0) or 0)
-            state_name = "RECOVERING" if result.get("ok") and previous_failures > 0 else ("HEALTHY" if result.get("ok") else "DEGRADED")
+            previous_successes = int(previous.get("consecutive_successes", 0) or 0)
+            successes = previous_successes + 1 if result.get("ok") else 0
+            if result.get("ok") and previous_failures > 0:
+                state_name = "RECOVERING"
+            elif result.get("ok"):
+                state_name = "HEALTHY"
+            elif failures >= COOLDOWN_THRESHOLD:
+                state_name = "DEAD"
+            elif failures >= 2:
+                state_name = "SUSPECT"
+            else:
+                state_name = "DEGRADED"
             results[url] = {
                 **result,
                 "channel": unique[url]["name"],
                 "channel_id": unique[url]["id"],
                 "consecutive_failures": failures,
+                "consecutive_successes": successes,
                 "health_score": _score(result, previous, failures),
                 "history": samples,
                 "aggregate": aggregate,
@@ -426,9 +440,27 @@ def run(path: Path | None = None, workers: int = DEFAULT_WORKERS) -> dict:
             if completed % 100 == 0 or completed == len(to_probe):
                 print(f"Health Score progreso: {completed}/{len(to_probe)} sondeos completados", flush=True)
 
-    # Bounded persistence: current URLs only, capped deterministically.
+    # Persistencia completa y acotada: las fuentes diferidas NO se pierden.
+    # El muestreo rotativo conserva memoria real entre ejecuciones.
+    for url, entry in unique.items():
+        if url not in results:
+            previous = state.get(url, {})
+            if not isinstance(previous, dict):
+                previous = {}
+            results[url] = {
+                **previous,
+                "channel": entry["name"],
+                "channel_id": entry["id"],
+                "state": "COOLDOWN" if _cooldown_active(previous, now) else previous.get("state", "UNTESTED"),
+            }
+
     if len(results) > MAX_RECORDS:
-        results = dict(sorted(results.items(), key=lambda kv: kv[1].get("checked_at", 0), reverse=True)[:MAX_RECORDS])
+        results = dict(sorted(
+            results.items(),
+            key=lambda kv: (kv[1].get("checked_at", 0), kv[0]),
+            reverse=True,
+        )[:MAX_RECORDS])
+
     tmp = STATE_FILE.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(STATE_FILE)
