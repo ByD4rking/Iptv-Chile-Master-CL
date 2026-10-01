@@ -93,6 +93,20 @@ def _classify_error(exc: Exception) -> str:
     return type(exc).__name__
 
 
+def _direct_body_is_valid(body: str, content_type: str = "") -> tuple[bool, str | None]:
+    """Reject obvious HTTP 200 error pages/empty bodies for direct sources."""
+    text = (body or "").lstrip()
+    ctype = (content_type or "").lower()
+    if not text:
+        return False, "empty-body"
+    if "html" in ctype or "text/plain" in ctype:
+        return False, "invalid-content-type"
+    lowered = text[:512].lower()
+    if lowered.startswith("<!doctype html") or lowered.startswith("<html") or "<body" in lowered:
+        return False, "html-response"
+    return True, None
+
+
 def _ffprobe(url: str) -> dict:
     try:
         proc = subprocess.run(
@@ -149,6 +163,15 @@ def _probe_once(url: str) -> dict:
             # The previous implementation could download the entire response,
             # making one slow source stall the whole batch.
             if ".m3u8" not in url.lower() and "#EXTM3U" not in body:
+                valid, direct_error = _direct_body_is_valid(body, r.headers.get("Content-Type", ""))
+                if not valid:
+                    return {
+                        "ok": False,
+                        "status": status,
+                        "latency_ms": round((time.monotonic()-started)*1000),
+                        "kind": "http",
+                        "error": direct_error,
+                    }
                 return {
                     "ok": True,
                     "status": status,
