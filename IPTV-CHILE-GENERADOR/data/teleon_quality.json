@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-01T16:44:33.348056+00:00",
+  "generated_at": "2026-10-01T22:54:57.953029+00:00",
   "mode": "discovery_validation_only",
   "published_automatically": false,
   "total_candidates": 34,
-  "playback_ok": 26,
-  "playback_failed": 8,
+  "playback_ok": 28,
+  "playback_failed": 6,
   "results": [
     {
       "page_url": "https://teleon.tv/ar/channel/24-7-canal-de-noticias-ar/",
@@ -122,16 +122,16 @@
         "Referer"
       ],
       "playback_checked": true,
-      "playback_ok": false,
-      "playback_type": null,
-      "http_status": 404,
-      "error": "HTTP 404",
-      "validated_url": null,
+      "playback_ok": true,
+      "playback_type": "hls",
+      "http_status": 200,
+      "error": null,
+      "validated_url": "https://streaming004.gestec-video.com/hls/7TVALGECIRAS.m3u8",
       "variant_count": 0,
-      "variant_index": null,
+      "variant_index": 1,
       "resolution": null,
-      "bitrate": null,
-      "segment_bytes": null
+      "bitrate": 0,
+      "segment_bytes": 65536
     },
     {
       "page_url": "https://teleon.tv/channel/7tv-cordoba-es/",
@@ -338,16 +338,16 @@
         "Referer"
       ],
       "playback_checked": true,
-      "playback_ok": false,
+      "playback_ok": true,
       "playback_type": "hls",
       "http_status": 200,
-      "error": "Playlist HLS accesible pero ninguna variante/segmento pasó la validación.",
+      "error": null,
       "validated_url": "https://daiconnect.com/live/hls/tvup/rk-cartoonclassics/.m3u8",
       "variant_count": 3,
-      "variant_index": null,
-      "resolution": null,
-      "bitrate": null,
-      "segment_bytes": null
+      "variant_index": 1,
+      "resolution": "1920x1080",
+      "bitrate": 4172199,
+      "segment_bytes": 65536
     },
     {
       "page_url": "https://teleon.tv/channel/duck-tv-uk/",
@@ -400,7 +400,7 @@
       "variant_count": 1,
       "variant_index": 1,
       "resolution": "853x480",
-      "bitrate": 3368779,
+      "bitrate": 2450478,
       "segment_bytes": 65536
     },
     {
@@ -468,11 +468,11 @@
       "playback_type": "hls",
       "http_status": 200,
       "error": null,
-      "validated_url": "https://dai.google.com/linear/hls/pa/event/GI-9cp_bT8KcerLpZwkuhw/stream/9000749d-5642-43e0-b5f2-71ce65d6f807:TUL/master.m3u8",
+      "validated_url": "https://dai.google.com/linear/hls/pa/event/GI-9cp_bT8KcerLpZwkuhw/stream/66a165e2-bbdd-45d9-841d-df966640ab90:DLS/master.m3u8",
       "variant_count": 4,
       "variant_index": 1,
       "resolution": "1920x1080",
-      "bitrate": 4873648,
+      "bitrate": 4891000,
       "segment_bytes": 65536
     },
     {
