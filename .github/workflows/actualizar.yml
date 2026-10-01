@@ -58,6 +58,9 @@ jobs:
       - name: Guardar estado previo de la principal
         run: |
           cp IPTV-CHILE-MAESTRA_CORREGIDO.m3u /tmp/principal_before.m3u
+          sha256sum IPTV-CHILE-MAESTRA_GOD.m3u > /tmp/god_before.sha256
+          find IPTV-CHILE-GENERADOR -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador_before.sha256
+          find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/pluto_before.sha256
           grep '^#EXTINF' IPTV-CHILE-MAESTRA_CORREGIDO.m3u | sed -n 's/.*$//p' >/dev/null
 
       - name: Actualizar lista principal
@@ -245,6 +248,28 @@ jobs:
 
           echo ""
           echo "Verificación completada."
+
+      - name: Barrera final de archivos protegidos
+        run: |
+          set -euo pipefail
+          sha256sum -c /tmp/god_before.sha256
+          sha256sum -c /tmp/generador_before.sha256
+          sha256sum -c /tmp/pluto_before.sha256
+
+          while IFS= read -r file; do
+            case "$file" in
+              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|REPORTE.md|scripts/aprendizaje.json|scripts/health/principal_health.json)
+                ;;
+              "")
+                ;;
+              *)
+                echo "REGRESION: el mantenimiento principal intentó modificar un archivo fuera de su ámbito: $file"
+                exit 1
+                ;;
+            esac
+          done < <(git status --porcelain | sed 's/^...//')
+
+          echo "OK: GOD, GENERADOR y Pluto permanecen íntegros; solo la principal y artefactos autorizados pueden publicarse."
 
       - name: Guardar cambios
         run: |
