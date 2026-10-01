@@ -20,6 +20,9 @@ READ_LIMIT = 256 * 1024
 SEGMENT_LIMIT = 64 * 1024
 ENDPOINT_QUARANTINE_AFTER = 5
 ENDPOINT_QUARANTINE_HOURS = 24
+RETRIES = 3
+RETRY_BACKOFF_SECONDS = (0.8, 1.8, 3.5)
+RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
 def quality_key(item, status_item, source_priority):
@@ -78,10 +81,26 @@ def fetch(url, accept="*/*", limit=READ_LIMIT, extra_headers=None):
     }
     if extra_headers:
         headers.update(extra_headers)
-    request = Request(url, headers=headers)
-    with urlopen(request, timeout=TIMEOUT) as response:
-        content = response.read(limit)
-        return response.status, response.headers.get("Content-Type", ""), content, response.geturl()
+    last_error = None
+    for attempt in range(RETRIES):
+        try:
+            request = Request(url, headers=headers)
+            with urlopen(request, timeout=TIMEOUT) as response:
+                if response.status in RETRYABLE_HTTP:
+                    last_error = f"HTTP {response.status}"
+                else:
+                    content = response.read(limit)
+                    return response.status, response.headers.get("Content-Type", ""), content, response.geturl()
+        except HTTPError as error:
+            last_error = f"HTTP {error.code}"
+            if error.code not in RETRYABLE_HTTP:
+                raise
+        except (URLError, TimeoutError) as error:
+            last_error = str(getattr(error, "reason", error))
+        if attempt < RETRIES - 1:
+            import time
+            time.sleep(RETRY_BACKOFF_SECONDS[attempt])
+    raise RuntimeError(f"Endpoint no disponible tras {RETRIES} intentos: {last_error}")
 
 
 def is_hls(text, content_type):
