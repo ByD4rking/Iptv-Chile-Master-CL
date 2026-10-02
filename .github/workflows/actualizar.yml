@@ -83,9 +83,7 @@ jobs:
           report += f'- SHA-256: {sha}\n\n'
           report += 'La lista GOD se mantiene independiente y este archivo es únicamente su reporte de auditoría.\n'
           Path('reportes/god/REPORTE.md').write_text(report, encoding='utf-8')
-          if dup:
-              raise SystemExit('ERROR: GOD contiene URLs duplicadas.')
-          print('Reporte GOD generado.')
+          print('Reporte GOD generado; los duplicados históricos de GOD son permitidos por guard.py.')
           PY
       - name: Guardar estado previo de la principal
         run: |
