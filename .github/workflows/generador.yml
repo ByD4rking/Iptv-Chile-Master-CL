@@ -177,12 +177,13 @@ jobs:
             python IPTV-CHILE-GENERADOR/scripts/quality.py
             python IPTV-CHILE-GENERADOR/scripts/generate.py
             python IPTV-CHILE-GENERADOR/scripts/selftest.py
+            python IPTV-CHILE-GENERADOR/scripts/generar_reportes.py
 
             sha256sum -c /tmp/generador-guard/maestras.sha256
             sha256sum -c /tmp/generador-guard/pluto.sha256
             sha256sum -c /tmp/generador-guard/scripts.sha256
 
-            git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u
+            git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u reportes/generador/REPORTE.md reportes/god/REPORTE.md
             if git diff --cached --quiet; then
               echo "La regeneración sobre main no produjo cambios nuevos."
               exit 0
