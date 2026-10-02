@@ -105,6 +105,38 @@ jobs:
       - name: Self-test del generador
         run: python IPTV-CHILE-GENERADOR/scripts/selftest.py
 
+      - name: Generar reporte del Generador
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          base = Path('IPTV-CHILE-GENERADOR/data')
+          def load(name):
+              p = base / name
+              return json.loads(p.read_text(encoding='utf-8')) if p.exists() else {}
+          manifest = load('manifest.json')
+          quality = load('quality.json')
+          status = load('status.json')
+          teleon = load('teleon_quality.json')
+          m3u = Path('IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u').read_text(encoding='utf-8-sig', errors='replace')
+          urls = [x.strip() for x in m3u.splitlines() if x.strip().startswith(('http://','https://'))]
+          lines = [
+              '# ⚙️ Reporte de estado — IPTV-CHILE-GENERADOR',
+              '',
+              f'- Canales publicados: **{len(urls)}**',
+              f'- URLs únicas: **{len(set(urls))}**',
+              f'- Candidatos evaluados: **{quality.get("endpoint_candidates", 0)}**',
+              f'- Playback OK: **{quality.get("playback_ok", 0)}**',
+              f'- Manifest generado: **{manifest.get("generated_channels", 0)} canales**',
+              f'- Teleon candidatos validados: **{teleon.get("total_candidates", 0)}**',
+              f'- Teleon playback OK: **{teleon.get("playback_ok", 0)}**',
+              f'- Fuentes con estado: **{len(status.get("results", [])) if isinstance(status.get("results"), list) else 0}**',
+              '',
+              'Este reporte pertenece exclusivamente al pipeline Generador y no publica ni modifica Principal, GOD o Pluto.',
+          ]
+          Path('reportes/generador').mkdir(parents=True, exist_ok=True)
+          Path('reportes/generador/REPORTE.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
       - name: Revalidar blindaje canónico de GOD
         run: |
           set -euo pipefail
@@ -121,7 +153,7 @@ jobs:
           while IFS= read -r line; do
             file="${line:3}"
             case "$file" in
-              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|.github/workflows/generador.yml) ;;
+              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|.github/workflows/generador.yml) ;;
               "") ;;
               *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
             esac
@@ -134,7 +166,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u
+          git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u reportes/generador/REPORTE.md
 
           if git diff --cached --quiet; then
             echo "No hay cambios nuevos en el generador."
