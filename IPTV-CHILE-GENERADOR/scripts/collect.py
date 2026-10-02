@@ -500,9 +500,14 @@ def main():
                     f"({existing_channel_id} -> {channel['id']})."
                 )
             if existing_channel_key and existing_channel_key != channel["channel_key"]:
-                raise SystemExit(
-                    f"INCONSISTENCIA: endpoint {source['url']} cambió de channel_key "
-                    f"({existing_channel_key} -> {channel['channel_key']})."
+                # El channel_id es la identidad operativa del historial. El
+                # channel_key pertenece al catálogo y puede evolucionar sin
+                # invalidar el historial del endpoint. Normalizamos el
+                # metadato al valor canónico actual en lugar de abortar todo
+                # el pipeline por estado histórico obsoleto.
+                print(
+                    f"AVISO: endpoint {source['url']} tenía channel_key histórico "
+                    f"{existing_channel_key}; se normaliza a {channel['channel_key']}."
                 )
             state.update({
                 "channel_id": channel["id"], "channel_name": channel["name"],
