@@ -543,56 +543,51 @@ def main():
     for old_key, old_state in endpoint_health.items():
         stable_key = endpoint_health_key(old_key, old_state.get("channel_id"))
         current = compacted_health.get(stable_key)
+
         if current is None:
-            compacted_health[stable_key] = dict(old_state)
-            continue
-        current_checks = int(current.get("checks") or 0)
-        old_checks = int(old_state.get("checks") or 0)
-        current_recency = max(
-            str(current.get("last_success") or ""),
-            str(current.get("last_failure") or ""),
-        )
-        old_recency = max(
-            str(old_state.get("last_success") or ""),
-            str(old_state.get("last_failure") or ""),
-        )
-        # Counters are cumulative snapshots: preserve the highest observation count,
-        # but take consecutive failures/quarantine from the newest/highest-observation
-        # snapshot instead of taking a maximum that could create a false quarantine.
-        if old_checks > current_checks or (
-            old_checks == current_checks and old_recency > current_recency
-        ):
-            preferred, fallback = dict(old_state), current
-            compacted_health[stable_key] = preferred
-            current = preferred
+            preferred = dict(old_state)
         else:
-            preferred, fallback = current, old_state
+            current_checks = int(current.get("checks") or 0)
+            old_checks = int(old_state.get("checks") or 0)
+            current_recency = max(
+                str(current.get("last_success") or ""),
+                str(current.get("last_failure") or ""),
+            )
+            old_recency = max(
+                str(old_state.get("last_success") or ""),
+                str(old_state.get("last_failure") or ""),
+            )
+            # Cada snapshot es acumulativo: conservar el snapshot con mayor
+            # cantidad de checks evita combinar contadores incompatibles.
+            # Si empatan, gana el snapshot más reciente.
+            if old_checks > current_checks or (
+                old_checks == current_checks and old_recency > current_recency
+            ):
+                preferred = dict(old_state)
+            else:
+                preferred = dict(current)
 
-        current["checks"] = max(current_checks, old_checks)
-        current["successes"] = max(
-            int(current.get("successes") or 0),
-            int(fallback.get("successes") or 0),
-        )
-        current["failures"] = max(
-            int(current.get("failures") or 0),
-            int(fallback.get("failures") or 0),
-        )
-        current["consecutive_failures"] = int(preferred.get("consecutive_failures") or 0)
-
-        for field in ("last_success", "last_failure", "last_error", "quarantine_until"):
-            if fallback.get(field) and not current.get(field):
-                current[field] = fallback[field]
-
-        # Siempre prevalece el catálogo actual sobre metadatos históricos.
         metadata = endpoint_metadata.get(stable_key)
         if metadata:
-            current.update(metadata)
-        else:
-            # Un endpoint histórico que ya no pertenece al catálogo se conserva
-            # para auditoría, pero nunca puede contaminar un endpoint vigente.
-            for field in ("channel_id", "channel_name", "channel_key", "source", "priority"):
-                if fallback.get(field) and not current.get(field):
-                    current[field] = fallback[field]
+            preferred.update(metadata)
+
+        # Normaliza invariantes aun cuando el historial antiguo esté corrupto.
+        checks = max(0, int(preferred.get("checks") or 0))
+        successes = max(0, int(preferred.get("successes") or 0))
+        failures = max(0, int(preferred.get("failures") or 0))
+        if successes + failures != checks:
+            # En caso de snapshot inconsistente, conserva el mayor contador
+            # verificable y reconstruye el complemento sin inventar checks.
+            successes = min(successes, checks)
+            failures = max(0, checks - successes)
+        preferred["checks"] = checks
+        preferred["successes"] = successes
+        preferred["failures"] = failures
+        preferred["consecutive_failures"] = max(
+            0, int(preferred.get("consecutive_failures") or 0)
+        )
+        compacted_health[stable_key] = preferred
+
     endpoint_health = compacted_health
 
     from datetime import datetime, timezone
