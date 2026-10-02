@@ -33,3 +33,9 @@ for playlist in playlists:
 assert re.search(r"hls\.js@1\.7\.3", text)
 assert "noopener noreferrer" in text
 print(f"OK: player beta validado con {len(playlists)} playlists.")
+
+assert '<script src="app.js" defer></script>' in text
+assert '<script>' not in text, "El player no debe usar JavaScript inline: el CSP lo bloquea."
+assert (PLAYER.parent / "app.js").exists(), "Falta player/app.js"
+app=(PLAYER.parent / "app.js").read_text(encoding="utf-8")
+assert "parseM3U" in app and "Hls.isSupported()" in app
