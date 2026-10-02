@@ -586,6 +586,19 @@ def main():
         preferred["consecutive_failures"] = max(0, int(preferred.get("consecutive_failures") or 0))
         compacted_health[stable_key] = preferred
 
+    # La identidad del historial siempre la dicta channels.json actual.
+    # Esto evita que una migración de claves antiguas conserve metadata de
+    # otro estado y produzca una asociación canal/endpoint incorrecta.
+    for stable_key, metadata in endpoint_metadata.items():
+        state = compacted_health[stable_key]
+        state.update({
+            "channel_id": metadata["channel_id"],
+            "channel_name": metadata["channel_name"],
+            "channel_key": metadata["channel_key"],
+            "source": metadata["source"],
+            "priority": metadata["priority"],
+        })
+
     endpoint_health = compacted_health
     if any("|" not in str(key) for key in endpoint_health):
         raise SystemExit("INCONSISTENCIA: endpoint_health contiene una clave no canónica.")
