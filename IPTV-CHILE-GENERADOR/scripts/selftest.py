@@ -170,6 +170,13 @@ def main():
     endpoint_health = load(ENDPOINT_HEALTH)
     manifest = load(MANIFEST)
 
+    # Regresión: una misma URL física puede aparecer en más de un canal;
+    # el historial debe permanecer aislado por channel_id.
+    shared_url = "https://example.invalid/live/playlist.m3u8?token=efimero"
+    assert endpoint_health_key(shared_url, "channel-a") != endpoint_health_key(shared_url, "channel-b"), (
+        "endpoint_health_key mezcla el historial de canales que comparten endpoint."
+    )
+
     channels_sha = file_sha256(CHANNELS)
     status_sha = file_sha256(STATUS)
     quality_sha = file_sha256(QUALITY)
