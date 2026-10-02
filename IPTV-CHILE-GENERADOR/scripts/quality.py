@@ -514,6 +514,27 @@ def main():
         except Exception:
             endpoint_health = {}
 
+    # Migración de historial: compacta claves antiguas con query/token para no
+    # persistir credenciales efímeras y conservar el historial bajo una clave estable.
+    compacted_health = {}
+    for old_key, old_state in endpoint_health.items():
+        stable_key = endpoint_health_key(old_key)
+        current = compacted_health.get(stable_key)
+        if current is None:
+            compacted_health[stable_key] = dict(old_state)
+            continue
+        current["checks"] = max(int(current.get("checks") or 0), int(old_state.get("checks") or 0))
+        current["successes"] = max(int(current.get("successes") or 0), int(old_state.get("successes") or 0))
+        current["failures"] = max(int(current.get("failures") or 0), int(old_state.get("failures") or 0))
+        current["consecutive_failures"] = max(
+            int(current.get("consecutive_failures") or 0),
+            int(old_state.get("consecutive_failures") or 0),
+        )
+        for field in ("last_success", "last_failure", "last_error", "quarantine_until", "channel_id", "channel_name", "channel_key", "source", "priority"):
+            if old_state.get(field) and not current.get(field):
+                current[field] = old_state[field]
+    endpoint_health = compacted_health
+
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc)
     tasks = []
