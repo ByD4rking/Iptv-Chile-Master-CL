@@ -1,6 +1,8 @@
 # 🇨🇱 IPTV Chile Master
 
-> **Versión actual: v1.0.0 — 🟢 ESTABLE**
+> **Rama beta: v1.1.0-beta.1 — 🟡 BETA**
+>
+> v1.0.0 — 🟢 ESTABLE permanece como línea estable de referencia. Esta beta incorpora mejoras de estabilidad, calidad HLS, persistencia de fallos y quality gates.
 >
 > El proyecto utiliza un ciclo de versiones **BETA → 🧪 FASE DE PRUEBAS — INESTABLE → CANDIDATA A LANZAMIENTO → ESTABLE**. Consulta [docs/VERSIONADO.md](docs/VERSIONADO.md) para las reglas de promoción.
 
