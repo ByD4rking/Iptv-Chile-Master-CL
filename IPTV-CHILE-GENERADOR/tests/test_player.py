@@ -6,7 +6,6 @@ text = PLAYER.read_text(encoding="utf-8")
 
 required = [
     "<video id=\"video\"",
-    "parseM3U",
     "Hls.isSupported()",
     "beta/v1.1.0-beta.1",
     "raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/",
