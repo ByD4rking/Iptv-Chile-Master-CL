@@ -624,7 +624,7 @@ def main():
     checked_at = datetime.now(timezone.utc).isoformat()
     for result in results:
         url = result["url"]
-        health_key = endpoint_health_key(url)
+        health_key = endpoint_health_key(url, result.get("channel_id"))
         state = endpoint_health.setdefault(health_key, {
             "channel_id": result["channel_id"],
             "channel_name": result["channel_name"],
