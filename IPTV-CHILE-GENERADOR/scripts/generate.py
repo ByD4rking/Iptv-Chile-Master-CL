@@ -102,6 +102,8 @@ def main():
                 continue
             if not quality_item.get("playback_checked") or not quality_item.get("playback_ok"):
                 continue
+            if quality_item.get("playback_type") == "hls" and not quality_item.get("stability_ok"):
+                continue
 
             priority = int(source.get("priority") or 0)
             candidates.append(
