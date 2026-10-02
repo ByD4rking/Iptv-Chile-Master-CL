@@ -168,13 +168,6 @@ def main():
     # política de idioma se aplica en la etapa de publicación. Por eso no se
     # exige que todos los streams técnicamente reproducibles sean españoles.
 
-    assert all("|" in str(key) for key in endpoint_health), (
-        "endpoint_health.json contiene claves no canónicas."
-    )
-    assert not any(
-        re.search(r"[?&](?:token|jwt|access_token|session|sessionid|sid|deviceid|clientid|nimblesessionid|signature|sig|hmac)=", str(key), re.IGNORECASE)
-        for key in endpoint_health
-    ), "endpoint_health.json conserva tokens efímeros en sus claves."
     channels = load(CHANNELS)
     quality = load(QUALITY)
     assert int(quality.get("schema_version") or 0) >= 4, (
@@ -183,6 +176,13 @@ def main():
     status = load(STATUS)
     source_health = load(SOURCE_HEALTH)
     endpoint_health = load(ENDPOINT_HEALTH)
+    assert all("|" in str(key) for key in endpoint_health), (
+        "endpoint_health.json contiene claves no canónicas."
+    )
+    assert not any(
+        re.search(r"[?&](?:token|jwt|access_token|session|sessionid|sid|deviceid|clientid|nimblesessionid|signature|sig|hmac)=", str(key), re.IGNORECASE)
+        for key in endpoint_health
+    ), "endpoint_health.json conserva tokens efímeros en sus claves."
     manifest = load(MANIFEST)
 
     # Regresión: una misma URL física puede aparecer en más de un canal;
