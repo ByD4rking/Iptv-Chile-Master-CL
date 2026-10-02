@@ -27,14 +27,22 @@ RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
 def endpoint_health_key(url, channel_id=None):
-    """Clave estable por canal: normaliza URL pero evita mezclar endpoints compartidos entre canales."""
-    parts = urlsplit(str(url or "").strip())
+    """Clave estable por canal; acepta tanto URL como claves legacy 'channel_id|URL'."""
+    raw = str(url or "").strip()
+    channel = str(channel_id or "").strip()
+
+    # Historial antiguo ya podía guardar la clave compuesta. Evitamos volver a
+    # prefijarla durante la migración (channel|channel|url), que separaría el
+    # snapshot histórico de su clave canónica actual.
+    if channel and raw.startswith(f"{channel}|"):
+        raw = raw[len(channel) + 1 :].strip()
+
+    parts = urlsplit(raw)
     normalized = (
-        str(url or "").strip()
+        raw
         if parts.scheme not in ("http", "https") or not parts.netloc
         else urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
     )
-    channel = str(channel_id or "").strip()
     return f"{channel}|{normalized}" if channel else normalized
 
 
