@@ -22,6 +22,14 @@ def load(path):
         return json.load(f)
 
 
+def endpoint_health_key(url):
+    from urllib.parse import urlsplit, urlunsplit
+    parts = urlsplit(str(url or "").strip())
+    if parts.scheme not in ("http", "https") or not parts.netloc:
+        return str(url or "").strip()
+    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
+
+
 def main():
     config = load(CONFIG)
     sources = config.get("sources", [])
@@ -216,8 +224,9 @@ def main():
             channel_urls.add(url)
             candidate_pairs.add((channel_id, url))
 
-            assert url in endpoint_health, f"Endpoint sin historial: {url}"
-            health = endpoint_health[url]
+            health_key = endpoint_health_key(url)
+            assert health_key in endpoint_health, f"Endpoint sin historial: {url}"
+            health = endpoint_health[health_key]
             assert str(health.get("channel_id") or "") == channel_id, (
                 f"Endpoint {url} tiene health asociado al canal equivocado."
             )
@@ -406,11 +415,24 @@ def main():
         for x in quality.get("results", [])
     }
 
+    def endpoint_health_score(item):
+        checks = int(item.get("endpoint_checks") or 0)
+        successes = int(item.get("endpoint_successes") or 0)
+        failures = int(item.get("endpoint_failures") or 0)
+        consecutive = int(item.get("endpoint_consecutive_failures") or 0)
+        if checks <= 0:
+            base = 50.0
+        else:
+            base = 100.0 * successes / max(checks, successes + failures, 1)
+        penalty = min(50.0, consecutive * 10.0)
+        return round(max(0.0, min(100.0, base - penalty)), 2)
+
     def selection_key(quality_item, status_item, source):
         checks = int(quality_item.get("endpoint_checks") or 0)
         successes = int(quality_item.get("endpoint_successes") or 0)
         reliability = (successes + 1) / (checks + 2)
         return (
+            endpoint_health_score(quality_item),
             -int(quality_item.get("endpoint_consecutive_failures") or 0),
             reliability,
             checks,
@@ -435,6 +457,8 @@ def main():
             if not item or item.get("quarantined"):
                 continue
             if not item.get("playback_checked") or not item.get("playback_ok"):
+                continue
+            if item.get("playback_type") == "hls" and not item.get("stability_ok"):
                 continue
             candidates.append((selection_key(item, status_by_url.get(url, {}), source), url))
         assert candidates, f"Canal {channel_id} publicado sin candidatos reproducibles."
