@@ -167,10 +167,8 @@ def media_segment_urls(text, base_url, limit=HLS_STABILITY_SEGMENTS):
             continue
         candidate = None
         if line.startswith("#EXT-X-PART:") or line.startswith("#EXT-X-PRELOAD-HINT:"):
-            match = re.search(r'URI="([^"]+)"', line, re.IGNORECASE)
-            if match:
-                candidate = match.group(1)
-        elif not line.startswith("#"):
+            continue
+        if not line.startswith("#"):
             candidate = line
         if not candidate:
             continue
@@ -180,6 +178,24 @@ def media_segment_urls(text, base_url, limit=HLS_STABILITY_SEGMENTS):
             urls.append(absolute)
         if len(urls) >= limit:
             break
+
+    # LL-HLS puede exponer solo PART/PRELOAD en determinados snapshots.
+    # Solo los usamos como fallback cuando no hay suficientes segmentos completos.
+    if len(urls) < limit:
+        for raw_line in text.splitlines():
+            line = raw_line.strip()
+            if not line.startswith("#EXT-X-PART:"):
+                continue
+            match = re.search(r'URI="([^"]+)"', line, re.IGNORECASE)
+            if not match:
+                continue
+            absolute = urljoin(base_url, match.group(1))
+            if absolute not in seen:
+                seen.add(absolute)
+                urls.append(absolute)
+            if len(urls) >= limit:
+                break
+
     return urls
 
 
