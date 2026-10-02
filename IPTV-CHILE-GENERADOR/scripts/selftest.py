@@ -150,7 +150,9 @@ def main():
 
     channels = load(CHANNELS)
     quality = load(QUALITY)
-    assert int(quality.get("schema_version") or 0) >= 4, (\n        "quality.json usa un schema anterior al requerido por la beta."\n    )
+    assert int(quality.get("schema_version") or 0) >= 4, (
+        "quality.json usa un schema anterior al requerido por la beta."
+    )
     status = load(STATUS)
     source_health = load(SOURCE_HEALTH)
     endpoint_health = load(ENDPOINT_HEALTH)
