@@ -123,7 +123,7 @@ jobs:
               "") ;;
               *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
             esac
-          done < <(git status --porcelain)
+          done < <(git status --porcelain=v1 -uall)
 
           echo "OK: ninguna lista o script externo fue modificado."
 
