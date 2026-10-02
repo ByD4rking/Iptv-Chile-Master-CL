@@ -158,7 +158,7 @@ jobs:
             file="${line:3}"
             file="${file%/}"
             case "$file" in
-              pluto/output/playlists/pluto_*.m3u|pluto/output/regional|pluto/output/regional/channels_*.json|pluto/output/health/streams.json)
+              pluto/output/playlists/pluto_*.m3u|pluto/output/regional|pluto/output/regional/channels_*.json|pluto/output/health/streams.json|reportes/pluto/REPORTE.md)
                 ;;
               "")
                 ;;
@@ -274,6 +274,31 @@ jobs:
           print("OK: las 7 listas Pluto están presentes y no se permite perder canales existentes.")
           PY
 
+      - name: Generar reporte de Pluto
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          out = ['# 📡 Reporte de estado — Pluto TV', '', '## Playlists regionales', '']
+          total = 0
+          for code in ('ar','br','cl','es','latam','mx','us'):
+              p = Path(f'pluto/output/playlists/pluto_{code}.m3u')
+              text = p.read_text(encoding='utf-8-sig', errors='replace') if p.exists() else ''
+              count = sum(1 for x in text.splitlines() if x.startswith('#EXTINF:'))
+              streams = sum(1 for x in text.splitlines() if x.startswith(('http://','https://')))
+              total += count
+              out.append(f'- **{code.upper()}**: {count} canales, {streams} streams')
+          health = Path('pluto/output/health/streams.json')
+          if health.exists():
+              try:
+                  data = json.loads(health.read_text(encoding='utf-8'))
+                  out += ['', '## Salud de streams', f'- Archivo: `{health.as_posix()}`', f'- Registros: **{len(data) if isinstance(data, dict) else 0}**']
+              except Exception:
+                  out += ['', '- ⚠️ streams.json no pudo resumirse como JSON.']
+          out += ['', f'**Total de canales publicados: {total}**', '', 'Este reporte pertenece exclusivamente al pipeline Pluto y no modifica Principal, GOD ni Generador.']
+          Path('reportes/pluto').mkdir(parents=True, exist_ok=True)
+          Path('reportes/pluto/REPORTE.md').write_text('\n'.join(out) + '\n', encoding='utf-8')
+          PY
       - name: Verificar exactamente lo que se va a publicar
         run: |
           set -e
