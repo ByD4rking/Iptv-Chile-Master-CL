@@ -223,7 +223,11 @@ jobs:
 
       - name: Verificar lista principal
         run: |
-          mkdir -p reportes/principal\n          python scripts/generar_reporte.py \\\n            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \\\n            --salida reportes/principal/REPORTE.md \\\n            --hilos 100 \
+          mkdir -p reportes/principal
+          python scripts/generar_reporte.py \
+            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            --salida reportes/principal/REPORTE.md \
+            --hilos 100 \
             --timeout 4 \
             --max-por-servidor 1 \
             --reintentos 0 \
@@ -283,10 +287,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add \\
-            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \\
-            reportes/principal/REPORTE.md \\
-            reportes/god/REPORTE.md \\
+          git add \
+            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            reportes/principal/REPORTE.md \
             scripts/aprendizaje.json \
             scripts/health/principal_health.json
 
@@ -314,14 +317,14 @@ jobs:
               solo_secundarios=true
               for archivo in $conflictos; do
                 case "$archivo" in
-                  REPORTE.md|scripts/aprendizaje.json) ;;
+                  reportes/principal/REPORTE.md|scripts/aprendizaje.json) ;;
                   *) solo_secundarios=false ;;
                 esac
               done
 
               if [ "$solo_secundarios" = true ] && [ -n "$conflictos" ]; then
-                git checkout --theirs -- REPORTE.md scripts/aprendizaje.json
-                git add REPORTE.md scripts/aprendizaje.json
+                git checkout --theirs -- reportes/principal/REPORTE.md scripts/aprendizaje.json
+                git add reportes/principal/REPORTE.md scripts/aprendizaje.json
                 GIT_EDITOR=true git rebase --continue
                 if git push origin main; then
                   exit 0
