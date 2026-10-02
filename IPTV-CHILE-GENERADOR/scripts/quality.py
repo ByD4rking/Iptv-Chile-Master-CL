@@ -527,23 +527,45 @@ def main():
         if current is None:
             compacted_health[stable_key] = dict(old_state)
             continue
-        current["checks"] = max(int(current.get("checks") or 0), int(old_state.get("checks") or 0))
-        current["successes"] = max(int(current.get("successes") or 0), int(old_state.get("successes") or 0))
-        current["failures"] = max(int(current.get("failures") or 0), int(old_state.get("failures") or 0))
-        current["consecutive_failures"] = max(
-            int(current.get("consecutive_failures") or 0),
-            int(old_state.get("consecutive_failures") or 0),
-        )
-        # Keep metadata and counters from the state with the most observations.
-        # Do not combine consecutive-failure counters from independent snapshots.
         current_checks = int(current.get("checks") or 0)
         old_checks = int(old_state.get("checks") or 0)
-        if old_checks > current_checks:
-            compacted_health[stable_key] = dict(old_state)
-            current = compacted_health[stable_key]
-        for field in ("last_success", "last_failure", "last_error", "quarantine_until", "channel_id", "channel_name", "channel_key", "source", "priority"):
-            if old_state.get(field) and not current.get(field):
-                current[field] = old_state[field]
+        current_recency = max(
+            str(current.get("last_success") or ""),
+            str(current.get("last_failure") or ""),
+        )
+        old_recency = max(
+            str(old_state.get("last_success") or ""),
+            str(old_state.get("last_failure") or ""),
+        )
+        # Counters are cumulative snapshots: preserve the highest observation count,
+        # but take consecutive failures/quarantine from the newest/highest-observation
+        # snapshot instead of taking a maximum that could create a false quarantine.
+        if old_checks > current_checks or (
+            old_checks == current_checks and old_recency > current_recency
+        ):
+            preferred, fallback = dict(old_state), current
+            compacted_health[stable_key] = preferred
+            current = preferred
+        else:
+            preferred, fallback = current, old_state
+
+        current["checks"] = max(current_checks, old_checks)
+        current["successes"] = max(
+            int(current.get("successes") or 0),
+            int(fallback.get("successes") or 0),
+        )
+        current["failures"] = max(
+            int(current.get("failures") or 0),
+            int(fallback.get("failures") or 0),
+        )
+        current["consecutive_failures"] = int(preferred.get("consecutive_failures") or 0)
+
+        for field in (
+            "last_success", "last_failure", "last_error", "quarantine_until",
+            "channel_id", "channel_name", "channel_key", "source", "priority",
+        ):
+            if fallback.get(field) and not current.get(field):
+                current[field] = fallback[field]
     endpoint_health = compacted_health
 
     from datetime import datetime, timezone
