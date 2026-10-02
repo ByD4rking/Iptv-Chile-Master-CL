@@ -99,7 +99,15 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE
 
 El proyecto mantiene siete playlists independientes de Pluto TV, cada una correspondiente a una región y publicada como su propio archivo M3U:
 
-### 🌎🇪🇸🇲🇽🇦🇷🇧🇷🇨🇱🇺🇸 Las siete listas son independientes
+### 🌎 Regiones disponibles — las siete listas son independientes
+
+- 🌎 **Pluto TV Latinoamérica** — `pluto_latam.m3u`
+- 🇪🇸 **Pluto TV España** — `pluto_es.m3u`
+- 🇲🇽 **Pluto TV México** — `pluto_mx.m3u`
+- 🇦🇷 **Pluto TV Argentina** — `pluto_ar.m3u`
+- 🇧🇷 **Pluto TV Brasil** — `pluto_br.m3u`
+- 🇨🇱 **Pluto TV Chile** — `pluto_cl.m3u`
+- 🇺🇸 **Pluto TV Estados Unidos** — `pluto_us.m3u`
 
 Puedes utilizar **una sola, varias o las siete** según lo que necesites. No es obligatorio cargarlas juntas.
 
