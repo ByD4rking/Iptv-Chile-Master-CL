@@ -61,6 +61,32 @@ jobs:
           python IPTV-CHILE-GENERADOR/scripts/guard.py
           echo "OK: GOD protegida; solo se permiten las directivas de reconexión autorizadas."
 
+      - name: Generar reporte de GOD
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          p = Path('IPTV-CHILE-MAESTRA_GOD.m3u')
+          text = p.read_text(encoding='utf-8-sig', errors='replace')
+          urls = [x.strip() for x in text.splitlines() if x.strip().startswith(('http://','https://'))]
+          extinf = sum(1 for x in text.splitlines() if x.startswith('#EXTINF:'))
+          dup = len(urls) - len(set(urls))
+          reconnect = text.count('#EXTVLCOPT:http-reconnect=true')
+          sha = hashlib.sha256(p.read_bytes()).hexdigest()
+          Path('reportes/god').mkdir(parents=True, exist_ok=True)
+          report = '# 🔒 Reporte de estado — GOD\n\n'
+          report += f'- Archivo: {p.as_posix()}\n'
+          report += f'- Canales (#EXTINF): **{extinf}**\n'
+          report += f'- URLs: **{len(urls)}**\n'
+          report += f'- URLs duplicadas: **{dup}**\n'
+          report += f'- Directivas de reconexión: **{reconnect}**\n'
+          report += f'- SHA-256: {sha}\n\n'
+          report += 'La lista GOD se mantiene independiente y este archivo es únicamente su reporte de auditoría.\n'
+          Path('reportes/god/REPORTE.md').write_text(report, encoding='utf-8')
+          if dup:
+              raise SystemExit('ERROR: GOD contiene URLs duplicadas.')
+          print('Reporte GOD generado.')
+          PY
       - name: Guardar estado previo de la principal
         run: |
           cp IPTV-CHILE-MAESTRA_CORREGIDO.m3u /tmp/principal_before.m3u
