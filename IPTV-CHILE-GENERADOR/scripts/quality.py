@@ -393,6 +393,9 @@ def validate_hls(url, initial_text, initial_content_type, max_depth=2):
         "playback_ok": False,
         "playback_type": "hls",
         "playback_error": error or "Validación HLS fallida.",
+        "stability_checked": True,
+        "stability_ok": False,
+        "stable_segments": 0,
     }
 
 
