@@ -1,5 +1,9 @@
 # 🇨🇱 IPTV Chile Master
 
+> **Versión actual: v1.0.0 — 🟢 ESTABLE**
+>
+> El proyecto utiliza un ciclo de versiones **BETA → 🧪 FASE DE PRUEBAS — INESTABLE → CANDIDATA A LANZAMIENTO → ESTABLE**. Consulta [docs/VERSIONADO.md](docs/VERSIONADO.md) para las reglas de promoción.
+
 > **Colección, organización y actualización automatizada de listas IPTV en formato M3U.**
 
 IPTV Chile Master reúne y organiza diferentes fuentes IPTV públicas en playlists pensadas para un uso sencillo en reproductores compatibles con **M3U/M3U8**.
@@ -95,9 +99,9 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE
 
 El proyecto mantiene siete playlists independientes de Pluto TV, cada una correspondiente a una región y publicada como su propio archivo M3U:
 
-### 🌎🇪🇸-🇲🇽-🇦🇷-🇧🇷-🇨🇱-🇺🇸 Las siete listas son independientes
+### 🌎🇪🇸🇲🇽🇦🇷🇧🇷🇨🇱🇺🇸 Las siete listas son independientes
 
-Puedes utilizar **una sola**, **dos** o **las tres** según lo que necesites. No es obligatorio cargarlas juntas.
+Puedes utilizar **una sola, varias o las siete** según lo que necesites. No es obligatorio cargarlas juntas.
 
 La organización conjunta que utiliza el proyecto es únicamente una **regla interna de integración y mantenimiento** para evitar duplicados y aprovechar primero el contenido de LATAM cuando está disponible.
 
@@ -245,7 +249,7 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 - **Quieres ampliar la cobertura:** puedes cargar varias o todas las listas en un reproductor que admita múltiples playlists.
 - **Quieres evitar administrar varias listas:** puedes utilizar la lista principal o GOD del proyecto cuando corresponda.
 
-> Pluto TV se mantiene como un bloque separado de la lista principal y de la GOD. Las tres playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual.
+ > Pluto TV se mantiene como un bloque separado de la lista principal y de la GOD. Las siete playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual.
 
 ---
 
