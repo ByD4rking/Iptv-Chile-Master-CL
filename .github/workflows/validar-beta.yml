@@ -104,6 +104,10 @@ jobs:
           stable=[x for x in hls if x.get("stability_ok") and int(x.get("stable_segments", x.get("stability_segments_checked",0)))>=3]
           print(f"HLS evaluados: {len(hls)}")
           print(f"HLS con >=3 segmentos consecutivos: {len(stable)}")
+          print(f"Health Score promedio: {q.get('health_score_average')}")
+          print(f"Health Score >=80: {q.get('health_score_healthy', 0)}")
+          print(f"Health Score 40-79: {q.get('health_score_degraded', 0)}")
+          print(f"Health Score <40: {q.get('health_score_unhealthy', 0)}")
           if hls:
               if not all(x.get("stability_checked") for x in hls):
                   raise SystemExit("ERROR: existe HLS sin prueba de estabilidad.")
