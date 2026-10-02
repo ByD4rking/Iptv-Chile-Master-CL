@@ -16,13 +16,15 @@ Su estructura se mantiene organizada por categorías y prioriza la conservación
 
 ### 📥 Acceso a la lista — IPTV Chile Master — Lista principal
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar IPTV-CHILE-MAESTRA_CORREGIDO.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u)
+[Descargar IPTV-CHILE-MAESTRA_CORREGIDO.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u)
 
 **📊 Estado y reporte**
 
@@ -56,13 +58,15 @@ Su objetivo es ofrecer una colección mucho más extensa, manteniendo una organi
 
 ### 📥 Acceso a la lista — IPTV Chile Master GOD
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_GOD.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar IPTV-CHILE-MAESTRA_GOD.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_GOD.m3u)
+[Descargar IPTV-CHILE-MAESTRA_GOD.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/IPTV-CHILE-MAESTRA_GOD.m3u)
 
 **📊 Estado y reporte**
 
@@ -119,13 +123,15 @@ Esto significa que, cuando un mismo canal aparece en varias regiones, el proyect
 
 ### 📥 Acceso a la lista — Pluto TV LATAM
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_latam.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar pluto_latam.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_latam.m3u)
+[Descargar pluto_latam.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/pluto/output/playlists/pluto_latam.m3u)
 
 **📊 Estado y reporte**
 
@@ -133,13 +139,15 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 ### 📥 Acceso a la lista — Pluto TV España
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_es.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar pluto_es.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_es.m3u)
+[Descargar pluto_es.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/pluto/output/playlists/pluto_es.m3u)
 
 **📊 Estado y reporte**
 
@@ -147,13 +155,15 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 ### 📥 Acceso a la lista — Pluto TV México
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_mx.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar pluto_mx.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_mx.m3u)
+[Descargar pluto_mx.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/pluto/output/playlists/pluto_mx.m3u)
 
 **📊 Estado y reporte**
 
@@ -161,13 +171,15 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 ### 📥 Acceso a la lista — Pluto TV Argentina
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_ar.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar pluto_ar.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_ar.m3u)
+[Descargar pluto_ar.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/pluto/output/playlists/pluto_ar.m3u)
 
 **📊 Estado y reporte**
 
@@ -175,13 +187,15 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 ### 📥 Acceso a la lista — Pluto TV Brasil
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_br.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar pluto_br.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_br.m3u)
+[Descargar pluto_br.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/pluto/output/playlists/pluto_br.m3u)
 
 **📊 Estado y reporte**
 
@@ -189,13 +203,15 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 ### 📥 Acceso a la lista — Pluto TV Chile
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_cl.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar pluto_cl.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_cl.m3u)
+[Descargar pluto_cl.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/pluto/output/playlists/pluto_cl.m3u)
 
 **📊 Estado y reporte**
 
@@ -203,13 +219,15 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 ### 📥 Acceso a la lista — Pluto TV Estados Unidos
 
-**🔄 Enlace RAW — actualización automática**
+**🔗 RAW — copiar URL**
 
+~~~text
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_us.m3u
+~~~
 
-**⬇️ Descarga directa — copia local**
+**⬇️ Descarga directa — archivo local**
 
-[Descargar pluto_us.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_us.m3u)
+[Descargar pluto_us.m3u](https://github.com/ByD4rking/Iptv-Chile-Master-CL/raw/refs/heads/main/pluto/output/playlists/pluto_us.m3u)
 
 **📊 Estado y reporte**
 
