@@ -114,7 +114,7 @@ jobs:
           def load(name):
               p = base / name
               return json.loads(p.read_text(encoding='utf-8')) if p.exists() else {}
-          manifest = load('manifest.json')
+          manifest = load('pipeline_manifest.json')
           quality = load('quality.json')
           status = load('status.json')
           teleon = load('teleon_quality.json')
