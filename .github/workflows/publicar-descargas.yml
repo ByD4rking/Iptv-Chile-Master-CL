@@ -1,0 +1,47 @@
+name: Publicar descargas directas
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'IPTV-CHILE-MAESTRA_CORREGIDO.m3u'
+      - 'IPTV-CHILE-MAESTRA_GOD.m3u'
+      - 'pluto/output/playlists/*.m3u'
+      - '.github/workflows/publicar-descargas.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-downloads:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Recreate download release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete download-current --cleanup-tag --yes 2>/dev/null || true
+          gh release create download-current \
+            --target "${GITHUB_SHA}" \
+            --title "Descargas actuales" \
+            --notes "Assets descargables de las playlists actuales de IPTV Chile Master. Los archivos se toman directamente del repositorio; no se genera una playlist alternativa."
+
+      - name: Upload existing M3U files
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload download-current \
+            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            IPTV-CHILE-MAESTRA_GOD.m3u \
+            pluto/output/playlists/pluto_latam.m3u \
+            pluto/output/playlists/pluto_es.m3u \
+            pluto/output/playlists/pluto_mx.m3u \
+            pluto/output/playlists/pluto_ar.m3u \
+            pluto/output/playlists/pluto_br.m3u \
+            pluto/output/playlists/pluto_cl.m3u \
+            pluto/output/playlists/pluto_us.m3u \
+            --clobber
