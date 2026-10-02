@@ -18,6 +18,7 @@ on:
 permissions:
   contents: read
 
+# La validación se ejecuta también ante cambios de los tests de regresión.
 concurrency:
   group: validar-beta-v1.1.0-beta.1
   cancel-in-progress: true
