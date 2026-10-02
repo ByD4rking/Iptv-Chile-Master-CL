@@ -714,9 +714,18 @@ def main():
                 f"({existing_channel_id} -> {result['channel_id']})."
             )
 
+        # La identidad actual del canal siempre tiene prioridad sobre cualquier
+        # metadata heredada del historial. Esto evita que un endpoint correcto
+        # conserve un channel_key obsoleto después de una migración.
+        current_channel = next(
+            channel for channel in channels
+            if str(channel.get("id") or "").strip() == str(result["channel_id"] or "").strip()
+        )
+        current_channel_key = str(current_channel.get("channel_key") or "").strip()
         state.update({
             "channel_id": result["channel_id"],
             "channel_name": result["channel_name"],
+            "channel_key": current_channel_key,
             "source": result["source"],
             "priority": result["source_priority"],
         })
