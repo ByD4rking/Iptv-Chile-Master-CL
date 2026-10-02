@@ -173,8 +173,15 @@ def main():
     # Regresión: una misma URL física puede aparecer en más de un canal;
     # el historial debe permanecer aislado por channel_id.
     shared_url = "https://example.invalid/live/playlist.m3u8?token=efimero"
-    assert endpoint_health_key(shared_url, "channel-a") != endpoint_health_key(shared_url, "channel-b"), (
+    key_a = endpoint_health_key(shared_url, "channel-a")
+    key_b = endpoint_health_key(shared_url, "channel-b")
+    assert key_a != key_b, (
         "endpoint_health_key mezcla el historial de canales que comparten endpoint."
+    )
+    # Regresión: la migración debe aceptar una clave legacy ya compuesta
+    # sin convertirla en channel|channel|url.
+    assert endpoint_health_key(key_a, "channel-a") == key_a, (
+        "endpoint_health_key no normaliza correctamente una clave legacy compuesta."
     )
 
     channels_sha = file_sha256(CHANNELS)
