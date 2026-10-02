@@ -451,17 +451,19 @@ def main():
                 state["quarantine_until"] = (
                     now + timedelta(hours=QUARANTINE_HOURS)
                 ).isoformat()
+            failed_source_url = str(source.get("url") or state.get("url") or "").strip()
             result["errors"].append({
                 "source": name,
-                "url": source_url,
+                "url": failed_source_url,
                 "error": state["last_error"],
             })
             result["sources"].append({
                 "name": name,
-                "url": source_url,
+                "url": failed_source_url,
                 "status": "error",
                 "error": state["last_error"],
                 "consecutive_failures": state["consecutive_failures"],
+                "quarantine_until": state.get("quarantine_until"),
             })
 
     save(HEALTH_FILE, health)
@@ -493,7 +495,10 @@ def main():
         ),
         "errors": len(result["errors"]),
         "sources_ok": sum(1 for x in result["sources"] if x.get("status") == "ok"),
-        "sources_quarantined": sum(1 for x in result["sources"] if x.get("status") == "quarantined"),
+        "sources_quarantined": sum(
+            1 for x in result["sources"]
+            if x.get("status") == "quarantined" or x.get("quarantine_until")
+        ),
     }
     save(OUTPUT, result)
 
