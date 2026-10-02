@@ -95,6 +95,10 @@ jobs:
           import json
           from pathlib import Path
           q=json.loads(Path("IPTV-CHILE-GENERADOR/data/quality.json").read_text(encoding="utf-8-sig"))
+          if int(q.get("schema_version") or 0) < 4:
+              raise SystemExit("ERROR: quality.json debe usar schema_version >= 4.")
+          if "hls_stable" not in q or "hls_stability_segments_required" not in q:
+              raise SystemExit("ERROR: quality.json no contiene las métricas HLS obligatorias.")
           hls=[x for x in q.get("results",[]) if x.get("playback_type")=="hls"]
           stable=[x for x in hls if x.get("stability_ok") and int(x.get("stable_segments", x.get("stability_segments_checked",0)))>=3]
           print(f"HLS evaluados: {len(hls)}")
