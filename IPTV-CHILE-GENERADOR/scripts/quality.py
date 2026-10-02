@@ -26,12 +26,27 @@ RETRY_BACKOFF_SECONDS = (0.8, 1.8, 3.5)
 RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
+def endpoint_health_score(item):
+    """Score operativo 0-100 usando historial persistente, sin inventar checks."""
+    checks = int(item.get("endpoint_checks") or 0)
+    successes = int(item.get("endpoint_successes") or 0)
+    failures = int(item.get("endpoint_failures") or 0)
+    consecutive = int(item.get("endpoint_consecutive_failures") or 0)
+    if checks <= 0:
+        base = 50.0
+    else:
+        base = 100.0 * successes / max(checks, successes + failures, 1)
+    penalty = min(50.0, consecutive * 10.0)
+    return round(max(0.0, min(100.0, base - penalty)), 2)
+
+
 def quality_key(item, status_item, source_priority):
     # Debe coincidir con el criterio utilizado por generate.py.
     checks = int(item.get("endpoint_checks") or 0)
     successes = int(item.get("endpoint_successes") or 0)
     reliability = (successes + 1) / (checks + 2)
     return (
+        endpoint_health_score(item),
         -int(item.get("endpoint_consecutive_failures") or 0),
         reliability,
         checks,
@@ -611,6 +626,7 @@ def main():
         result["endpoint_checks"] = int(state.get("checks") or 0)
         result["endpoint_successes"] = int(state.get("successes") or 0)
         result["endpoint_failures"] = int(state.get("failures") or 0)
+        result["health_score"] = endpoint_health_score(result)
 
     atomic_write_json(ENDPOINT_HEALTH_FILE, endpoint_health)
     if skipped_quarantine:
@@ -665,6 +681,18 @@ def main():
         "hls_checked": sum(1 for result in results if result["playback_type"] == "hls"),
         "hls_stable": sum(1 for result in results if result["playback_type"] == "hls" and result.get("stability_ok")),
         "hls_stability_segments_required": HLS_STABILITY_SEGMENTS,
+        "health_score_average": round(
+            sum(float(x.get("health_score") or 0) for x in results) / max(len(results), 1), 2
+        ),
+        "health_score_healthy": sum(
+            1 for x in results if float(x.get("health_score") or 0) >= 80
+        ),
+        "health_score_degraded": sum(
+            1 for x in results if 40 <= float(x.get("health_score") or 0) < 80
+        ),
+        "health_score_unhealthy": sum(
+            1 for x in results if float(x.get("health_score") or 0) < 40
+        ),
         "endpoint_candidates": total,
         "channels_with_multiple_candidates": sum(1 for x in channels_quality.values() if len(x["sources"]) > 1),
         "hls_fallback_successes": sum(
