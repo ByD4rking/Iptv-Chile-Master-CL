@@ -26,12 +26,16 @@ RETRY_BACKOFF_SECONDS = (0.8, 1.8, 3.5)
 RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
-def endpoint_health_key(url):
-    """Clave estable para historial: elimina query/fragment de URLs firmadas o efímeras."""
+def endpoint_health_key(url, channel_id=None):
+    """Clave estable por canal: normaliza URL pero evita mezclar endpoints compartidos entre canales."""
     parts = urlsplit(str(url or "").strip())
-    if parts.scheme not in ("http", "https") or not parts.netloc:
-        return str(url or "").strip()
-    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
+    normalized = (
+        str(url or "").strip()
+        if parts.scheme not in ("http", "https") or not parts.netloc
+        else urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
+    )
+    channel = str(channel_id or "").strip()
+    return f"{channel}|{normalized}" if channel else normalized
 
 
 def endpoint_health_score(item):
@@ -518,7 +522,7 @@ def main():
     # persistir credenciales efímeras y conservar el historial bajo una clave estable.
     compacted_health = {}
     for old_key, old_state in endpoint_health.items():
-        stable_key = endpoint_health_key(old_key)
+        stable_key = endpoint_health_key(old_key, old_state.get("channel_id"))
         current = compacted_health.get(stable_key)
         if current is None:
             compacted_health[stable_key] = dict(old_state)
@@ -549,7 +553,7 @@ def main():
     for channel in channels:
         for source in channel.get("sources", []):
             url = str(source.get("url") or "").strip()
-            health_key = endpoint_health_key(url)
+            health_key = endpoint_health_key(url, channel.get("id"))
             state = endpoint_health.get(health_key, {})
             until = str(state.get("quarantine_until") or "").strip()
             quarantined = False
