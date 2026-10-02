@@ -229,6 +229,10 @@ def main():
             assert successes + failures == checks, (
                 f"Health inconsistente para {url}: successes + failures != checks."
             )
+            samples = health.get("samples") or []
+            assert isinstance(samples, list), f"Historial inválido para {url}."
+            assert len(samples) <= 120, f"Historial excesivo para {url}."
+            assert len(samples) <= checks, f"Historial supera los checks para {url}."
             quarantine_until = health.get("quarantine_until")
             if quarantine_until:
                 assert isinstance(quarantine_until, str), f"quarantine_until inválido para {url}."
@@ -275,6 +279,10 @@ def main():
             assert item.get("playback_checked") and item.get("playback_ok"), (
                 f"La M3U contiene una URL sin reproducción verificada: {url}"
             )
+            if item.get("playback_type") == "hls":
+                assert item.get("stability_checked") and item.get("stability_ok"), (
+                    f"La M3U contiene HLS sin continuidad verificada: {url}"
+                )
             continue
 
         # Los streams Teleon se validan en su pipeline aislado y se publican
@@ -408,6 +416,8 @@ def main():
             if not item or item.get("quarantined"):
                 continue
             if not item.get("playback_checked") or not item.get("playback_ok"):
+                continue
+            if item.get("playback_type") == "hls" and not item.get("stability_ok"):
                 continue
             candidates.append((selection_key(item, status_by_url.get(url, {}), source), url))
         assert candidates, f"Canal {channel_id} publicado sin candidatos reproducibles."
