@@ -597,6 +597,7 @@ def main():
             "last_success": None,
             "last_failure": None,
             "last_error": None,
+            "samples": [],
         })
         existing_channel_id = str(state.get("channel_id") or "").strip()
         if existing_channel_id and existing_channel_id != result["channel_id"]:
@@ -616,8 +617,25 @@ def main():
         # mantener siempre: checks == successes + failures.
         if result.get("quarantined"):
             continue
+        effective_ok = bool(
+            result.get("playback_ok")
+            and (
+                result.get("playback_type") != "hls"
+                or result.get("stability_ok")
+            )
+        )
+        result["effective_ok"] = effective_ok
         state["checks"] = int(state.get("checks") or 0) + 1
-        if result["playback_ok"]:
+
+        state.setdefault("samples", []).append({
+            "ts": checked_at,
+            "ok": effective_ok,
+            "stability_score": int(result.get("stability_score") or 0),
+            "error": result.get("error") or result.get("playback_error"),
+        })
+        state["samples"] = state["samples"][-HISTORY_SAMPLES:]
+
+        if effective_ok:
             state["successes"] = int(state.get("successes") or 0) + 1
             state["consecutive_failures"] = 0
             state["last_success"] = checked_at
@@ -634,6 +652,30 @@ def main():
         result["endpoint_checks"] = int(state.get("checks") or 0)
         result["endpoint_successes"] = int(state.get("successes") or 0)
         result["endpoint_failures"] = int(state.get("failures") or 0)
+
+        from datetime import timedelta
+        def rolling_availability(days):
+            cutoff = now - timedelta(days=days)
+            recent = []
+            for sample in state.get("samples", []):
+                try:
+                    ts = datetime.fromisoformat(str(sample.get("ts")).replace("Z", "+00:00"))
+                except (TypeError, ValueError):
+                    continue
+                if ts >= cutoff:
+                    recent.append(sample)
+            if not recent:
+                return None
+            return round(
+                sum(1 for sample in recent if sample.get("ok")) / len(recent) * 100,
+                2,
+            )
+
+        state["availability_7d"] = rolling_availability(7)
+        state["availability_30d"] = rolling_availability(30)
+        state["sample_count"] = len(state.get("samples", []))
+        result["availability_7d"] = state["availability_7d"]
+        result["availability_30d"] = state["availability_30d"]
 
     atomic_write_json(ENDPOINT_HEALTH_FILE, endpoint_health)
     if skipped_quarantine:
