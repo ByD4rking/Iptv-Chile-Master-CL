@@ -8,6 +8,28 @@ El proyecto mantiene una **lista principal**, una versión ampliada **GOD** y un
 
 ---
 
+## 🧪 Estado de versión
+
+**v1.1.0-beta.1 — 🟡 BETA**
+
+Esta rama incorpora mejoras de estabilidad real para streams HLS. La versión estable de `main` no se reemplaza hasta completar las pruebas y la regresión correspondientes.
+
+### En esta beta
+- Validación de varios segmentos consecutivos.
+- Publicación HLS condicionada a reproducción y continuidad válidas.
+- Historial limitado de muestras por endpoint.
+- Métricas de disponibilidad histórica.
+- Workflow de validación aislado del catálogo estable.
+
+**Importante:** una respuesta HTTP 200 no garantiza que un canal sea estable durante la reproducción.
+
+Consulta:
+- `docs/VERSIONADO.md` — ciclo BETA → RC → ESTABLE.
+- `docs/CALIDAD.md` — puertas de calidad.
+- `docs/ESTABILIDAD.md` — validación y recuperación.
+
+---
+
 ## 📺 1. Lista principal — IPTV Chile Master
 
 La lista principal es la **playlist maestra del proyecto**.
