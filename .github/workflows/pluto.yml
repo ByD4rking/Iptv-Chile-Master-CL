@@ -310,6 +310,7 @@ jobs:
           git add pluto/output/playlists/pluto_mx.m3u
           git add pluto/output/playlists/pluto_us.m3u
           git add pluto/output/health/streams.json
+          git add reportes/pluto/REPORTE.md
 
           python - <<'PY'
           from pathlib import Path
@@ -349,6 +350,7 @@ jobs:
           git add pluto/output/playlists/pluto_mx.m3u
           git add pluto/output/playlists/pluto_us.m3u
           git add pluto/output/health/streams.json
+          git add reportes/pluto/REPORTE.md
 
           if git diff --cached --quiet; then
             echo "No hay cambios en las playlists."
