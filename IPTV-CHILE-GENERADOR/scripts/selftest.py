@@ -24,13 +24,16 @@ def load(path):
 
 def endpoint_health_key(url, channel_id=None):
     from urllib.parse import urlsplit, urlunsplit
-    parts = urlsplit(str(url or "").strip())
+    raw = str(url or "").strip()
+    channel = str(channel_id or "").strip()
+    if channel and raw.startswith(f"{channel}|"):
+        raw = raw[len(channel) + 1 :].strip()
+    parts = urlsplit(raw)
     normalized = (
-        str(url or "").strip()
+        raw
         if parts.scheme not in ("http", "https") or not parts.netloc
         else urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
     )
-    channel = str(channel_id or "").strip()
     return f"{channel}|{normalized}" if channel else normalized
 
 
