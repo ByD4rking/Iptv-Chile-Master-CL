@@ -520,6 +520,25 @@ def main():
 
     # Migración de historial: compacta claves antiguas con query/token para no
     # persistir credenciales efímeras y conservar el historial bajo una clave estable.
+    # Metadatos del endpoint se reconstruyen desde channels.json, que es la
+    # fuente de verdad actual. Así una migración de historial nunca arrastra
+    # channel_key/source/priority obsoletos desde snapshots antiguos.
+    endpoint_metadata = {}
+    for channel in channels:
+        channel_id = str(channel.get("id") or "").strip()
+        channel_key = str(channel.get("channel_key") or "").strip()
+        for source in channel.get("sources", []):
+            source_url = str(source.get("url") or "").strip()
+            if not source_url:
+                continue
+            endpoint_metadata[endpoint_health_key(source_url, channel_id)] = {
+                "channel_id": channel_id,
+                "channel_name": str(channel.get("name") or "").strip(),
+                "channel_key": channel_key,
+                "source": str(source.get("source") or "").strip(),
+                "priority": int(source.get("priority") or 0),
+            }
+
     compacted_health = {}
     for old_key, old_state in endpoint_health.items():
         stable_key = endpoint_health_key(old_key, old_state.get("channel_id"))
@@ -560,12 +579,20 @@ def main():
         )
         current["consecutive_failures"] = int(preferred.get("consecutive_failures") or 0)
 
-        for field in (
-            "last_success", "last_failure", "last_error", "quarantine_until",
-            "channel_id", "channel_name", "channel_key", "source", "priority",
-        ):
+        for field in ("last_success", "last_failure", "last_error", "quarantine_until"):
             if fallback.get(field) and not current.get(field):
                 current[field] = fallback[field]
+
+        # Siempre prevalece el catálogo actual sobre metadatos históricos.
+        metadata = endpoint_metadata.get(stable_key)
+        if metadata:
+            current.update(metadata)
+        else:
+            # Un endpoint histórico que ya no pertenece al catálogo se conserva
+            # para auditoría, pero nunca puede contaminar un endpoint vigente.
+            for field in ("channel_id", "channel_name", "channel_key", "source", "priority"):
+                if fallback.get(field) and not current.get(field):
+                    current[field] = fallback[field]
     endpoint_health = compacted_health
 
     from datetime import datetime, timezone
