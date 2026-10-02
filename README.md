@@ -291,22 +291,85 @@ La automatización busca **actualizar sin destruir la estructura existente**: lo
 
 ## 🗂️ 6. Estructura del proyecto
 
-La organización principal del repositorio incluye:
+La estructura se mantiene separada por función y por fuente. **IPTV-CHILE-GENERADOR es un componente independiente**: genera y publica su propia playlist sin reingestar ni modificar las listas maestras ni las playlists Pluto.
 
-~~~
+~~~text
 IPTV-CHILE-MASTER-CL/
-├── IPTV-CHILE-MAESTRA_CORREGIDO.m3u
-├── IPTV-CHILE-MAESTRA_GOD.m3u
-├── REPORTE.md
-├── actualizar-todo.ps1
+├── IPTV-CHILE-MAESTRA_CORREGIDO.m3u      # Lista principal
+├── IPTV-CHILE-MAESTRA_GOD.m3u            # Lista GOD
+├── IPTV-CHILE-GENERADOR/
+│   ├── IPTV-CHILE-GENERADOR.m3u          # Lista generada independiente
+│   ├── README.md
+│   ├── config/
+│   │   └── teleon.json                   # Fuentes/perfiles Teleon
+│   ├── data/                             # Inventarios, calidad y manifiestos
+│   ├── scripts/                          # Descubrimiento, validación y generación
+│   └── tests/                            # Pruebas del generador
 ├── pluto/
 │   └── output/
 │       └── playlists/
 │           ├── pluto_latam.m3u
 │           ├── pluto_es.m3u
-│           └── pluto_mx.m3u
-└── scripts/
+│           ├── pluto_mx.m3u
+│           ├── pluto_ar.m3u
+│           ├── pluto_br.m3u
+│           ├── pluto_cl.m3u
+│           └── pluto_us.m3u
+├── scripts/                              # Scripts generales del proyecto
+├── .github/
+│   └── workflows/
+│       ├── actualizar.yml                # Actualización general
+│       ├── generador.yml                 # Generador aislado
+│       └── pluto.yml                     # Pluto TV
+├── REPORTE.md
+├── actualizar-todo.ps1
+├── README.md
+└── LICENSE
 ~~~
+
+### 🔒 Separación de las listas
+
+| Componente | Playlist | Alcance |
+| :--- | :--- | :--- |
+| 🇨🇱 **Principal** | `IPTV-CHILE-MAESTRA_CORREGIDO.m3u` | Lista maestra controlada |
+| 🔥 **GOD** | `IPTV-CHILE-MAESTRA_GOD.m3u` | Colección ampliada |
+| 🧪 **Generador** | `IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u` | Generación independiente |
+| 🪐 **Pluto LATAM** | `pluto_latam.m3u` | Playlist regional independiente |
+| 🇪🇸 **Pluto España** | `pluto_es.m3u` | Playlist regional independiente |
+| 🇲🇽 **Pluto México** | `pluto_mx.m3u` | Playlist regional independiente |
+| 🇦🇷 **Pluto Argentina** | `pluto_ar.m3u` | Playlist regional independiente |
+| 🇧🇷 **Pluto Brasil** | `pluto_br.m3u` | Playlist regional independiente |
+| 🇨🇱 **Pluto Chile** | `pluto_cl.m3u` | Playlist regional independiente |
+| 🇺🇸 **Pluto Estados Unidos** | `pluto_us.m3u` | Playlist regional independiente |
+
+### 🧪 IPTV-CHILE-GENERADOR
+
+El generador trabaja dentro de su propio directorio y su workflow **`IPTV Chile Generador - aislado`** valida, genera y publica únicamente su ámbito.
+
+Incluye:
+
+- 🔎 Descubrimiento de fuentes públicas.
+- 📡 Validación de streams HLS explícitos.
+- 🗂️ Clasificación y normalización.
+- 🌎 Descubrimiento Teleon por perfiles regionales.
+- 🇨🇱🇦🇷🇲🇽🇨🇴🇵🇪🇪🇨🇺🇾🇬🇹🇭🇳🇸🇻🇵🇦 y otros mercados LATAM según las fuentes disponibles.
+- 🇪🇸 Perfil separado para español de España.
+- 🗣️ Verificación del idioma declarado en la ficha del canal antes de publicar Teleon.
+- 🛡️ Self-test e inventario M3U.
+- 🔐 Comprobación de aislamiento para impedir modificaciones accidentales de las otras listas.
+
+**Importante:** la presencia de una fuente en un país no se considera por sí sola prueba de que todos sus canales sean de ese idioma o región. Para Teleon, la publicación requiere validación del perfil y del idioma declarado por el canal.
+
+### 🤖 Automatizaciones
+
+Cada bloque tiene su propio flujo de mantenimiento:
+
+- `generador.yml` → generador independiente.
+- `pluto.yml` → playlists Pluto TV.
+- `actualizar.yml` → mantenimiento general.
+
+La actualización del generador **no debe reingestar las listas Pluto ni `IPTV-CHILE-MAESTRA_CORREGIDO.m3u`**. El aislamiento se comprueba antes y después de la generación.
+
 
 ---
 
