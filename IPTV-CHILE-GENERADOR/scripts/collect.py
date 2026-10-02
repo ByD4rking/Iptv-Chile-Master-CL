@@ -23,6 +23,27 @@ SOURCE_QUARANTINE_AFTER = 6
 SOURCE_QUARANTINE_HOURS = 24
 
 
+def endpoint_health_key(url, channel_id=None):
+    """Clave estable por canal; elimina solo parámetros efímeros de sesión."""
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+    raw = str(url or "").strip()
+    channel = str(channel_id or "").strip()
+    if channel and raw.startswith(f"{channel}|"):
+        raw = raw[len(channel) + 1 :].strip()
+    parts = urlsplit(raw)
+    if parts.scheme not in ("http", "https") or not parts.netloc:
+        normalized = raw
+    else:
+        ephemeral = {
+            "token", "jwt", "access_token", "refresh_token", "session",
+            "sessionid", "sid", "deviceid", "clientid", "nimblesessionid",
+            "expires", "exp", "signature", "sig", "hmac",
+        }
+        query = [(k,v) for k,v in parse_qsl(parts.query, keep_blank_values=True) if k.lower() not in ephemeral]
+        normalized = urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, urlencode(sorted(query), doseq=True), ""))
+    return f"{channel}|{normalized}" if channel else normalized
+
+
 def load_json(path, default):
     if not path.exists():
         return default
@@ -436,12 +457,34 @@ def main():
     # hasta que alguna fuente aporte un endpoint verificable.
 
     save_json(OUTPUT, channels)
-    endpoint_health = load_json(ENDPOINT_HEALTH_FILE, {})
-    active_urls = {source["url"] for channel in channels for source in channel.get("sources", [])}
-    endpoint_health = {url: state for url, state in endpoint_health.items() if url in active_urls}
+    endpoint_health_raw = load_json(ENDPOINT_HEALTH_FILE, {})
+    endpoint_health = {}
+    for old_key, old_state in endpoint_health_raw.items():
+        channel_id = str(old_state.get("channel_id") or "").strip()
+        if not channel_id:
+            continue
+        stable_key = endpoint_health_key(old_key, channel_id)
+        current = endpoint_health.get(stable_key)
+        if current is None:
+            endpoint_health[stable_key] = dict(old_state)
+        else:
+            current_checks = int(current.get("checks") or 0)
+            old_checks = int(old_state.get("checks") or 0)
+            current_ts = max(str(current.get("last_success") or ""), str(current.get("last_failure") or ""))
+            old_ts = max(str(old_state.get("last_success") or ""), str(old_state.get("last_failure") or ""))
+            if old_checks > current_checks or (old_checks == current_checks and old_ts > current_ts):
+                endpoint_health[stable_key] = dict(old_state)
+
+    active_keys = {
+        endpoint_health_key(source["url"], channel["id"])
+        for channel in channels
+        for source in channel.get("sources", [])
+    }
+    endpoint_health = {key: state for key, state in endpoint_health.items() if key in active_keys}
     for channel in channels:
         for source in channel.get("sources", []):
-            state = endpoint_health.setdefault(source["url"], {
+            health_key = endpoint_health_key(source["url"], channel["id"])
+            state = endpoint_health.setdefault(health_key, {
                 "channel_id": channel["id"], "channel_name": channel["name"],
                 "channel_key": channel["channel_key"],
                 "source": source["source"], "priority": source["priority"],
