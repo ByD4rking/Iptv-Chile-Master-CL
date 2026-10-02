@@ -229,6 +229,10 @@ def main():
             assert successes + failures == checks, (
                 f"Health inconsistente para {url}: successes + failures != checks."
             )
+            samples = health.get("samples") or []
+            assert isinstance(samples, list), f"Historial inválido para {url}."
+            assert len(samples) <= 120, f"Historial excesivo para {url}."
+            assert len(samples) <= checks, f"Historial supera los checks para {url}."
             quarantine_until = health.get("quarantine_until")
             if quarantine_until:
                 assert isinstance(quarantine_until, str), f"quarantine_until inválido para {url}."
