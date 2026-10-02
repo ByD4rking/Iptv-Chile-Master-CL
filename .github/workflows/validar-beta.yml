@@ -96,11 +96,14 @@ jobs:
           from pathlib import Path
           q=json.loads(Path("IPTV-CHILE-GENERADOR/data/quality.json").read_text(encoding="utf-8-sig"))
           hls=[x for x in q.get("results",[]) if x.get("playback_type")=="hls"]
-          stable=[x for x in hls if x.get("stability_ok") and int(x.get("stability_segments_checked",0))>=3]
+          stable=[x for x in hls if x.get("stability_ok") and int(x.get("stable_segments", x.get("stability_segments_checked",0)))>=3]
           print(f"HLS evaluados: {len(hls)}")
           print(f"HLS con >=3 segmentos consecutivos: {len(stable)}")
-          if hls and not stable:
-              raise SystemExit("ERROR: ningún HLS superó continuidad real.")
+          if hls:
+              if not all(x.get("stability_checked") for x in hls):
+                  raise SystemExit("ERROR: existe HLS sin prueba de estabilidad.")
+              if not stable:
+                  raise SystemExit("ERROR: ningún HLS superó continuidad real.")
           PY
 
       - name: Verificar aislamiento final
@@ -122,7 +125,7 @@ jobs:
                 exit 1
                 ;;
             esac
-          done < <(git status --porcelain)
+          done < <(git status --porcelain=v1 -uall)
           echo "OK: Principal, Pluto y scripts externos permanecen íntegros."
 
       - name: Resultado
