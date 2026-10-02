@@ -146,17 +146,29 @@ jobs:
           # abortamos el rebase y regeneramos sobre el main más reciente.
           for intento in 1 2 3; do
             git fetch origin main
-            if git rev-parse HEAD = git rev-parse origin/main; then
+
+            HEAD_SHA="$(git rev-parse HEAD)"
+            PARENT_SHA="$(git rev-parse HEAD^)"
+            REMOTE_SHA="$(git rev-parse origin/main)"
+
+            if [ "$HEAD_SHA" = "$REMOTE_SHA" ]; then
               echo "main ya contiene exactamente este estado."
               exit 0
             fi
 
-            if git rebase origin/main; then
+            if [ "$PARENT_SHA" = "$REMOTE_SHA" ]; then
+              echo "main sigue en la base exacta de esta generación; publicando fast-forward."
               if git push origin HEAD:main; then
                 echo "PUBLICACIÓN EXITOSA: main actualizado."
                 exit 0
               fi
               echo "PUSH RECHAZADO: main cambió después del fetch; se regenerará sobre origin/main."
+            elif git rebase origin/main; then
+              if git push origin HEAD:main; then
+                echo "PUBLICACIÓN EXITOSA: main actualizado tras rebase."
+                exit 0
+              fi
+              echo "PUSH RECHAZADO después del rebase; se regenerará sobre origin/main."
             fi
 
             echo "REBASE/PUSH NO PUBLICADO: la base cambió durante la publicación (intento $intento)."
@@ -176,6 +188,7 @@ jobs:
             python IPTV-CHILE-GENERADOR/scripts/check.py
             python IPTV-CHILE-GENERADOR/scripts/quality.py
             python IPTV-CHILE-GENERADOR/scripts/generate.py
+            python IPTV-CHILE-GENERADOR/scripts/teleon_publish.py
             python IPTV-CHILE-GENERADOR/scripts/selftest.py
             python IPTV-CHILE-GENERADOR/scripts/generar_reportes.py
 
