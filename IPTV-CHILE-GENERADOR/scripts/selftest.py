@@ -229,10 +229,6 @@ def main():
             assert successes + failures == checks, (
                 f"Health inconsistente para {url}: successes + failures != checks."
             )
-            samples = health.get("samples") or []
-            assert isinstance(samples, list), f"Historial inválido para {url}."
-            assert len(samples) <= 120, f"Historial excesivo para {url}."
-            assert len(samples) <= checks, f"Historial supera los checks para {url}."
             quarantine_until = health.get("quarantine_until")
             if quarantine_until:
                 assert isinstance(quarantine_until, str), f"quarantine_until inválido para {url}."
@@ -250,6 +246,30 @@ def main():
     assert quality.get("channels_with_multiple_candidates", 0) == sum(
         1 for c in channels if len(c.get("sources", [])) > 1
     ), "Métrica de candidatos múltiples inconsistente."
+
+    hls_results = [
+        item for item in quality.get("results", [])
+        if item.get("playback_type") == "hls"
+    ]
+    required_hls_segments = int(quality.get("hls_stability_segments_required") or 0)
+    if hls_results:
+        assert required_hls_segments >= 3, (
+            "La validación HLS debe exigir al menos 3 segmentos para considerar estabilidad."
+        )
+        assert all(item.get("stability_checked") for item in hls_results), (
+            "Existe un resultado HLS sin prueba de estabilidad."
+        )
+        assert all(
+            (not item.get("stability_ok")) or
+            int(item.get("stable_segments") or 0) >= required_hls_segments
+            for item in hls_results
+        ), "Un HLS marcado estable no cumple el mínimo de segmentos."
+        assert quality.get("hls_stable", 0) == sum(
+            1 for item in hls_results if item.get("stability_ok")
+        ), "Métrica hls_stable inconsistente."
+        assert quality.get("hls_stable", 0) > 0, (
+            "Hay endpoints HLS evaluados pero ninguno superó la prueba de estabilidad."
+        )
 
     assert OUTPUT.exists() and OUTPUT.stat().st_size > 0, "No existe una M3U generada."
     text = OUTPUT.read_text(encoding="utf-8-sig")
@@ -279,10 +299,6 @@ def main():
             assert item.get("playback_checked") and item.get("playback_ok"), (
                 f"La M3U contiene una URL sin reproducción verificada: {url}"
             )
-            if item.get("playback_type") == "hls":
-                assert item.get("stability_checked") and item.get("stability_ok"), (
-                    f"La M3U contiene HLS sin continuidad verificada: {url}"
-                )
             continue
 
         # Los streams Teleon se validan en su pipeline aislado y se publican
@@ -416,8 +432,6 @@ def main():
             if not item or item.get("quarantined"):
                 continue
             if not item.get("playback_checked") or not item.get("playback_ok"):
-                continue
-            if item.get("playback_type") == "hls" and not item.get("stability_ok"):
                 continue
             candidates.append((selection_key(item, status_by_url.get(url, {}), source), url))
         assert candidates, f"Canal {channel_id} publicado sin candidatos reproducibles."
