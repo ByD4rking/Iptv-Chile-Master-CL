@@ -223,9 +223,7 @@ jobs:
 
       - name: Verificar lista principal
         run: |
-          python scripts/generar_reporte.py \
-            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
-            --hilos 100 \
+          mkdir -p reportes/principal\n          python scripts/generar_reporte.py \\\n            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \\\n            --salida reportes/principal/REPORTE.md \\\n            --hilos 100 \
             --timeout 4 \
             --max-por-servidor 1 \
             --reintentos 0 \
@@ -235,7 +233,7 @@ jobs:
         run: |
           set -e
 
-          if [ ! -f "REPORTE.md" ]; then
+          if [ ! -f "reportes/principal/REPORTE.md" ]; then
             echo "ERROR: No se generó REPORTE.md"
             exit 1
           fi
@@ -267,7 +265,7 @@ jobs:
 
           while IFS= read -r file; do
             case "$file" in
-              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|REPORTE.md|scripts/aprendizaje.json|scripts/health/principal_health.json)
+              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|reportes/principal/REPORTE.md|reportes/god/REPORTE.md|scripts/aprendizaje.json|scripts/health/principal_health.json)
                 ;;
               "")
                 ;;
@@ -285,9 +283,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add \
-            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
-            REPORTE.md \
+          git add \\
+            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \\
+            reportes/principal/REPORTE.md \\
+            reportes/god/REPORTE.md \\
             scripts/aprendizaje.json \
             scripts/health/principal_health.json
 
