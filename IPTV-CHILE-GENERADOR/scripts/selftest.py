@@ -173,6 +173,29 @@ def main():
     assert int(quality.get("schema_version") or 0) >= 4, (
         "quality.json usa un schema anterior al requerido por la beta."
     )
+    health_results = [x for x in quality.get("results", []) if isinstance(x.get("health_score"), (int, float))]
+    assert len(health_results) == len(quality.get("results", [])), (
+        "quality.json contiene resultados sin health_score."
+    )
+    assert all(0 <= float(x["health_score"]) <= 100 for x in health_results), (
+        "quality.json contiene health_score fuera de rango 0-100."
+    )
+    health_avg = round(
+        sum(float(x["health_score"]) for x in health_results) / max(len(health_results), 1), 2
+    )
+    assert quality.get("health_score_average") == health_avg, (
+        "Métrica health_score_average inconsistente."
+    )
+    assert quality.get("health_score_healthy", 0) == sum(
+        1 for x in health_results if float(x["health_score"]) >= 80
+    ), "Métrica health_score_healthy inconsistente."
+    assert quality.get("health_score_degraded", 0) == sum(
+        1 for x in health_results if 40 <= float(x["health_score"]) < 80
+    ), "Métrica health_score_degraded inconsistente."
+    assert quality.get("health_score_unhealthy", 0) == sum(
+        1 for x in health_results if float(x["health_score"]) < 40
+    ), "Métrica health_score_unhealthy inconsistente."
+
     status = load(STATUS)
     source_health = load(SOURCE_HEALTH)
     endpoint_health = load(ENDPOINT_HEALTH)
