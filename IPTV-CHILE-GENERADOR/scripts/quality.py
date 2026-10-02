@@ -18,6 +18,7 @@ TIMEOUT = 10
 WORKERS = 15
 READ_LIMIT = 256 * 1024
 SEGMENT_LIMIT = 64 * 1024
+HLS_STABILITY_SEGMENTS = 3
 ENDPOINT_QUARANTINE_AFTER = 5
 ENDPOINT_QUARANTINE_HOURS = 24
 RETRIES = 3
@@ -157,19 +158,48 @@ def parse_master_playlist(text, base_url):
     return variants
 
 
-def first_media_segment(text, base_url):
+def media_segment_urls(text, base_url, limit=HLS_STABILITY_SEGMENTS):
+    urls = []
+    seen = set()
     for raw_line in text.splitlines():
         line = raw_line.strip()
         if not line:
             continue
+        candidate = None
         if line.startswith("#EXT-X-PART:") or line.startswith("#EXT-X-PRELOAD-HINT:"):
             match = re.search(r'URI="([^"]+)"', line, re.IGNORECASE)
             if match:
-                return urljoin(base_url, match.group(1))
-        if line.startswith("#"):
+                candidate = match.group(1)
+        elif not line.startswith("#"):
+            candidate = line
+        if not candidate:
             continue
-        return urljoin(base_url, line)
-    return None
+        absolute = urljoin(base_url, candidate)
+        if absolute not in seen:
+            seen.add(absolute)
+            urls.append(absolute)
+        if len(urls) >= limit:
+            break
+    return urls
+
+
+def validate_hls_segments(text, base_url):
+    segment_urls = media_segment_urls(text, base_url)
+    if len(segment_urls) < HLS_STABILITY_SEGMENTS:
+        return False, len(segment_urls), (
+            f"Playlist HLS solo expuso {len(segment_urls)} segmento(s); "
+            f"se requieren {HLS_STABILITY_SEGMENTS}."
+        )
+
+    for index, segment_url in enumerate(segment_urls, 1):
+        status, content_type, segment, _ = fetch_segment(segment_url)
+        if not 200 <= status < 400 or not segment:
+            return False, index - 1, f"Segmento {index} inaccesible (HTTP {status})."
+        valid, error = valid_direct_payload(segment, content_type)
+        if not valid:
+            return False, index - 1, f"Segmento {index} inválido: {error}"
+
+    return True, len(segment_urls), None
 
 
 def valid_direct_payload(content, content_type):
@@ -265,68 +295,75 @@ def validate_hls(url, initial_text, initial_content_type, max_depth=2):
                         failures.append(f"variante {index}: {error}")
                         continue
 
-                    segment_url = first_media_segment(child, final_url)
-                    if not segment_url:
-                        failures.append(f"variante {index}: sin segmento")
-                        continue
-                    seg_status, seg_type, segment, _ = fetch_segment(segment_url)
-                    if 200 <= seg_status < 400 and segment:
-                        valid, error = valid_direct_payload(segment, seg_type)
-                        if valid:
-                            return (
-                                {
-                                    "playback_checked": True,
-                                    "playback_ok": True,
-                                    "playback_type": "hls",
-                                    "playback_error": None,
-                                    "width": variant["width"],
-                                    "height": variant["height"],
-                                    "resolution": (
-                                        f'{variant["width"]}x{variant["height"]}'
-                                        if variant["width"] and variant["height"]
-                                        else None
-                                    ),
-                                    "bitrate": variant["bandwidth"],
-                                    "segment_bytes": len(segment),
-                                    "variant_index": index,
-                                    "variant_count": len(variants),
-                                    "validated_url": final_url,
-                                },
-                                None,
-                            )
-                        failures.append(f"variante {index}: segmento inválido: {error}")
-                    else:
-                        failures.append(f"variante {index}: segmento HTTP {seg_status}")
+                    stable, segment_count, stability_error = validate_hls_segments(child, final_url)
+                    if stable:
+                        return (
+                            {
+                                "playback_checked": True,
+                                "playback_ok": True,
+                                "playback_type": "hls",
+                                "playback_error": None,
+                                "stability_checked": True,
+                                "stability_ok": True,
+                                "stable_segments": segment_count,
+                                "width": variant["width"],
+                                "height": variant["height"],
+                                "resolution": (
+                                    f'{variant["width"]}x{variant["height"]}'
+                                    if variant["width"] and variant["height"]
+                                    else None
+                                ),
+                                "bitrate": variant["bandwidth"],
+                                "segment_bytes": None,
+                                "variant_index": index,
+                                "variant_count": len(variants),
+                                "validated_url": final_url,
+                            },
+                            None,
+                        )
+                    failures.append(f"variante {index}: {stability_error}")
                 except Exception as error:
                     failures.append(f"variante {index}: {error}")
 
             return None, "Todas las variantes HLS fallaron: " + "; ".join(failures[:8])
 
-        segment_url = first_media_segment(playlist_text, playlist_url)
-        if not segment_url:
-            return None, "Playlist HLS válida pero sin segmento reproducible."
-
-        status, content_type, segment, _ = fetch_segment(segment_url)
-        if not 200 <= status < 400 or not segment:
-            return None, f"Segmento HLS inaccesible (HTTP {status})."
-
-        valid, error = valid_direct_payload(segment, content_type)
-        if not valid:
-            return None, f"Segmento HLS inválido: {error}"
-
+        stable, segment_count, stability_error = validate_hls_segments(playlist_text, playlist_url)
         resolution = detect_resolution(playlist_text)
         bandwidth = detect_bandwidth(playlist_text)
+        if not stable:
+            return (
+                {
+                    "playback_checked": True,
+                    "playback_ok": False,
+                    "playback_type": "hls",
+                    "playback_error": stability_error,
+                    "stability_checked": True,
+                    "stability_ok": False,
+                    "stable_segments": segment_count,
+                    "width": resolution["width"] if resolution else None,
+                    "height": resolution["height"] if resolution else None,
+                    "resolution": resolution["resolution"] if resolution else None,
+                    "bitrate": bandwidth,
+                    "segment_bytes": None,
+                    "validated_url": playlist_url,
+                },
+                None,
+            )
+
         return (
             {
                 "playback_checked": True,
                 "playback_ok": True,
                 "playback_type": "hls",
                 "playback_error": None,
+                "stability_checked": True,
+                "stability_ok": True,
+                "stable_segments": segment_count,
                 "width": resolution["width"] if resolution else None,
                 "height": resolution["height"] if resolution else None,
                 "resolution": resolution["resolution"] if resolution else None,
                 "bitrate": bandwidth,
-                "segment_bytes": len(segment),
+                "segment_bytes": None,
                 "validated_url": playlist_url,
             },
             None,
@@ -364,6 +401,9 @@ def inspect_url(item):
         "playback_ok": False,
         "playback_type": None,
         "playback_error": None,
+        "stability_checked": False,
+        "stability_ok": False,
+        "stable_segments": 0,
         "validated_url": None,
         "variant_index": None,
         "variant_count": None,
@@ -478,6 +518,7 @@ def main():
             "resolution": None, "bitrate": None, "quality_score": 0, "detected": False,
             "playback_checked": False, "playback_ok": False, "playback_type": None,
             "playback_error": "Endpoint en cuarentena por fallos persistentes.",
+            "stability_checked": False, "stability_ok": False, "stable_segments": 0,
             "validated_url": None, "variant_index": None, "variant_count": None,
             "error": None, "quarantined": True, "quarantine_until": state.get("quarantine_until"),
             "endpoint_consecutive_failures": int(state.get("consecutive_failures") or 0),
@@ -592,7 +633,7 @@ def main():
         )
 
     output = {
-        "schema_version": 3,
+        "schema_version": 4,
         "channels_sha256": channels_sha256,
         "total_channels": len(channels),
         "total_urls": total,
@@ -603,6 +644,8 @@ def main():
             if result["playback_checked"] and not result["playback_ok"]
         ),
         "hls_checked": sum(1 for result in results if result["playback_type"] == "hls"),
+        "hls_stable": sum(1 for result in results if result["playback_type"] == "hls" and result.get("stability_ok")),
+        "hls_stability_segments_required": HLS_STABILITY_SEGMENTS,
         "endpoint_candidates": total,
         "channels_with_multiple_candidates": sum(1 for x in channels_quality.values() if len(x["sources"]) > 1),
         "hls_fallback_successes": sum(
