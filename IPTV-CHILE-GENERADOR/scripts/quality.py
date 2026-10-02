@@ -27,24 +27,24 @@ RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
 def endpoint_health_key(url, channel_id=None):
-    """Clave estable por canal; acepta tanto URL como claves legacy 'channel_id|URL'."""
+    """Clave estable por canal; elimina solo parámetros efímeros de sesión."""
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
     raw = str(url or "").strip()
     channel = str(channel_id or "").strip()
-
-    # Historial antiguo ya podía guardar la clave compuesta. Evitamos volver a
-    # prefijarla durante la migración (channel|channel|url), que separaría el
-    # snapshot histórico de su clave canónica actual.
     if channel and raw.startswith(f"{channel}|"):
         raw = raw[len(channel) + 1 :].strip()
-
     parts = urlsplit(raw)
-    normalized = (
-        raw
-        if parts.scheme not in ("http", "https") or not parts.netloc
-        else urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
-    )
+    if parts.scheme not in ("http", "https") or not parts.netloc:
+        normalized = raw
+    else:
+        ephemeral = {
+            "token", "jwt", "access_token", "refresh_token", "session",
+            "sessionid", "sid", "deviceid", "clientid", "nimblesessionid",
+            "expires", "exp", "signature", "sig", "hmac",
+        }
+        query = [(k,v) for k,v in parse_qsl(parts.query, keep_blank_values=True) if k.lower() not in ephemeral]
+        normalized = urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, urlencode(sorted(query), doseq=True), ""))
     return f"{channel}|{normalized}" if channel else normalized
-
 
 def endpoint_health_score(item):
     """Score operativo 0-100 usando historial persistente, sin inventar checks."""
@@ -597,6 +597,10 @@ def main():
         compacted_health[stable_key] = preferred
 
     endpoint_health = compacted_health
+    if any("|" not in str(key) for key in endpoint_health):
+        raise SystemExit("INCONSISTENCIA: endpoint_health contiene una clave no canónica.")
+    if any(re.search(r"[?&](?:token|jwt|access_token|session|sessionid|sid|deviceid|clientid|nimblesessionid|signature|sig|hmac)=", str(key), re.IGNORECASE) for key in endpoint_health):
+        raise SystemExit("INCONSISTENCIA: endpoint_health conserva un parámetro efímero en su clave.")
 
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc)
