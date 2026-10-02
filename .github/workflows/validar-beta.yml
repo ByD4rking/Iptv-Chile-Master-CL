@@ -1,0 +1,131 @@
+name: 🧪 Validar beta v1.1.0-beta.1
+
+on:
+  push:
+    branches:
+      - beta/v1.1.0-beta.1
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'IPTV-CHILE-GENERADOR/**'
+      - 'VERSION'
+      - 'CHANGELOG.md'
+      - 'docs/**'
+      - '.github/workflows/validar-beta.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validar-beta-v1.1.0-beta.1
+  cancel-in-progress: true
+
+jobs:
+  quality-gates:
+    name: Quality gates beta
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+
+      - name: Validar versión beta
+        run: |
+          set -euo pipefail
+          test "$(tr -d '\r\n' < VERSION)" = "1.1.0-beta.1"
+          grep -q 'v1.1.0-beta.1' CHANGELOG.md
+          grep -q 'v1.1.0-beta.1' docs/VERSIONADO.md
+          grep -q 'v1.1.0-beta.1' README.md
+          echo "OK: versión beta consistente."
+
+      - name: Sintaxis
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          for path in sorted(Path("IPTV-CHILE-GENERADOR/scripts").glob("*.py")):
+              ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+              print(f"OK: {path}")
+          PY
+
+      - name: Tests estructurales
+        run: |
+          python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
+          python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
+          python IPTV-CHILE-GENERADOR/scripts/guard.py
+
+      - name: Snapshot de aislamiento
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/beta-guard
+          sha256sum IPTV-CHILE-MAESTRA_CORREGIDO.m3u > /tmp/beta-guard/principal.sha256
+          find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/beta-guard/pluto.sha256
+          find scripts -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/beta-guard/scripts.sha256
+
+      - name: Ejecutar pipeline beta sin publicar
+        run: |
+          set -euo pipefail
+          python IPTV-CHILE-GENERADOR/scripts/aplicar_reconexion_god.py
+          python IPTV-CHILE-GENERADOR/scripts/guard.py
+          python IPTV-CHILE-GENERADOR/scripts/teleon_discovery.py
+          python IPTV-CHILE-GENERADOR/scripts/teleon_validate.py
+          python IPTV-CHILE-GENERADOR/scripts/collect.py
+          python IPTV-CHILE-GENERADOR/scripts/fix_encoding.py
+          python IPTV-CHILE-GENERADOR/scripts/check.py
+          python IPTV-CHILE-GENERADOR/scripts/quality.py
+          python IPTV-CHILE-GENERADOR/scripts/generate.py
+          python IPTV-CHILE-GENERADOR/scripts/teleon_publish.py
+          python IPTV-CHILE-GENERADOR/scripts/selftest.py
+
+      - name: Verificar HLS real
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          q=json.loads(Path("IPTV-CHILE-GENERADOR/data/quality.json").read_text(encoding="utf-8-sig"))
+          hls=[x for x in q.get("results",[]) if x.get("playback_type")=="hls"]
+          stable=[x for x in hls if x.get("stability_ok") and int(x.get("stability_segments_checked",0))>=3]
+          print(f"HLS evaluados: {len(hls)}")
+          print(f"HLS con >=3 segmentos consecutivos: {len(stable)}")
+          if hls and not stable:
+              raise SystemExit("ERROR: ningún HLS superó continuidad real.")
+          PY
+
+      - name: Verificar aislamiento final
+        run: |
+          set -euo pipefail
+          sha256sum -c /tmp/beta-guard/principal.sha256
+          sha256sum -c /tmp/beta-guard/pluto.sha256
+          sha256sum -c /tmp/beta-guard/scripts.sha256
+          python IPTV-CHILE-GENERADOR/scripts/guard.py
+          while IFS= read -r line; do
+            file="${line:3}"
+            case "$file" in
+              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md|.github/workflows/validar-beta.yml)
+                ;;
+              "")
+                ;;
+              *)
+                echo "REGRESION: archivo fuera del ámbito beta: $file"
+                exit 1
+                ;;
+            esac
+          done < <(git status --porcelain)
+          echo "OK: Principal, Pluto y scripts externos permanecen íntegros."
+
+      - name: Resultado
+        run: |
+          echo "🧪 BETA v1.1.0-beta.1 validada por quality gates."
+          echo "La beta no publica ni reemplaza v1.0.0 estable."
