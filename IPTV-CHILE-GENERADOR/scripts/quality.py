@@ -165,7 +165,16 @@ def parse_master_playlist(text, base_url):
                 re.IGNORECASE,
             )
         )
-        uri = next((x for x in lines[index + 1:] if not x.startswith("#")), None)
+        # La URI pertenece únicamente a este STREAM-INF. No debemos
+        # saltar sobre otro STREAM-INF, porque un master malformado podría
+        # hacer que una variante heredara la URI de la siguiente.
+        uri = None
+        for candidate in lines[index + 1:]:
+            if candidate.upper().startswith("#EXT-X-STREAM-INF:"):
+                break
+            if not candidate.startswith("#"):
+                uri = candidate
+                break
         if not uri:
             continue
 
