@@ -95,7 +95,7 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE
 
 El proyecto mantiene **siete playlists Pluto TV independientes**, cada una publicada como su propio archivo M3U.
 
-### 🌎🇪🇸🇲🇽🇦🇷🇧🇷🇨🇱🇺🇸 Las siete listas son independientes
+### 🌎🇪🇸-🇲🇽-🇦🇷-🇧🇷-🇨🇱-🇺🇸 Las siete listas son independientes
 
 Puedes utilizar **una sola**, **dos** o **las tres** según lo que necesites. No es obligatorio cargarlas juntas.
 
