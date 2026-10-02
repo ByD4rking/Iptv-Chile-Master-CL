@@ -23,19 +23,24 @@ def load(path):
 
 
 def endpoint_health_key(url, channel_id=None):
-    from urllib.parse import urlsplit, urlunsplit
+    """Clave estable por canal; elimina solo parámetros efímeros de sesión."""
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
     raw = str(url or "").strip()
     channel = str(channel_id or "").strip()
     if channel and raw.startswith(f"{channel}|"):
         raw = raw[len(channel) + 1 :].strip()
     parts = urlsplit(raw)
-    normalized = (
-        raw
-        if parts.scheme not in ("http", "https") or not parts.netloc
-        else urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
-    )
+    if parts.scheme not in ("http", "https") or not parts.netloc:
+        normalized = raw
+    else:
+        ephemeral = {
+            "token", "jwt", "access_token", "refresh_token", "session",
+            "sessionid", "sid", "deviceid", "clientid", "nimblesessionid",
+            "expires", "exp", "signature", "sig", "hmac",
+        }
+        query = [(k,v) for k,v in parse_qsl(parts.query, keep_blank_values=True) if k.lower() not in ephemeral]
+        normalized = urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, urlencode(sorted(query), doseq=True), ""))
     return f"{channel}|{normalized}" if channel else normalized
-
 
 def main():
     config = load(CONFIG)
@@ -163,6 +168,13 @@ def main():
     # política de idioma se aplica en la etapa de publicación. Por eso no se
     # exige que todos los streams técnicamente reproducibles sean españoles.
 
+    assert all("|" in str(key) for key in endpoint_health), (
+        "endpoint_health.json contiene claves no canónicas."
+    )
+    assert not any(
+        re.search(r"[?&](?:token|jwt|access_token|session|sessionid|sid|deviceid|clientid|nimblesessionid|signature|sig|hmac)=", str(key), re.IGNORECASE)
+        for key in endpoint_health
+    ), "endpoint_health.json conserva tokens efímeros en sus claves."
     channels = load(CHANNELS)
     quality = load(QUALITY)
     assert int(quality.get("schema_version") or 0) >= 4, (
