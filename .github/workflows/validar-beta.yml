@@ -12,6 +12,7 @@ on:
       - 'VERSION'
       - 'CHANGELOG.md'
       - 'docs/**'
+      - 'player/**'
       - '.github/workflows/validar-beta.yml'
   workflow_dispatch:
 
@@ -65,6 +66,7 @@ jobs:
           python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
           python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
           python IPTV-CHILE-GENERADOR/tests/test_quality_parser.py
+          python IPTV-CHILE-GENERADOR/tests/test_player.py
           python IPTV-CHILE-GENERADOR/scripts/guard.py
 
       - name: Snapshot de aislamiento
@@ -126,7 +128,7 @@ jobs:
           while IFS= read -r line; do
             file="${line:3}"
             case "$file" in
-              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md|.github/workflows/validar-beta.yml)
+              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md|player/*|.github/workflows/validar-beta.yml)
                 ;;
               "")
                 ;;
