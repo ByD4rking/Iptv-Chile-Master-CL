@@ -177,7 +177,7 @@ jobs:
           while IFS= read -r line; do
             file="${line:3}"
             case "$file" in
-              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|.github/workflows/generador.yml) ;;
+              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md|.github/workflows/generador.yml) ;;
               "") ;;
               *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
             esac
@@ -190,7 +190,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u reportes/generador/REPORTE.md
+          git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u reportes/generador/REPORTE.md reportes/god/REPORTE.md
 
           if git diff --cached --quiet; then
             echo "No hay cambios nuevos en el generador."
