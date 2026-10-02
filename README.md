@@ -20,6 +20,8 @@ Su estructura se mantiene organizada por categorías y prioriza la conservación
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u
+
+**⬇️ Descarga directa:** [Descargar IPTV-CHILE-MAESTRA_CORREGIDO.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u)
 ~~~
 
 ### 📌 Características
@@ -54,6 +56,8 @@ Su objetivo es ofrecer una colección mucho más extensa, manteniendo una organi
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_GOD.m3u
+
+**⬇️ Descarga directa:** [Descargar IPTV-CHILE-MAESTRA_GOD.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_GOD.m3u)
 ~~~
 
 ### 📌 Características
@@ -109,42 +113,56 @@ Esto significa que, cuando un mismo canal aparece en varias regiones, el proyect
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_latam.m3u
+
+**⬇️ Descarga directa:** [Descargar pluto_latam.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_latam.m3u)
 ~~~
 
 ### 🔗 RAW — Pluto TV España
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_es.m3u
+
+**⬇️ Descarga directa:** [Descargar pluto_es.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_es.m3u)
 ~~~
 
 ### 🔗 RAW — Pluto TV México
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_mx.m3u
+
+**⬇️ Descarga directa:** [Descargar pluto_mx.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_mx.m3u)
 ~~~
 
 ### 🔗 RAW — Pluto TV Argentina
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_ar.m3u
+
+**⬇️ Descarga directa:** [Descargar pluto_ar.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_ar.m3u)
 ~~~
 
 ### 🔗 RAW — Pluto TV Brasil
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_br.m3u
+
+**⬇️ Descarga directa:** [Descargar pluto_br.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_br.m3u)
 ~~~
 
 ### 🔗 RAW — Pluto TV Chile
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_cl.m3u
+
+**⬇️ Descarga directa:** [Descargar pluto_cl.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_cl.m3u)
 ~~~
 
 ### 🔗 RAW — Pluto TV Estados Unidos
 
 ~~~
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_us.m3u
+
+**⬇️ Descarga directa:** [Descargar pluto_us.m3u](https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_us.m3u)
 ~~~
 
 ### 🧩 ¿Cómo elegir?
