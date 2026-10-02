@@ -28,17 +28,27 @@ def clean(value):
     return str(value).replace("\n", " ").replace("\r", " ").strip()
 
 
-def quality_key(item, status_item, source):
-    # La disponibilidad manda sobre la calidad nominal: primero preferimos
-    # endpoints estables; después resolución/bitrate. Así un 720p estable no
-    # pierde automáticamente frente a un 1080p que falla repetidamente.
+def endpoint_health_score(item):
+    """Mismo criterio de salud que quality.py para evitar decisiones divergentes."""
     checks = int(item.get("endpoint_checks") or 0)
     successes = int(item.get("endpoint_successes") or 0)
-    # Suavizado bayesiano: un endpoint con 1/1 no debe parecer tan fiable
-    # como uno probado muchas veces. El prior Beta(1,1) evita decisiones
-    # demasiado agresivas con muestras pequeñas.
+    failures = int(item.get("endpoint_failures") or 0)
+    consecutive = int(item.get("endpoint_consecutive_failures") or 0)
+    if checks <= 0:
+        base = 50.0
+    else:
+        base = 100.0 * successes / max(checks, successes + failures, 1)
+    penalty = min(50.0, consecutive * 10.0)
+    return round(max(0.0, min(100.0, base - penalty)), 2)
+
+
+def quality_key(item, status_item, source):
+    # Debe coincidir con quality.py: salud histórica primero, calidad nominal después.
+    checks = int(item.get("endpoint_checks") or 0)
+    successes = int(item.get("endpoint_successes") or 0)
     reliability = (successes + 1) / (checks + 2)
     return (
+        endpoint_health_score(item),
         -int(item.get("endpoint_consecutive_failures") or 0),
         reliability,
         checks,
