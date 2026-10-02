@@ -4,6 +4,7 @@ import re
 import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from atomic import atomic_write_json
