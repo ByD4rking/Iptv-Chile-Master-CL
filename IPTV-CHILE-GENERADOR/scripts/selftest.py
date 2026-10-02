@@ -22,12 +22,16 @@ def load(path):
         return json.load(f)
 
 
-def endpoint_health_key(url):
+def endpoint_health_key(url, channel_id=None):
     from urllib.parse import urlsplit, urlunsplit
     parts = urlsplit(str(url or "").strip())
-    if parts.scheme not in ("http", "https") or not parts.netloc:
-        return str(url or "").strip()
-    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
+    normalized = (
+        str(url or "").strip()
+        if parts.scheme not in ("http", "https") or not parts.netloc
+        else urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
+    )
+    channel = str(channel_id or "").strip()
+    return f"{channel}|{normalized}" if channel else normalized
 
 
 def main():
@@ -224,7 +228,7 @@ def main():
             channel_urls.add(url)
             candidate_pairs.add((channel_id, url))
 
-            health_key = endpoint_health_key(url)
+            health_key = endpoint_health_key(url, channel_id)
             assert health_key in endpoint_health, f"Endpoint sin historial: {url}"
             health = endpoint_health[health_key]
             assert str(health.get("channel_id") or "") == channel_id, (
