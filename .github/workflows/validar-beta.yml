@@ -64,6 +64,7 @@ jobs:
         run: |
           python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
           python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
+          python IPTV-CHILE-GENERADOR/tests/test_quality_parser.py
           python IPTV-CHILE-GENERADOR/scripts/guard.py
 
       - name: Snapshot de aislamiento
