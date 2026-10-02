@@ -526,11 +526,8 @@ def main():
         except Exception:
             endpoint_health = {}
 
-    # Migración de historial: compacta claves antiguas con query/token para no
-    # persistir credenciales efímeras y conservar el historial bajo una clave estable.
-    # Metadatos del endpoint se reconstruyen desde channels.json, que es la
-    # fuente de verdad actual. Así una migración de historial nunca arrastra
-    # channel_key/source/priority obsoletos desde snapshots antiguos.
+    # Migración segura del historial: channels.json es la fuente de verdad.
+    # Solo se conservan estados que correspondan al endpoint+canal actuales.
     endpoint_metadata = {}
     for channel in channels:
         channel_id = str(channel.get("id") or "").strip()
@@ -539,7 +536,8 @@ def main():
             source_url = str(source.get("url") or "").strip()
             if not source_url:
                 continue
-            endpoint_metadata[endpoint_health_key(source_url, channel_id)] = {
+            stable_key = endpoint_health_key(source_url, channel_id)
+            endpoint_metadata[stable_key] = {
                 "channel_id": channel_id,
                 "channel_name": str(channel.get("name") or "").strip(),
                 "channel_key": channel_key,
@@ -548,52 +546,44 @@ def main():
             }
 
     compacted_health = {}
-    for old_key, old_state in endpoint_health.items():
-        stable_key = endpoint_health_key(old_key, old_state.get("channel_id"))
-        current = compacted_health.get(stable_key)
+    for stable_key, metadata in endpoint_metadata.items():
+        candidates = []
+        for old_key, old_state in endpoint_health.items():
+            old_channel_id = str(old_state.get("channel_id") or "").strip()
+            if old_channel_id != metadata["channel_id"]:
+                continue
+            if endpoint_health_key(old_key, old_channel_id) == stable_key:
+                candidates.append(old_state)
 
-        if current is None:
-            preferred = dict(old_state)
-        else:
-            current_checks = int(current.get("checks") or 0)
-            old_checks = int(old_state.get("checks") or 0)
-            current_recency = max(
-                str(current.get("last_success") or ""),
-                str(current.get("last_failure") or ""),
-            )
-            old_recency = max(
-                str(old_state.get("last_success") or ""),
-                str(old_state.get("last_failure") or ""),
-            )
-            # Cada snapshot es acumulativo: conservar el snapshot con mayor
-            # cantidad de checks evita combinar contadores incompatibles.
-            # Si empatan, gana el snapshot más reciente.
-            if old_checks > current_checks or (
-                old_checks == current_checks and old_recency > current_recency
-            ):
+        preferred = None
+        for old_state in candidates:
+            if preferred is None:
                 preferred = dict(old_state)
-            else:
-                preferred = dict(current)
+                continue
+            preferred_checks = int(preferred.get("checks") or 0)
+            old_checks = int(old_state.get("checks") or 0)
+            preferred_recency = max(str(preferred.get("last_success") or ""), str(preferred.get("last_failure") or ""))
+            old_recency = max(str(old_state.get("last_success") or ""), str(old_state.get("last_failure") or ""))
+            if old_checks > preferred_checks or (old_checks == preferred_checks and old_recency > preferred_recency):
+                preferred = dict(old_state)
 
-        metadata = endpoint_metadata.get(stable_key)
-        if metadata:
-            preferred.update(metadata)
-
-        # Normaliza invariantes aun cuando el historial antiguo esté corrupto.
+        if preferred is None:
+            preferred = {
+                "checks": 0, "successes": 0, "failures": 0,
+                "consecutive_failures": 0, "last_success": None,
+                "last_failure": None, "last_error": None, "quarantine_until": None,
+            }
+        preferred.update(metadata)
         checks = max(0, int(preferred.get("checks") or 0))
         successes = max(0, int(preferred.get("successes") or 0))
         failures = max(0, int(preferred.get("failures") or 0))
         if successes + failures != checks:
-            # En caso de snapshot inconsistente, conserva el mayor contador
-            # verificable y reconstruye el complemento sin inventar checks.
             successes = min(successes, checks)
             failures = max(0, checks - successes)
         preferred["checks"] = checks
         preferred["successes"] = successes
         preferred["failures"] = failures
-        preferred["consecutive_failures"] = max(
-            0, int(preferred.get("consecutive_failures") or 0)
-        )
+        preferred["consecutive_failures"] = max(0, int(preferred.get("consecutive_failures") or 0))
         compacted_health[stable_key] = preferred
 
     endpoint_health = compacted_health
