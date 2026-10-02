@@ -530,6 +530,13 @@ def main():
             int(current.get("consecutive_failures") or 0),
             int(old_state.get("consecutive_failures") or 0),
         )
+        # Keep metadata and counters from the state with the most observations.
+        # Do not combine consecutive-failure counters from independent snapshots.
+        current_checks = int(current.get("checks") or 0)
+        old_checks = int(old_state.get("checks") or 0)
+        if old_checks > current_checks:
+            compacted_health[stable_key] = dict(old_state)
+            current = compacted_health[stable_key]
         for field in ("last_success", "last_failure", "last_error", "quarantine_until", "channel_id", "channel_name", "channel_key", "source", "priority"):
             if old_state.get(field) and not current.get(field):
                 current[field] = old_state[field]
@@ -543,7 +550,7 @@ def main():
         for source in channel.get("sources", []):
             url = str(source.get("url") or "").strip()
             health_key = endpoint_health_key(url)
-            state = endpoint_health.get(health_key, endpoint_health.get(url, {}))
+            state = endpoint_health.get(health_key, {})
             until = str(state.get("quarantine_until") or "").strip()
             quarantined = False
             if until:
@@ -588,6 +595,12 @@ def main():
             "endpoint_consecutive_failures": int(state.get("consecutive_failures") or 0),
             "endpoint_checks": int(state.get("checks") or 0), "endpoint_successes": int(state.get("successes") or 0),
             "endpoint_failures": int(state.get("failures") or 0),
+            "health_score": endpoint_health_score({
+                "endpoint_checks": state.get("checks"),
+                "endpoint_successes": state.get("successes"),
+                "endpoint_failures": state.get("failures"),
+                "endpoint_consecutive_failures": state.get("consecutive_failures"),
+            }),
         })
     with ThreadPoolExecutor(max_workers=WORKERS) as executor:
         futures = [executor.submit(inspect_url, item) for item in tasks]
@@ -607,7 +620,8 @@ def main():
     checked_at = datetime.now(timezone.utc).isoformat()
     for result in results:
         url = result["url"]
-        state = endpoint_health.setdefault(url, {
+        health_key = endpoint_health_key(url)
+        state = endpoint_health.setdefault(health_key, {
             "channel_id": result["channel_id"],
             "channel_name": result["channel_name"],
             "source": result["source"],
@@ -619,6 +633,7 @@ def main():
             "last_success": None,
             "last_failure": None,
             "last_error": None,
+            "quarantine_until": None,
         })
         existing_channel_id = str(state.get("channel_id") or "").strip()
         if existing_channel_id and existing_channel_id != result["channel_id"]:
