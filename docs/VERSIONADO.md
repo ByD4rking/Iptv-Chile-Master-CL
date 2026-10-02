@@ -35,8 +35,16 @@ Los identificadores técnicos siguen SemVer: `MAJOR.MINOR.PATCH`, con etiquetas 
 7. Si una validación falla, se corrige y se vuelve a auditar antes de promover la versión.
 8. Las versiones estables deben disponer de un punto de rollback identificable.
 
-## Versión actual
+## Versión activa en esta rama
+
+**v1.1.0-beta.1 — 🟡 BETA**
+
+Esta rama contiene la beta de pruebas. v1.0.0 — 🟢 ESTABLE permanece como línea base y rollback.
+
+La beta debe pasar los quality gates y una auditoría posterior antes de avanzar a RC.
+
+## Línea estable de referencia
 
 **v1.0.0 — 🟢 ESTABLE**
 
-Esta es la línea base estable. Las mejoras futuras se prueban primero como beta antes de promocionarse.
+La versión estable no se reemplaza automáticamente por esta beta.
