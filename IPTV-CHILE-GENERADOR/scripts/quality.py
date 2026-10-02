@@ -3,7 +3,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit, urlunsplit
 from urllib.request import Request, urlopen
 
 from atomic import atomic_write_json, file_sha256
@@ -24,6 +24,14 @@ ENDPOINT_QUARANTINE_HOURS = 24
 RETRIES = 3
 RETRY_BACKOFF_SECONDS = (0.8, 1.8, 3.5)
 RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
+
+
+def endpoint_health_key(url):
+    """Clave estable para historial: elimina query/fragment de URLs firmadas o efímeras."""
+    parts = urlsplit(str(url or "").strip())
+    if parts.scheme not in ("http", "https") or not parts.netloc:
+        return str(url or "").strip()
+    return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), parts.path, "", ""))
 
 
 def endpoint_health_score(item):
@@ -513,7 +521,8 @@ def main():
     for channel in channels:
         for source in channel.get("sources", []):
             url = str(source.get("url") or "").strip()
-            state = endpoint_health.get(url, {})
+            health_key = endpoint_health_key(url)
+            state = endpoint_health.get(health_key, endpoint_health.get(url, {}))
             until = str(state.get("quarantine_until") or "").strip()
             quarantined = False
             if until:
