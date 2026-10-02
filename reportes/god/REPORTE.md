@@ -1,20 +1,10 @@
-# 📡 Reporte de estado — GOD
+# Reporte de estado - GOD
 
-**Lista:** `IPTV-CHILE-MAESTRA_GOD.m3u`
+- Archivo: /home/runner/work/Iptv-Chile-Master-CL/Iptv-Chile-Master-CL/IPTV-CHILE-MAESTRA_GOD.m3u
+- Canales: **25476**
+- URLs: **25476**
+- Duplicados históricos: **8912** (permitidos por guard.py)
+- Directivas de reconexión: **23336**
+- SHA-256: d739abcb96964c0abfd67741a90baa6b362591675a53ea60efda12a50118a7ff
 
-## Resumen
-
-| Métrica | Valor |
-|---|---:|
-| Canales/entradas | 25.476 |
-| URLs | 25.476 |
-| Duplicados históricos | 8.912 |
-| Directivas de reconexión | 23.336 |
-
-> ℹ️ Los duplicados históricos de GOD son un dato informativo y están contemplados por la protección específica de `guard.py`.
-
-## Alcance
-
-Este reporte pertenece exclusivamente a **GOD**. No representa ni modifica la Lista Principal, Pluto TV ni el Generador.
-
-> 🔄 El workflow del Generador regenera este reporte automáticamente cuando actualiza GOD.
+Reporte exclusivo de GOD; no modifica la lista protegida.
