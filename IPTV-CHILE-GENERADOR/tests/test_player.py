@@ -8,12 +8,12 @@ app = APP.read_text(encoding="utf-8")
 
 required = [
     '<video id="video"',
-    "beta/v1.1.0-beta.1",
-    "raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/",
     "frame-ancestors 'none'",
 ]
 for needle in required:
     assert needle in text, f"Falta en player/index.html: {needle}"
+assert "beta/v1.1.0-beta.1" in app, "El player no apunta a la rama beta."
+assert "raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/" in app, "Falta base raw de GitHub."
 
 playlists = [
     "IPTV-CHILE-MAESTRA_CORREGIDO.m3u",
