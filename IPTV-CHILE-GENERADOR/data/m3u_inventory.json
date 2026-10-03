@@ -10,12 +10,12 @@
     "comparison_against": "data/teleon_discovery.json"
   },
   "metrics": {
-    "entries_parsed": 194,
-    "unique_urls": 194,
+    "entries_parsed": 200,
+    "unique_urls": 200,
     "duplicate_urls": 0,
     "known_to_teleon": 0,
-    "new_urls_vs_teleon": 194,
-    "new_url_candidates": 194
+    "new_urls_vs_teleon": 200,
+    "new_url_candidates": 200
   },
   "duplicates": [],
   "entries": [
@@ -41,6 +41,20 @@
         "Animation"
       ],
       "url": "http://200.59.191.177:8000/play/a00w/index.m3u8?hls",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Disney Channel Latin America (1080p)",
+      "tvg_name": "Disney Channel Latin America (1080p)",
+      "tvg_id": "a573f988627813aab0b0",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/f/ff/2024_Disney_Channel_text_logo.svg",
+      "groups": [
+        "Animation",
+        "Kids"
+      ],
+      "url": "http://15.204.246.24:8080/DisneyHD/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -74,33 +88,6 @@
       }
     },
     {
-      "name": "Disney Jr. Latin America South HD (1080p)",
-      "tvg_name": "Disney Jr. Latin America South HD (1080p)",
-      "tvg_id": "f78cd4092c7ff4e90c11",
-      "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e3/2024_Disney_Jr._Logo.svg",
-      "groups": [
-        "Animation",
-        "Kids"
-      ],
-      "url": "http://45.134.141.161:2200/ARG/Disney_Junior/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Tevex (1080p)",
-      "tvg_name": "Tevex (1080p)",
-      "tvg_id": "1084d90b4cf5458fcb62",
-      "logo": "https://i.imgur.com/FnInQRd.png",
-      "groups": [
-        "Business"
-      ],
-      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "TVN3 (1080p)",
       "tvg_name": "TVN3 (1080p)",
       "tvg_id": "c5dc94a165450bfdab3f",
@@ -127,6 +114,19 @@
       }
     },
     {
+      "name": "Comedy Central Latin America (1080p)",
+      "tvg_name": "Comedy Central Latin America (1080p)",
+      "tvg_id": "d822304b74ef75e17ae7",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Comedy_Central_2018.svg/960px-Comedy_Central_2018.svg.png",
+      "groups": [
+        "Comedy"
+      ],
+      "url": "http://15.204.246.24:8080/ComedyCentralHD/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "13C (1080p)",
       "tvg_name": "13C (1080p)",
       "tvg_id": "a9d4c64b9f2b97e0a31c",
@@ -135,6 +135,19 @@
         "Culture"
       ],
       "url": "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Chiloe Red 25 (720p)",
+      "tvg_name": "Chiloe Red 25 (720p)",
+      "tvg_id": "100f3506d4735afb1eca",
+      "logo": "https://i.imgur.com/3tqrImm.png",
+      "groups": [
+        "Culture"
+      ],
+      "url": "https://v2.tustreaming.cl/chiloered/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -161,6 +174,19 @@
         "Culture"
       ],
       "url": "https://unlimited1-us.dps.live/holvoettv/holvoettv.smil/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Mega 2 (1080p)",
+      "tvg_name": "Mega 2 (1080p)",
+      "tvg_id": "cc11c1fdb3759d6730ad",
+      "logo": "https://i.imgur.com/c1ME00r.png",
+      "groups": [
+        "Culture"
+      ],
+      "url": "http://15.204.246.24:8080/Mega2HD/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -200,6 +226,19 @@
         "Culture"
       ],
       "url": "https://verso.coopcom.cl/live/SHf6GLCpn4hDSpWdzaDzgX0ciU82/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "ClickTV Chile (720p)",
+      "tvg_name": "ClickTV Chile (720p)",
+      "tvg_id": "77bba8c91f8aff6de79e",
+      "logo": "https://i.imgur.com/H0XNbMS.png",
+      "groups": [
+        "Documentary"
+      ],
+      "url": "https://v2.tustreaming.cl/clicktv/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -348,6 +387,19 @@
       }
     },
     {
+      "name": "MTV Latin America (1080p)",
+      "tvg_name": "MTV Latin America (1080p)",
+      "tvg_id": "eb768c6d767ec6d37343",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/MTV_2021_%28brand_version%29.svg/960px-MTV_2021_%28brand_version%29.svg.png",
+      "groups": [
+        "Entertainment"
+      ],
+      "url": "http://15.204.246.24:8080/MTVHD/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Nada Es Imposible TV",
       "tvg_name": "Nada Es Imposible TV",
       "tvg_id": "3b20c2151f781ed7dc68",
@@ -414,19 +466,6 @@
       }
     },
     {
-      "name": "Aysen TV (720p)",
-      "tvg_name": "Aysen TV (720p)",
-      "tvg_id": "452279b590287f17ab98",
-      "logo": "https://i.imgur.com/DmdBf9S.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v1.tustreaming.cl/aysentv/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Bio Bio TV (1080p)",
       "tvg_name": "Bio Bio TV (1080p)",
       "tvg_id": "2c27a46887b840a14370",
@@ -461,6 +500,19 @@
         "General"
       ],
       "url": "https://tls-cl.cdnz.cl/canal21tv/live/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Canal 13 (Chile) (1080p)",
+      "tvg_name": "Canal 13 (Chile) (1080p)",
+      "tvg_id": "61ddedfeaac565763257",
+      "logo": "https://static.wikia.nocookie.net/logopedia/images/0/01/Canal_13_2018.png/revision/latest/scale-to-width-down/512/",
+      "groups": [
+        "General"
+      ],
+      "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -518,6 +570,32 @@
       }
     },
     {
+      "name": "Central TV (Chile) (720p)",
+      "tvg_name": "Central TV (Chile) (720p)",
+      "tvg_id": "c06b052f1896618f5a7a",
+      "logo": "https://cdn.m3u.cl/logo/1706_Central_TV.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://freya.mivideo.pro/centraltv/video.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "ChileVision (1080p)",
+      "tvg_name": "ChileVision (1080p)",
+      "tvg_id": "a134d9a2d1f883a90d75",
+      "logo": "https://i.imgur.com/PRijvR0.png",
+      "groups": [
+        "General"
+      ],
+      "url": "http://15.204.246.24:8080/CHVHD/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "China Channel (720p)",
       "tvg_name": "China Channel (720p)",
       "tvg_id": "b3fae0e020c6f740bf77",
@@ -552,19 +630,6 @@
         "General"
       ],
       "url": "https://unlimited1-cl-isp.dps.live/coopetv/coopetv.smil/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Coyhaique TV (720p)",
-      "tvg_name": "Coyhaique TV (720p)",
-      "tvg_id": "e4aa1f984913367d1858",
-      "logo": "https://cdn.m3u.cl/logo/1768_Coyhaique_TV.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/coyhaiquetv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -856,6 +921,19 @@
       }
     },
     {
+      "name": "Mega (Chile) (1080p)",
+      "tvg_name": "Mega (Chile) (1080p)",
+      "tvg_id": "0508fb98d6da724d8efb",
+      "logo": "https://i.imgur.com/RlZfR84.png",
+      "groups": [
+        "General"
+      ],
+      "url": "http://15.204.246.24:8080/MEGAHD/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Mi Radio TV",
       "tvg_name": "Mi Radio TV",
       "tvg_id": "f6ac3973cbd4af5a9e4a",
@@ -908,19 +986,6 @@
       }
     },
     {
-      "name": "Oli TV (Chile) (1080p)",
-      "tvg_name": "Oli TV (Chile) (1080p)",
-      "tvg_id": "5580af0518d372a4a0d2",
-      "logo": "https://i.imgur.com/2emMRvf.jpeg",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v4.tustreaming.cl/retroplaytv/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Polar TV (Chile)",
       "tvg_name": "Polar TV (Chile)",
       "tvg_id": "ee16adbdb74c13b831b4",
@@ -942,19 +1007,6 @@
         "General"
       ],
       "url": "https://5eaccbab48461.streamlock.net:1936/heqhvtgebg/heqhvtgebg/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Radio Ancoa TV (720p)",
-      "tvg_name": "Radio Ancoa TV (720p)",
-      "tvg_id": "4d91a53c57b613882bd7",
-      "logo": "https://cdn.m3u.cl/logo/406_Radio_Ancoa_TV.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/radioancoatv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1007,19 +1059,6 @@
         "General"
       ],
       "url": "https://v1.tustreaming.cl/frecuencia1tv/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Radio Las Nieves (720p)",
-      "tvg_name": "Radio Las Nieves (720p)",
-      "tvg_id": "b1967aa1271e9979be96",
-      "logo": "https://cdn.m3u.cl/logo/408_Radio_Las_Nieves.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/rln/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1246,6 +1285,19 @@
       }
     },
     {
+      "name": "TVN (Chile) (1080p)",
+      "tvg_name": "TVN (Chile) (1080p)",
+      "tvg_id": "b9c0f01e022b43a665e6",
+      "logo": "https://i.imgur.com/3FKZHL4.png",
+      "groups": [
+        "General"
+      ],
+      "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "TVU (1080p)",
       "tvg_name": "TVU (1080p)",
       "tvg_id": "28232c1b59f81a1a7cf7",
@@ -1398,6 +1450,19 @@
         "Music"
       ],
       "url": "https://v2.tustreaming.cl/fmplus/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Genial TV (720p)",
+      "tvg_name": "Genial TV (720p)",
+      "tvg_id": "40d00f1ffa01189efe79",
+      "logo": "https://i.imgur.com/uBC8e96.png",
+      "groups": [
+        "Music"
+      ],
+      "url": "https://v1.tustreaming.cl/genialtv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -2100,6 +2165,19 @@
         "Undefined"
       ],
       "url": "https://v2.tustreaming.cl/atacamatv/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Campo Abierto TV (720p)",
+      "tvg_name": "Campo Abierto TV (720p)",
+      "tvg_id": "65a795a52bb1b32864ef",
+      "logo": "https://i.imgur.com/KL6pgaL.png",
+      "groups": [
+        "Undefined"
+      ],
+      "url": "https://v2.tustreaming.cl/catvlive/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
