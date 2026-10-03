@@ -42,3 +42,9 @@ assert "hls.destroy()" in app
 assert "fetch(url" in app
 
 print(f"OK: player beta validado con {len(playlists)} playlists y arquitectura CSP sin JS inline.")
+
+assert "const playlists=[" in app
+ids = re.findall(r'\["([^"]+)",\s*"[^"]+",\s*"[^"]+"\]', app)
+assert len(ids) == len(set(ids)), "El player contiene IDs de playlist duplicados."
+assert "script-src 'self' https://cdn.jsdelivr.net" in text, "CSP no permite el runtime HLS externo."
+assert "connect-src 'self' https: http:" in text, "CSP no permite conexiones a streams remotos."
