@@ -754,6 +754,54 @@ def main():
         result["endpoint_failures"] = int(state.get("failures") or 0)
         result["health_score"] = endpoint_health_score(result)
 
+    # Invariante final: el historial publicado se reconstruye contra la identidad
+    # actual de channels.json. Esto corrige también estados legacy que hayan
+    # conservado channel_key o claves con token aunque el endpoint sea el mismo.
+    canonical_health = {}
+    for channel in channels:
+        channel_id = str(channel.get("id") or "").strip()
+        channel_key = str(channel.get("channel_key") or "").strip()
+        for source in channel.get("sources", []):
+            url = str(source.get("url") or "").strip()
+            if not url:
+                continue
+            health_key = endpoint_health_key(url, channel_id)
+            state = dict(endpoint_health.get(health_key) or {})
+            state.update({
+                "channel_id": channel_id,
+                "channel_name": str(channel.get("name") or "").strip(),
+                "channel_key": channel_key,
+                "source": str(source.get("source") or "").strip(),
+                "priority": int(source.get("priority") or 0),
+            })
+            checks = max(0, int(state.get("checks") or 0))
+            successes = max(0, int(state.get("successes") or 0))
+            failures = max(0, int(state.get("failures") or 0))
+            if successes + failures != checks:
+                successes = min(successes, checks)
+                failures = max(0, checks - successes)
+            state["checks"] = checks
+            state["successes"] = successes
+            state["failures"] = failures
+            state["consecutive_failures"] = max(0, int(state.get("consecutive_failures") or 0))
+            canonical_health[health_key] = state
+
+    if set(canonical_health) != set(endpoint_metadata):
+        raise SystemExit("INCONSISTENCIA: historial final no coincide 1:1 con los endpoints actuales.")
+    for health_key, metadata in endpoint_metadata.items():
+        state = canonical_health[health_key]
+        if state.get("channel_id") != metadata["channel_id"] or state.get("channel_key") != metadata["channel_key"]:
+            raise SystemExit(
+                f"INCONSISTENCIA: identidad del historial no coincide para {health_key}."
+            )
+        if re.search(
+            r"[?&](?:token|jwt|access_token|refresh_token|session|sessionid|sid|deviceid|clientid|nimblesessionid|expires|exp|signature|sig|hmac)=",
+            health_key,
+            re.IGNORECASE,
+        ):
+            raise SystemExit(f"INCONSISTENCIA: clave de historial contiene token efímero: {health_key}")
+
+    endpoint_health = canonical_health
     atomic_write_json(ENDPOINT_HEALTH_FILE, endpoint_health)
     if skipped_quarantine:
         print(f"Endpoints en cuarentena: {len(skipped_quarantine)} (se reintentaran al vencer la cuarentena).")
