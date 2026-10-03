@@ -22,6 +22,10 @@ HISTORY = OUTPUT / "streams.json"
 TIMEOUT = (8, 15)
 ATTEMPTS = 3
 BACKOFF_BASE = 1.0
+# Probe more than one media object so a channel that only serves the first
+# segment correctly is not reported as fully healthy. This catches intermittent
+# freezes/playlist stalls without requiring a long-running player session.
+CONTINUITY_SAMPLES = 3
 MAX_COOLDOWN_SECONDS = 6 * 60 * 60
 FAILURE_COOLDOWN_THRESHOLD = 5
 USER_AGENT = "Mozilla/5.0 Pluto-HLS-Health/2.0"
@@ -97,24 +101,35 @@ def _probe_once(url: str) -> tuple[bool, str, float]:
         if not candidates:
             return False, "playlist sin segmento", time.monotonic() - started
 
-        segment = candidates[0]
-        if not segment.lower().startswith(("http://", "https://")):
-            return False, "segmento con esquema no permitido", time.monotonic() - started
+        samples = []
+        seen = set()
+        for segment in candidates:
+            if segment in seen:
+                continue
+            seen.add(segment)
+            if not segment.lower().startswith(("http://", "https://")):
+                return False, "segmento con esquema no permitido", time.monotonic() - started
 
-        sr = session.get(segment, headers=headers, timeout=TIMEOUT, stream=True)
-        sr.raise_for_status()
-        sample = next(sr.iter_content(8192), b"")
-        content_type = sr.headers.get("Content-Type", "")
-        sr.close()
-        if not sample:
-            return False, "segmento vacío", time.monotonic() - started
-        if not _segment_signature_ok(sample, content_type):
-            return (
-                False,
-                f"segmento no reconocible (Content-Type={content_type or 'desconocido'})",
-                time.monotonic() - started,
-            )
-        return True, "master+variant+segment+media OK", time.monotonic() - started
+            sr = session.get(segment, headers=headers, timeout=TIMEOUT, stream=True)
+            sr.raise_for_status()
+            sample = next(sr.iter_content(8192), b"")
+            content_type = sr.headers.get("Content-Type", "")
+            sr.close()
+            if not sample:
+                return False, "segmento vacío", time.monotonic() - started
+            if not _segment_signature_ok(sample, content_type):
+                return (
+                    False,
+                    f"segmento no reconocible (Content-Type={content_type or 'desconocido'})",
+                    time.monotonic() - started,
+                )
+            samples.append((segment, content_type))
+            if len(samples) >= CONTINUITY_SAMPLES:
+                break
+
+        if len(samples) < min(CONTINUITY_SAMPLES, len(candidates)):
+            return False, "playlist sin suficientes muestras de continuidad", time.monotonic() - started
+        return True, f"master+variant+{len(samples)} muestras HLS+media OK", time.monotonic() - started
 
 
 def _safe_error(exc: Exception) -> str:
