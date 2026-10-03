@@ -2,8 +2,8 @@
 
 - Canales publicados: **194**
 - URLs únicas: **194**
-- Candidatos evaluados: **300**
-- Playback OK: **210**
+- Candidatos evaluados: **303**
+- Playback OK: **213**
 - Manifest generado: **194 canales**
 - Teleon candidatos validados: **0**
 - Teleon playback OK: **0**
