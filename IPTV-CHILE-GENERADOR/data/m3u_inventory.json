@@ -10,12 +10,12 @@
     "comparison_against": "data/teleon_discovery.json"
   },
   "metrics": {
-    "entries_parsed": 204,
-    "unique_urls": 204,
+    "entries_parsed": 199,
+    "unique_urls": 199,
     "duplicate_urls": 0,
     "known_to_teleon": 0,
-    "new_urls_vs_teleon": 204,
-    "new_url_candidates": 204
+    "new_urls_vs_teleon": 199,
+    "new_url_candidates": 199
   },
   "duplicates": [],
   "entries": [
@@ -102,6 +102,19 @@
       }
     },
     {
+      "name": "Tevex (1080p)",
+      "tvg_name": "Tevex (1080p)",
+      "tvg_id": "1084d90b4cf5458fcb62",
+      "logo": "https://i.imgur.com/FnInQRd.png",
+      "groups": [
+        "Business"
+      ],
+      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "TVN3 (1080p)",
       "tvg_name": "TVN3 (1080p)",
       "tvg_id": "c5dc94a165450bfdab3f",
@@ -149,19 +162,6 @@
         "Culture"
       ],
       "url": "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Chiloe Red 25 (720p)",
-      "tvg_name": "Chiloe Red 25 (720p)",
-      "tvg_id": "100f3506d4735afb1eca",
-      "logo": "https://i.imgur.com/3tqrImm.png",
-      "groups": [
-        "Culture"
-      ],
-      "url": "https://v2.tustreaming.cl/chiloered/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -240,19 +240,6 @@
         "Culture"
       ],
       "url": "https://verso.coopcom.cl/live/SHf6GLCpn4hDSpWdzaDzgX0ciU82/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "ClickTV Chile (720p)",
-      "tvg_name": "ClickTV Chile (720p)",
-      "tvg_id": "77bba8c91f8aff6de79e",
-      "logo": "https://i.imgur.com/H0XNbMS.png",
-      "groups": [
-        "Documentary"
-      ],
-      "url": "https://v2.tustreaming.cl/clicktv/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -357,19 +344,6 @@
         "Entertainment"
       ],
       "url": "https://v4.tustreaming.cl/limachemovil/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "La Melinkana TV (720p)",
-      "tvg_name": "La Melinkana TV (720p)",
-      "tvg_id": "903a94e486cc98be38ec",
-      "logo": "https://i.imgur.com/I0nzI1y.png",
-      "groups": [
-        "Entertainment"
-      ],
-      "url": "https://v1.tustreaming.cl/melinkana/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -922,19 +896,6 @@
       }
     },
     {
-      "name": "Marga Marga TV (720p)",
-      "tvg_name": "Marga Marga TV (720p)",
-      "tvg_id": "bf7b9b7e13ceafa66b30",
-      "logo": "https://i.imgur.com/4cg51eE.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v1.tustreaming.cl/margamargatv/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Mega (1080p)",
       "tvg_name": "Mega (1080p)",
       "tvg_id": "89e5df3bcb70ef2ff4dd",
@@ -1065,19 +1026,6 @@
       }
     },
     {
-      "name": "Radio Chiloe (720p)",
-      "tvg_name": "Radio Chiloe (720p)",
-      "tvg_id": "e2d4a88d0c03be9ff4b3",
-      "logo": "https://cdn.m3u.cl/logo/409_Radio_Chiloe.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://videostream.chileservidores.com:8081/chiloe1/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Radio Contemporanea Coihueco (720p)",
       "tvg_name": "Radio Contemporanea Coihueco (720p)",
       "tvg_id": "da35753cea2ff81a03f6",
@@ -1125,6 +1073,19 @@
         "General"
       ],
       "url": "https://v2.tustreaming.cl/rln/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Radio Nuble (720p)",
+      "tvg_name": "Radio Nuble (720p)",
+      "tvg_id": "5e733b30f2981a58ce6c",
+      "logo": "https://cdn.m3u.cl/logo/870_Radio_Nuble.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://tv.telselec.cl:3376/live/nublefmlive.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1807,19 +1768,6 @@
       }
     },
     {
-      "name": "ADN TV (720p)",
-      "tvg_name": "ADN TV (720p)",
-      "tvg_id": "f2a618c8588e4062d247",
-      "logo": "https://i.imgur.com/AVfTwNw.png",
-      "groups": [
-        "News"
-      ],
-      "url": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Atacama Noticias (720p) [Not 24/7]",
       "tvg_name": "Atacama Noticias (720p) [Not 24/7]",
       "tvg_id": "09d3ecb42296552fb4bc",
@@ -1879,7 +1827,7 @@
       "groups": [
         "News"
       ],
-      "url": "https://redirector.dps.live/hls/pinguinotv/playlist.m3u8",
+      "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/pinguinotv/pinguinotv.smil/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -2582,19 +2530,6 @@
         "Undefined"
       ],
       "url": "https://5ff3d9babae13.streamlock.net/8014/8014/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "TVR (1080p)",
-      "tvg_name": "TVR (1080p)",
-      "tvg_id": "1d36be87f8ada23c462b",
-      "logo": "https://i.postimg.cc/prDRDZw3/TVR-Logo.png",
-      "groups": [
-        "Undefined"
-      ],
-      "url": "https://unlimited1-us.dps.live/tvr/tvr.smil/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }

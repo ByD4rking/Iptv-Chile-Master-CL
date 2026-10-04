@@ -1,19 +1,59 @@
 {
   "schema_version": 2,
-  "checked_at": "2026-10-04T06:06:48.531976+00:00",
-  "channels_sha256": "fba1bd578808eef0240a391035f9245e21749ef113c5c2bca2fac5458b6564b1",
-  "total": 304,
-  "online": 226,
-  "offline": 78,
+  "checked_at": "2026-10-04T12:38:30.698637+00:00",
+  "channels_sha256": "54c01de8dcab0bf97d34b65dff03b636a695b45bf559c4d4571e14a9f8be6863",
+  "total": 303,
+  "online": 210,
+  "offline": 93,
   "results": [
+    {
+      "channel_id": "cc11c1fdb3759d6730ad",
+      "channel_name": "Mega 2 (1080p)",
+      "url": "http://15.204.246.24:8080/Mega2HD/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 130.35,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "04c8326f809191231492",
+      "channel_name": "Docu. (1080p)",
+      "url": "http://45.162.193.35/DOCU/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 400,
+      "response_time_ms": 284.98,
+      "error": "HTTP 400"
+    },
     {
       "channel_id": "a573f988627813aab0b0",
       "channel_name": "Disney Channel Latin America (1080p)",
       "url": "http://15.204.246.24:8080/DisneyHD/index.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 432.72,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "d822304b74ef75e17ae7",
+      "channel_name": "Comedy Central Latin America (1080p)",
+      "url": "http://15.204.246.24:8080/ComedyCentralHD/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 394.51,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "a05dfbf57fd3e92f27f3",
+      "channel_name": "GVision (288p)",
+      "url": "https://videostream.chileservidores.com:8081/tome/index.m3u8",
+      "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 310.88,
+      "response_time_ms": 325.21,
       "error": null
     },
     {
@@ -23,17 +63,17 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": 404,
-      "response_time_ms": 226.63,
+      "response_time_ms": 310.91,
       "error": "HTTP 404"
     },
     {
-      "channel_id": "d822304b74ef75e17ae7",
-      "channel_name": "Comedy Central Latin America (1080p)",
-      "url": "http://15.204.246.24:8080/ComedyCentralHD/index.m3u8",
-      "source": "CATALOGO",
+      "channel_id": "d21df815d109d470c4de",
+      "channel_name": "ETC TV (1080p)",
+      "url": "http://200.59.191.177:8000/play/a00w/index.m3u8?hls",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 440.76,
+      "response_time_ms": 513.75,
       "error": null
     },
     {
@@ -43,37 +83,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 500.32,
-      "error": null
-    },
-    {
-      "channel_id": "cc11c1fdb3759d6730ad",
-      "channel_name": "Mega 2 (1080p)",
-      "url": "http://15.204.246.24:8080/Mega2HD/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 435.24,
-      "error": null
-    },
-    {
-      "channel_id": "a05dfbf57fd3e92f27f3",
-      "channel_name": "GVision (288p)",
-      "url": "https://videostream.chileservidores.com:8081/tome/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 402.72,
-      "error": null
-    },
-    {
-      "channel_id": "eb768c6d767ec6d37343",
-      "channel_name": "MTV Latin America (1080p)",
-      "url": "http://15.204.246.24:8080/MTVHD/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 7.78,
+      "response_time_ms": 522.67,
       "error": null
     },
     {
@@ -83,47 +93,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 569.63,
-      "error": null
-    },
-    {
-      "channel_id": "d21df815d109d470c4de",
-      "channel_name": "ETC TV (1080p)",
-      "url": "http://200.59.191.177:8000/play/a00w/index.m3u8?hls",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 595.75,
-      "error": null
-    },
-    {
-      "channel_id": "f78cd4092c7ff4e90c11",
-      "channel_name": "Disney Jr. Latin America South HD (1080p)",
-      "url": "http://45.134.141.161:2200/ARG/Disney_Junior/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 649.13,
-      "error": null
-    },
-    {
-      "channel_id": "aace81180846eeaf7ce1",
-      "channel_name": "Estacion Limache TV (720p)",
-      "url": "https://v4.tustreaming.cl/limachemovil/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 204.52,
-      "error": null
-    },
-    {
-      "channel_id": "67d6892f14e2159daa35",
-      "channel_name": "EnerGeek FAN (1080p)",
-      "url": "https://cl-2.backend.energeek.cl/bkp/egfanweb/index.m3u8?token=W3bEnerG33k2026",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 718.92,
+      "response_time_ms": 532.55,
       "error": null
     },
     {
@@ -133,18 +103,8 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": 400,
-      "response_time_ms": 665.56,
+      "response_time_ms": 516.11,
       "error": "HTTP 400"
-    },
-    {
-      "channel_id": "3b20c2151f781ed7dc68",
-      "channel_name": "Nada Es Imposible TV",
-      "url": "https://vdochile.com:3194/live/mvqutymylive.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 209.83,
-      "error": null
     },
     {
       "channel_id": "77bba8c91f8aff6de79e",
@@ -153,107 +113,57 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": false,
       "status_code": 404,
-      "response_time_ms": 637.62,
+      "response_time_ms": 439.19,
       "error": "HTTP 404"
     },
     {
-      "channel_id": "04c8326f809191231492",
-      "channel_name": "Docu. (1080p)",
-      "url": "http://45.162.193.35/DOCU/index.m3u8",
+      "channel_id": "945df91a0df765e447b6",
+      "channel_name": "Radio Suyai TV (1080p)",
+      "url": "https://cl-2.backend.energeek.cl/RadioSuyai-Neo/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 485.46,
+      "error": null
+    },
+    {
+      "channel_id": "67d6892f14e2159daa35",
+      "channel_name": "EnerGeek FAN (1080p)",
+      "url": "https://cl-2.backend.energeek.cl/bkp/egfanweb/index.m3u8?token=W3bEnerG33k2026",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 400,
-      "response_time_ms": 636.8,
-      "error": "HTTP 400"
-    },
-    {
-      "channel_id": "1084d90b4cf5458fcb62",
-      "channel_name": "Tevex (1080p)",
-      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
-      "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 749.25,
+      "response_time_ms": 588.53,
       "error": null
     },
     {
-      "channel_id": "d2715787eaf195c405fd",
-      "channel_name": "13E (720p)",
-      "url": "https://origin.dpsgo.com/ssai/event/BBp0VeP6QtOOlH8nu3bWTg/master.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 566.21,
-      "error": null
-    },
-    {
-      "channel_id": "75bbb65dd3cb119078b8",
-      "channel_name": "El Canal Feliz (720p)",
-      "url": "http://streaming.multicontenidos.cl:8081/live/canalfeliz/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 543.06,
-      "error": null
-    },
-    {
-      "channel_id": "4e0ace05c5a09adb118f",
-      "channel_name": "Disney Jr. Latin America South (1080p)",
-      "url": "http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/disney_jr.stream/playlist.m3u8",
+      "channel_id": "eb768c6d767ec6d37343",
+      "channel_name": "MTV Latin America (1080p)",
+      "url": "http://15.204.246.24:8080/MTVHD/index.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": false,
       "status_code": 403,
-      "response_time_ms": 851.82,
+      "response_time_ms": 122.81,
       "error": "HTTP 403"
     },
     {
-      "channel_id": "82b28cebfb98e38bdbe1",
-      "channel_name": "13 Realities (1080p)",
-      "url": "https://origin.dpsgo.com/ssai/event/g7_JOM0ORki9SR5RKHe-Kw/master.m3u8",
+      "channel_id": "55965d97795ef6cc5e10",
+      "channel_name": "Verso TV",
+      "url": "https://verso.coopcom.cl/live/SHf6GLCpn4hDSpWdzaDzgX0ciU82/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 513.6,
+      "error": null
+    },
+    {
+      "channel_id": "f78cd4092c7ff4e90c11",
+      "channel_name": "Disney Jr. Latin America South HD (1080p)",
+      "url": "http://45.134.141.161:2200/ARG/Disney_Junior/index.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 659.58,
-      "error": null
-    },
-    {
-      "channel_id": "903a94e486cc98be38ec",
-      "channel_name": "La Melinkana TV (720p)",
-      "url": "https://v1.tustreaming.cl/melinkana/index.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 389.32,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "5504f7e7f50fde9847b7",
-      "channel_name": "Emocion TV (720p)",
-      "url": "https://v1.tustreaming.cl/emociontv/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 450.63,
-      "error": null
-    },
-    {
-      "channel_id": "61ddedfeaac565763257",
-      "channel_name": "Canal 13 (Chile) (1080p)",
-      "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 8.1,
-      "error": null
-    },
-    {
-      "channel_id": "ac258a5437e358eb0552",
-      "channel_name": "Holvoet TV (720p) [Not 24/7]",
-      "url": "https://unlimited1-us.dps.live/holvoettv/holvoettv.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 851.94,
+      "response_time_ms": 630.4,
       "error": null
     },
     {
@@ -263,87 +173,37 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 766.5,
+      "response_time_ms": 506.65,
       "error": null
     },
     {
-      "channel_id": "a9d4c64b9f2b97e0a31c",
-      "channel_name": "13C (1080p)",
-      "url": "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
+      "channel_id": "aace81180846eeaf7ce1",
+      "channel_name": "Estacion Limache TV (720p)",
+      "url": "https://v4.tustreaming.cl/limachemovil/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 223.9,
+      "error": null
+    },
+    {
+      "channel_id": "ac258a5437e358eb0552",
+      "channel_name": "Holvoet TV (720p) [Not 24/7]",
+      "url": "https://unlimited1-us.dps.live/holvoettv/holvoettv.smil/playlist.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 912.38,
+      "response_time_ms": 637.33,
       "error": null
     },
     {
-      "channel_id": "945df91a0df765e447b6",
-      "channel_name": "Radio Suyai TV (1080p)",
-      "url": "https://cl-2.backend.energeek.cl/RadioSuyai-Neo/index.m3u8",
+      "channel_id": "75bbb65dd3cb119078b8",
+      "channel_name": "El Canal Feliz (720p)",
+      "url": "http://streaming.multicontenidos.cl:8081/live/canalfeliz/playlist.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 885.15,
-      "error": null
-    },
-    {
-      "channel_id": "6b0a38a6d3001b3ee053",
-      "channel_name": "Zona Play TV (720p)",
-      "url": "https://tv1.mediacp.eu:3131/live/dilxbgxylive.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 379.54,
-      "error": null
-    },
-    {
-      "channel_id": "39f38831a9c92703931a",
-      "channel_name": "Arica TV",
-      "url": "https://envivo.arica.tv/hls/Live2025AricaTV.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 227.96,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "a134d9a2d1f883a90d75",
-      "channel_name": "ChileVision (1080p)",
-      "url": "http://15.204.246.24:8080/CHVHD/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 7.0,
-      "error": null
-    },
-    {
-      "channel_id": "100f3506d4735afb1eca",
-      "channel_name": "Chiloe Red 25 (720p)",
-      "url": "https://v2.tustreaming.cl/chiloered/index.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 933.89,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "55965d97795ef6cc5e10",
-      "channel_name": "Verso TV",
-      "url": "https://verso.coopcom.cl/live/SHf6GLCpn4hDSpWdzaDzgX0ciU82/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 940.94,
-      "error": null
-    },
-    {
-      "channel_id": "e686d7412d6566c1c09f",
-      "channel_name": "Cultura Online",
-      "url": "https://streaming.bitsur.cl:3399/live/vdo532live.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1022.72,
+      "response_time_ms": 510.57,
       "error": null
     },
     {
@@ -353,18 +213,68 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 893.15,
+      "response_time_ms": 588.81,
       "error": null
     },
     {
-      "channel_id": "83e05b185658111755ed",
-      "channel_name": "Chile Channel (720p)",
-      "url": "https://v2.tustreaming.cl/chilechannel/index.m3u8",
+      "channel_id": "1084d90b4cf5458fcb62",
+      "channel_name": "Tevex (1080p)",
+      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 726.14,
+      "error": null
+    },
+    {
+      "channel_id": "100f3506d4735afb1eca",
+      "channel_name": "Chiloe Red 25 (720p)",
+      "url": "https://v2.tustreaming.cl/chiloered/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 697.18,
+      "error": null
+    },
+    {
+      "channel_id": "3b20c2151f781ed7dc68",
+      "channel_name": "Nada Es Imposible TV",
+      "url": "https://vdochile.com:3194/live/mvqutymylive.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 444.79,
+      "response_time_ms": 247.74,
       "error": null
+    },
+    {
+      "channel_id": "d2715787eaf195c405fd",
+      "channel_name": "13E (720p)",
+      "url": "https://origin.dpsgo.com/ssai/event/BBp0VeP6QtOOlH8nu3bWTg/master.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 634.95,
+      "error": null
+    },
+    {
+      "channel_id": "e686d7412d6566c1c09f",
+      "channel_name": "Cultura Online",
+      "url": "https://streaming.bitsur.cl:3399/live/vdo532live.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 787.39,
+      "error": null
+    },
+    {
+      "channel_id": "39f38831a9c92703931a",
+      "channel_name": "Arica TV",
+      "url": "https://envivo.arica.tv/hls/Live2025AricaTV.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 263.68,
+      "error": "HTTP 404"
     },
     {
       "channel_id": "3f85f45566e90fcdffb8",
@@ -373,107 +283,47 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": 404,
-      "response_time_ms": 1047.71,
+      "response_time_ms": 763.51,
       "error": "HTTP 404"
     },
     {
-      "channel_id": "f947c91b6ea09bb68c02",
-      "channel_name": "13 Humor (1080p)",
-      "url": "https://origin.dpsgo.com/ssai/event/cKWySXKgSK-SzlJmESkOWw/master.m3u8",
+      "channel_id": "61ddedfeaac565763257",
+      "channel_name": "Canal 13 (Chile) (1080p)",
+      "url": "http://15.204.246.24:8080/Canal13HD/index.m3u8",
       "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1124.9,
-      "error": null
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 121.51,
+      "error": "HTTP 403"
     },
     {
-      "channel_id": "36e1eae0f6e56917b6cc",
-      "channel_name": "UTalca TV (1080p)",
-      "url": "https://unlimited1-us.dps.live/campustv/campustv.smil/campustv/livestream1/chunks.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 981.2,
-      "error": null
-    },
-    {
-      "channel_id": "452279b590287f17ab98",
-      "channel_name": "Aysen TV (720p)",
-      "url": "https://v1.tustreaming.cl/aysentv/index.m3u8",
+      "channel_id": "c5dc94a165450bfdab3f",
+      "channel_name": "TVN3 (1080p)",
+      "url": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 456.79,
+      "response_time_ms": 837.54,
       "error": null
     },
     {
-      "channel_id": "ba971d6c72130f764672",
-      "channel_name": "E! Latin America (1080p)",
-      "url": "http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/entertainment.stream/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 403,
-      "response_time_ms": 578.87,
-      "error": "HTTP 403"
-    },
-    {
-      "channel_id": "7e4f71c67ed77c29cc49",
-      "channel_name": "Canal 30 Loncomilla (720p)",
-      "url": "https://v1.tustreaming.cl/canal30loncomilla/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 369.2,
-      "error": null
-    },
-    {
-      "channel_id": "a917ab44af5106e59291",
-      "channel_name": "AM Canal",
-      "url": "https://streaming.bitsur.cl:3534/live/vdo1102live.m3u8",
+      "channel_id": "903a94e486cc98be38ec",
+      "channel_name": "La Melinkana TV (720p)",
+      "url": "https://v1.tustreaming.cl/melinkana/index.m3u8",
       "source": "CATALOGO",
       "online": false,
       "status_code": 404,
-      "response_time_ms": 562.9,
+      "response_time_ms": 443.48,
       "error": "HTTP 404"
     },
     {
-      "channel_id": "d02cdd47bab8c416f636",
-      "channel_name": "CTV35",
-      "url": "https://vdochile.com:3697/live/ctv35live.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 403,
-      "response_time_ms": 224.73,
-      "error": "HTTP 403"
-    },
-    {
-      "channel_id": "ff28283b68ed390a5686",
-      "channel_name": "Docevision (720p)",
-      "url": "https://live20.bozztv.com/giatvplayout7/giatv-208729/playlist.m3u8",
+      "channel_id": "5504f7e7f50fde9847b7",
+      "channel_name": "Emocion TV (720p)",
+      "url": "https://v1.tustreaming.cl/emociontv/index.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 162.75,
-      "error": null
-    },
-    {
-      "channel_id": "b3fae0e020c6f740bf77",
-      "channel_name": "China Channel (720p)",
-      "url": "https://v2.tustreaming.cl/chinachannel/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 414.02,
-      "error": null
-    },
-    {
-      "channel_id": "f64c7b5b7402f3f255e6",
-      "channel_name": "Canal Local (720p)",
-      "url": "https://v2.tustreaming.cl/canallocalcl/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 460.69,
+      "response_time_ms": 467.17,
       "error": null
     },
     {
@@ -483,7 +333,167 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 1304.31,
+      "response_time_ms": 864.76,
+      "error": null
+    },
+    {
+      "channel_id": "36e1eae0f6e56917b6cc",
+      "channel_name": "UTalca TV (1080p)",
+      "url": "https://unlimited1-us.dps.live/campustv/campustv.smil/campustv/livestream1/chunks.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 812.13,
+      "error": null
+    },
+    {
+      "channel_id": "82b28cebfb98e38bdbe1",
+      "channel_name": "13 Realities (1080p)",
+      "url": "https://origin.dpsgo.com/ssai/event/g7_JOM0ORki9SR5RKHe-Kw/master.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 814.84,
+      "error": null
+    },
+    {
+      "channel_id": "a134d9a2d1f883a90d75",
+      "channel_name": "ChileVision (1080p)",
+      "url": "http://15.204.246.24:8080/CHVHD/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 121.42,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "4e0ace05c5a09adb118f",
+      "channel_name": "Disney Jr. Latin America South (1080p)",
+      "url": "http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/disney_jr.stream/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 982.92,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "ba971d6c72130f764672",
+      "channel_name": "E! Latin America (1080p)",
+      "url": "http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/entertainment.stream/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 428.16,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "a9d4c64b9f2b97e0a31c",
+      "channel_name": "13C (1080p)",
+      "url": "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 952.85,
+      "error": null
+    },
+    {
+      "channel_id": "83e05b185658111755ed",
+      "channel_name": "Chile Channel (720p)",
+      "url": "https://v2.tustreaming.cl/chilechannel/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 431.85,
+      "error": null
+    },
+    {
+      "channel_id": "452279b590287f17ab98",
+      "channel_name": "Aysen TV (720p)",
+      "url": "https://v1.tustreaming.cl/aysentv/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 430.61,
+      "error": null
+    },
+    {
+      "channel_id": "6b0a38a6d3001b3ee053",
+      "channel_name": "Zona Play TV (720p)",
+      "url": "https://tv1.mediacp.eu:3131/live/dilxbgxylive.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 591.7,
+      "error": null
+    },
+    {
+      "channel_id": "ff28283b68ed390a5686",
+      "channel_name": "Docevision (720p)",
+      "url": "https://live20.bozztv.com/giatvplayout7/giatv-208729/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 154.82,
+      "error": null
+    },
+    {
+      "channel_id": "7e4f71c67ed77c29cc49",
+      "channel_name": "Canal 30 Loncomilla (720p)",
+      "url": "https://v1.tustreaming.cl/canal30loncomilla/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 424.81,
+      "error": null
+    },
+    {
+      "channel_id": "f947c91b6ea09bb68c02",
+      "channel_name": "13 Humor (1080p)",
+      "url": "https://origin.dpsgo.com/ssai/event/cKWySXKgSK-SzlJmESkOWw/master.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 1136.4,
+      "error": null
+    },
+    {
+      "channel_id": "d02cdd47bab8c416f636",
+      "channel_name": "CTV35",
+      "url": "https://vdochile.com:3697/live/ctv35live.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 234.04,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "f64c7b5b7402f3f255e6",
+      "channel_name": "Canal Local (720p)",
+      "url": "https://v2.tustreaming.cl/canallocalcl/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 413.62,
+      "error": null
+    },
+    {
+      "channel_id": "a917ab44af5106e59291",
+      "channel_name": "AM Canal",
+      "url": "https://streaming.bitsur.cl:3534/live/vdo1102live.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 687.64,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "b3fae0e020c6f740bf77",
+      "channel_name": "China Channel (720p)",
+      "url": "https://v2.tustreaming.cl/chinachannel/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 422.34,
       "error": null
     },
     {
@@ -493,37 +503,17 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": false,
       "status_code": 403,
-      "response_time_ms": 449.94,
+      "response_time_ms": 420.74,
       "error": "HTTP 403"
     },
     {
-      "channel_id": "e4aa1f984913367d1858",
-      "channel_name": "Coyhaique TV (720p)",
-      "url": "https://v2.tustreaming.cl/coyhaiquetv/index.m3u8",
+      "channel_id": "c06b052f1896618f5a7a",
+      "channel_name": "Central TV (Chile) (720p)",
+      "url": "https://freya.mivideo.pro/centraltv/video.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 381.28,
-      "error": null
-    },
-    {
-      "channel_id": "5ac38971bdef8c1158ba",
-      "channel_name": "Canal 1 Nuble",
-      "url": "https://tls-cl.cdnz.cl/canal21tv/live/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 559.98,
-      "error": null
-    },
-    {
-      "channel_id": "c5dc94a165450bfdab3f",
-      "channel_name": "TVN3 (1080p)",
-      "url": "https://mdstrm.com/live-stream-playlist/5653641561b4eba30a7e4929.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1408.14,
+      "response_time_ms": 452.9,
       "error": null
     },
     {
@@ -533,17 +523,17 @@
       "source": "DEARBULUT-CHILE",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 120.23,
+      "response_time_ms": 169.84,
       "error": null
     },
     {
-      "channel_id": "380c95571d1f17304e17",
-      "channel_name": "DCH TV (1080p)",
-      "url": "https://v2.tustreaming.cl/dchtv/index.m3u8",
-      "source": "CATALOGO",
+      "channel_id": "5ac38971bdef8c1158ba",
+      "channel_name": "Canal 1 Nuble",
+      "url": "https://tls-cl.cdnz.cl/canal21tv/live/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 369.25,
+      "response_time_ms": 615.77,
       "error": null
     },
     {
@@ -553,7 +543,27 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 933.74,
+      "response_time_ms": 888.31,
+      "error": null
+    },
+    {
+      "channel_id": "380c95571d1f17304e17",
+      "channel_name": "DCH TV (1080p)",
+      "url": "https://v2.tustreaming.cl/dchtv/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 416.05,
+      "error": null
+    },
+    {
+      "channel_id": "e4aa1f984913367d1858",
+      "channel_name": "Coyhaique TV (720p)",
+      "url": "https://v2.tustreaming.cl/coyhaiquetv/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 428.53,
       "error": null
     },
     {
@@ -563,127 +573,7 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 539.16,
-      "error": null
-    },
-    {
-      "channel_id": "c06b052f1896618f5a7a",
-      "channel_name": "Central TV (Chile) (720p)",
-      "url": "https://freya.mivideo.pro/centraltv/video.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 563.47,
-      "error": null
-    },
-    {
-      "channel_id": "26ec40c2a61be86e338b",
-      "channel_name": "Evavision",
-      "url": "https://stmv2.voxtvhd.com.br/evavision/evavision/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 403,
-      "response_time_ms": 147.42,
-      "error": "HTTP 403"
-    },
-    {
-      "channel_id": "5766c0a22e633fc7a442",
-      "channel_name": "Caldera Vision",
-      "url": "https://tv.arkeo.cl:1936/kymczwbrge/kymczwbrge/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 713.69,
-      "error": null
-    },
-    {
-      "channel_id": "590fb47a67525eb68158",
-      "channel_name": "La Chilena TV",
-      "url": "https://vdochile.com:3134/stream/play.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 140.8,
-      "error": null
-    },
-    {
-      "channel_id": "84fbf4eb4b892aa81c27",
-      "channel_name": "Canal 5 Puerto Montt",
-      "url": "https://5ff3d9babae13.streamlock.net/aufymdjpjf/aufymdjpjf/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 743.39,
-      "error": null
-    },
-    {
-      "channel_id": "ff11ba7f35bcab2fd6d1",
-      "channel_name": "Autonoma TV",
-      "url": "https://wifispeed.trapemn.tv:1936/comunales/autonoma-tv/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 915.89,
-      "error": null
-    },
-    {
-      "channel_id": "e60f37fe1fd1cb761416",
-      "channel_name": "El Radar (720p)",
-      "url": "https://video.ipstream.cl:3459/hybrid/play.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 462.89,
-      "error": null
-    },
-    {
-      "channel_id": "743aa13035c191ffee7b",
-      "channel_name": "Cooperativa (720p)",
-      "url": "https://unlimited1-cl-isp.dps.live/coopetv/coopetv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 733.44,
-      "error": null
-    },
-    {
-      "channel_id": "a6460ea9d89b12e74c14",
-      "channel_name": "En Linea Maule (720p)",
-      "url": "https://v2.tustreaming.cl/enlineamauletv/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 457.28,
-      "error": null
-    },
-    {
-      "channel_id": "1ee1d54f6d7f976e6850",
-      "channel_name": "Caracola TV",
-      "url": "https://wifispeed.trapemn.tv:1936/comunales/caracola-tv/chunks.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 778.86,
-      "error": null
-    },
-    {
-      "channel_id": "0508fb98d6da724d8efb",
-      "channel_name": "Mega (Chile) (1080p)",
-      "url": "http://15.204.246.24:8080/MEGAHD/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 7.24,
-      "error": null
-    },
-    {
-      "channel_id": "2c27a46887b840a14370",
-      "channel_name": "Bio Bio TV (1080p)",
-      "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/bbtv/bbtv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 962.74,
+      "response_time_ms": 516.43,
       "error": null
     },
     {
@@ -693,7 +583,57 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 1037.69,
+      "response_time_ms": 876.53,
+      "error": null
+    },
+    {
+      "channel_id": "2c27a46887b840a14370",
+      "channel_name": "Bio Bio TV (1080p)",
+      "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/bbtv/bbtv.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 823.97,
+      "error": null
+    },
+    {
+      "channel_id": "5766c0a22e633fc7a442",
+      "channel_name": "Caldera Vision",
+      "url": "https://tv.arkeo.cl:1936/kymczwbrge/kymczwbrge/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 766.93,
+      "error": null
+    },
+    {
+      "channel_id": "26ec40c2a61be86e338b",
+      "channel_name": "Evavision",
+      "url": "https://stmv2.voxtvhd.com.br/evavision/evavision/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 373.91,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "ff11ba7f35bcab2fd6d1",
+      "channel_name": "Autonoma TV",
+      "url": "https://wifispeed.trapemn.tv:1936/comunales/autonoma-tv/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 953.11,
+      "error": null
+    },
+    {
+      "channel_id": "a6460ea9d89b12e74c14",
+      "channel_name": "En Linea Maule (720p)",
+      "url": "https://v2.tustreaming.cl/enlineamauletv/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 466.07,
       "error": null
     },
     {
@@ -703,7 +643,7 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 365.32,
+      "response_time_ms": 431.48,
       "error": null
     },
     {
@@ -713,28 +653,58 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 719.69,
+      "response_time_ms": 660.25,
       "error": null
     },
     {
-      "channel_id": "ca3409e365d49df7ceb2",
-      "channel_name": "Nativa TV",
-      "url": "https://origin-us.streaminghd.cl/nativatv/nativatv/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 403,
-      "response_time_ms": 141.04,
-      "error": "HTTP 403"
-    },
-    {
-      "channel_id": "762ef1db3091263eec52",
-      "channel_name": "Enfoque Digital TV",
-      "url": "https://5eaccbab48461.streamlock.net:1936/8074/8074/playlist.m3u8",
+      "channel_id": "743aa13035c191ffee7b",
+      "channel_name": "Cooperativa (720p)",
+      "url": "https://unlimited1-cl-isp.dps.live/coopetv/coopetv.smil/playlist.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 660.5,
+      "response_time_ms": 758.69,
       "error": null
+    },
+    {
+      "channel_id": "590fb47a67525eb68158",
+      "channel_name": "La Chilena TV",
+      "url": "https://vdochile.com:3134/stream/play.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 283.31,
+      "error": null
+    },
+    {
+      "channel_id": "84fbf4eb4b892aa81c27",
+      "channel_name": "Canal 5 Puerto Montt",
+      "url": "https://5ff3d9babae13.streamlock.net/aufymdjpjf/aufymdjpjf/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 923.18,
+      "error": null
+    },
+    {
+      "channel_id": "e60f37fe1fd1cb761416",
+      "channel_name": "El Radar (720p)",
+      "url": "https://video.ipstream.cl:3459/hybrid/play.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 665.46,
+      "error": null
+    },
+    {
+      "channel_id": "0508fb98d6da724d8efb",
+      "channel_name": "Mega (Chile) (1080p)",
+      "url": "http://15.204.246.24:8080/MEGAHD/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 121.51,
+      "error": "HTTP 403"
     },
     {
       "channel_id": "39c6e2d4fd95c58bf5f2",
@@ -743,28 +713,28 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 441.92,
+      "response_time_ms": 431.68,
       "error": null
     },
     {
-      "channel_id": "eb90b200fb82bcfb3908",
-      "channel_name": "Iquique TV (1080p)",
-      "url": "https://origin.skarnetchile.com:8081/iquiquetv-hd/index.m3u8",
+      "channel_id": "1ee1d54f6d7f976e6850",
+      "channel_name": "Caracola TV",
+      "url": "https://wifispeed.trapemn.tv:1936/comunales/caracola-tv/chunks.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 972.12,
+      "error": null
+    },
+    {
+      "channel_id": "762ef1db3091263eec52",
+      "channel_name": "Enfoque Digital TV",
+      "url": "https://5eaccbab48461.streamlock.net:1936/8074/8074/playlist.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 589.2,
+      "response_time_ms": 698.31,
       "error": null
-    },
-    {
-      "channel_id": "830019dd3126e31aabbc",
-      "channel_name": "Osorno TV (720p)",
-      "url": "https://videostream.chileservidores.com:8081/osornotv/index.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 109.39,
-      "error": "HTTP 404"
     },
     {
       "channel_id": "59d7f49c483f51be8212",
@@ -773,87 +743,7 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 829.78,
-      "error": null
-    },
-    {
-      "channel_id": "d21df815d109d470c4de",
-      "channel_name": "ETC TV (1080p)",
-      "url": "http://157.100.9.51:8000/play/a24f",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 2078.01,
-      "error": null
-    },
-    {
-      "channel_id": "d21df815d109d470c4de",
-      "channel_name": "ETC TV (1080p)",
-      "url": "http://190.60.59.67:8000/play/a0k5",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 2076.85,
-      "error": null
-    },
-    {
-      "channel_id": "bf7b9b7e13ceafa66b30",
-      "channel_name": "Marga Marga TV (720p)",
-      "url": "https://v1.tustreaming.cl/margamargatv/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 369.3,
-      "error": null
-    },
-    {
-      "channel_id": "5580af0518d372a4a0d2",
-      "channel_name": "Oli TV (Chile) (1080p)",
-      "url": "https://v4.tustreaming.cl/retroplaytv/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 204.01,
-      "error": null
-    },
-    {
-      "channel_id": "d4613ddbec8230fa3460",
-      "channel_name": "Mundos Lacustres TV (720p)",
-      "url": "https://video.ipstream.cl:3710/hybrid/play.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 362.39,
-      "error": null
-    },
-    {
-      "channel_id": "e2d4a88d0c03be9ff4b3",
-      "channel_name": "Radio Chiloe (720p)",
-      "url": "https://videostream.chileservidores.com:8081/chiloe1/index.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 76.48,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "b1308e51f2cfc030a2ff",
-      "channel_name": "Islita TV (1080p)",
-      "url": "https://tv.arkeo.cl:1936/unetev/unetev/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 743.9,
-      "error": null
-    },
-    {
-      "channel_id": "9ea9527157d330a243df",
-      "channel_name": "La Popular TV",
-      "url": "https://tv.arkeo.cl:1936/enlacetv1/enlacetv1/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 638.15,
+      "response_time_ms": 869.31,
       "error": null
     },
     {
@@ -863,117 +753,27 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": 404,
-      "response_time_ms": 792.79,
+      "response_time_ms": 656.48,
       "error": "HTTP 404"
     },
     {
-      "channel_id": "4e0ace05c5a09adb118f",
-      "channel_name": "Disney Jr. Latin America South (1080p)",
-      "url": "http://tr.live.clarovtrcdn.vtrplay.com/disneyjrhdchi/vxfmt=dp/playlist.m3u8?device_profile=STB_HLS_VCAS_LIVE_HD",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 2230.35,
-      "error": null
+      "channel_id": "ca3409e365d49df7ceb2",
+      "channel_name": "Nativa TV",
+      "url": "https://origin-us.streaminghd.cl/nativatv/nativatv/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 283.22,
+      "error": "HTTP 403"
     },
     {
-      "channel_id": "835a1b9714b398daeec3",
-      "channel_name": "La Metro TV (1080p)",
-      "url": "https://jireh-8-hls-video-us-isp.dps.live/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/metropolitanatv/metropolitanatv.smil/playlist.m3u8",
+      "channel_id": "5580af0518d372a4a0d2",
+      "channel_name": "Oli TV (Chile) (1080p)",
+      "url": "https://v4.tustreaming.cl/retroplaytv/index.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 775.28,
-      "error": null
-    },
-    {
-      "channel_id": "46c810103e80490338a7",
-      "channel_name": "Odisea TV (720p)",
-      "url": "https://v2.tustreaming.cl/odiseatv/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 451.98,
-      "error": null
-    },
-    {
-      "channel_id": "f6ac3973cbd4af5a9e4a",
-      "channel_name": "Mi Radio TV",
-      "url": "https://scl.edge.grupoz.cl/miradio2/live/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 573.43,
-      "error": null
-    },
-    {
-      "channel_id": "8d277ecafd4aad0a45d8",
-      "channel_name": "Radio Universal (720p)",
-      "url": "https://videostream.chileservidores.com:8081/universal/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 101.84,
-      "error": null
-    },
-    {
-      "channel_id": "89e5df3bcb70ef2ff4dd",
-      "channel_name": "Mega (1080p)",
-      "url": "https://pantera1-100gb-cl-movistar.dps.live/mega/mega.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 618.32,
-      "error": null
-    },
-    {
-      "channel_id": "65f03dfbb5a2f94f0e30",
-      "channel_name": "Lila TV Pencahue",
-      "url": "https://tv.arkeo.cl:1936/radiolila/radiolila/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 724.25,
-      "error": null
-    },
-    {
-      "channel_id": "ee16adbdb74c13b831b4",
-      "channel_name": "Polar TV (Chile)",
-      "url": "https://polartv.webredirect.org/memfs/319ac83c-e602-4e91-8104-2b5501380b5e.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 419.48,
-      "error": null
-    },
-    {
-      "channel_id": "b2e20bc85fd3355ba303",
-      "channel_name": "Maray TV",
-      "url": "https://5eaccbab48461.streamlock.net:1936/8242/ngrp:8242_all/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 708.69,
-      "error": null
-    },
-    {
-      "channel_id": "c0d18828f07e071b737e",
-      "channel_name": "Radio Via Libre (720p)",
-      "url": "https://live20.bozztv.com/akamaissh101/ssh101/vialibretv/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 109.21,
-      "error": null
-    },
-    {
-      "channel_id": "5e733b30f2981a58ce6c",
-      "channel_name": "Radio Nuble (720p)",
-      "url": "https://tv.telselec.cl:3376/live/nublefmlive.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 352.49,
+      "response_time_ms": 172.49,
       "error": null
     },
     {
@@ -983,27 +783,137 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 1026.88,
+      "response_time_ms": 681.77,
       "error": null
     },
     {
-      "channel_id": "db87023b44953df2f91b",
-      "channel_name": "Nublevision (720p)",
-      "url": "https://tv.arkeo.cl:1936/nublevision/nublevision/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 729.0,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "f9d76478561210c3ae35",
-      "channel_name": "Radio Panoramica (720p)",
-      "url": "https://v2.tustreaming.cl/alingeproducciones/index.m3u8",
+      "channel_id": "bf7b9b7e13ceafa66b30",
+      "channel_name": "Marga Marga TV (720p)",
+      "url": "https://v1.tustreaming.cl/margamargatv/index.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 381.88,
+      "response_time_ms": 436.74,
+      "error": null
+    },
+    {
+      "channel_id": "b1308e51f2cfc030a2ff",
+      "channel_name": "Islita TV (1080p)",
+      "url": "https://tv.arkeo.cl:1936/unetev/unetev/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 772.21,
+      "error": null
+    },
+    {
+      "channel_id": "eb90b200fb82bcfb3908",
+      "channel_name": "Iquique TV (1080p)",
+      "url": "https://origin.skarnetchile.com:8081/iquiquetv-hd/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 797.19,
+      "error": null
+    },
+    {
+      "channel_id": "830019dd3126e31aabbc",
+      "channel_name": "Osorno TV (720p)",
+      "url": "https://videostream.chileservidores.com:8081/osornotv/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 316.52,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "9ea9527157d330a243df",
+      "channel_name": "La Popular TV",
+      "url": "https://tv.arkeo.cl:1936/enlacetv1/enlacetv1/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 734.83,
+      "error": null
+    },
+    {
+      "channel_id": "4e0ace05c5a09adb118f",
+      "channel_name": "Disney Jr. Latin America South (1080p)",
+      "url": "http://tr.live.clarovtrcdn.vtrplay.com/disneyjrhdchi/vxfmt=dp/playlist.m3u8?device_profile=STB_HLS_VCAS_LIVE_HD",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 2191.22,
+      "error": null
+    },
+    {
+      "channel_id": "46c810103e80490338a7",
+      "channel_name": "Odisea TV (720p)",
+      "url": "https://v2.tustreaming.cl/odiseatv/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 417.49,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "89e5df3bcb70ef2ff4dd",
+      "channel_name": "Mega (1080p)",
+      "url": "https://pantera1-100gb-cl-movistar.dps.live/mega/mega.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 608.79,
+      "error": null
+    },
+    {
+      "channel_id": "f6ac3973cbd4af5a9e4a",
+      "channel_name": "Mi Radio TV",
+      "url": "https://scl.edge.grupoz.cl/miradio2/live/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 617.72,
+      "error": null
+    },
+    {
+      "channel_id": "d4613ddbec8230fa3460",
+      "channel_name": "Mundos Lacustres TV (720p)",
+      "url": "https://video.ipstream.cl:3710/hybrid/play.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 607.26,
+      "error": null
+    },
+    {
+      "channel_id": "65f03dfbb5a2f94f0e30",
+      "channel_name": "Lila TV Pencahue",
+      "url": "https://tv.arkeo.cl:1936/radiolila/radiolila/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 756.02,
+      "error": null
+    },
+    {
+      "channel_id": "e2d4a88d0c03be9ff4b3",
+      "channel_name": "Radio Chiloe (720p)",
+      "url": "https://videostream.chileservidores.com:8081/chiloe1/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 343.49,
+      "error": null
+    },
+    {
+      "channel_id": "b2e20bc85fd3355ba303",
+      "channel_name": "Maray TV",
+      "url": "https://5eaccbab48461.streamlock.net:1936/8242/ngrp:8242_all/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 764.15,
       "error": null
     },
     {
@@ -1013,7 +923,17 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 471.05,
+      "response_time_ms": 422.05,
+      "error": null
+    },
+    {
+      "channel_id": "c0d18828f07e071b737e",
+      "channel_name": "Radio Via Libre (720p)",
+      "url": "https://live20.bozztv.com/akamaissh101/ssh101/vialibretv/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 142.97,
       "error": null
     },
     {
@@ -1023,7 +943,27 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 441.58,
+      "response_time_ms": 425.61,
+      "error": null
+    },
+    {
+      "channel_id": "db87023b44953df2f91b",
+      "channel_name": "Nublevision (720p)",
+      "url": "https://tv.arkeo.cl:1936/nublevision/nublevision/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 712.22,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "13e463c187ed304969d2",
+      "channel_name": "Radio Frecuencia Uno (720p)",
+      "url": "https://v1.tustreaming.cl/frecuencia1tv/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 434.19,
       "error": null
     },
     {
@@ -1033,7 +973,7 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 430.6,
+      "response_time_ms": 427.19,
       "error": null
     },
     {
@@ -1043,17 +983,57 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 195.45,
+      "response_time_ms": 170.17,
       "error": null
     },
     {
-      "channel_id": "13e463c187ed304969d2",
-      "channel_name": "Radio Frecuencia Uno (720p)",
-      "url": "https://v1.tustreaming.cl/frecuencia1tv/index.m3u8",
+      "channel_id": "5e733b30f2981a58ce6c",
+      "channel_name": "Radio Nuble (720p)",
+      "url": "https://tv.telselec.cl:3376/live/nublefmlive.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 446.65,
+      "response_time_ms": 397.18,
+      "error": null
+    },
+    {
+      "channel_id": "8d277ecafd4aad0a45d8",
+      "channel_name": "Radio Universal (720p)",
+      "url": "https://videostream.chileservidores.com:8081/universal/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 346.18,
+      "error": null
+    },
+    {
+      "channel_id": "835a1b9714b398daeec3",
+      "channel_name": "La Metro TV (1080p)",
+      "url": "https://jireh-8-hls-video-us-isp.dps.live/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/metropolitanatv/metropolitanatv.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 1200.81,
+      "error": null
+    },
+    {
+      "channel_id": "da35753cea2ff81a03f6",
+      "channel_name": "Radio Contemporanea Coihueco (720p)",
+      "url": "https://tv.arkeo.cl:19360/8046/8046.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 582.85,
+      "error": null
+    },
+    {
+      "channel_id": "f9d76478561210c3ae35",
+      "channel_name": "Radio Panoramica (720p)",
+      "url": "https://v2.tustreaming.cl/alingeproducciones/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 418.89,
       "error": null
     },
     {
@@ -1063,237 +1043,17 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": 403,
-      "response_time_ms": 368.15,
+      "response_time_ms": 451.46,
       "error": "HTTP 403"
     },
     {
-      "channel_id": "da35753cea2ff81a03f6",
-      "channel_name": "Radio Contemporanea Coihueco (720p)",
-      "url": "https://tv.arkeo.cl:19360/8046/8046.m3u8",
+      "channel_id": "ee16adbdb74c13b831b4",
+      "channel_name": "Polar TV (Chile)",
+      "url": "https://polartv.webredirect.org/memfs/319ac83c-e602-4e91-8104-2b5501380b5e.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 515.0,
-      "error": null
-    },
-    {
-      "channel_id": "b9c0f01e022b43a665e6",
-      "channel_name": "TVN (Chile) (1080p)",
-      "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 8.63,
-      "error": null
-    },
-    {
-      "channel_id": "f3ba4cd7045c9f614acb",
-      "channel_name": "TV Chile (720p)",
-      "url": "http://168.196.127.137:6001/play/a03n/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 92.08,
-      "error": null
-    },
-    {
-      "channel_id": "aa4d3572b5cbe3878171",
-      "channel_name": "Telemundo Internacional (1080p)",
-      "url": "http://138.121.15.230:9002/TELEMUNDO/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 182.97,
-      "error": null
-    },
-    {
-      "channel_id": "f3ba4cd7045c9f614acb",
-      "channel_name": "TV Chile (720p)",
-      "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 403,
-      "response_time_ms": 117.49,
-      "error": "HTTP 403"
-    },
-    {
-      "channel_id": "aa4d3572b5cbe3878171",
-      "channel_name": "Telemundo Internacional (1080p)",
-      "url": "http://179.60.51.134:8888/TELEMUNDO/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 400,
-      "response_time_ms": 173.67,
-      "error": "HTTP 400"
-    },
-    {
-      "channel_id": "5d99099aa551a98a5f7f",
-      "channel_name": "Radio Vida Curico (720p)",
-      "url": "https://v2.tustreaming.cl/radiovidacurico/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 367.18,
-      "error": null
-    },
-    {
-      "channel_id": "aa4d3572b5cbe3878171",
-      "channel_name": "Telemundo Internacional (1080p)",
-      "url": "http://177.234.249.178:8888/TELEMUNDO/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 196.54,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "78a7e2faeb8579468f4c",
-      "channel_name": "Nickelodeon Latin America (1080p)",
-      "url": "http://15.204.246.24:8080/NickHD/index.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 403,
-      "response_time_ms": 8.18,
-      "error": "HTTP 403"
-    },
-    {
-      "channel_id": "381a2834dc0c44b0edf3",
-      "channel_name": "ITV Patagonia (720p)",
-      "url": "https://redirector.dps.live/hls/itv/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1231.63,
-      "error": null
-    },
-    {
-      "channel_id": "fbdcc279669084245b2d",
-      "channel_name": "Surena TV",
-      "url": "https://vs20.live.opencaster.com/surenatv_187f915a/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 288.28,
-      "error": null
-    },
-    {
-      "channel_id": "aa4d3572b5cbe3878171",
-      "channel_name": "Telemundo Internacional (1080p)",
-      "url": "http://190.60.46.156:8089/TELEMUNDO/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 205.09,
-      "error": null
-    },
-    {
-      "channel_id": "aa4d3572b5cbe3878171",
-      "channel_name": "Telemundo Internacional (1080p)",
-      "url": "http://190.93.224.42/TELEMUNDO/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 235.74,
-      "error": null
-    },
-    {
-      "channel_id": "c93c49c3877ec27365b1",
-      "channel_name": "Radio UNIACC (720p)",
-      "url": "https://scl.edge.grupoz.cl/uniaccastream/live/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 578.91,
-      "error": null
-    },
-    {
-      "channel_id": "5917385cafaa0dac2bd3",
-      "channel_name": "Orbita Chile TV (1080p)",
-      "url": "https://orbitachiletv.org/hls/0/stream.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 530,
-      "response_time_ms": 42.15,
-      "error": "HTTP 530"
-    },
-    {
-      "channel_id": "6ec8c53aad28db0c64c7",
-      "channel_name": "SUR TV (1080p)",
-      "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/surtv/surtv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 444.28,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "eb40cf595e567b0a83b2",
-      "channel_name": "SUR TV (720p)",
-      "url": "https://surtv-2.mddsoluciones.cl/play/ZZZ-WEB-001:ULpj2JxXM9/live/surtvweb/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 459.36,
-      "error": null
-    },
-    {
-      "channel_id": "8c90f71d588692ff063f",
-      "channel_name": "Cinecanal Pacific (1080p)",
-      "url": "http://138.121.15.230:9002/CINECANAL/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 165.8,
-      "error": null
-    },
-    {
-      "channel_id": "afb0f71f7cc01a896520",
-      "channel_name": "Nina TV (720p)",
-      "url": "https://tv1.ninatv.cl/hls/stream.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1143.18,
-      "error": null
-    },
-    {
-      "channel_id": "35024391e28a9bfbc843",
-      "channel_name": "Zoom Tecnologico Plus (720p)",
-      "url": "https://5f700d5b2c46f.streamlock.net/zoomtec/zoomtec/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 278.04,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "bea93a95594a82be43be",
-      "channel_name": "Star Channel (Chile) (720p)",
-      "url": "http://138.121.15.230:9002/STAR-CHANNEL/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 169.2,
-      "error": null
-    },
-    {
-      "channel_id": "6ae2d1284850ddbf205e",
-      "channel_name": "Rial TV (720p)",
-      "url": "https://5eaccbab48461.streamlock.net:1936/8124/8124/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 667.19,
-      "error": null
-    },
-    {
-      "channel_id": "9b5bdbcfbfb41b220e9c",
-      "channel_name": "TVN (1080p)",
-      "url": "https://iptv.bitred.cl/tvn/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 456.24,
+      "response_time_ms": 791.01,
       "error": null
     },
     {
@@ -1303,277 +1063,7 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 1037.7,
-      "error": null
-    },
-    {
-      "channel_id": "3e56d39bfafe54979e7d",
-      "channel_name": "TV Show Fortaleza (720p)",
-      "url": "https://stmv8.samcast.com.br/raimundoanselmolimamororo1908/raimundoanselmolimamororo1908/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 547.38,
-      "error": null
-    },
-    {
-      "channel_id": "21ded588a519eb852049",
-      "channel_name": "Maqui TV",
-      "url": "https://streamyes.alsolnet.com/maquiradio/live/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 65.96,
-      "error": null
-    },
-    {
-      "channel_id": "2ec3cb32dce147a20ebe",
-      "channel_name": "13P (720p)",
-      "url": "https://origin.dpsgo.com/ssai/event/p4mmBxEzSmKAxY1GusOHrw/master.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 460.87,
-      "error": null
-    },
-    {
-      "channel_id": "d9c62510b1e3fd8173df",
-      "channel_name": "13 Kids (1080p)",
-      "url": "https://origin.dpsgo.com/ssai/event/LhHrVtyeQkKZ-Ye_xEU75g/master.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 547.86,
-      "error": null
-    },
-    {
-      "channel_id": "e0c301dbcfd5a1b5d011",
-      "channel_name": "FunBox",
-      "url": "http://186.148.196.100:8000/play/a00d",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 533.61,
-      "error": null
-    },
-    {
-      "channel_id": "28232c1b59f81a1a7cf7",
-      "channel_name": "TVU (1080p)",
-      "url": "https://unlimited1-cl-isp.dps.live/tvu/tvu.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 611.47,
-      "error": null
-    },
-    {
-      "channel_id": "909c8ae6d6b99fb7b3b8",
-      "channel_name": "FM Plus TV (720p)",
-      "url": "https://v2.tustreaming.cl/fmplus/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 369.5,
-      "error": null
-    },
-    {
-      "channel_id": "76a0d7fc696a1440a836",
-      "channel_name": "Radio Edelweiss (720p)",
-      "url": "https://vmix.dyndns.biz/Edelweiss/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 87.71,
-      "error": null
-    },
-    {
-      "channel_id": "cd6674231e8a7345fc30",
-      "channel_name": "13 Festival (1080p)",
-      "url": "https://origin.dpsgo.com/ssai/event/Nftd0fM2SXasfDlRphvUsg/master.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 524.37,
-      "error": null
-    },
-    {
-      "channel_id": "b3e6d2d487e7a5d9c5cc",
-      "channel_name": "AE Radio TV (720p) [Not 24/7]",
-      "url": "https://tls-cl.cdnz.cl/aeradio/live/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 551.06,
-      "error": null
-    },
-    {
-      "channel_id": "40d00f1ffa01189efe79",
-      "channel_name": "Genial TV (720p)",
-      "url": "https://v1.tustreaming.cl/genialtv/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 443.1,
-      "error": null
-    },
-    {
-      "channel_id": "fd9bf3545734d77b8e8d",
-      "channel_name": "Solo TV",
-      "url": "https://sproxy.solotv.cl/hls/live/fhd.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1062.0,
-      "error": null
-    },
-    {
-      "channel_id": "6db2e8cf10a751d2e25d",
-      "channel_name": "Teleangol (720p)",
-      "url": "https://pantera1-100gb-cl-movistar.dps.live/teleangol/teleangol.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1007.6,
-      "error": null
-    },
-    {
-      "channel_id": "b22d1cceb619a5802063",
-      "channel_name": "La Red (1080p)",
-      "url": "https://tv-mgmt.gtd.cl/bpk-tv/LARED/default/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1831.33,
-      "error": null
-    },
-    {
-      "channel_id": "8942b2317852ab801a7d",
-      "channel_name": "Uniregion TV",
-      "url": "https://5ff3d9babae13.streamlock.net/ubyecbxnfd/ubyecbxnfd/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 816.41,
-      "error": null
-    },
-    {
-      "channel_id": "8ba0e1dd0d0865d7f79f",
-      "channel_name": "Wapp (720p)",
-      "url": "https://stream.wapptv.cl/video/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 751.0,
-      "error": null
-    },
-    {
-      "channel_id": "a5ee3579d9d4c23d4aa3",
-      "channel_name": "La Granja TV",
-      "url": "https://oracle.streaminghd.cl/8126/8126/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 441.43,
-      "error": null
-    },
-    {
-      "channel_id": "79363f745f7db9b8af9c",
-      "channel_name": "Retromusica Television (720p)",
-      "url": "https://vdochile.com:3864/stream/play.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 134.27,
-      "error": null
-    },
-    {
-      "channel_id": "77e9bba47a9a6a8ec8af",
-      "channel_name": "Radio Duna (720p)",
-      "url": "https://mdstrm.com/live-stream-playlist/67ed8a8d6db4af9a0188555c.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 337.24,
-      "error": null
-    },
-    {
-      "channel_id": "0d71aca3cb786e908a17",
-      "channel_name": "Pauta (1080p)",
-      "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/pautatv/pautatv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 350.88,
-      "error": null
-    },
-    {
-      "channel_id": "80c2ab3e9233218413cb",
-      "channel_name": "TV+ (1080p)",
-      "url": "https://jireh-8-hls-video-us-isp.dps.live/hls-video/ey6283je82983je9823je8jowowiekldk9838274/tvmas/tvmas.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 950.16,
-      "error": null
-    },
-    {
-      "channel_id": "89bd966652387867bd85",
-      "channel_name": "Chocolate FM (720p)",
-      "url": "https://5eaccbab48461.streamlock.net:1936/8180/8180/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 665.94,
-      "error": null
-    },
-    {
-      "channel_id": "ef777b1197c462484ff4",
-      "channel_name": "Dance FM (720p)",
-      "url": "https://5eaccbab48461.streamlock.net:1936/dancefm_1/dancefm_1/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 655.71,
-      "error": null
-    },
-    {
-      "channel_id": "55dd37d740b5cf75e9e1",
-      "channel_name": "Interradio TV",
-      "url": "https://tv.arkeo.cl:1936/8002/8002/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 724.04,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "56573a628e2246e3a34a",
-      "channel_name": "La Clave (720p)",
-      "url": "https://unlimited1-cl-isp.dps.live/laclavetv/laclavetv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 686.56,
-      "error": null
-    },
-    {
-      "channel_id": "8772f1ad99b8585c1b2e",
-      "channel_name": "24 Horas (1080p)",
-      "url": "http://187.102.208.209:8000/play/a0a1/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 288.8,
-      "error": null
-    },
-    {
-      "channel_id": "489ac8d33231a4311a29",
-      "channel_name": "Ritoque TV (720p)",
-      "url": "https://v2.tustreaming.cl/unetev/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 361.31,
+      "response_time_ms": 755.71,
       "error": null
     },
     {
@@ -1583,7 +1073,427 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 1550.99,
+      "response_time_ms": 452.14,
+      "error": null
+    },
+    {
+      "channel_id": "aa4d3572b5cbe3878171",
+      "channel_name": "Telemundo Internacional (1080p)",
+      "url": "http://138.121.15.230:9002/TELEMUNDO/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 204.68,
+      "error": null
+    },
+    {
+      "channel_id": "f3ba4cd7045c9f614acb",
+      "channel_name": "TV Chile (720p)",
+      "url": "https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 117.46,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "f3ba4cd7045c9f614acb",
+      "channel_name": "TV Chile (720p)",
+      "url": "http://168.196.127.137:6001/play/a03n/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 128.8,
+      "error": null
+    },
+    {
+      "channel_id": "c93c49c3877ec27365b1",
+      "channel_name": "Radio UNIACC (720p)",
+      "url": "https://scl.edge.grupoz.cl/uniaccastream/live/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 498.39,
+      "error": null
+    },
+    {
+      "channel_id": "5d99099aa551a98a5f7f",
+      "channel_name": "Radio Vida Curico (720p)",
+      "url": "https://v2.tustreaming.cl/radiovidacurico/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 425.48,
+      "error": null
+    },
+    {
+      "channel_id": "aa4d3572b5cbe3878171",
+      "channel_name": "Telemundo Internacional (1080p)",
+      "url": "http://177.234.249.178:8888/TELEMUNDO/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 232.29,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "aa4d3572b5cbe3878171",
+      "channel_name": "Telemundo Internacional (1080p)",
+      "url": "http://179.60.51.134:8888/TELEMUNDO/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 400,
+      "response_time_ms": 248.28,
+      "error": "HTTP 400"
+    },
+    {
+      "channel_id": "aa4d3572b5cbe3878171",
+      "channel_name": "Telemundo Internacional (1080p)",
+      "url": "http://190.60.46.156:8089/TELEMUNDO/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 213.79,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "d21df815d109d470c4de",
+      "channel_name": "ETC TV (1080p)",
+      "url": "http://190.60.59.67:8000/play/a0k5",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 2840.89,
+      "error": null
+    },
+    {
+      "channel_id": "b9c0f01e022b43a665e6",
+      "channel_name": "TVN (Chile) (1080p)",
+      "url": "http://15.204.246.24:8080/TVNHD/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 121.63,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "86c947085bf2ac5c0f2b",
+      "channel_name": "EPA! TV (720p)",
+      "url": "https://live-evg10.tv360.bitel.com.pe/bitel/epatv/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 1676.59,
+      "error": null
+    },
+    {
+      "channel_id": "aa4d3572b5cbe3878171",
+      "channel_name": "Telemundo Internacional (1080p)",
+      "url": "http://190.93.224.42/TELEMUNDO/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 269.9,
+      "error": null
+    },
+    {
+      "channel_id": "78a7e2faeb8579468f4c",
+      "channel_name": "Nickelodeon Latin America (1080p)",
+      "url": "http://15.204.246.24:8080/NickHD/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 122.02,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "eb40cf595e567b0a83b2",
+      "channel_name": "SUR TV (720p)",
+      "url": "https://surtv-2.mddsoluciones.cl/play/ZZZ-WEB-001:ULpj2JxXM9/live/surtvweb/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 462.83,
+      "error": null
+    },
+    {
+      "channel_id": "381a2834dc0c44b0edf3",
+      "channel_name": "ITV Patagonia (720p)",
+      "url": "https://redirector.dps.live/hls/itv/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 1602.41,
+      "error": null
+    },
+    {
+      "channel_id": "afb0f71f7cc01a896520",
+      "channel_name": "Nina TV (720p)",
+      "url": "https://tv1.ninatv.cl/hls/stream.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 1216.53,
+      "error": null
+    },
+    {
+      "channel_id": "5917385cafaa0dac2bd3",
+      "channel_name": "Orbita Chile TV (1080p)",
+      "url": "https://orbitachiletv.org/hls/0/stream.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 530,
+      "response_time_ms": 191.47,
+      "error": "HTTP 530"
+    },
+    {
+      "channel_id": "8c90f71d588692ff063f",
+      "channel_name": "Cinecanal Pacific (1080p)",
+      "url": "http://138.121.15.230:9002/CINECANAL/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 212.09,
+      "error": null
+    },
+    {
+      "channel_id": "35024391e28a9bfbc843",
+      "channel_name": "Zoom Tecnologico Plus (720p)",
+      "url": "https://5f700d5b2c46f.streamlock.net/zoomtec/zoomtec/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 323.04,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "6ae2d1284850ddbf205e",
+      "channel_name": "Rial TV (720p)",
+      "url": "https://5eaccbab48461.streamlock.net:1936/8124/8124/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 740.94,
+      "error": null
+    },
+    {
+      "channel_id": "bea93a95594a82be43be",
+      "channel_name": "Star Channel (Chile) (720p)",
+      "url": "http://138.121.15.230:9002/STAR-CHANNEL/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 213.92,
+      "error": null
+    },
+    {
+      "channel_id": "fbdcc279669084245b2d",
+      "channel_name": "Surena TV",
+      "url": "https://vs20.live.opencaster.com/surenatv_187f915a/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 623.31,
+      "error": null
+    },
+    {
+      "channel_id": "d21df815d109d470c4de",
+      "channel_name": "ETC TV (1080p)",
+      "url": "http://157.100.9.51:8000/play/a24f",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 3211.37,
+      "error": null
+    },
+    {
+      "channel_id": "6db2e8cf10a751d2e25d",
+      "channel_name": "Teleangol (720p)",
+      "url": "https://pantera1-100gb-cl-movistar.dps.live/teleangol/teleangol.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 701.52,
+      "error": null
+    },
+    {
+      "channel_id": "9b5bdbcfbfb41b220e9c",
+      "channel_name": "TVN (1080p)",
+      "url": "https://iptv.bitred.cl/tvn/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 545.95,
+      "error": null
+    },
+    {
+      "channel_id": "6ec8c53aad28db0c64c7",
+      "channel_name": "SUR TV (1080p)",
+      "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/surtv/surtv.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 842.48,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "b22d1cceb619a5802063",
+      "channel_name": "La Red (1080p)",
+      "url": "https://tv-mgmt.gtd.cl/bpk-tv/LARED/default/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 1778.14,
+      "error": null
+    },
+    {
+      "channel_id": "3e56d39bfafe54979e7d",
+      "channel_name": "TV Show Fortaleza (720p)",
+      "url": "https://stmv8.samcast.com.br/raimundoanselmolimamororo1908/raimundoanselmolimamororo1908/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 653.66,
+      "error": null
+    },
+    {
+      "channel_id": "28232c1b59f81a1a7cf7",
+      "channel_name": "TVU (1080p)",
+      "url": "https://unlimited1-cl-isp.dps.live/tvu/tvu.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 599.81,
+      "error": null
+    },
+    {
+      "channel_id": "e0c301dbcfd5a1b5d011",
+      "channel_name": "FunBox",
+      "url": "http://186.148.196.100:8000/play/a00d",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 630.86,
+      "error": null
+    },
+    {
+      "channel_id": "80c2ab3e9233218413cb",
+      "channel_name": "TV+ (1080p)",
+      "url": "https://jireh-8-hls-video-us-isp.dps.live/hls-video/ey6283je82983je9823je8jowowiekldk9838274/tvmas/tvmas.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 771.93,
+      "error": null
+    },
+    {
+      "channel_id": "77e9bba47a9a6a8ec8af",
+      "channel_name": "Radio Duna (720p)",
+      "url": "https://mdstrm.com/live-stream-playlist/67ed8a8d6db4af9a0188555c.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 202.22,
+      "error": null
+    },
+    {
+      "channel_id": "909c8ae6d6b99fb7b3b8",
+      "channel_name": "FM Plus TV (720p)",
+      "url": "https://v2.tustreaming.cl/fmplus/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 421.97,
+      "error": null
+    },
+    {
+      "channel_id": "40d00f1ffa01189efe79",
+      "channel_name": "Genial TV (720p)",
+      "url": "https://v1.tustreaming.cl/genialtv/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 427.36,
+      "error": null
+    },
+    {
+      "channel_id": "cd6674231e8a7345fc30",
+      "channel_name": "13 Festival (1080p)",
+      "url": "https://origin.dpsgo.com/ssai/event/Nftd0fM2SXasfDlRphvUsg/master.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 613.31,
+      "error": null
+    },
+    {
+      "channel_id": "21ded588a519eb852049",
+      "channel_name": "Maqui TV",
+      "url": "https://streamyes.alsolnet.com/maquiradio/live/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 300.81,
+      "error": null
+    },
+    {
+      "channel_id": "2ec3cb32dce147a20ebe",
+      "channel_name": "13P (720p)",
+      "url": "https://origin.dpsgo.com/ssai/event/p4mmBxEzSmKAxY1GusOHrw/master.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 701.46,
+      "error": null
+    },
+    {
+      "channel_id": "b3e6d2d487e7a5d9c5cc",
+      "channel_name": "AE Radio TV (720p) [Not 24/7]",
+      "url": "https://tls-cl.cdnz.cl/aeradio/live/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 589.83,
+      "error": null
+    },
+    {
+      "channel_id": "d9c62510b1e3fd8173df",
+      "channel_name": "13 Kids (1080p)",
+      "url": "https://origin.dpsgo.com/ssai/event/LhHrVtyeQkKZ-Ye_xEU75g/master.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 793.27,
+      "error": null
+    },
+    {
+      "channel_id": "a5ee3579d9d4c23d4aa3",
+      "channel_name": "La Granja TV",
+      "url": "https://oracle.streaminghd.cl/8126/8126/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 447.38,
+      "error": null
+    },
+    {
+      "channel_id": "76a0d7fc696a1440a836",
+      "channel_name": "Radio Edelweiss (720p)",
+      "url": "https://vmix.dyndns.biz/Edelweiss/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 295.35,
+      "error": null
+    },
+    {
+      "channel_id": "8942b2317852ab801a7d",
+      "channel_name": "Uniregion TV",
+      "url": "https://5ff3d9babae13.streamlock.net/ubyecbxnfd/ubyecbxnfd/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 860.93,
       "error": null
     },
     {
@@ -1593,8 +1503,88 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 2663.42,
+      "response_time_ms": 2703.07,
       "error": "[Errno -2] Name or service not known"
+    },
+    {
+      "channel_id": "89bd966652387867bd85",
+      "channel_name": "Chocolate FM (720p)",
+      "url": "https://5eaccbab48461.streamlock.net:1936/8180/8180/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 738.67,
+      "error": null
+    },
+    {
+      "channel_id": "ef777b1197c462484ff4",
+      "channel_name": "Dance FM (720p)",
+      "url": "https://5eaccbab48461.streamlock.net:1936/dancefm_1/dancefm_1/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 738.27,
+      "error": null
+    },
+    {
+      "channel_id": "79363f745f7db9b8af9c",
+      "channel_name": "Retromusica Television (720p)",
+      "url": "https://vdochile.com:3864/stream/play.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 232.71,
+      "error": null
+    },
+    {
+      "channel_id": "56573a628e2246e3a34a",
+      "channel_name": "La Clave (720p)",
+      "url": "https://unlimited1-cl-isp.dps.live/laclavetv/laclavetv.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 667.97,
+      "error": null
+    },
+    {
+      "channel_id": "8ba0e1dd0d0865d7f79f",
+      "channel_name": "Wapp (720p)",
+      "url": "https://stream.wapptv.cl/video/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 974.01,
+      "error": null
+    },
+    {
+      "channel_id": "55dd37d740b5cf75e9e1",
+      "channel_name": "Interradio TV",
+      "url": "https://tv.arkeo.cl:1936/8002/8002/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 722.38,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "0d71aca3cb786e908a17",
+      "channel_name": "Pauta (1080p)",
+      "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/pautatv/pautatv.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 572.43,
+      "error": null
+    },
+    {
+      "channel_id": "489ac8d33231a4311a29",
+      "channel_name": "Ritoque TV (720p)",
+      "url": "https://v2.tustreaming.cl/unetev/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 413.05,
+      "error": null
     },
     {
       "channel_id": "7fdb187ec211f1621619",
@@ -1603,47 +1593,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 380.64,
-      "error": null
-    },
-    {
-      "channel_id": "8e070c5e3e724cdf4031",
-      "channel_name": "Retro Plus 2 (720p)",
-      "url": "https://tls-cl.cdnz.cl/retroplustvuno/live/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 555.73,
-      "error": null
-    },
-    {
-      "channel_id": "c664ef6f334a7b103df3",
-      "channel_name": "Rewind TV (1080p)",
-      "url": "https://tls-cl.cdnz.cl/rewindtv/live/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 495.36,
-      "error": null
-    },
-    {
-      "channel_id": "0a7e2fed354a94985cb3",
-      "channel_name": "Radio Zona 90.3 (720p)",
-      "url": "https://live.tvcontrolcp.com:8081/radiozona/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 582.44,
-      "error": null
-    },
-    {
-      "channel_id": "13058ada5570f36ec2db",
-      "channel_name": "Radio Pudahuel (720p)",
-      "url": "https://unlimited2-cl-isp.dps.live/pudahueltv/pudahueltv.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 626.79,
+      "response_time_ms": 416.87,
       "error": null
     },
     {
@@ -1653,57 +1603,7 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 522.55,
-      "error": null
-    },
-    {
-      "channel_id": "e35ebe0a732bef0e5ee0",
-      "channel_name": "Teleangol Radio (720p)",
-      "url": "https://pantera1-100gb-cl-movistar.dps.live/teleangolradio/teleangolradio.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 490.38,
-      "error": null
-    },
-    {
-      "channel_id": "09d3ecb42296552fb4bc",
-      "channel_name": "Atacama Noticias (720p) [Not 24/7]",
-      "url": "https://v2.tustreaming.cl/atacamanoticias/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 451.98,
-      "error": null
-    },
-    {
-      "channel_id": "f2a618c8588e4062d247",
-      "channel_name": "ADN TV (720p)",
-      "url": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 466.59,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "60da5caaf37815dd7bc0",
-      "channel_name": "Opinionsur (720p)",
-      "url": "https://183.bozztv.com/giatv/giatv-opinionsurc/opinionsurc/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 153.89,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "dd7eeb8e59a328ded73f",
-      "channel_name": "Radio La Serena TV (720p)",
-      "url": "https://5ff3d9babae13.streamlock.net/chrgkqgkyb/chrgkqgkyb/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 817.09,
+      "response_time_ms": 494.34,
       "error": null
     },
     {
@@ -1713,18 +1613,108 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 600.54,
+      "response_time_ms": 486.53,
       "error": null
     },
     {
-      "channel_id": "4167db40d3b1b8797fd1",
-      "channel_name": "Telecanal Santa Cruz (720p)",
-      "url": "https://origin-us.streaminghd.cl/telecanal/telecanal/playlist.m3u8",
+      "channel_id": "8e070c5e3e724cdf4031",
+      "channel_name": "Retro Plus 2 (720p)",
+      "url": "https://tls-cl.cdnz.cl/retroplustvuno/live/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 552.2,
+      "error": null
+    },
+    {
+      "channel_id": "8772f1ad99b8585c1b2e",
+      "channel_name": "24 Horas (1080p)",
+      "url": "http://187.102.208.209:8000/play/a0a1/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 324.66,
+      "error": null
+    },
+    {
+      "channel_id": "c664ef6f334a7b103df3",
+      "channel_name": "Rewind TV (1080p)",
+      "url": "https://tls-cl.cdnz.cl/rewindtv/live/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 532.29,
+      "error": null
+    },
+    {
+      "channel_id": "09d3ecb42296552fb4bc",
+      "channel_name": "Atacama Noticias (720p) [Not 24/7]",
+      "url": "https://v2.tustreaming.cl/atacamanoticias/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 422.93,
+      "error": null
+    },
+    {
+      "channel_id": "0a7e2fed354a94985cb3",
+      "channel_name": "Radio Zona 90.3 (720p)",
+      "url": "https://live.tvcontrolcp.com:8081/radiozona/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 699.81,
+      "error": null
+    },
+    {
+      "channel_id": "dd7eeb8e59a328ded73f",
+      "channel_name": "Radio La Serena TV (720p)",
+      "url": "https://5ff3d9babae13.streamlock.net/chrgkqgkyb/chrgkqgkyb/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 844.74,
+      "error": null
+    },
+    {
+      "channel_id": "13058ada5570f36ec2db",
+      "channel_name": "Radio Pudahuel (720p)",
+      "url": "https://unlimited2-cl-isp.dps.live/pudahueltv/pudahueltv.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 797.77,
+      "error": null
+    },
+    {
+      "channel_id": "60da5caaf37815dd7bc0",
+      "channel_name": "Opinionsur (720p)",
+      "url": "https://183.bozztv.com/giatv/giatv-opinionsurc/opinionsurc/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 174.63,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "f2a618c8588e4062d247",
+      "channel_name": "ADN TV (720p)",
+      "url": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8",
       "source": "CATALOGO",
       "online": false,
-      "status_code": 403,
-      "response_time_ms": 149.21,
-      "error": "HTTP 403"
+      "status_code": 404,
+      "response_time_ms": 508.71,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "ebe3ab804ca689eb3fa8",
+      "channel_name": "El Centro TV (720p)",
+      "url": "https://v1.tustreaming.cl/diarioelcentrotv/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 435.92,
+      "error": "HTTP 404"
     },
     {
       "channel_id": "8badcb8029b4bfea33dc",
@@ -1733,127 +1723,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 639.28,
-      "error": null
-    },
-    {
-      "channel_id": "ebe3ab804ca689eb3fa8",
-      "channel_name": "El Centro TV (720p)",
-      "url": "https://v1.tustreaming.cl/diarioelcentrotv/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 370.2,
-      "error": null
-    },
-    {
-      "channel_id": "c6b0616af0f910b0104b",
-      "channel_name": "TeleCauquenes (720p)",
-      "url": "https://lbgo.bozztv.com/ssh101/ssh101/telecauquenestv/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 197.2,
-      "error": null
-    },
-    {
-      "channel_id": "5b8834004437c378d4c1",
-      "channel_name": "El Pinguino TV (720p)",
-      "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/pinguinotv/pinguinotv.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 416.81,
-      "error": null
-    },
-    {
-      "channel_id": "c553beedbc2a043fb60c",
-      "channel_name": "Solo Bailalo (480p)",
-      "url": "https://5ff3d9babae13.streamlock.net/8000/8000/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 806.1,
-      "error": null
-    },
-    {
-      "channel_id": "c553beedbc2a043fb60c",
-      "channel_name": "Solo Bailalo (480p)",
-      "url": "https://5ff3d9babae13.streamlock.net/8016/8016/playlist.m3u8",
-      "source": "DEARBULUT-CHILE",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 797.24,
-      "error": null
-    },
-    {
-      "channel_id": "e4585e7041482dfcbe27",
-      "channel_name": "MTNA TV",
-      "url": "https://live.mtna.tv/hls/mtna/mtna.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 61.19,
-      "error": null
-    },
-    {
-      "channel_id": "e44c1e70a8828bdd29bd",
-      "channel_name": "Agricultura TV (1080p)",
-      "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/921tv/921tv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 301.67,
-      "error": null
-    },
-    {
-      "channel_id": "b9735b1b5a9a07b5dc0f",
-      "channel_name": "Puranoticia TV (720p)",
-      "url": "https://pnt.janusmedia.tv/hls/pnt.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 477.1,
-      "error": null
-    },
-    {
-      "channel_id": "e5b3ebd0230d3e12953e",
-      "channel_name": "NCTV (1080p)",
-      "url": "https://pantera1-100gb-cl-movistar.dps.live/nctv/nctv.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 501.33,
-      "error": null
-    },
-    {
-      "channel_id": "b9afcdd32f1315c11124",
-      "channel_name": "Contivision (720p)",
-      "url": "https://unlimited6-cl.dps.live/cm/cm.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 607.94,
-      "error": null
-    },
-    {
-      "channel_id": "1656fe56e13a2087b69c",
-      "channel_name": "Canal CHV Noticias",
-      "url": "https://xyktmobile00.s.gy/PPV929_CIV_NOTICIAS",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 744.82,
-      "error": null
-    },
-    {
-      "channel_id": "80f64ce46f491ddf9737",
-      "channel_name": "T13 En Vivo (1080p)",
-      "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/t13/t13.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 471.34,
+      "response_time_ms": 732.57,
       "error": null
     },
     {
@@ -1863,277 +1733,127 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 1354.9,
-      "error": null
-    },
-    {
-      "channel_id": "4ae9b5007b574ca2eeb0",
-      "channel_name": "15.1 BPB (720p)",
-      "url": "https://v2.tustreaming.cl/enlacebpbtv/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 379.88,
-      "error": null
-    },
-    {
-      "channel_id": "39f38831a9c92703931a",
-      "channel_name": "Arica TV",
-      "url": "https://5eff35271151c.streamlock.net:1936/8002/8002/playlist.m3u8",
-      "source": "DEARBULUT-CHILE",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 3762.08,
-      "error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for '5eff35271151c.streamlock.net'. (_ssl.c:1010)"
-    },
-    {
-      "channel_id": "981cf01e1a9da123c929",
-      "channel_name": "Canal ISB (720p)",
-      "url": "https://unlimited1-us.dps.live/isb/isb.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 453.92,
+      "response_time_ms": 1119.99,
       "error": null
     },
     {
       "channel_id": "5b8834004437c378d4c1",
       "channel_name": "El Pinguino TV (720p)",
-      "url": "https://redirector.dps.live/hls/pinguinotv/playlist.m3u8",
-      "source": "CATALOGO",
+      "url": "https://redirector.rudo.video/hls-video/339f69c6122f6d8f4574732c235f09b7683e31a5/pinguinotv/pinguinotv.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 816.05,
+      "response_time_ms": 422.43,
       "error": null
     },
     {
-      "channel_id": "351ded065366b98e1e96",
-      "channel_name": "Nuevo Tiempo TV (720p)",
-      "url": "https://streamtv.novotempo.com/CDN-TV-ES/smil:tvnuevotiempo.smil/playlist.m3u8",
+      "channel_id": "c6b0616af0f910b0104b",
+      "channel_name": "TeleCauquenes (720p)",
+      "url": "https://lbgo.bozztv.com/ssh101/ssh101/telecauquenestv/playlist.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 329.7,
+      "response_time_ms": 199.43,
       "error": null
     },
     {
-      "channel_id": "cdba967604ad8a891417",
-      "channel_name": "Primicia Vida (720p)",
-      "url": "https://mc.servidor.stream:19360/8248/8248.m3u8",
+      "channel_id": "c553beedbc2a043fb60c",
+      "channel_name": "Solo Bailalo (480p)",
+      "url": "https://5ff3d9babae13.streamlock.net/8000/8000/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 864.92,
+      "error": null
+    },
+    {
+      "channel_id": "c553beedbc2a043fb60c",
+      "channel_name": "Solo Bailalo (480p)",
+      "url": "https://5ff3d9babae13.streamlock.net/8016/8016/playlist.m3u8",
+      "source": "DEARBULUT-CHILE",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 884.64,
+      "error": null
+    },
+    {
+      "channel_id": "e35ebe0a732bef0e5ee0",
+      "channel_name": "Teleangol Radio (720p)",
+      "url": "https://pantera1-100gb-cl-movistar.dps.live/teleangolradio/teleangolradio.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 859.96,
+      "error": null
+    },
+    {
+      "channel_id": "4167db40d3b1b8797fd1",
+      "channel_name": "Telecanal Santa Cruz (720p)",
+      "url": "https://origin-us.streaminghd.cl/telecanal/telecanal/playlist.m3u8",
       "source": "CATALOGO",
       "online": false,
-      "status_code": 404,
-      "response_time_ms": 299.9,
-      "error": "HTTP 404"
+      "status_code": 403,
+      "response_time_ms": 261.65,
+      "error": "HTTP 403"
     },
     {
-      "channel_id": "f3158a288aedc6f67e97",
-      "channel_name": "ISA TV",
-      "url": "https://scl.edge.grupoz.cl/isatv/live/playlist.m3u8",
+      "channel_id": "b9afcdd32f1315c11124",
+      "channel_name": "Contivision (720p)",
+      "url": "https://unlimited6-cl.dps.live/cm/cm.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 662.77,
+      "error": null
+    },
+    {
+      "channel_id": "e5b3ebd0230d3e12953e",
+      "channel_name": "NCTV (1080p)",
+      "url": "https://pantera1-100gb-cl-movistar.dps.live/nctv/nctv.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 539.29,
+      "error": null
+    },
+    {
+      "channel_id": "b9735b1b5a9a07b5dc0f",
+      "channel_name": "Puranoticia TV (720p)",
+      "url": "https://pnt.janusmedia.tv/hls/pnt.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 576.08,
+      "error": null
+    },
+    {
+      "channel_id": "e4585e7041482dfcbe27",
+      "channel_name": "MTNA TV",
+      "url": "https://live.mtna.tv/hls/mtna/mtna.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 173.97,
+      "error": null
+    },
+    {
+      "channel_id": "1656fe56e13a2087b69c",
+      "channel_name": "Canal CHV Noticias",
+      "url": "https://xyktmobile00.s.gy/PPV929_CIV_NOTICIAS",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 465.85,
+      "response_time_ms": 924.28,
       "error": null
     },
     {
       "channel_id": "80f64ce46f491ddf9737",
       "channel_name": "T13 En Vivo (1080p)",
-      "url": "https://redirector.dps.live/hls/t13/playlist.m3u8",
+      "url": "https://redirector.rudo.video/hls-video/10b92cafdf3646cbc1e727f3dc76863621a327fd/t13/t13.smil/playlist.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 824.26,
-      "error": null
-    },
-    {
-      "channel_id": "bd38f52dfbb6bc98e5f7",
-      "channel_name": "Vida Nueva TV",
-      "url": "https://mc.servidor.stream:19360/8240/8240.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 309.29,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "4cfe8c7dffe941bb9513",
-      "channel_name": "Radio Armonia TV (720p)",
-      "url": "https://v2.tustreaming.cl/armoniamovil/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 446.78,
-      "error": null
-    },
-    {
-      "channel_id": "cd3a6eb1b42257a82213",
-      "channel_name": "TNE (720p) [Not 24/7]",
-      "url": "https://v2.tustreaming.cl/tnetv/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 392.65,
-      "error": null
-    },
-    {
-      "channel_id": "f9036fdbff38d9141603",
-      "channel_name": "CRTV (Chile) (720p)",
-      "url": "https://stmv2.voxtvhd.com.br/crtvchile/crtvchile/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 168.82,
-      "error": null
-    },
-    {
-      "channel_id": "92ebe9dd4bc51ccb1961",
-      "channel_name": "Turno (720p)",
-      "url": "https://redirector.dps.live/hls/turno/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 902.39,
-      "error": null
-    },
-    {
-      "channel_id": "d1febdf0ef75af9e42f5",
-      "channel_name": "DSports (1080p)",
-      "url": "http://181.224.255.210:8001/play/a0s8/index.m3u8?hls",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 252.93,
-      "error": null
-    },
-    {
-      "channel_id": "d1febdf0ef75af9e42f5",
-      "channel_name": "DSports (1080p)",
-      "url": "http://190.117.20.37:8000/play/a08d/index.m3u",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 250.54,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "a36d65dcfc116ded7878",
-      "channel_name": "Televida (Chile) (1080p)",
-      "url": "https://tls-cl.cdnz.cl/televida/live/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 614.6,
-      "error": null
-    },
-    {
-      "channel_id": "47605f06cad18dc3aa2f",
-      "channel_name": "13T (720p)",
-      "url": "https://origin.dpsgo.com/ssai/event/f4TrySe8SoiGF8Lu3EIq1g/master.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 545.64,
-      "error": null
-    },
-    {
-      "channel_id": "d1febdf0ef75af9e42f5",
-      "channel_name": "DSports (1080p)",
-      "url": "http://45.186.254.75:8000/play/a0en/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 237.64,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "386d76b2dff3016788b4",
-      "channel_name": "Preludio TV",
-      "url": "https://tv.arkeo.cl:1936/preludio/preludio/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 715.69,
-      "error": null
-    },
-    {
-      "channel_id": "4460b00da053ad6a3ba6",
-      "channel_name": "Radio El Sembrador (720p)",
-      "url": "https://tv.arkeo.cl:1936/elsembrador/elsembrador/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 675.52,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "d1febdf0ef75af9e42f5",
-      "channel_name": "DSports (1080p)",
-      "url": "http://38.187.7.252:8000/play/a03d/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 264.2,
-      "error": null
-    },
-    {
-      "channel_id": "13d4870a2a05f2ef39e7",
-      "channel_name": "Alternativa TV (720p)",
-      "url": "https://live20.bozztv.com/giatv/giatv-alternativatv/alternativatv/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 86.55,
-      "error": null
-    },
-    {
-      "channel_id": "080a33a09838916bb017",
-      "channel_name": "Turismo Travel TV",
-      "url": "https://stmv3.voxtvhd.com.br/turismotraveltv/turismotraveltv/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 157.73,
-      "error": null
-    },
-    {
-      "channel_id": "13d4870a2a05f2ef39e7",
-      "channel_name": "Alternativa TV (720p)",
-      "url": "https://lbgo.bozztv.com/ssh101/ssh101/alternativatvpe/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 196.89,
-      "error": null
-    },
-    {
-      "channel_id": "06edb7e5c7e4950232bc",
-      "channel_name": "Juntos TV (Chile) (720p)",
-      "url": "https://video.juntostvchile.cl:8879/hls/web-jntv.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 3774.83,
-      "error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)"
-    },
-    {
-      "channel_id": "08af89967f39d963b3d5",
-      "channel_name": "Fortaleza TV (1080p)",
-      "url": "https://multimedia.fortalezatv.cl/video/video.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 1065.88,
-      "error": null
-    },
-    {
-      "channel_id": "86c947085bf2ac5c0f2b",
-      "channel_name": "EPA! TV (720p)",
-      "url": "https://live-evg10.tv360.bitel.com.pe/bitel/epatv/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 4078.59,
+      "response_time_ms": 567.67,
       "error": null
     },
     {
@@ -2143,27 +1863,287 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 1300.3,
+      "response_time_ms": 422.97,
       "error": null
     },
     {
-      "channel_id": "105fd8457874904798e9",
-      "channel_name": "Canal 74 San Antonio",
-      "url": "https://stmv5.voxtvhd.com.br/canal74hd/canal74hd/playlist.m3u8",
+      "channel_id": "4ae9b5007b574ca2eeb0",
+      "channel_name": "15.1 BPB (720p)",
+      "url": "https://v2.tustreaming.cl/enlacebpbtv/index.m3u8",
       "source": "CATALOGO",
-      "online": false,
-      "status_code": 403,
-      "response_time_ms": 141.31,
-      "error": "HTTP 403"
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 463.62,
+      "error": null
     },
     {
-      "channel_id": "660479510c63d6a6299e",
-      "channel_name": "Turf Movil (720p)",
-      "url": "https://tvturf4.janus.cl/playlist/stream.m3u8",
+      "channel_id": "5b8834004437c378d4c1",
+      "channel_name": "El Pinguino TV (720p)",
+      "url": "https://redirector.dps.live/hls/pinguinotv/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 871.77,
+      "error": null
+    },
+    {
+      "channel_id": "f3158a288aedc6f67e97",
+      "channel_name": "ISA TV",
+      "url": "https://scl.edge.grupoz.cl/isatv/live/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 407.46,
+      "error": null
+    },
+    {
+      "channel_id": "80f64ce46f491ddf9737",
+      "channel_name": "T13 En Vivo (1080p)",
+      "url": "https://redirector.dps.live/hls/t13/playlist.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 511.75,
+      "response_time_ms": 836.7,
+      "error": null
+    },
+    {
+      "channel_id": "e44c1e70a8828bdd29bd",
+      "channel_name": "Agricultura TV (1080p)",
+      "url": "https://redirector.rudo.video/hls-video/ey6283je82983je9823je8jowowiekldk9838274/921tv/921tv.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 602.29,
+      "error": null
+    },
+    {
+      "channel_id": "cdba967604ad8a891417",
+      "channel_name": "Primicia Vida (720p)",
+      "url": "https://mc.servidor.stream:19360/8248/8248.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 359.2,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "351ded065366b98e1e96",
+      "channel_name": "Nuevo Tiempo TV (720p)",
+      "url": "https://streamtv.novotempo.com/CDN-TV-ES/smil:tvnuevotiempo.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 455.68,
+      "error": null
+    },
+    {
+      "channel_id": "981cf01e1a9da123c929",
+      "channel_name": "Canal ISB (720p)",
+      "url": "https://unlimited1-us.dps.live/isb/isb.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 617.77,
+      "error": null
+    },
+    {
+      "channel_id": "bd38f52dfbb6bc98e5f7",
+      "channel_name": "Vida Nueva TV",
+      "url": "https://mc.servidor.stream:19360/8240/8240.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 205.21,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "4cfe8c7dffe941bb9513",
+      "channel_name": "Radio Armonia TV (720p)",
+      "url": "https://v2.tustreaming.cl/armoniamovil/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 415.93,
+      "error": null
+    },
+    {
+      "channel_id": "92ebe9dd4bc51ccb1961",
+      "channel_name": "Turno (720p)",
+      "url": "https://redirector.dps.live/hls/turno/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 838.1,
+      "error": null
+    },
+    {
+      "channel_id": "cd3a6eb1b42257a82213",
+      "channel_name": "TNE (720p) [Not 24/7]",
+      "url": "https://v2.tustreaming.cl/tnetv/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 423.25,
+      "error": null
+    },
+    {
+      "channel_id": "386d76b2dff3016788b4",
+      "channel_name": "Preludio TV",
+      "url": "https://tv.arkeo.cl:1936/preludio/preludio/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 750.34,
+      "error": null
+    },
+    {
+      "channel_id": "f9036fdbff38d9141603",
+      "channel_name": "CRTV (Chile) (720p)",
+      "url": "https://stmv2.voxtvhd.com.br/crtvchile/crtvchile/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 370.69,
+      "error": null
+    },
+    {
+      "channel_id": "d1febdf0ef75af9e42f5",
+      "channel_name": "DSports (1080p)",
+      "url": "http://181.224.255.210:8001/play/a0s8/index.m3u8?hls",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 273.8,
+      "error": null
+    },
+    {
+      "channel_id": "d1febdf0ef75af9e42f5",
+      "channel_name": "DSports (1080p)",
+      "url": "http://190.117.20.37:8000/play/a08d/index.m3u",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 273.22,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "d1febdf0ef75af9e42f5",
+      "channel_name": "DSports (1080p)",
+      "url": "http://138.121.113.175:8000/play/a0cj/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 386.43,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "a36d65dcfc116ded7878",
+      "channel_name": "Televida (Chile) (1080p)",
+      "url": "https://tls-cl.cdnz.cl/televida/live/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 594.79,
+      "error": null
+    },
+    {
+      "channel_id": "08af89967f39d963b3d5",
+      "channel_name": "Fortaleza TV (1080p)",
+      "url": "https://multimedia.fortalezatv.cl/video/video.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 891.15,
+      "error": null
+    },
+    {
+      "channel_id": "d1febdf0ef75af9e42f5",
+      "channel_name": "DSports (1080p)",
+      "url": "http://38.187.7.252:8000/play/a03d/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 273.31,
+      "error": null
+    },
+    {
+      "channel_id": "47605f06cad18dc3aa2f",
+      "channel_name": "13T (720p)",
+      "url": "https://origin.dpsgo.com/ssai/event/f4TrySe8SoiGF8Lu3EIq1g/master.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 583.43,
+      "error": null
+    },
+    {
+      "channel_id": "4460b00da053ad6a3ba6",
+      "channel_name": "Radio El Sembrador (720p)",
+      "url": "https://tv.arkeo.cl:1936/elsembrador/elsembrador/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 769.25,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "d1febdf0ef75af9e42f5",
+      "channel_name": "DSports (1080p)",
+      "url": "http://45.186.254.75:8000/play/a0en/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 268.94,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "06edb7e5c7e4950232bc",
+      "channel_name": "Juntos TV (Chile) (720p)",
+      "url": "https://video.juntostvchile.cl:8879/hls/web-jntv.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 4035.91,
+      "error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)"
+    },
+    {
+      "channel_id": "13d4870a2a05f2ef39e7",
+      "channel_name": "Alternativa TV (720p)",
+      "url": "https://live20.bozztv.com/giatv/giatv-alternativatv/alternativatv/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 149.61,
+      "error": null
+    },
+    {
+      "channel_id": "13d4870a2a05f2ef39e7",
+      "channel_name": "Alternativa TV (720p)",
+      "url": "https://lbgo.bozztv.com/ssh101/ssh101/alternativatvpe/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 216.36,
+      "error": null
+    },
+    {
+      "channel_id": "39f38831a9c92703931a",
+      "channel_name": "Arica TV",
+      "url": "https://5eff35271151c.streamlock.net:1936/8002/8002/playlist.m3u8",
+      "source": "DEARBULUT-CHILE",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 4932.17,
+      "error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for '5eff35271151c.streamlock.net'. (_ssl.c:1010)"
+    },
+    {
+      "channel_id": "080a33a09838916bb017",
+      "channel_name": "Turismo Travel TV",
+      "url": "https://stmv3.voxtvhd.com.br/turismotraveltv/turismotraveltv/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 373.75,
       "error": null
     },
     {
@@ -2173,27 +2153,27 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 488.08,
+      "response_time_ms": 442.64,
+      "error": null
+    },
+    {
+      "channel_id": "660479510c63d6a6299e",
+      "channel_name": "Turf Movil (720p)",
+      "url": "https://tvturf4.janus.cl/playlist/stream.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 457.63,
       "error": null
     },
     {
       "channel_id": "b0f5858d8b833d63defb",
       "channel_name": "Canal Claro (720p)",
-      "url": "http://168.196.127.137:6001/play/a04l/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 92.79,
-      "error": null
-    },
-    {
-      "channel_id": "626d3967e440d0989d2f",
-      "channel_name": "Atacama TV (720p)",
-      "url": "https://v2.tustreaming.cl/atacamatv/index.m3u8",
+      "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjQ0ODM4NmI2LTVmOTctNDE1ZS05YmU0LWFhOGQzY2M4N2RiZCIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiIzMzYxZmI1Yi1iZmIyLTExZjEtYjZlMi04YTQ5NmJiZDZmMGMiLCJjbGllbnRJUCI6IjIwMC42OC4xMjguODMiLCJjaXR5IjoiTWV4aWNvIENpdHkiLCJwb3N0YWxDb2RlIjoiMTU1MzAiLCJjb3VudHJ5IjoiTVgiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjoxOS40MzAwMDAzMDUxNzU3OCwiZGV2aWNlTG9uIjotOTkuMDk5OTk4NDc0MTIxMSwicHJlZmVycmVkTGFuZ3VhZ2UiOiJlcyIsImRldmljZVR5cGUiOiJ3ZWIiLCJkZXZpY2VWZXJzaW9uIjoiMTMzLjAuMCIsImRldmljZU1ha2UiOiJjaHJvbWUiLCJkZXZpY2VNb2RlbCI6IndlYiIsImFwcE5hbWUiOiJ3ZWIiLCJhcHBWZXJzaW9uIjoiOC4xLjAiLCJjbGllbnRJRCI6Ijk1OThiNTU4LTRkNzUtNDkyOS04NGVhLTlhM2U2ODFjZTkzMSIsImNtQXVkaWVuY2VJRCI6IiIsImlzQ2xpZW50RE5UIjpmYWxzZSwidXNlcklEIjoiIiwibG9nTGV2ZWwiOiJERUZBVUxUIiwidGltZVpvbmUiOiJBbWVyaWNhL01leGljb19DaXR5Iiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6Ijk1OThiNTU4LTRkNzUtNDkyOS04NGVhLTlhM2U2ODFjZTkzMSIsImZ3VmNJRDJDb3BwYSI6Ijk1OThiNTU4LTRkNzUtNDkyOS04NGVhLTlhM2U2ODFjZTkzMSIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiOTU5OGI1NTgtNGQ3NS00OTI5LTg0ZWEtOWEzZTY4MWNlOTMxIiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiMTA0NSIsIl9md18zUF9VSUQiOiJJREw6QXJpUWl6cmFlR3ZoaEx3cFpCbC0xbE9SUDU3VXM0YUwyNkwzNHFlNndrMGZGSkYxMngtZ2REdUU1aEIwdTY3RTFrcWQwQ055LXpfVHFkS3g5YjVxbXV5dGE0cThpeUY5bjRVNzBqUXhiZEtnVUg3S1pRS1lfc1NSR2xDcnpyLWZNWWczY2l2MlJOSXlHUGtWU2llYlc5V3lwLWtzSTZUNnd6VzdNai1DRi1PS0pkbjdlRFAyWmk2bTljeTVXUHcwT0g2V3J6YmZpeHYwR3F2TEdDQWdva1kzZUtxOFAzNHhpbUdfTFdSeVc2LWdvcG5EQmFhSVAtYnI5QUtwbXdjRkZ3WjVEQXR3YmF6VHowV0FoZ2tCMW9POWlXY2Jpa1RmT3NDekozVkhLOEhNVnBUbm9uWTMzbU01ajJiTFV1bGNGVUdsSUtzQVNBR3BtZXIydFY1M1NtQWcwRjFUV081V2poTzRrcVFWU3ciLCJmbXNfcnVsZWlkIjoiMTAwMDAsMTAwMDksMTAwMTMsMTAwMTQsMTAwMTUsMTAwMjMsMTAwMTYsMTAwMjAsMTAwMjEifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTEwOTA3NTEyMzMsImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpPVFU1T0dJMU5UZ3ROR1EzTlMwME9USTVMVGcwWldFdE9XRXpaVFk0TVdObE9UTXgiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxMTc3MTUxLCJpYXQiOjE3OTEwOTA3NTEsImp0aSI6ImRjM2QyZjEwLTI2NTItNDYzMC1hNjJhLWQ1NTU2ZGMzY2E5MCJ9.ZgDk-yu7N7OKJPXiHGVpIH_5eojr4wWoA723hobAndI&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=9598b558-4d75-4929-84ea-9a3e681ce931&clientModelNumber=1.0.0&country=MX&deviceDNT=false&deviceId=9598b558-4d75-4929-84ea-9a3e681ce931&deviceLat=19.4300&deviceLon=-99.1000&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=3361fb5b-bfb2-11f1-b6e2-8a496bbd6f0c&sid=3361fb5b-bfb2-11f1-b6e2-8a496bbd6f0c&userId=&country=MX&marketingRegion=MX&preferredLanguage=es-MX",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 451.92,
+      "response_time_ms": 120.57,
       "error": null
     },
     {
@@ -2203,57 +2183,17 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 455.81,
+      "response_time_ms": 416.88,
       "error": null
     },
     {
-      "channel_id": "b0f5858d8b833d63defb",
-      "channel_name": "Canal Claro (720p)",
-      "url": "https://jmp2.uk/plu-68224482c5d53e1351aaf2f2.m3u8",
-      "source": "JMIGUE-PLUTOTV-MX",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 105.17,
-      "error": null
-    },
-    {
-      "channel_id": "b0f5858d8b833d63defb",
-      "channel_name": "Canal Claro (720p)",
-      "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjQ0ODM4NmI2LTVmOTctNDE1ZS05YmU0LWFhOGQzY2M4N2RiZCIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiIzMzYxZmI1Yi1iZmIyLTExZjEtYjZlMi04YTQ5NmJiZDZmMGMiLCJjbGllbnRJUCI6IjIwMC42OC4xMjguODMiLCJjaXR5IjoiTWV4aWNvIENpdHkiLCJwb3N0YWxDb2RlIjoiMTU1MzAiLCJjb3VudHJ5IjoiTVgiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjoxOS40MzAwMDAzMDUxNzU3OCwiZGV2aWNlTG9uIjotOTkuMDk5OTk4NDc0MTIxMSwicHJlZmVycmVkTGFuZ3VhZ2UiOiJlcyIsImRldmljZVR5cGUiOiJ3ZWIiLCJkZXZpY2VWZXJzaW9uIjoiMTMzLjAuMCIsImRldmljZU1ha2UiOiJjaHJvbWUiLCJkZXZpY2VNb2RlbCI6IndlYiIsImFwcE5hbWUiOiJ3ZWIiLCJhcHBWZXJzaW9uIjoiOC4xLjAiLCJjbGllbnRJRCI6Ijk1OThiNTU4LTRkNzUtNDkyOS04NGVhLTlhM2U2ODFjZTkzMSIsImNtQXVkaWVuY2VJRCI6IiIsImlzQ2xpZW50RE5UIjpmYWxzZSwidXNlcklEIjoiIiwibG9nTGV2ZWwiOiJERUZBVUxUIiwidGltZVpvbmUiOiJBbWVyaWNhL01leGljb19DaXR5Iiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6Ijk1OThiNTU4LTRkNzUtNDkyOS04NGVhLTlhM2U2ODFjZTkzMSIsImZ3VmNJRDJDb3BwYSI6Ijk1OThiNTU4LTRkNzUtNDkyOS04NGVhLTlhM2U2ODFjZTkzMSIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiOTU5OGI1NTgtNGQ3NS00OTI5LTg0ZWEtOWEzZTY4MWNlOTMxIiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiMTA0NSIsIl9md18zUF9VSUQiOiJJREw6QXJpUWl6cmFlR3ZoaEx3cFpCbC0xbE9SUDU3VXM0YUwyNkwzNHFlNndrMGZGSkYxMngtZ2REdUU1aEIwdTY3RTFrcWQwQ055LXpfVHFkS3g5YjVxbXV5dGE0cThpeUY5bjRVNzBqUXhiZEtnVUg3S1pRS1lfc1NSR2xDcnpyLWZNWWczY2l2MlJOSXlHUGtWU2llYlc5V3lwLWtzSTZUNnd6VzdNai1DRi1PS0pkbjdlRFAyWmk2bTljeTVXUHcwT0g2V3J6YmZpeHYwR3F2TEdDQWdva1kzZUtxOFAzNHhpbUdfTFdSeVc2LWdvcG5EQmFhSVAtYnI5QUtwbXdjRkZ3WjVEQXR3YmF6VHowV0FoZ2tCMW9POWlXY2Jpa1RmT3NDekozVkhLOEhNVnBUbm9uWTMzbU01ajJiTFV1bGNGVUdsSUtzQVNBR3BtZXIydFY1M1NtQWcwRjFUV081V2poTzRrcVFWU3ciLCJmbXNfcnVsZWlkIjoiMTAwMDAsMTAwMDksMTAwMTMsMTAwMTQsMTAwMTUsMTAwMjMsMTAwMTYsMTAwMjAsMTAwMjEifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTEwOTA3NTEyMzMsImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpPVFU1T0dJMU5UZ3ROR1EzTlMwME9USTVMVGcwWldFdE9XRXpaVFk0TVdObE9UTXgiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxMTc3MTUxLCJpYXQiOjE3OTEwOTA3NTEsImp0aSI6ImRjM2QyZjEwLTI2NTItNDYzMC1hNjJhLWQ1NTU2ZGMzY2E5MCJ9.ZgDk-yu7N7OKJPXiHGVpIH_5eojr4wWoA723hobAndI&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=9598b558-4d75-4929-84ea-9a3e681ce931&clientModelNumber=1.0.0&country=MX&deviceDNT=false&deviceId=9598b558-4d75-4929-84ea-9a3e681ce931&deviceLat=19.4300&deviceLon=-99.1000&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=3361fb5b-bfb2-11f1-b6e2-8a496bbd6f0c&sid=3361fb5b-bfb2-11f1-b6e2-8a496bbd6f0c&userId=&country=MX&marketingRegion=MX&preferredLanguage=es-MX",
-      "source": "LOCAL-PLUTO-MX",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 114.81,
-      "error": null
-    },
-    {
-      "channel_id": "920b5babfdb1aca59982",
-      "channel_name": "Teletrak TV (720p)",
-      "url": "https://unlimited6-cl.dps.live/sportinghd/sportinghd.smil/playlist.m3u8",
+      "channel_id": "626d3967e440d0989d2f",
+      "channel_name": "Atacama TV (720p)",
+      "url": "https://v2.tustreaming.cl/atacamatv/index.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 647.49,
-      "error": null
-    },
-    {
-      "channel_id": "b0f5858d8b833d63defb",
-      "channel_name": "Canal Claro (720p)",
-      "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjQ0ODM4NmI2LTVmOTctNDE1ZS05YmU0LWFhOGQzY2M4N2RiZCIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiIzMTM3M2Y2YS1iZmIyLTExZjEtYjZlMi04YTQ5NmJiZDZmMGMiLCJjbGllbnRJUCI6IjEwNC4xMDMuMjM4LjAiLCJjaXR5IjoiQnVlbm9zIEFpcmVzIiwicG9zdGFsQ29kZSI6ImMxMjA2IGFiZSIsImNvdW50cnkiOiJBUiIsImRtYSI6MCwiYWN0aXZlUmVnaW9uIjoiVkUiLCJkZXZpY2VMYXQiOi0zNC42MTAwMDA2MTAzNTE1NiwiZGV2aWNlTG9uIjotNTguNDE5OTk4MTY4OTQ1MzEsInByZWZlcnJlZExhbmd1YWdlIjoiZXMiLCJkZXZpY2VUeXBlIjoid2ViIiwiZGV2aWNlVmVyc2lvbiI6IjEzMy4wLjAiLCJkZXZpY2VNYWtlIjoiY2hyb21lIiwiZGV2aWNlTW9kZWwiOiJ3ZWIiLCJhcHBOYW1lIjoid2ViIiwiYXBwVmVyc2lvbiI6IjguMS4wIiwiY2xpZW50SUQiOiI5NjkxZjAxYS0yYzk5LTRkOTYtOGRkNi01MjhmZmVhZTkyM2EiLCJjbUF1ZGllbmNlSUQiOiIiLCJpc0NsaWVudEROVCI6ZmFsc2UsInVzZXJJRCI6IiIsImxvZ0xldmVsIjoiREVGQVVMVCIsInRpbWVab25lIjoiQW1lcmljYS9BcmdlbnRpbmEvQnVlbm9zX0FpcmVzIiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6Ijk2OTFmMDFhLTJjOTktNGQ5Ni04ZGQ2LTUyOGZmZWFlOTIzYSIsImZ3VmNJRDJDb3BwYSI6Ijk2OTFmMDFhLTJjOTktNGQ5Ni04ZGQ2LTUyOGZmZWFlOTIzYSIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiOTY5MWYwMWEtMmM5OS00ZDk2LThkZDYtNTI4ZmZlYWU5MjNhIiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiIiwiX2Z3XzNQX1VJRCI6IiIsImZtc19ydWxlaWQiOiIxMDAxMywxMDAxNCwxMDAxNiwxMDAxNSwxMDAyMCwxMDAyMSwxMDAwMCwxMDAwOSJ9fSwiZHJtIjp7Im5hbWUiOiJ3aWRldmluZSIsImxldmVsIjoiTDMifSwic2Vzc2lvblN0YXJ0VGltZSI6MTc5MTA5MDc0NzU5OCwiaXNzIjoiYm9vdC5wbHV0by50diIsInN1YiI6InByaTp2MTpwbHV0bzpkZXZpY2VzOlZFOk9UWTVNV1l3TVdFdE1tTTVPUzAwWkRrMkxUaGtaRFl0TlRJNFptWmxZV1U1TWpOaCIsImF1ZCI6IioucGx1dG8udHYiLCJleHAiOjE3OTExNzcxNDcsImlhdCI6MTc5MTA5MDc0NywianRpIjoiZjlkMWQ0MDAtM2RjZS00NjY5LWE4NjAtMzE5NjU3ODc4NWUxIn0.t6LwqSMZHmg5E5QwK2Lmaz0BQWhYd7GtGxPjARzvcgE&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=9691f01a-2c99-4d96-8dd6-528ffeae923a&clientModelNumber=1.0.0&country=AR&deviceDNT=false&deviceId=9691f01a-2c99-4d96-8dd6-528ffeae923a&deviceLat=-34.6100&deviceLon=-58.4200&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=31373f6a-bfb2-11f1-b6e2-8a496bbd6f0c&sid=31373f6a-bfb2-11f1-b6e2-8a496bbd6f0c&userId=&country=AR&marketingRegion=AR&preferredLanguage=es-AR",
-      "source": "LOCAL-PLUTO-AR",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 126.79,
-      "error": null
-    },
-    {
-      "channel_id": "b0f5858d8b833d63defb",
-      "channel_name": "Canal Claro (720p)",
-      "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjQ0ODM4NmI2LTVmOTctNDE1ZS05YmU0LWFhOGQzY2M4N2RiZCIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiI5M2NiNmVmYy1iZjgzLTExZjEtOTMzYy03ZWJhMThiZjYwZDYiLCJjbGllbnRJUCI6IjIwMC42OC4xMjguODMiLCJjaXR5IjoiTWV4aWNvIENpdHkiLCJwb3N0YWxDb2RlIjoiMTU1MzAiLCJjb3VudHJ5IjoiTVgiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjoxOS40MzAwMDAzMDUxNzU3OCwiZGV2aWNlTG9uIjotOTkuMDk5OTk4NDc0MTIxMSwicHJlZmVycmVkTGFuZ3VhZ2UiOiJlcyIsImRldmljZVR5cGUiOiJ3ZWIiLCJkZXZpY2VWZXJzaW9uIjoiMTMzLjAuMCIsImRldmljZU1ha2UiOiJjaHJvbWUiLCJkZXZpY2VNb2RlbCI6IndlYiIsImFwcE5hbWUiOiJ3ZWIiLCJhcHBWZXJzaW9uIjoiOC4xLjAiLCJjbGllbnRJRCI6IjE2NzcxZTZjLTg5NmYtNGQzMi1iMGZjLTdlOThlZGM4YzViMCIsImNtQXVkaWVuY2VJRCI6IiIsImlzQ2xpZW50RE5UIjpmYWxzZSwidXNlcklEIjoiIiwibG9nTGV2ZWwiOiJERUZBVUxUIiwidGltZVpvbmUiOiJBbWVyaWNhL01leGljb19DaXR5Iiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6IjE2NzcxZTZjLTg5NmYtNGQzMi1iMGZjLTdlOThlZGM4YzViMCIsImZ3VmNJRDJDb3BwYSI6IjE2NzcxZTZjLTg5NmYtNGQzMi1iMGZjLTdlOThlZGM4YzViMCIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiMTY3NzFlNmMtODk2Zi00ZDMyLWIwZmMtN2U5OGVkYzhjNWIwIiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiMTA0NSIsIl9md18zUF9VSUQiOiJJREw6QXJpUWl6cmFlR3ZoaEx3cFpCbC0xbE9SUDU3VXM0YUwyNkwzNHFlNndrMGZGSkYxMngtZ2REdUU1aEIwdTY3RTFrcWQwQ055LXpfVHFkS3g5YjVxbXV5dGE0cThpeUY5bjRVNzBqUXhiZEtnVUg3S1pRS1lfc1NSR2xDcnpyLWZNWWczY2l2MlJOSXlHUGtWU2llYlc5V3lwLWtzSTZUNnd6VzdNai1DRi1PS0pkbjdlRFAyWmk2bTljeTVXUHcwT0g2V3J6YmZpeHYwR3F2TEdDQWdva1kzZUtxOFAzNHhpbUdfTFdSeVc2LWdvcG5EQmFhSVAtYnI5QUtwbXdjRkZ3WjVEQXR3YmF6VHowV0FoZ2tCMW9POWlXY2Jpa1RmT3NDekozVkhLOEhNVnBUbm9uWTMzbU01ajJiTFV1bGNGVUdsSUtzQVNBR3BtZXIydFY1M1NtQWcwRjFUV081V2poTzRrcVFWU3ciLCJmbXNfcnVsZWlkIjoiMTAwMDksMTAwMTMsMTAwMTYsMTAwMTUsMTAwMjEsMTAwMDAsMTAwMTQsMTAwMjAsMTAwMjMifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTEwNzA3MjY2NDAsImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpNVFkzTnpGbE5tTXRPRGsyWmkwMFpETXlMV0l3Wm1NdE4yVTVPR1ZrWXpoak5XSXciLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxMTU3MTI2LCJpYXQiOjE3OTEwNzA3MjYsImp0aSI6IjYwOTc3ZDdhLTJiOTctNDQxYy05NjI3LWZmODBjYTg0Nzc1YyJ9.CZJSNpUc841NBwGd02YceFxfl773i_5UVc-xZmpe0g4&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=16771e6c-896f-4d32-b0fc-7e98edc8c5b0&clientModelNumber=1.0.0&country=MX&deviceDNT=false&deviceId=16771e6c-896f-4d32-b0fc-7e98edc8c5b0&deviceLat=19.4300&deviceLon=-99.1000&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=93cb6efc-bf83-11f1-933c-7eba18bf60d6&sid=93cb6efc-bf83-11f1-933c-7eba18bf60d6&userId=&country=MX&marketingRegion=MX&preferredLanguage=es-MX",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 223.17,
+      "response_time_ms": 420.89,
       "error": null
     },
     {
@@ -2263,37 +2203,77 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 456.56,
+      "response_time_ms": 415.8,
       "error": null
     },
     {
-      "channel_id": "0f1c04ed60e7973ca445",
-      "channel_name": "Canal Survision Alerce (720p)",
-      "url": "https://s1.tvdatta.com:3384/live/canal20tvlive.m3u8",
+      "channel_id": "b0f5858d8b833d63defb",
+      "channel_name": "Canal Claro (720p)",
+      "url": "http://168.196.127.137:6001/play/a04l/index.m3u8",
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 144.35,
+      "response_time_ms": 131.39,
       "error": null
     },
     {
-      "channel_id": "331cd87b44ea71dd73d2",
-      "channel_name": "Canal Latino 54 (360p)",
-      "url": "https://videostream.chileservidores.com:8081/latina/index.m3u8",
+      "channel_id": "105fd8457874904798e9",
+      "channel_name": "Canal 74 San Antonio",
+      "url": "https://stmv5.voxtvhd.com.br/canal74hd/canal74hd/playlist.m3u8",
       "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 346.3,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "b0f5858d8b833d63defb",
+      "channel_name": "Canal Claro (720p)",
+      "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjQ0ODM4NmI2LTVmOTctNDE1ZS05YmU0LWFhOGQzY2M4N2RiZCIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiJjMDhmMjZiZi1iZmViLTExZjEtYTQzNC1jMmQxMmZmNDk4ODUiLCJjbGllbnRJUCI6IjEwNC4xMDMuMjM4LjAiLCJjaXR5IjoiQnVlbm9zIEFpcmVzIiwicG9zdGFsQ29kZSI6ImMxMjA2IGFiZSIsImNvdW50cnkiOiJBUiIsImRtYSI6MCwiYWN0aXZlUmVnaW9uIjoiVkUiLCJkZXZpY2VMYXQiOi0zNC42MTAwMDA2MTAzNTE1NiwiZGV2aWNlTG9uIjotNTguNDE5OTk4MTY4OTQ1MzEsInByZWZlcnJlZExhbmd1YWdlIjoiZXMiLCJkZXZpY2VUeXBlIjoid2ViIiwiZGV2aWNlVmVyc2lvbiI6IjEzMy4wLjAiLCJkZXZpY2VNYWtlIjoiY2hyb21lIiwiZGV2aWNlTW9kZWwiOiJ3ZWIiLCJhcHBOYW1lIjoid2ViIiwiYXBwVmVyc2lvbiI6IjguMS4wIiwiY2xpZW50SUQiOiJkZmJlMTNiNi0zODhkLTQyYzYtOTZiYS00NDkzMzE1OWVkMWIiLCJjbUF1ZGllbmNlSUQiOiIiLCJpc0NsaWVudEROVCI6ZmFsc2UsInVzZXJJRCI6IiIsImxvZ0xldmVsIjoiREVGQVVMVCIsInRpbWVab25lIjoiQW1lcmljYS9BcmdlbnRpbmEvQnVlbm9zX0FpcmVzIiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6ImRmYmUxM2I2LTM4OGQtNDJjNi05NmJhLTQ0OTMzMTU5ZWQxYiIsImZ3VmNJRDJDb3BwYSI6ImRmYmUxM2I2LTM4OGQtNDJjNi05NmJhLTQ0OTMzMTU5ZWQxYiIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiZGZiZTEzYjYtMzg4ZC00MmM2LTk2YmEtNDQ5MzMxNTllZDFiIiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiIiwiX2Z3XzNQX1VJRCI6IiIsImZtc19ydWxlaWQiOiIxMDAyMCwxMDAyMSwxMDAwMCwxMDAwOSwxMDAxMywxMDAxNCwxMDAxNiwxMDAxNSJ9fSwiZHJtIjp7Im5hbWUiOiJ3aWRldmluZSIsImxldmVsIjoiTDMifSwic2Vzc2lvblN0YXJ0VGltZSI6MTc5MTExNTQ2OTQwMiwiaXNzIjoiYm9vdC5wbHV0by50diIsInN1YiI6InByaTp2MTpwbHV0bzpkZXZpY2VzOlZFOlpHWmlaVEV6WWpZdE16ZzRaQzAwTW1NMkxUazJZbUV0TkRRNU16TXhOVGxsWkRGaSIsImF1ZCI6IioucGx1dG8udHYiLCJleHAiOjE3OTEyMDE4NjksImlhdCI6MTc5MTExNTQ2OSwianRpIjoiNDBiNzEzMmMtZjE1NS00OGZlLTg2YzQtNzcxYmZhNDY3OWM2In0.DDTctkpQbCDLbEaDCGCq1cq64gm84kiicp_fXGKcpNs&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=dfbe13b6-388d-42c6-96ba-44933159ed1b&clientModelNumber=1.0.0&country=AR&deviceDNT=false&deviceId=dfbe13b6-388d-42c6-96ba-44933159ed1b&deviceLat=-34.6100&deviceLon=-58.4200&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=c08f26bf-bfeb-11f1-a434-c2d12ff49885&sid=c08f26bf-bfeb-11f1-a434-c2d12ff49885&userId=&country=AR&marketingRegion=AR&preferredLanguage=es-AR",
+      "source": "LOCAL-PLUTO-AR",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 170.41,
+      "response_time_ms": 139.88,
       "error": null
     },
     {
-      "channel_id": "b9bdfabb6f87501b8b27",
-      "channel_name": "Canal 2 Quellon (1080p) [Not 24/7]",
-      "url": "https://pantera1-100gb-cl-movistar.dps.live/tvquellon/tvquellon.smil/playlist.m3u8",
+      "channel_id": "b0f5858d8b833d63defb",
+      "channel_name": "Canal Claro (720p)",
+      "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjQ0ODM4NmI2LTVmOTctNDE1ZS05YmU0LWFhOGQzY2M4N2RiZCIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiJjMGUwMzY3MC1iZmViLTExZjEtODc3My1hMjhmM2NhOTZhODUiLCJjbGllbnRJUCI6IjE2MS4yMzguMC4wIiwiY2l0eSI6IlNhbnRpYWdvIiwicG9zdGFsQ29kZSI6IjgzMjAwMDAiLCJjb3VudHJ5IjoiQ0wiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjotMzMuNDUwMDAwNzYyOTM5NDUsImRldmljZUxvbiI6LTcwLjY1MDAwMTUyNTg3ODksInByZWZlcnJlZExhbmd1YWdlIjoiZXMiLCJkZXZpY2VUeXBlIjoid2ViIiwiZGV2aWNlVmVyc2lvbiI6IjEzMy4wLjAiLCJkZXZpY2VNYWtlIjoiY2hyb21lIiwiZGV2aWNlTW9kZWwiOiJ3ZWIiLCJhcHBOYW1lIjoid2ViIiwiYXBwVmVyc2lvbiI6IjguMS4wIiwiY2xpZW50SUQiOiIyNmI4MDZhNi04ZjQ4LTQ4NDMtOWNjZC0yYzczODcwZTQyMDciLCJjbUF1ZGllbmNlSUQiOiIiLCJpc0NsaWVudEROVCI6ZmFsc2UsInVzZXJJRCI6IiIsImxvZ0xldmVsIjoiREVGQVVMVCIsInRpbWVab25lIjoiQW1lcmljYS9TYW50aWFnbyIsInNlcnZlclNpZGVBZHMiOmZhbHNlLCJlMmVCZWFjb25zIjpmYWxzZSwiZmVhdHVyZXMiOnsibXVsdGlQb2RBZHMiOnsiY29ob3J0IjoiIiwiZW5hYmxlZCI6dHJ1ZX0sInN0aXRjaGVyQWRTZXNzaW9uRXZlbnQiOnsiZW5hYmxlZCI6dHJ1ZX0sInN0aXRjaGVyRGFzaE5nIjp7ImppdFBhY2siOiJyZXBhY2tKaXQsZGVjcnlwdCJ9LCJzdGl0Y2hlckhsc05nIjp7ImRlbXV4ZWRBdWRpbyI6ImppdCJ9fSwiZm1zUGFyYW1zIjp7ImZ3VmNJRDIiOiIyNmI4MDZhNi04ZjQ4LTQ4NDMtOWNjZC0yYzczODcwZTQyMDciLCJmd1ZjSUQyQ29wcGEiOiIyNmI4MDZhNi04ZjQ4LTQ4NDMtOWNjZC0yYzczODcwZTQyMDciLCJjdXN0b21QYXJhbXMiOnsiZm1zX2xpdmVyYW1wX2lkbCI6IiIsImZtc19lbWFpbGhhc2giOiIiLCJmbXNfc3Vic2NyaWJlcmlkIjoiIiwiZm1zX2lmYSI6IiIsImZtc19pZGZ2IjoiIiwiZm1zX3VzZXJpZCI6IjI2YjgwNmE2LThmNDgtNDg0My05Y2NkLTJjNzM4NzBlNDIwNyIsImZtc192Y2lkMnR5cGUiOiJ1c2VyaWQiLCJmbXNfcmFtcF9pZCI6IiIsImZtc19oaF9yYW1wX2lkIjoiIiwiZm1zX2JpZGlkdHlwZSI6IiIsIl9md18zUF9VSUQiOiIiLCJmbXNfcnVsZWlkIjoiMTAwMTUsMTAwMjAsMTAwMjEsMTAwMDAsMTAwMDksMTAwMTMsMTAwMTQsMTAwMTYifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTExMTU0Njk5MzMsImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpNalppT0RBMllUWXRPR1kwT0MwME9EUXpMVGxqWTJRdE1tTTNNemczTUdVME1qQTMiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxMjAxODY5LCJpYXQiOjE3OTExMTU0NjksImp0aSI6ImUwZDdlYTliLTdhZTgtNDFhNS1hM2FhLTZkNzJjMjA3YjMzYSJ9.8FBNy8KeNynqRGpMStTFxuP_7U2B8ljWfRpxr46-PUs&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=26b806a6-8f48-4843-9ccd-2c73870e4207&clientModelNumber=1.0.0&country=CL&deviceDNT=false&deviceId=26b806a6-8f48-4843-9ccd-2c73870e4207&deviceLat=-33.4500&deviceLon=-70.6500&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=c0e03670-bfeb-11f1-8773-a28f3ca96a85&sid=c0e03670-bfeb-11f1-8773-a28f3ca96a85&userId=&country=CL&marketingRegion=CL&preferredLanguage=es-CL",
+      "source": "LOCAL-PLUTO-CL",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 140.39,
+      "error": null
+    },
+    {
+      "channel_id": "b0f5858d8b833d63defb",
+      "channel_name": "Canal Claro (720p)",
+      "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjQ0ODM4NmI2LTVmOTctNDE1ZS05YmU0LWFhOGQzY2M4N2RiZCIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiJjMTFiMTFlZS1iZmViLTExZjEtODk0OC0xNmEzOTlkZGQ1ODEiLCJjbGllbnRJUCI6IjIwMC42OC4xMjguODMiLCJjaXR5IjoiTWV4aWNvIENpdHkiLCJwb3N0YWxDb2RlIjoiMTU1MzAiLCJjb3VudHJ5IjoiTVgiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjoxOS40MzAwMDAzMDUxNzU3OCwiZGV2aWNlTG9uIjotOTkuMDk5OTk4NDc0MTIxMSwicHJlZmVycmVkTGFuZ3VhZ2UiOiJlcyIsImRldmljZVR5cGUiOiJ3ZWIiLCJkZXZpY2VWZXJzaW9uIjoiMTMzLjAuMCIsImRldmljZU1ha2UiOiJjaHJvbWUiLCJkZXZpY2VNb2RlbCI6IndlYiIsImFwcE5hbWUiOiJ3ZWIiLCJhcHBWZXJzaW9uIjoiOC4xLjAiLCJjbGllbnRJRCI6ImQ3M2JmMDI2LTMwNWMtNGI1Yi1hNjVmLTRiM2RiOTVjYTkyZSIsImNtQXVkaWVuY2VJRCI6IiIsImlzQ2xpZW50RE5UIjpmYWxzZSwidXNlcklEIjoiIiwibG9nTGV2ZWwiOiJERUZBVUxUIiwidGltZVpvbmUiOiJBbWVyaWNhL01leGljb19DaXR5Iiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6ImQ3M2JmMDI2LTMwNWMtNGI1Yi1hNjVmLTRiM2RiOTVjYTkyZSIsImZ3VmNJRDJDb3BwYSI6ImQ3M2JmMDI2LTMwNWMtNGI1Yi1hNjVmLTRiM2RiOTVjYTkyZSIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiZDczYmYwMjYtMzA1Yy00YjViLWE2NWYtNGIzZGI5NWNhOTJlIiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiMTA0NSIsIl9md18zUF9VSUQiOiJJREw6QXJpUWl6cmFlR3ZoaEx3cFpCbC0xbE9SUDU3VXM0YUwyNkwzNHFlNndrMGZGSkYxMngtZ2REdUU1aEIwdTY3RTFrcWQwQ055LXpfVHFkS3g5YjVxbXV5dGE0cThpeUY5bjRVNzBqUXhiZEtnVUg3S1pRS1lfc1NSR2xDcnpyLWZNWWczY2l2MlJOSXlHUGtWU2llYlc5V3lwLWtzSTZUNnd6VzdNai1DRi1PS0pkbjdlRFAyWmk2bTljeTVXUHcwT0g2V3J6YmZpeHYwR3F2TEdDQWdva1kzZUtxOFAzNHhpbUdfTFdSeVc2LWdvcG5EQmFhSVAtYnI5QUtwbXdjRkZ3WjVEQXR3YmF6VHowV0FoZ2tCMW9POWlXY2Jpa1RmT3NDekozVkhLOEhNVnBUbm9uWTMzbU01ajJiTFV1bGNGVUdsSUtzQVNBR3BtZXIydFY1M1NtQWcwRjFUV081V2poTzRrcVFWU3ciLCJmbXNfcnVsZWlkIjoiMTAwMTMsMTAwMTYsMTAwMTUsMTAwMjEsMTAwMjMsMTAwMDAsMTAwMDksMTAwMTQsMTAwMjAifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTExMTU0NzAzMTksImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpaRGN6WW1Zd01qWXRNekExWXkwMFlqVmlMV0UyTldZdE5HSXpaR0k1TldOaE9USmwiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxMjAxODcwLCJpYXQiOjE3OTExMTU0NzAsImp0aSI6ImU3NzE3NmY0LTc4YTQtNDM2YS04MDRhLTQ0ZDczYzM0YWM1NiJ9.x-YMTg0-7pI_mdMYVsDjFAmtmWHp4ZPP6RnEsps0M2I&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=d73bf026-305c-4b5b-a65f-4b3db95ca92e&clientModelNumber=1.0.0&country=MX&deviceDNT=false&deviceId=d73bf026-305c-4b5b-a65f-4b3db95ca92e&deviceLat=19.4300&deviceLon=-99.1000&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=c11b11ee-bfeb-11f1-8948-16a399ddd581&sid=c11b11ee-bfeb-11f1-8948-16a399ddd581&userId=&country=MX&marketingRegion=MX&preferredLanguage=es-MX",
+      "source": "LOCAL-PLUTO-MX",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 98.63,
+      "error": null
+    },
+    {
+      "channel_id": "920b5babfdb1aca59982",
+      "channel_name": "Teletrak TV (720p)",
+      "url": "https://unlimited6-cl.dps.live/sportinghd/sportinghd.smil/playlist.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 579.21,
+      "response_time_ms": 663.28,
+      "error": null
+    },
+    {
+      "channel_id": "b0f5858d8b833d63defb",
+      "channel_name": "Canal Claro (720p)",
+      "url": "https://jmp2.uk/plu-68224482c5d53e1351aaf2f2.m3u8",
+      "source": "JMIGUE-PLUTOTV-MX",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 203.35,
       "error": null
     },
     {
@@ -2303,18 +2283,18 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 594.71,
+      "response_time_ms": 602.81,
       "error": null
     },
     {
-      "channel_id": "f58959207eb5f1cd2d88",
-      "channel_name": "Canal del Sur (720p)",
-      "url": "https://oracle.streaminghd.cl/canal-del-sur/canal-del-sur/playlist.m3u8",
-      "source": "CATALOGO",
+      "channel_id": "b9bdfabb6f87501b8b27",
+      "channel_name": "Canal 2 Quellon (1080p) [Not 24/7]",
+      "url": "https://pantera1-100gb-cl-movistar.dps.live/tvquellon/tvquellon.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": false,
-      "status_code": 403,
-      "response_time_ms": 359.35,
-      "error": "HTTP 403"
+      "status_code": 404,
+      "response_time_ms": 575.55,
+      "error": "HTTP 404"
     },
     {
       "channel_id": "2b18a36ac364961219e8",
@@ -2323,7 +2303,17 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 2013.85,
+      "response_time_ms": 1948.06,
+      "error": null
+    },
+    {
+      "channel_id": "331cd87b44ea71dd73d2",
+      "channel_name": "Canal Latino 54 (360p)",
+      "url": "https://videostream.chileservidores.com:8081/latina/index.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 294.55,
       "error": null
     },
     {
@@ -2333,8 +2323,38 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 716.36,
+      "response_time_ms": 670.03,
       "error": null
+    },
+    {
+      "channel_id": "0f1c04ed60e7973ca445",
+      "channel_name": "Canal Survision Alerce (720p)",
+      "url": "https://s1.tvdatta.com:3384/live/canal20tvlive.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 425.26,
+      "error": null
+    },
+    {
+      "channel_id": "f58959207eb5f1cd2d88",
+      "channel_name": "Canal del Sur (720p)",
+      "url": "https://oracle.streaminghd.cl/canal-del-sur/canal-del-sur/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 403,
+      "response_time_ms": 460.86,
+      "error": "HTTP 403"
+    },
+    {
+      "channel_id": "954f81c91fd2030e3291",
+      "channel_name": "Radio Fiessta (720p)",
+      "url": "https://www.cloudscriptdog.cl:19360/fiesta-video-01/fiesta-video-01.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 3098.45,
+      "error": "[Errno 111] Connection refused"
     },
     {
       "channel_id": "55a3f16404afea8da664",
@@ -2343,37 +2363,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 368.29,
-      "error": null
-    },
-    {
-      "channel_id": "9de9b766009862ba066d",
-      "channel_name": "Estacion TV (720p)",
-      "url": "https://unlimited1-cl-isp.dps.live/supersonikatv/supersonikatv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 585.97,
-      "error": null
-    },
-    {
-      "channel_id": "b0f5858d8b833d63defb",
-      "channel_name": "Canal Claro (720p)",
-      "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjQ0ODM4NmI2LTVmOTctNDE1ZS05YmU0LWFhOGQzY2M4N2RiZCIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiIzMjVjMDk5Ny1iZmIyLTExZjEtYjIzZi0xNjU4MWJjMGVhNzUiLCJjbGllbnRJUCI6IjE2MS4yMzguMC4wIiwiY2l0eSI6IlNhbnRpYWdvIiwicG9zdGFsQ29kZSI6IjgzMjAwMDAiLCJjb3VudHJ5IjoiQ0wiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjotMzMuNDUwMDAwNzYyOTM5NDUsImRldmljZUxvbiI6LTcwLjY1MDAwMTUyNTg3ODksInByZWZlcnJlZExhbmd1YWdlIjoiZXMiLCJkZXZpY2VUeXBlIjoid2ViIiwiZGV2aWNlVmVyc2lvbiI6IjEzMy4wLjAiLCJkZXZpY2VNYWtlIjoiY2hyb21lIiwiZGV2aWNlTW9kZWwiOiJ3ZWIiLCJhcHBOYW1lIjoid2ViIiwiYXBwVmVyc2lvbiI6IjguMS4wIiwiY2xpZW50SUQiOiI3MDkwNjA2Ni1iNjE4LTQxNDEtYjUyZC1kOTk4ZjM1NDNhNjMiLCJjbUF1ZGllbmNlSUQiOiIiLCJpc0NsaWVudEROVCI6ZmFsc2UsInVzZXJJRCI6IiIsImxvZ0xldmVsIjoiREVGQVVMVCIsInRpbWVab25lIjoiQW1lcmljYS9TYW50aWFnbyIsInNlcnZlclNpZGVBZHMiOmZhbHNlLCJlMmVCZWFjb25zIjpmYWxzZSwiZmVhdHVyZXMiOnsibXVsdGlQb2RBZHMiOnsiY29ob3J0IjoiIiwiZW5hYmxlZCI6dHJ1ZX0sInN0aXRjaGVyRGFzaE5nIjp7ImppdFBhY2siOiJyZXBhY2tKaXQsZGVjcnlwdCJ9LCJzdGl0Y2hlckhsc05nIjp7ImRlbXV4ZWRBdWRpbyI6ImppdCJ9fSwiZm1zUGFyYW1zIjp7ImZ3VmNJRDIiOiI3MDkwNjA2Ni1iNjE4LTQxNDEtYjUyZC1kOTk4ZjM1NDNhNjMiLCJmd1ZjSUQyQ29wcGEiOiI3MDkwNjA2Ni1iNjE4LTQxNDEtYjUyZC1kOTk4ZjM1NDNhNjMiLCJjdXN0b21QYXJhbXMiOnsiZm1zX2xpdmVyYW1wX2lkbCI6IiIsImZtc19lbWFpbGhhc2giOiIiLCJmbXNfc3Vic2NyaWJlcmlkIjoiIiwiZm1zX2lmYSI6IiIsImZtc19pZGZ2IjoiIiwiZm1zX3VzZXJpZCI6IjcwOTA2MDY2LWI2MTgtNDE0MS1iNTJkLWQ5OThmMzU0M2E2MyIsImZtc192Y2lkMnR5cGUiOiJ1c2VyaWQiLCJmbXNfcmFtcF9pZCI6IiIsImZtc19oaF9yYW1wX2lkIjoiIiwiZm1zX2JpZGlkdHlwZSI6IiIsIl9md18zUF9VSUQiOiIiLCJmbXNfcnVsZWlkIjoiMTAwMjAsMTAwMjEsMTAwMDAsMTAwMDksMTAwMTMsMTAwMTQsMTAwMTYsMTAwMTUifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTEwOTA3NDk1MTcsImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpOekE1TURZd05qWXRZall4T0MwME1UUXhMV0kxTW1RdFpEazVPR1l6TlRRellUWXoiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxMTc3MTQ5LCJpYXQiOjE3OTEwOTA3NDksImp0aSI6IjM3YzUzN2IwLWEyODktNDM1OC05OWQ0LWZkYzBmMjk4NTE1NSJ9.G0C7Sg18empn9M-_Iwc5Dp4VjMdMVlj1kt2wU2MqSPY&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=70906066-b618-4141-b52d-d998f3543a63&clientModelNumber=1.0.0&country=CL&deviceDNT=false&deviceId=70906066-b618-4141-b52d-d998f3543a63&deviceLat=-33.4500&deviceLon=-70.6500&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=325c0997-bfb2-11f1-b23f-16581bc0ea75&sid=325c0997-bfb2-11f1-b23f-16581bc0ea75&userId=&country=CL&marketingRegion=CL&preferredLanguage=es-CL",
-      "source": "LOCAL-PLUTO-CL",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 707.68,
-      "error": null
-    },
-    {
-      "channel_id": "89e8c32b54f31aa63af6",
-      "channel_name": "Club TV",
-      "url": "https://tv.arkeo.cl:1936/clubtv/clubtv/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 625.79,
+      "response_time_ms": 416.64,
       "error": null
     },
     {
@@ -2383,7 +2373,17 @@
       "source": "DEARBULUT-CHILE",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 454.33,
+      "response_time_ms": 416.73,
+      "error": null
+    },
+    {
+      "channel_id": "89e8c32b54f31aa63af6",
+      "channel_name": "Club TV",
+      "url": "https://tv.arkeo.cl:1936/clubtv/clubtv/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 724.79,
       "error": null
     },
     {
@@ -2393,18 +2393,18 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 507.08,
+      "response_time_ms": 624.29,
       "error": null
     },
     {
-      "channel_id": "954f81c91fd2030e3291",
-      "channel_name": "Radio Fiessta (720p)",
-      "url": "https://www.cloudscriptdog.cl:19360/fiesta-video-01/fiesta-video-01.m3u8",
+      "channel_id": "9de9b766009862ba066d",
+      "channel_name": "Estacion TV (720p)",
+      "url": "https://unlimited1-cl-isp.dps.live/supersonikatv/supersonikatv.smil/playlist.m3u8",
       "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 3146.41,
-      "error": "[Errno 111] Connection refused"
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 749.88,
+      "error": null
     },
     {
       "channel_id": "f9423dac5979a816712d",
@@ -2413,7 +2413,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 500.42,
+      "response_time_ms": 604.99,
       "error": null
     },
     {
@@ -2423,27 +2423,7 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 736.42,
-      "error": null
-    },
-    {
-      "channel_id": "7b5e31985b8d851101b4",
-      "channel_name": "Radio Ritmo FM (1080p) [Not 24/7]",
-      "url": "https://panel.tvstream.cl:1936/8046/8046/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 386.86,
-      "error": null
-    },
-    {
-      "channel_id": "7fca5ee63389293c6ce2",
-      "channel_name": "Tendencias Prime (720p)",
-      "url": "https://v4.tustreaming.cl/tendenciastv/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 186.49,
+      "response_time_ms": 842.55,
       "error": null
     },
     {
@@ -2453,7 +2433,17 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 798.72,
+      "response_time_ms": 891.15,
+      "error": null
+    },
+    {
+      "channel_id": "7fca5ee63389293c6ce2",
+      "channel_name": "Tendencias Prime (720p)",
+      "url": "https://v4.tustreaming.cl/tendenciastv/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 170.7,
       "error": null
     },
     {
@@ -2463,17 +2453,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 620.38,
-      "error": null
-    },
-    {
-      "channel_id": "cd509fe1ce5ed12517a3",
-      "channel_name": "Santa Maria Television (720p) [Not 24/7]",
-      "url": "https://pantera1-100gb-cl-movistar.dps.live/smtv/smtv.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 482.81,
+      "response_time_ms": 760.79,
       "error": null
     },
     {
@@ -2483,38 +2463,18 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 544.66,
+      "response_time_ms": 567.15,
       "error": null
     },
     {
-      "channel_id": "e39f0e536a3e75c9aab7",
-      "channel_name": "Thema Television (720p) [Not 24/7]",
-      "url": "https://unlimited1-us.dps.live/thema/thema.smil/playlist.m3u8",
+      "channel_id": "cd509fe1ce5ed12517a3",
+      "channel_name": "Santa Maria Television (720p) [Not 24/7]",
+      "url": "https://pantera1-100gb-cl-movistar.dps.live/smtv/smtv.smil/playlist.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 511.81,
+      "response_time_ms": 539.41,
       "error": null
-    },
-    {
-      "channel_id": "ecb39a07a253d05a221f",
-      "channel_name": "T-Vinet (480p)",
-      "url": "https://unlimited1-us.dps.live/inet2/inet2.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 614.04,
-      "error": null
-    },
-    {
-      "channel_id": "6e7eca644aba83bf8298",
-      "channel_name": "Telecanal (720p)",
-      "url": "http://45.232.210.1:8029/play/a00s/index.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 2945.7,
-      "error": "[Errno 111] Connection refused"
     },
     {
       "channel_id": "bb12f48bc43e822e2426",
@@ -2523,7 +2483,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 737.32,
+      "response_time_ms": 844.88,
       "error": null
     },
     {
@@ -2533,17 +2493,47 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 717.25,
+      "response_time_ms": 714.23,
       "error": null
     },
     {
-      "channel_id": "9e2e84ca3c4963fe5b46",
-      "channel_name": "TV5 Linares (720p)",
-      "url": "https://v1.tustreaming.cl/tv5linares/index.m3u8",
+      "channel_id": "6e7eca644aba83bf8298",
+      "channel_name": "Telecanal (720p)",
+      "url": "http://45.232.210.1:8029/play/a00s/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 3001.11,
+      "error": "[Errno 111] Connection refused"
+    },
+    {
+      "channel_id": "7b5e31985b8d851101b4",
+      "channel_name": "Radio Ritmo FM (1080p) [Not 24/7]",
+      "url": "https://panel.tvstream.cl:1936/8046/8046/playlist.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 365.55,
+      "response_time_ms": 1015.06,
+      "error": null
+    },
+    {
+      "channel_id": "ecb39a07a253d05a221f",
+      "channel_name": "T-Vinet (480p)",
+      "url": "https://unlimited1-us.dps.live/inet2/inet2.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 685.27,
+      "error": null
+    },
+    {
+      "channel_id": "e39f0e536a3e75c9aab7",
+      "channel_name": "Thema Television (720p) [Not 24/7]",
+      "url": "https://unlimited1-us.dps.live/thema/thema.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 606.9,
       "error": null
     },
     {
@@ -2553,7 +2543,27 @@
       "source": "CATALOGO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 627.47,
+      "response_time_ms": 658.2,
+      "error": null
+    },
+    {
+      "channel_id": "9e2e84ca3c4963fe5b46",
+      "channel_name": "TV5 Linares (720p)",
+      "url": "https://v1.tustreaming.cl/tv5linares/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 447.2,
+      "error": null
+    },
+    {
+      "channel_id": "abd0444ed6930a911ef5",
+      "channel_name": "Sextavision (1080p)",
+      "url": "https://5ff3d9babae13.streamlock.net/fzkqsdfray/fzkqsdfray/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 858.01,
       "error": null
     },
     {
@@ -2563,17 +2573,27 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": false,
       "status_code": 404,
-      "response_time_ms": 458.74,
+      "response_time_ms": 706.82,
       "error": "HTTP 404"
     },
     {
-      "channel_id": "abd0444ed6930a911ef5",
-      "channel_name": "Sextavision (1080p)",
-      "url": "https://5ff3d9babae13.streamlock.net/fzkqsdfray/fzkqsdfray/playlist.m3u8",
+      "channel_id": "1d36be87f8ada23c462b",
+      "channel_name": "TVR (1080p)",
+      "url": "https://unlimited1-us.dps.live/tvr/tvr.smil/playlist.m3u8",
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 817.78,
+      "response_time_ms": 617.18,
+      "error": null
+    },
+    {
+      "channel_id": "6a66ddb9deb275e74526",
+      "channel_name": "U Los Lagos TV (1080p) [Not 24/7]",
+      "url": "http://tv.ulagos.cl/web/live.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 489.53,
       "error": null
     },
     {
@@ -2583,27 +2603,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 365.06,
-      "error": null
-    },
-    {
-      "channel_id": "293287bd3a76acb511ad",
-      "channel_name": "Via X (576p)",
-      "url": "http://45.170.130.224:8000/play/a025/index.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 286.89,
-      "error": null
-    },
-    {
-      "channel_id": "1d36be87f8ada23c462b",
-      "channel_name": "TVR (1080p)",
-      "url": "https://unlimited1-us.dps.live/tvr/tvr.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 533.47,
+      "response_time_ms": 415.76,
       "error": null
     },
     {
@@ -2613,18 +2613,28 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 1038.73,
+      "response_time_ms": 1025.99,
       "error": null
+    },
+    {
+      "channel_id": "5cdea783add4ac839625",
+      "channel_name": "UATV (1080p) [Not 24/7]",
+      "url": "https://unlimited1-us.dps.live/uatv/uatv.smil/playlist.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 546.24,
+      "error": "HTTP 404"
     },
     {
       "channel_id": "397fdce3c9e59e90fd2c",
       "channel_name": "UATV (1080p)",
       "url": "https://unlimited6-cl.dps.live/uatv/uatv.smil/playlist.m3u8",
       "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 648.86,
-      "error": null
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 669.45,
+      "error": "HTTP 404"
     },
     {
       "channel_id": "2466adeed6aff9893d49",
@@ -2633,17 +2643,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 820.22,
-      "error": null
-    },
-    {
-      "channel_id": "5cdea783add4ac839625",
-      "channel_name": "UATV (1080p) [Not 24/7]",
-      "url": "https://unlimited1-us.dps.live/uatv/uatv.smil/playlist.m3u8",
-      "source": "CATALOGO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 856.15,
+      "response_time_ms": 895.58,
       "error": null
     },
     {
@@ -2653,17 +2653,57 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": false,
       "status_code": 400,
-      "response_time_ms": 242.38,
+      "response_time_ms": 278.61,
       "error": "HTTP 400"
     },
     {
-      "channel_id": "d140ce7a720ae8fd8ca3",
-      "channel_name": "Zona Latina (576p)",
-      "url": "http://45.170.130.224:8000/play/a00x/index.m3u8",
-      "source": "IPTV-ORG-CHILE",
+      "channel_id": "cb10d5c0ecb57c4aa804",
+      "channel_name": "Buin Somos Todos (720p) [Not 24/7]",
+      "url": "https://bst.buin.cl/0.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 2858.77,
+      "error": "[Errno -5] No address associated with hostname"
+    },
+    {
+      "channel_id": "fd9bf3545734d77b8e8d",
+      "channel_name": "Solo TV",
+      "url": "https://sproxy.solotv.cl/hls/live/fhd.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 6003.48,
+      "error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: certificate has expired (_ssl.c:1010)"
+    },
+    {
+      "channel_id": "807c57a519855c5ed5a5",
+      "channel_name": "VTV Valle de Aconcagua (720p) [Not 24/7]",
+      "url": "https://unlimited1-us.dps.live/vtv/vtv.smil/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 288.87,
+      "response_time_ms": 618.95,
+      "error": null
+    },
+    {
+      "channel_id": "5cfb1fce0dcba4d2285c",
+      "channel_name": "Vision TV (Chile)",
+      "url": "https://tv.arkeo.cl:1936/8044/8044/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 404,
+      "response_time_ms": 730.25,
+      "error": "HTTP 404"
+    },
+    {
+      "channel_id": "2da8a6fb11c792ce69d7",
+      "channel_name": "Vivo TV",
+      "url": "https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": true,
+      "status_code": 200,
+      "response_time_ms": 727.6,
       "error": null
     },
     {
@@ -2673,57 +2713,7 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": true,
       "status_code": 200,
-      "response_time_ms": 768.71,
-      "error": null
-    },
-    {
-      "channel_id": "807c57a519855c5ed5a5",
-      "channel_name": "VTV Valle de Aconcagua (720p) [Not 24/7]",
-      "url": "https://unlimited1-us.dps.live/vtv/vtv.smil/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 507.88,
-      "error": null
-    },
-    {
-      "channel_id": "2da8a6fb11c792ce69d7",
-      "channel_name": "Vivo TV",
-      "url": "https://5eaccbab48461.streamlock.net:1936/8264/8264/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 644.54,
-      "error": null
-    },
-    {
-      "channel_id": "cb10d5c0ecb57c4aa804",
-      "channel_name": "Buin Somos Todos (720p) [Not 24/7]",
-      "url": "https://bst.buin.cl/0.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 2819.74,
-      "error": "[Errno -5] No address associated with hostname"
-    },
-    {
-      "channel_id": "5cfb1fce0dcba4d2285c",
-      "channel_name": "Vision TV (Chile)",
-      "url": "https://tv.arkeo.cl:1936/8044/8044/playlist.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 404,
-      "response_time_ms": 708.76,
-      "error": "HTTP 404"
-    },
-    {
-      "channel_id": "807c57a519855c5ed5a5",
-      "channel_name": "VTV Valle de Aconcagua (720p) [Not 24/7]",
-      "url": "https://unlimited6-cl.dps.live/vtv/vtv.smil/playlist.m3u8",
-      "source": "DEARBULUT-CHILE",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 628.96,
+      "response_time_ms": 842.96,
       "error": null
     },
     {
@@ -2733,68 +2723,8 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 2839.87,
+      "response_time_ms": 2782.19,
       "error": "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: Hostname mismatch, certificate is not valid for 'live.cdnlivecdn.com'. (_ssl.c:1010)"
-    },
-    {
-      "channel_id": "6a66ddb9deb275e74526",
-      "channel_name": "U Los Lagos TV (1080p) [Not 24/7]",
-      "url": "http://tv.ulagos.cl/web/live.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": true,
-      "status_code": 200,
-      "response_time_ms": 2615.0,
-      "error": null
-    },
-    {
-      "channel_id": "a2048bdccbc2fe4f327e",
-      "channel_name": "EnerGeek (1080p)",
-      "url": "https://backend.energeek.cl/webtv/egretroweb/index.m3u8?token=ZZDemoIPTVGH",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 26996.39,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "8f2456b6d9b23d465513",
-      "channel_name": "13Rec (576p)",
-      "url": "http://45.4.1.201:8000/play/a11i/index.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 27080.0,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "67d6892f14e2159daa35",
-      "channel_name": "EnerGeek FAN (1080p)",
-      "url": "https://backend.energeek.cl/webtv/egfanweb/index.m3u8?token=ZZDemoIPTVGH",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 27289.1,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "34ffd7b9f5bc1f16e3b0",
-      "channel_name": "PRIDEtv LATAM (1080p)",
-      "url": "https://backend.energeek.cl/webtv/pridetvweb/index.m3u8?token=ZZDemoIPTVGH",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 26705.67,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "5a2ad37babeda6a9341e",
-      "channel_name": "TVN3 (1080p)",
-      "url": "http://cdn1tlinkgo.tlink.cl/tvn3/mono.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 27367.6,
-      "error": "timed out"
     },
     {
       "channel_id": "bb04bf01b87db31534a3",
@@ -2803,17 +2733,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 27296.71,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "d21df815d109d470c4de",
-      "channel_name": "ETC TV (1080p)",
-      "url": "http://cdn1tlinkgo.tlink.cl/etc/mono.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 27402.31,
+      "response_time_ms": 26688.37,
       "error": "timed out"
     },
     {
@@ -2823,7 +2743,67 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 27278.51,
+      "response_time_ms": 26653.89,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "8f2456b6d9b23d465513",
+      "channel_name": "13Rec (576p)",
+      "url": "http://45.4.1.201:8000/play/a11i/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26880.56,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "d21df815d109d470c4de",
+      "channel_name": "ETC TV (1080p)",
+      "url": "http://cdn1tlinkgo.tlink.cl/etc/mono.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26978.75,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "5a2ad37babeda6a9341e",
+      "channel_name": "TVN3 (1080p)",
+      "url": "http://cdn1tlinkgo.tlink.cl/tvn3/mono.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26940.15,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "a2048bdccbc2fe4f327e",
+      "channel_name": "EnerGeek (1080p)",
+      "url": "https://backend.energeek.cl/webtv/egretroweb/index.m3u8?token=ZZDemoIPTVGH",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 27017.05,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "67d6892f14e2159daa35",
+      "channel_name": "EnerGeek FAN (1080p)",
+      "url": "https://backend.energeek.cl/webtv/egfanweb/index.m3u8?token=ZZDemoIPTVGH",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 27015.77,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "34ffd7b9f5bc1f16e3b0",
+      "channel_name": "PRIDEtv LATAM (1080p)",
+      "url": "https://backend.energeek.cl/webtv/pridetvweb/index.m3u8?token=ZZDemoIPTVGH",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26673.3,
       "error": "timed out"
     },
     {
@@ -2833,7 +2813,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26893.31,
+      "response_time_ms": 26736.17,
       "error": "timed out"
     },
     {
@@ -2843,7 +2823,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26860.77,
+      "response_time_ms": 26703.56,
       "error": "timed out"
     },
     {
@@ -2853,7 +2833,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26846.21,
+      "response_time_ms": 26695.59,
       "error": "timed out"
     },
     {
@@ -2863,7 +2843,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26719.2,
+      "response_time_ms": 26898.81,
       "error": "timed out"
     },
     {
@@ -2873,7 +2853,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26810.39,
+      "response_time_ms": 26677.8,
       "error": "timed out"
     },
     {
@@ -2883,17 +2863,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26714.7,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "621e60ed3f83251d7bbd",
-      "channel_name": "24 Horas (Chile) (1080p)",
-      "url": "http://cdn1tlinkgo.tlink.cl/24horashd/mono.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 26730.49,
+      "response_time_ms": 26678.27,
       "error": "timed out"
     },
     {
@@ -2903,7 +2873,17 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26721.94,
+      "response_time_ms": 26753.02,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "621e60ed3f83251d7bbd",
+      "channel_name": "24 Horas (Chile) (1080p)",
+      "url": "http://cdn1tlinkgo.tlink.cl/24horashd/mono.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26838.19,
       "error": "timed out"
     },
     {
@@ -2913,7 +2893,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26909.33,
+      "response_time_ms": 26624.81,
       "error": "timed out"
     },
     {
@@ -2923,27 +2903,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26816.24,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "d1febdf0ef75af9e42f5",
-      "channel_name": "DSports (1080p)",
-      "url": "http://138.121.113.175:8000/play/a0cj/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 26621.07,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "d1febdf0ef75af9e42f5",
-      "channel_name": "DSports (1080p)",
-      "url": "http://190.238.43.117:9000/play/a09d/index.m3u8",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 26625.1,
+      "response_time_ms": 26631.28,
       "error": "timed out"
     },
     {
@@ -2953,7 +2913,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26927.31,
+      "response_time_ms": 26632.42,
       "error": "timed out"
     },
     {
@@ -2963,7 +2923,17 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26853.52,
+      "response_time_ms": 26683.85,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "d1febdf0ef75af9e42f5",
+      "channel_name": "DSports (1080p)",
+      "url": "http://190.238.43.117:9000/play/a09d/index.m3u8",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26625.28,
       "error": "timed out"
     },
     {
@@ -2973,17 +2943,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26632.56,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "d1febdf0ef75af9e42f5",
-      "channel_name": "DSports (1080p)",
-      "url": "http://157.100.9.51:8000/play/a26d",
-      "source": "NUESTRA-MAESTRA-CORREGIDO",
-      "online": false,
-      "status_code": 200,
-      "response_time_ms": 27795.16,
+      "response_time_ms": 26631.75,
       "error": "timed out"
     },
     {
@@ -2993,7 +2953,17 @@
       "source": "NUESTRA-MAESTRA-CORREGIDO",
       "online": false,
       "status_code": 200,
-      "response_time_ms": 27773.53,
+      "response_time_ms": 27998.65,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "d1febdf0ef75af9e42f5",
+      "channel_name": "DSports (1080p)",
+      "url": "http://157.100.9.51:8000/play/a26d",
+      "source": "NUESTRA-MAESTRA-CORREGIDO",
+      "online": false,
+      "status_code": 200,
+      "response_time_ms": 28003.28,
       "error": "timed out"
     },
     {
@@ -3003,27 +2973,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26830.93,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "7248cc597783706c8cc1",
-      "channel_name": "Via X (1080p)",
-      "url": "http://cdn1tlinkgo.tlink.cl/viax/mono.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 26634.24,
-      "error": "timed out"
-    },
-    {
-      "channel_id": "624acb3011f30a278142",
-      "channel_name": "TVR (Chile) (1080p)",
-      "url": "http://cdn1tlinkgo.tlink.cl/tvr/mono.m3u8",
-      "source": "CATALOGO",
-      "online": false,
-      "status_code": null,
-      "response_time_ms": 26734.94,
+      "response_time_ms": 26628.61,
       "error": "timed out"
     },
     {
@@ -3033,7 +2983,47 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26898.85,
+      "response_time_ms": 26685.88,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "624acb3011f30a278142",
+      "channel_name": "TVR (Chile) (1080p)",
+      "url": "http://cdn1tlinkgo.tlink.cl/tvr/mono.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26714.81,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "7248cc597783706c8cc1",
+      "channel_name": "Via X (1080p)",
+      "url": "http://cdn1tlinkgo.tlink.cl/viax/mono.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26648.41,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "293287bd3a76acb511ad",
+      "channel_name": "Via X (576p)",
+      "url": "http://45.170.130.224:8000/play/a025/index.m3u8",
+      "source": "CATALOGO",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26625.05,
+      "error": "timed out"
+    },
+    {
+      "channel_id": "d140ce7a720ae8fd8ca3",
+      "channel_name": "Zona Latina (576p)",
+      "url": "http://45.170.130.224:8000/play/a00x/index.m3u8",
+      "source": "IPTV-ORG-CHILE",
+      "online": false,
+      "status_code": null,
+      "response_time_ms": 26625.62,
       "error": "timed out"
     },
     {
@@ -3043,7 +3033,7 @@
       "source": "CATALOGO",
       "online": false,
       "status_code": null,
-      "response_time_ms": 26633.65,
+      "response_time_ms": 26632.24,
       "error": "timed out"
     }
   ]
