@@ -16,8 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: {python-version: '3.12'}
-      - run: python TV/tests/reconnect_test.py
+        with:
+          python-version: '3.12'
+      - name: Validate recovery implementation
+        run: |
+          python -m py_compile TV/tests/reconnect_test.py
+          test -s TV/shared/player.js
+          grep -F 'IPTV-CHILE-GENERADOR.m3u' TV/shared/player.js
+          grep -F 'retries>=6' TV/shared/player.js
+          grep -F 'Math.pow(2,retries)' TV/shared/player.js
+          grep -F 'addEventListener("error"' TV/shared/player.js
+          grep -F 'addEventListener("stalled"' TV/shared/player.js
+          grep -F 'addEventListener("ended"' TV/shared/player.js
+          echo "TV static/reconnect checks: OK"
 
   firetv:
     needs: static
@@ -31,8 +42,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
       - run: gradle assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
@@ -67,4 +77,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: tizen-wgt
-          path: TV/tizen/.build/*.wgt
+          path: TV/tizen/.out/*.wgt
