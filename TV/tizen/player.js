@@ -1,0 +1,1 @@
+const s=document.createElement("script");s.src="../shared/player.js";document.body.appendChild(s);
