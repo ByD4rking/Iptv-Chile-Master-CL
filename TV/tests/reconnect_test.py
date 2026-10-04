@@ -1,14 +1,11 @@
 from pathlib import Path
-p = Path(__file__).resolve().parents[1] / "shared" / "player.js"
+p = Path("TV/shared/player.js")
+assert p.is_file(), f"no existe {p}"
 s = p.read_text(encoding="utf-8")
-checks = {
-    "catalog": "IPTV-CHILE-GENERADOR.m3u",
-    "bounded retries": "retries>=6",
-    "exponential backoff": "Math.pow(2,retries)",
-    "error recovery": 'addEventListener("error"',
-    "stalled recovery": 'addEventListener("stalled"',
-    "ended recovery": 'addEventListener("ended"',
-}
-missing = [name for name, needle in checks.items() if needle not in s]
-assert not missing, "faltan controles: " + ", ".join(missing)
+assert "IPTV-CHILE-GENERADOR.m3u" in s
+assert "retries>=6" in s
+assert "Math.pow(2,retries)" in s
+assert 'addEventListener("error"' in s
+assert 'addEventListener("stalled"' in s
+assert 'addEventListener("ended"' in s
 print("TV static/reconnect checks: OK")
