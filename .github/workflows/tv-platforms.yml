@@ -1,0 +1,70 @@
+name: TV Platforms Build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'TV/**'
+      - '.github/workflows/tv-platforms.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python TV/tests/reconnect_test.py
+
+  firetv:
+    needs: static
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: TV/firetv
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - run: gradle assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firetv-apk
+          path: TV/firetv/app/build/outputs/apk/debug/*.apk
+
+  webos:
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --global @webos-tools/cli
+      - run: bash TV/webos/package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: webos-ipk
+          path: TV/webos/*.ipk
+
+  tizen:
+    needs: static
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require Tizen Studio
+        run: |
+          if [ -z "${TIZEN_SDK_ROOT:-}" ] || [ ! -x "$TIZEN_SDK_ROOT/tools/ide/bin/tizen" ]; then
+            echo "Tizen Studio no está instalado en este runner."
+            echo "Configura un runner propio con Tizen Studio y TIZEN_SDK_ROOT."
+            exit 78
+          fi
+      - run: bash TV/tizen/package.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tizen-wgt
+          path: TV/tizen/.build/*.wgt
