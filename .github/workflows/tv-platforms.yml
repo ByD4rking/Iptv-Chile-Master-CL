@@ -44,22 +44,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check Tizen Studio
+      - name: Detect Tizen Studio
+        id: sdk
         run: |
-          if [ -z "${TIZEN_SDK_ROOT:-}" ] || [ ! -x "$TIZEN_SDK_ROOT/tools/ide/bin/tizen" ]; then
-            echo "Tizen Studio no está disponible en el runner hospedado."
-            echo "El paquete se construye con TV/tizen/package.sh en un runner que tenga Tizen Studio."
-            exit 78
+          if [ -n "${TIZEN_SDK_ROOT:-}" ] && [ -x "$TIZEN_SDK_ROOT/tools/ide/bin/tizen" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "Tizen Studio no está disponible en el runner hospedado; se deja el build listo para runner propio."
           fi
-      - run: bash TV/tizen/package.sh
+      - name: Package .wgt
+        if: steps.sdk.outputs.available == 'true'
+        run: bash TV/tizen/package.sh
       - uses: actions/upload-artifact@v4
+        if: steps.sdk.outputs.available == 'true'
         with:
           name: tizen-wgt
           path: TV/tizen/.out/*.wgt
 
   static:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: Smoke test
