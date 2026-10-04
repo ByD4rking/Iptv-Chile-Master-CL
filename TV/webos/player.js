@@ -1,0 +1,1 @@
+(()=>{const base="../shared/";const s=document.createElement("script");s.src=base+"player.js";document.body.appendChild(s)})();
