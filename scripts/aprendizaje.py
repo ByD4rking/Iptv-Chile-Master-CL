@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
+from functools import lru_cache
 
 BASE = Path(__file__).resolve().parent.parent
 ARCHIVO = BASE / "scripts" / "aprendizaje.json"
@@ -80,6 +81,7 @@ def _ajustar_presupuesto(datos, ahora):
     return mejor
 
 
+@lru_cache(maxsize=1)
 def cargar():
     if not ARCHIVO.exists():
         return {}
@@ -131,6 +133,8 @@ def _guardar(datos):
     temporal = ARCHIVO.with_suffix(".tmp")
     temporal.write_text(texto, encoding="utf-8")
     temporal.replace(ARCHIVO)
+    # Invalidar la instantánea en memoria tras cada escritura.
+    cargar.cache_clear()
 
 
 def _nuevo(nombre, ahora):
