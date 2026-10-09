@@ -48,6 +48,12 @@ jobs:
       - name: Comprobar sintaxis Python
         run: python -m compileall -q scripts pluto/src IPTV-CHILE-GENERADOR/scripts IPTV-CHILE-GENERADOR/tests
 
+      - name: Instalar dependencias del verificador M3U
+        run: python -m pip install requests urllib3
+
+      - name: Probar reintentos y backoff del verificador M3U
+        run: python -m unittest discover -s scripts -p 'test_verificar_m3u_reintentos.py'
+
       - name: Verificar orden y reconexión de la lista general
         run: python scripts/selftest_reconexion_principal.py
 
