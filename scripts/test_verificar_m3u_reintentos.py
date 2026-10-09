@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch
 import requests
 import verificar_m3u
+import aprendizaje
 
 
 class ReintentosVerificadorTests(unittest.TestCase):
@@ -21,6 +22,17 @@ class ReintentosVerificadorTests(unittest.TestCase):
         self.assertEqual(resultado["estado"], "OK")
         self.assertEqual(intento.call_count, 2)
         dormir.assert_called_once_with(0.5)
+
+    def test_historial_aprendizaje_se_lee_una_vez_por_ejecucion(self):
+        aprendizaje.cargar.cache_clear()
+        with patch.object(aprendizaje.ARCHIVO, "exists", return_value=True), patch.object(
+            aprendizaje.ARCHIVO, "read_text",
+            return_value='{"_meta":{"version":2},"https://iptv.example/live":{"n":1,"ok":1,"fail":0,"last":"2026-10-09T00:00:00+00:00"}}',
+        ) as lectura:
+            aprendizaje.cargar()
+            aprendizaje.cargar()
+            self.assertEqual(lectura.call_count, 1)
+        aprendizaje.cargar.cache_clear()
 
     @patch("verificar_m3u.time.sleep")
     @patch("verificar_m3u._intentar_una_vez")
