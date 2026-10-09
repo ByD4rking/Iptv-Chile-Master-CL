@@ -20,6 +20,8 @@ MIN_PREVIOUS_RATIO = 0.50
 # Never publish an empty/zero-channel regional playlist when a previous
 # published catalog exists. A transient upstream failure must fail closed.
 REQUIRE_NONEMPTY_PREVIOUS = True
+# Probe every published region, including the separately generated LATAM list.
+HEALTH_REGIONS = ("ar", "br", "cl", "es", "mx", "us", "latam")
 # Preservation is catalog protection: transient omissions never delete channels.
 # Preserved entries get a freshly signed Pluto HLS URL before publication.
 PRESERVE_RETRY_COUNT = 2
@@ -415,6 +417,62 @@ def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[d
     return channels, preserved
 
 
+def preserve_previous_order(
+    path: Path,
+    channels: list[dict],
+    *,
+    sort_new: bool = True,
+) -> list[dict]:
+    """Keep published channel order; append newly discovered channels afterward."""
+    previous = previous_entries(path)
+    if not previous:
+        return sorted(channels, key=sort_key) if sort_new else list(channels)
+
+    by_id: dict[str, list[int]] = {}
+    by_name: dict[str, list[int]] = {}
+    for index, channel in enumerate(channels):
+        channel_id = str(channel.get("id") or "").strip()
+        name = normalize_channel_name(channel.get("name"))
+        if channel_id:
+            by_id.setdefault(channel_id, []).append(index)
+        if name:
+            by_name.setdefault(name, []).append(index)
+
+    previous_name_counts: dict[str, int] = {}
+    for channel in previous:
+        name = normalize_channel_name(channel.get("name"))
+        if name:
+            previous_name_counts[name] = previous_name_counts.get(name, 0) + 1
+
+    ordered: list[dict] = []
+    used: set[int] = set()
+    for old in previous:
+        old_id = str(old.get("id") or "").strip()
+        old_name = normalize_channel_name(old.get("name"))
+        candidates = by_id.get(old_id, [])
+        match = next((index for index in candidates if index not in used), None)
+        if (
+            match is None
+            and old_name
+            and previous_name_counts.get(old_name) == 1
+            and len(by_name.get(old_name, [])) == 1
+        ):
+            candidate = by_name[old_name][0]
+            if candidate not in used:
+                match = candidate
+        if match is not None:
+            used.add(match)
+            ordered.append(channels[match])
+
+    remaining = [
+        channel for index, channel in enumerate(channels) if index not in used
+    ]
+    if sort_new:
+        remaining.sort(key=sort_key)
+    ordered.extend(remaining)
+    return ordered
+
+
 def previous_count(path: Path) -> int:
     if not path.exists():
         return 0
@@ -426,7 +484,7 @@ def previous_count(path: Path) -> int:
 
 
 def build_playlist(channels: list[dict], region: Region) -> str:
-    ordered = sorted(channels, key=sort_key)
+    ordered = channels
     lines = ["#EXTM3U"]
     seen = set()
 
@@ -460,6 +518,7 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
         print(f"[{region.code.upper()}] Conservados del catálogo anterior: {preserved} canales")
 
     channels = refresh_preserved_streams(region, channels)
+    channels = preserve_previous_order(playlist_path, channels)
     content = build_playlist(channels, region)
     new_count = content.count("#EXTINF:")
 
@@ -496,19 +555,14 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
     """
     Construye LATAM exclusivamente con datos frescos de MX + CL + AR.
 
-    No lee pluto_mx/cl/ar.m3u del disco para evitar reutilizar catálogos
-    antiguos que ya no son playlists publicadas. Si una fuente regional falla,
-    se conserva la LATAM anterior en vez de publicar una mezcla parcial.
+    Conserva el orden ya publicado para que una actualización del catálogo no
+    cambie de lugar los canales existentes; los canales nuevos se agregan al final.
     """
     PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
     output = PLAYLIST_DIR / "pluto_latam.m3u"
 
     regionales = []
     errores = []
-
-    # Reuse the fresh regional catalogs collected by main(). This avoids
-    # querying Pluto twice for MX/CL/AR in the same run and keeps LATAM on
-    # one consistent snapshot of the source catalogs.
     for code in ("mx", "cl", "ar"):
         channels = fresh_regions.get(code)
         if not channels:
@@ -528,20 +582,16 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
             + " | ".join(errores)
         )
 
-    lines = ["#EXTM3U"]
+    merged_channels = []
     seen = set()
     source_counts = {}
-
     for code, channels in regionales:
         added = 0
         for channel in channels:
             key = str(channel.get("id") or channel.get("stream") or "").strip()
-            if not key or key in seen:
+            if not key or key in seen or not channel_to_m3u(channel, REGIONS["mx"]):
                 continue
-            entry = channel_to_m3u(channel, REGIONS["mx"])
-            if not entry:
-                continue
-            lines.append(entry.rstrip())
+            merged_channels.append(channel)
             seen.add(key)
             added += 1
         source_counts[code] = added
@@ -550,16 +600,18 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
         raise RuntimeError("LATAM: no hay canales válidos.")
 
     old_count = previous_count(output)
-    # LATAM también conserva cualquier canal que haya desaparecido temporalmente
-    # de las fuentes regionales. La comparación usa ID, stream o nombre único,
-    # evitando depender solo de IDs que Pluto puede rotar.
     previous = previous_entries(output)
-    seen_ids = {str(channel.get("id") or "").strip() for _, channels in regionales for channel in channels}
-    seen_streams = {str(channel.get("stream") or "").strip() for _, channels in regionales for channel in channels}
+    seen_ids = {
+        str(channel.get("id") or "").strip()
+        for channel in merged_channels
+    }
+    seen_streams = {
+        str(channel.get("stream") or "").strip()
+        for channel in merged_channels
+    }
     seen_names = {
         normalize_channel_name(channel.get("name"))
-        for _, channels in regionales
-        for channel in channels
+        for channel in merged_channels
         if normalize_channel_name(channel.get("name"))
     }
     preserved = 0
@@ -571,10 +623,9 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
             continue
         if old_name and old_name in seen_names:
             continue
-        entry = channel_to_m3u(old, REGIONS["mx"])
-        if not entry:
+        if not channel_to_m3u(old, REGIONS["mx"]):
             continue
-        lines.append(entry.rstrip())
+        merged_channels.append(old)
         if old_id:
             seen_ids.add(old_id)
         if old_stream:
@@ -583,16 +634,28 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
             seen_names.add(old_name)
         seen.add(old_id or old_stream)
         preserved += 1
+
     if preserved:
         print(f"[LATAM] Conservados del catálogo anterior: {preserved} canales")
 
-    new_count = len(seen)
+    new_count = len(merged_channels)
     if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):
         print(
             f"[LATAM] BLOQUEADO: {new_count} canales frente a {old_count} "
             "anteriores. Se conserva la LATAM anterior."
         )
         return output
+
+    ordered_channels = preserve_previous_order(
+        output,
+        merged_channels,
+        sort_new=False,
+    )
+    lines = ["#EXTM3U"]
+    for channel in ordered_channels:
+        entry = channel_to_m3u(channel, REGIONS["mx"])
+        if entry:
+            lines.append(entry.rstrip())
 
     tmp = output.with_suffix(".m3u.tmp")
     tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -604,7 +667,6 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
         f"AR: {source_counts.get('ar', 0)})"
     )
     return output
-
 
 def main() -> None:
     print("================================")
@@ -649,7 +711,7 @@ def main() -> None:
     # Real HLS verification is diagnostic and persistent; failures never delete
     # previously published channels.
     all_channels = []
-    for code in ("ar", "br", "cl", "es", "mx", "us"):
+    for code in HEALTH_REGIONS:
         path = PLAYLIST_DIR / f"pluto_{code}.m3u"
         for entry in previous_entries(path):
             entry["health_key"] = f"{code}:{entry.get('id') or entry.get('name') or ''}"

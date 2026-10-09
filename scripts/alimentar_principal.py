@@ -1818,6 +1818,37 @@ def restaurar_no_pluto_existente(lineas, iniciales):
     return lineas, restaurados
 
 
+def firma_orden_canales(lineas):
+    """Orden de primera aparición por tvg-id o por grupo/nombre cuando falta."""
+    orden = []
+    vistos = set()
+    for linea in lineas:
+        if not linea.startswith("#EXTINF"):
+            continue
+        match = re.search(r'tvg-id="([^"]+)"', linea, re.I)
+        if match and match.group(1).strip():
+            clave = "id:" + normalizar(match.group(1))
+        else:
+            clave = "name:" + normalizar(extraer_categoria(linea)) + ":" + normalizar(extraer_nombre(linea))
+        if clave != "name::" and clave not in vistos:
+            vistos.add(clave)
+            orden.append(clave)
+    return orden
+
+
+def validar_orden_canales(orden_anterior, lineas_nuevas):
+    """Bloquea una publicación que reordene canales ya existentes."""
+    actual = firma_orden_canales(lineas_nuevas)
+    conjunto_actual = set(actual)
+    conjunto_anterior = set(orden_anterior)
+    anterior_vigente = [clave for clave in orden_anterior if clave in conjunto_actual]
+    actual_anterior = [clave for clave in actual if clave in conjunto_anterior]
+    if anterior_vigente != actual_anterior:
+        raise RuntimeError(
+            "ORDEN BLOQUEADO: la actualización intentó reordenar canales existentes."
+        )
+
+
 def aplicar_reconexion_por_canal(lineas):
     """Añade directivas opcionales de reconexión a cada entrada no-Pluto.
 
@@ -1842,11 +1873,29 @@ def aplicar_reconexion_por_canal(lineas):
             j += 1
         es_pluto = any(es_url_pluto(x.strip()) for x in bloque if url_es_valida(x.strip()))
         if not es_pluto:
-            if not any(x.strip().lower() == "#extvlcopt:http-reconnect=true" for x in bloque):
+            tiene_reconexion = False
+            tiene_cache = False
+            bloque_normalizado = []
+            cache_pattern = re.compile(r"^#EXTVLCOPT:network-caching=\d+$", re.I)
+            for opcion in bloque:
+                valor = opcion.strip()
+                if valor.lower() == "#extvlcopt:http-reconnect=true":
+                    if not tiene_reconexion:
+                        bloque_normalizado.append("#EXTVLCOPT:http-reconnect=true")
+                        tiene_reconexion = True
+                    continue
+                if cache_pattern.fullmatch(valor):
+                    if not tiene_cache:
+                        bloque_normalizado.append("#EXTVLCOPT:network-caching=5000")
+                        tiene_cache = True
+                    continue
+                bloque_normalizado.append(opcion)
+            bloque = bloque_normalizado
+            if not tiene_reconexion:
                 salida.append("#EXTVLCOPT:http-reconnect=true")
                 agregados += 1
-            if not any(x.strip().lower() == "#extvlcopt:network-caching=1500" for x in bloque):
-                salida.append("#EXTVLCOPT:network-caching=1500")
+            if not tiene_cache:
+                salida.append("#EXTVLCOPT:network-caching=5000")
         salida.extend(bloque)
         i = j
     return salida, agregados
@@ -1868,6 +1917,7 @@ def main():
         encoding="utf-8",
         errors="replace",
     ).splitlines()
+    orden_inicial = firma_orden_canales(lineas)
 
     total_inicial = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
@@ -2312,6 +2362,7 @@ def main():
     # representación final, para que ninguna transformación posterior las
     # elimine. Pluto queda excluido por diseño.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+    validar_orden_canales(orden_inicial, lineas)
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
 
     texto_final = "\n".join(lineas)

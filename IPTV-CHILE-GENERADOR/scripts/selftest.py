@@ -3,6 +3,7 @@ import re
 from pathlib import Path
 
 from atomic import file_sha256
+from aplicar_reconexion_god import process_block
 
 BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
@@ -368,8 +369,11 @@ def main():
         assert "#EXTVLCOPT:http-reconnect=true" in metadata, (
             "Canal publicado sin http-reconnect=true."
         )
-        assert "#EXTVLCOPT:network-caching=1500" in metadata, (
-            "Canal publicado sin network-caching=1500."
+        assert "#EXTVLCOPT:network-caching=5000" in metadata, (
+            "Canal publicado sin network-caching=5000."
+        )
+        assert metadata.count("#EXTVLCOPT:network-caching=") == 1, (
+            "Canal publicado con directivas network-caching duplicadas."
         )
 
     # La salida debe seleccionar como máximo un endpoint por canal y cada
@@ -459,6 +463,18 @@ def main():
         assert "RETRY_BACKOFF_SECONDS" in script_text, (
             f"{script_name} perdió el backoff de reintentos."
         )
+
+    sample_block = [
+        '#EXTINF:-1 tvg-id="orden-a",Canal A\n',
+        "#EXTVLCOPT:network-caching=1500\n",
+        "https://example.test/a.m3u8\n",
+    ]
+    processed_block, changed = process_block(sample_block, "\n")
+    assert changed
+    assert processed_block[0] == sample_block[0]
+    assert processed_block[-1] == sample_block[-1]
+    assert sum(line.startswith("#EXTINF:") for line in processed_block) == 1
+    assert sum(line.startswith(("http://", "https://")) for line in processed_block) == 1
 
     temp_files = list((BASE / "data").glob(".*.tmp"))
     temp_files += list(BASE.glob(".*.tmp"))

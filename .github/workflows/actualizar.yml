@@ -53,7 +53,8 @@ jobs:
             scripts/mega_lista.py \
             scripts/generar_reporte.py \
             scripts/health_principal.py \
-            scripts/selftest_health_principal.py
+            scripts/selftest_health_principal.py \
+            scripts/selftest_reconexion_principal.py
 
       - name: Blindaje canónico de GOD
         run: |
@@ -199,6 +200,7 @@ jobs:
       - name: Selftest Health Score principal
         run: |
           python scripts/selftest_health_principal.py
+          python scripts/selftest_reconexion_principal.py
 
       - name: Motor Health Score independiente de la principal
         run: |
