@@ -10,15 +10,28 @@
     "comparison_against": "data/teleon_discovery.json"
   },
   "metrics": {
-    "entries_parsed": 195,
-    "unique_urls": 195,
+    "entries_parsed": 197,
+    "unique_urls": 197,
     "duplicate_urls": 0,
     "known_to_teleon": 0,
-    "new_urls_vs_teleon": 195,
-    "new_url_candidates": 195
+    "new_urls_vs_teleon": 197,
+    "new_url_candidates": 197
   },
   "duplicates": [],
   "entries": [
+    {
+      "name": "EnerGeek FAN (1080p)",
+      "tvg_name": "EnerGeek FAN (1080p)",
+      "tvg_id": "67d6892f14e2159daa35",
+      "logo": "https://cdn.energeek.cl/logos/EG-Fan-2025_pfp.png",
+      "groups": [
+        "Animation"
+      ],
+      "url": "https://cl-2.backend.energeek.cl/bkp/egfanweb/index.m3u8?token=W3bEnerG33k2026",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
     {
       "name": "ETC TV (1080p)",
       "tvg_name": "ETC TV (1080p)",
@@ -84,6 +97,19 @@
         "Kids"
       ],
       "url": "http://45.134.141.161:2200/ARG/Disney_Junior/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Tevex (1080p)",
+      "tvg_name": "Tevex (1080p)",
+      "tvg_id": "1084d90b4cf5458fcb62",
+      "logo": "https://i.imgur.com/FnInQRd.png",
+      "groups": [
+        "Business"
+      ],
+      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -193,19 +219,6 @@
       }
     },
     {
-      "name": "Radio Suyai TV (1080p)",
-      "tvg_name": "Radio Suyai TV (1080p)",
-      "tvg_id": "945df91a0df765e447b6",
-      "logo": "https://stream-tools.zenomedia.com/content/stations/883465cc-a2ee-418a-972d-2c937707687d/image/?keep=w&lu=1775615385000&resize=350x350",
-      "groups": [
-        "Culture"
-      ],
-      "url": "https://cl-2.backend.energeek.cl/RadioSuyai-Neo/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "UCV TV (720p)",
       "tvg_name": "UCV TV (720p)",
       "tvg_id": "e16922ef9bdc1a7c1801",
@@ -240,6 +253,19 @@
         "Documentary"
       ],
       "url": "https://v2.tustreaming.cl/clicktv/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "GVision (288p)",
+      "tvg_name": "GVision (288p)",
+      "tvg_id": "a05dfbf57fd3e92f27f3",
+      "logo": "https://i.imgur.com/jUPHG21.png",
+      "groups": [
+        "Education"
+      ],
+      "url": "https://videostream.chileservidores.com:8081/tome/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -375,19 +401,6 @@
       }
     },
     {
-      "name": "MTV Latin America (1080p)",
-      "tvg_name": "MTV Latin America (1080p)",
-      "tvg_id": "eb768c6d767ec6d37343",
-      "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/MTV_2021_%28brand_version%29.svg/960px-MTV_2021_%28brand_version%29.svg.png",
-      "groups": [
-        "Entertainment"
-      ],
-      "url": "http://15.204.246.24:8080/MTVHD/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Nada Es Imposible TV",
       "tvg_name": "Nada Es Imposible TV",
       "tvg_id": "3b20c2151f781ed7dc68",
@@ -396,6 +409,19 @@
         "Entertainment"
       ],
       "url": "https://vdochile.com:3194/live/mvqutymylive.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Zona Play TV (720p)",
+      "tvg_name": "Zona Play TV (720p)",
+      "tvg_id": "6b0a38a6d3001b3ee053",
+      "logo": "https://i.imgur.com/GewcpHv.png",
+      "groups": [
+        "Entertainment"
+      ],
+      "url": "https://tv1.mediacp.eu:3131/live/dilxbgxylive.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -449,19 +475,6 @@
         "General"
       ],
       "url": "https://envivo.arica.tv/hls/Live2025AricaTV.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Autonoma TV",
-      "tvg_name": "Autonoma TV",
-      "tvg_id": "ff11ba7f35bcab2fd6d1",
-      "logo": "https://i.imgur.com/kD6badL.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://wifispeed.trapemn.tv:1936/comunales/autonoma-tv/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -566,19 +579,6 @@
         "General"
       ],
       "url": "https://wifispeed.trapemn.tv:1936/comunales/caracola-tv/chunks.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Central TV (Chile) (720p)",
-      "tvg_name": "Central TV (Chile) (720p)",
-      "tvg_id": "c06b052f1896618f5a7a",
-      "logo": "https://cdn.m3u.cl/logo/1706_Central_TV.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://freya.mivideo.pro/centraltv/video.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -961,6 +961,19 @@
       }
     },
     {
+      "name": "Nina TV (720p)",
+      "tvg_name": "Nina TV (720p)",
+      "tvg_id": "afb0f71f7cc01a896520",
+      "logo": "https://cdn.m3u.cl/logo/1552_Nina_TV.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://tv1.ninatv.cl/hls/stream.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Odisea TV (720p)",
       "tvg_name": "Odisea TV (720p)",
       "tvg_id": "46c810103e80490338a7",
@@ -1060,6 +1073,19 @@
         "General"
       ],
       "url": "https://v2.tustreaming.cl/fantasiatv/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Radio Frecuencia Uno (720p)",
+      "tvg_name": "Radio Frecuencia Uno (720p)",
+      "tvg_id": "13e463c187ed304969d2",
+      "logo": "https://cdn.m3u.cl/logo/1646_Radio_Frecuencia_Uno.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v1.tustreaming.cl/frecuencia1tv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1364,19 +1390,6 @@
       }
     },
     {
-      "name": "Wapp (720p)",
-      "tvg_name": "Wapp (720p)",
-      "tvg_id": "8ba0e1dd0d0865d7f79f",
-      "logo": "https://i.imgur.com/Bv1yJ1d.png",
-      "groups": [
-        "Lifestyle"
-      ],
-      "url": "https://stream.wapptv.cl/video/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Cinecanal Pacific (1080p)",
       "tvg_name": "Cinecanal Pacific (1080p)",
       "tvg_id": "8c90f71d588692ff063f",
@@ -1451,6 +1464,19 @@
         "Music"
       ],
       "url": "https://5eaccbab48461.streamlock.net:1936/dancefm_1/dancefm_1/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "FM Plus TV (720p)",
+      "tvg_name": "FM Plus TV (720p)",
+      "tvg_id": "909c8ae6d6b99fb7b3b8",
+      "logo": "https://i.imgur.com/1UokOyN.png",
+      "groups": [
+        "Music"
+      ],
+      "url": "https://v2.tustreaming.cl/fmplus/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -2249,19 +2275,6 @@
       }
     },
     {
-      "name": "Estacion TV (720p)",
-      "tvg_name": "Estacion TV (720p)",
-      "tvg_id": "9de9b766009862ba066d",
-      "logo": "https://i.imgur.com/eICyrPP.png",
-      "groups": [
-        "Undefined"
-      ],
-      "url": "https://unlimited1-cl-isp.dps.live/supersonikatv/supersonikatv.smil/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Pichilemu TV (1080p)",
       "tvg_name": "Pichilemu TV (1080p)",
       "tvg_id": "c514241f3a5a938b7340",
@@ -2543,6 +2556,19 @@
         "Undefined"
       ],
       "url": "https://v2.tustreaming.cl/utv/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Vision Plus TV (1080i)",
+      "tvg_name": "Vision Plus TV (1080i)",
+      "tvg_id": "98d541312d50d4ad927e",
+      "logo": "https://i.imgur.com/mpNcG5F.png",
+      "groups": [
+        "Undefined"
+      ],
+      "url": "https://5ff3d9babae13.streamlock.net/jwagpqxehu/jwagpqxehu/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
