@@ -610,6 +610,9 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     had_playlist = playlist_path.exists()
     had_data = data_path.exists()
 
+    # Snapshot before any write so even a staging failure has a known restore point.
+    old_playlist_bytes = playlist_path.read_bytes() if had_playlist else None
+    old_data_bytes = data_path.read_bytes() if had_data else None
     published = False
     rollback_complete = True
     try:
@@ -627,9 +630,7 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
                 "se conserva la playlist anterior."
             )
 
-        # Snapshot exact prior bytes before touching the live files.
-        old_playlist_bytes = playlist_path.read_bytes() if had_playlist else None
-        old_data_bytes = data_path.read_bytes() if had_data else None
+        # Keep disk recovery copies before touching the live files.
         if old_playlist_bytes is not None:
             backup_playlist.write_bytes(old_playlist_bytes)
         if old_data_bytes is not None:
