@@ -44,7 +44,7 @@ jobs:
 
       - name: Pruebas de orden, integridad M3U y fuentes
         working-directory: pluto/src
-        run: python -m unittest discover -v -s pluto/src -p 'test_*.py'
+        run: python -m unittest discover -v -p 'test_*.py'
 
       - name: Autoprueba estructural Pluto
         run: python pluto/src/selftest.py
