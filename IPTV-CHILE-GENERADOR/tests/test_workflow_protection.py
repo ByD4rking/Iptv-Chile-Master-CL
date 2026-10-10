@@ -21,6 +21,17 @@ class WorkflowProtectionTests(unittest.TestCase):
                     "GOD no debe entrar en commits automáticos del generador.",
                 )
 
+
+    def test_publishing_generator_only_runs_on_main(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn(
+            "if: github.ref == 'refs/heads/main' && (github.event_name != 'push' || github.actor != 'github-actions[bot]')",
+            workflow,
+            "El workflow que publica en main debe rechazar dispatch desde cualquier otra rama.",
+        )
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("git push origin HEAD:main", workflow)
+
     def test_retry_reanchors_and_rechecks_god_hash(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         retry_start = workflow.index("git reset --hard origin/main")
