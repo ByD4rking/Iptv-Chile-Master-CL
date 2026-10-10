@@ -21,6 +21,24 @@ class WorkflowProtectionTests(unittest.TestCase):
                     "GOD no debe entrar en commits automáticos del generador.",
                 )
 
+    def test_retry_reanchors_and_rechecks_god_hash(self):
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        retry_start = workflow.index("git reset --hard origin/main")
+        retry_end = workflow.index("python -m compileall -q IPTV-CHILE-GENERADOR/scripts", retry_start)
+        retry_setup = workflow[retry_start:retry_end]
+        self.assertIn(
+            "sha256sum IPTV-CHILE-MAESTRA_GOD.m3u > /tmp/generador-guard/god.sha256",
+            retry_setup,
+            "Cada reintento debe anclar el hash de GOD a la nueva base remota.",
+        )
+        generation_end = workflow.index("sha256sum -c /tmp/generador-guard/maestras.sha256", retry_end)
+        retry_checks = workflow[retry_end:generation_end]
+        self.assertIn(
+            "sha256sum -c /tmp/generador-guard/god.sha256",
+            retry_checks,
+            "Cada regeneración debe comprobar que GOD no cambió.",
+        )
+
     def test_generator_workflow_hashes_god_before_and_after_generation(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn(
