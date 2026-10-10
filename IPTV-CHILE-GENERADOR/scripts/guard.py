@@ -34,7 +34,7 @@ def god_normalized_sha256(path):
     # directives applied by aplicar_reconexion_god.py. Everything else must
     # remain byte-for-byte identical to the canonical historical file.
     raw = re.sub(rb"^#EXTVLCOPT:http-reconnect=true\r?\n", b"", raw, flags=re.MULTILINE)
-    raw = re.sub(rb"^#EXTVLCOPT:network-caching=1500\r?\n", b"", raw, flags=re.MULTILINE)
+    raw = re.sub(rb"^#EXTVLCOPT:network-caching=(?:1500|5000)\r?\n", b"", raw, flags=re.MULTILINE)
     return hashlib.sha256(raw).hexdigest()
 
 

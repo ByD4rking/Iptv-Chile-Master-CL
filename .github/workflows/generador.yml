@@ -55,6 +55,9 @@ jobs:
       - name: Prueba inventario M3U del generador
         run: python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
 
+      - name: Pruebas de recopilación y fuentes locales
+        run: python IPTV-CHILE-GENERADOR/tests/test_collect.py
+
       - name: Pruebas unitarias Teleon
         run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
 
@@ -68,6 +71,7 @@ jobs:
           sha256sum IPTV-CHILE-MAESTRA_CORREGIDO.m3u > /tmp/generador-guard/maestras.sha256
           find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/pluto.sha256
           find scripts -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/scripts.sha256
+          find IPTV-CHILE-GENERADOR/config IPTV-CHILE-GENERADOR/scripts IPTV-CHILE-GENERADOR/tests -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/source.sha256
 
       - name: Auditar aislamiento inicial
         run: python IPTV-CHILE-GENERADOR/scripts/guard.py
@@ -115,11 +119,16 @@ jobs:
           python IPTV-CHILE-GENERADOR/scripts/guard.py
           sha256sum -c /tmp/generador-guard/pluto.sha256
           sha256sum -c /tmp/generador-guard/scripts.sha256
+          sha256sum -c /tmp/generador-guard/source.sha256
 
           while IFS= read -r line; do
             file="${line:3}"
             case "$file" in
-              IPTV-CHILE-GENERADOR/*|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md|.github/workflows/generador.yml) ;;
+              IPTV-CHILE-GENERADOR/config/*|IPTV-CHILE-GENERADOR/scripts/*|IPTV-CHILE-GENERADOR/tests/*|IPTV-CHILE-GENERADOR/README.md|.github/workflows/generador.yml)
+                echo "REGRESION: el generador intentó modificar código, pruebas o configuración protegida: $file"
+                exit 1
+                ;;
+              IPTV-CHILE-GENERADOR/data/*|IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md) ;;
               "") ;;
               *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
             esac
@@ -181,6 +190,13 @@ jobs:
 
             # No mezclamos M3U/JSON generados de dos ejecuciones distintas.
             git reset --hard origin/main
+            # La nueva base remota es la fuente de verdad después del reintento.
+            sha256sum IPTV-CHILE-MAESTRA_CORREGIDO.m3u > /tmp/generador-guard/maestras.sha256
+            find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/pluto.sha256
+            find scripts -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/scripts.sha256
+            find IPTV-CHILE-GENERADOR/config IPTV-CHILE-GENERADOR/scripts IPTV-CHILE-GENERADOR/tests -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/source.sha256
+            python -m compileall -q IPTV-CHILE-GENERADOR/scripts
+            python IPTV-CHILE-GENERADOR/tests/test_collect.py
             python IPTV-CHILE-GENERADOR/scripts/teleon_discovery.py
             python IPTV-CHILE-GENERADOR/scripts/teleon_validate.py
             python IPTV-CHILE-GENERADOR/scripts/collect.py
@@ -195,6 +211,20 @@ jobs:
             sha256sum -c /tmp/generador-guard/maestras.sha256
             sha256sum -c /tmp/generador-guard/pluto.sha256
             sha256sum -c /tmp/generador-guard/scripts.sha256
+            sha256sum -c /tmp/generador-guard/source.sha256
+
+            while IFS= read -r line; do
+              file="${line:3}"
+              case "$file" in
+                IPTV-CHILE-GENERADOR/config/*|IPTV-CHILE-GENERADOR/scripts/*|IPTV-CHILE-GENERADOR/tests/*|IPTV-CHILE-GENERADOR/README.md|.github/workflows/generador.yml)
+                  echo "REGRESION: el generador intentó modificar código, pruebas o configuración protegida: $file"
+                  exit 1
+                  ;;
+                IPTV-CHILE-GENERADOR/data/*|IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md) ;;
+                "") ;;
+                *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
+              esac
+            done < <(git status --porcelain=v1 -uall)
 
             git add IPTV-CHILE-GENERADOR IPTV-CHILE-MAESTRA_GOD.m3u reportes/generador/REPORTE.md reportes/god/REPORTE.md
             if git diff --cached --quiet; then

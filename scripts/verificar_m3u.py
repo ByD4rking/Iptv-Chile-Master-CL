@@ -255,21 +255,19 @@ def verificar_canal(canal, timeout, max_conexiones_por_servidor=1, reintentos=2,
                     ultimo_error = clasificar_error(e2)
                     fue_error_de_conexion = isinstance(e2, ReqConnectionError)
             except ReqConnectionError as e:
-                # Servidor caído/DNS/rechazado: reintentar con espera no
-                # suele arreglarlo, así que aquí no vale la pena perder
-                # tiempo -- se corta sin la pausa de espera_reintento.
+                # Los fallos de conexión pueden ser transitorios: resets TCP,
+                # cortes breves o problemas temporales de DNS. Consumir los
+                # reintentos evita marcar el canal como caído por un fallo único.
                 ultimo_error = clasificar_error(e)
                 fue_error_de_conexion = True
             except Exception as e:
                 ultimo_error = clasificar_error(e)
 
-            # Si no fue el último intento y no fue un error de conexión
-            # "definitivo", espera un poco (da tiempo a que se libere una
-            # conexión en el servidor o pase el bloqueo temporal).
-            if intento < reintentos and not fue_error_de_conexion:
-                time.sleep(espera_reintento)
-            elif fue_error_de_conexion:
-                break
+            # Backoff exponencial también para fallos de conexión.
+            # El tope evita esperas desproporcionadas.
+            if intento < reintentos:
+                espera = max(0.0, espera_reintento) * (2 ** intento)
+                time.sleep(min(espera, 8.0))
 
     canal["estado"] = "ERROR"
     canal["error"] = ultimo_error
@@ -289,6 +287,17 @@ def main():
     ap.add_argument("--espera-reintento", type=float, default=1.0,
                      help="Segundos de espera entre reintentos (default 1.0)")
     args = ap.parse_args()
+
+    if args.hilos < 1:
+        ap.error("--hilos debe ser >= 1")
+    if args.timeout < 1:
+        ap.error("--timeout debe ser >= 1")
+    if args.max_por_servidor < 1:
+        ap.error("--max-por-servidor debe ser >= 1")
+    if args.reintentos < 0:
+        ap.error("--reintentos debe ser >= 0")
+    if args.espera_reintento < 0:
+        ap.error("--espera-reintento debe ser >= 0")
 
     print(f"[+] Leyendo lista: {args.archivo}")
     canales = parsear_m3u(args.archivo)

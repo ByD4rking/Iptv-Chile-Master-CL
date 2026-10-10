@@ -112,6 +112,9 @@ jobs:
           set -e
           python pluto/src/selftest.py
 
+      - name: Verificar que las actualizaciones conservan el orden
+        run: python -m unittest discover -s pluto/src -p 'test_*.py'
+
       - name: Validar sintaxis y carga del servidor Pluto
         run: |
           set -e
