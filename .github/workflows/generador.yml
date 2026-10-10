@@ -58,6 +58,9 @@ jobs:
       - name: Pruebas de recopilación y fuentes locales
         run: python IPTV-CHILE-GENERADOR/tests/test_collect.py
 
+      - name: Regresión de protección GOD en el workflow
+        run: python IPTV-CHILE-GENERADOR/tests/test_workflow_protection.py
+
       - name: Pruebas unitarias Teleon
         run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
 
