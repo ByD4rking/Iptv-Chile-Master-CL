@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: validar-pluto-\${{ github.ref }}
+  group: validar-pluto-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -44,7 +44,7 @@ jobs:
 
       - name: Pruebas de orden, integridad M3U y fuentes
         working-directory: pluto/src
-        run: python -m unittest -v test_playlist_order.py
+        run: python -m unittest discover -v -s pluto/src -p 'test_*.py'
 
       - name: Autoprueba estructural Pluto
         run: python pluto/src/selftest.py
