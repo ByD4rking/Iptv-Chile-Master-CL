@@ -605,22 +605,59 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
 
     tmp_playlist = playlist_path.with_suffix(".m3u.tmp")
     tmp_data = data_path.with_suffix(".json.tmp")
+    backup_playlist = playlist_path.with_suffix(".m3u.rollback")
+    backup_data = data_path.with_suffix(".json.rollback")
+    had_playlist = playlist_path.exists()
+    had_data = data_path.exists()
 
-    tmp_playlist.write_text(content, encoding="utf-8")
-    tmp_data.write_text(
-        json.dumps(channels, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    try:
+        # Stage and validate both artifacts before touching either live file.
+        tmp_playlist.write_text(content, encoding="utf-8")
+        serialized_channels = json.dumps(channels, indent=2, ensure_ascii=False)
+        tmp_data.write_text(serialized_channels, encoding="utf-8")
 
-    # Validar los bytes temporales antes de tocar el último archivo válido.
-    staged_content = tmp_playlist.read_text(encoding="utf-8")
-    validate_playlist_content(staged_content, minimum_channels=new_count)
-    staged_channels = json.loads(tmp_data.read_text(encoding="utf-8"))
-    if not isinstance(staged_channels, list) or len(staged_channels) < new_count:
-        raise RuntimeError(f"{region.code.upper()}: JSON temporal inconsistente; se conserva la playlist anterior.")
+        staged_content = tmp_playlist.read_text(encoding="utf-8")
+        staged_count = validate_playlist_content(staged_content, minimum_channels=new_count)
+        staged_channels = json.loads(tmp_data.read_text(encoding="utf-8"))
+        if not isinstance(staged_channels, list) or len(staged_channels) < staged_count:
+            raise RuntimeError(
+                f"{region.code.upper()}: JSON temporal inconsistente; "
+                "se conserva la playlist anterior."
+            )
 
-    tmp_playlist.replace(playlist_path)
-    tmp_data.replace(data_path)
+        # Keep byte-for-byte rollback copies. Replace JSON first and the M3U
+        # last, making the playlist the commit marker for readers.
+        if had_playlist:
+            backup_playlist.write_bytes(playlist_path.read_bytes())
+        if had_data:
+            backup_data.write_bytes(data_path.read_bytes())
+
+        tmp_data.replace(data_path)
+        tmp_playlist.replace(playlist_path)
+
+        # Verify the live files after replacement. Any failure restores the
+        # previous pair, including when the second replace fails.
+        live_content = playlist_path.read_text(encoding="utf-8")
+        live_count = validate_playlist_content(live_content, minimum_channels=new_count)
+        live_channels = json.loads(data_path.read_text(encoding="utf-8"))
+        if live_count != new_count or not isinstance(live_channels, list) or len(live_channels) < live_count:
+            raise RuntimeError(f"{region.code.upper()}: validación post-escritura falló.")
+
+    except Exception:
+        if had_playlist and backup_playlist.exists():
+            backup_playlist.replace(playlist_path)
+        elif not had_playlist:
+            playlist_path.unlink(missing_ok=True)
+        if had_data and backup_data.exists():
+            backup_data.replace(data_path)
+        elif not had_data:
+            data_path.unlink(missing_ok=True)
+        raise
+    finally:
+        tmp_playlist.unlink(missing_ok=True)
+        tmp_data.unlink(missing_ok=True)
+        backup_playlist.unlink(missing_ok=True)
+        backup_data.unlink(missing_ok=True)
 
     print(f"[{region.code.upper()}] {new_count} canales -> {playlist_path}")
     return playlist_path, new_count, True, channels
