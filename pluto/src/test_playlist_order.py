@@ -51,6 +51,18 @@ class PlaylistOrderTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "stream HLS inválido"):
             validate_playlist_content(content)
 
+    def test_invalid_url_hosts_and_fake_m3u8_suffix_are_rejected(self):
+        for url in (
+            "https:///missing-host/master.m3u8",
+            "https://user:pass@example.test/master.m3u8",
+            "https://example.test/video.mp4?format=.m3u8",
+            "javascript://example.test/master.m3u8",
+        ):
+            with self.subTest(url=url):
+                content = f'#EXTM3U\n#EXTINF:-1 tvg-id="bad",Bad\n{url}\n'
+                with self.assertRaisesRegex(RuntimeError, "stream HLS inválido"):
+                    validate_playlist_content(content)
+
     def test_existing_order_is_kept_and_new_channels_are_appended(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             playlist = Path(temporary_directory) / "previous.m3u"
