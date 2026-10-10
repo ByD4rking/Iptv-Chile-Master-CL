@@ -25,9 +25,14 @@ class ReintentosVerificadorTests(unittest.TestCase):
 
     def test_historial_aprendizaje_se_lee_una_vez_por_ejecucion(self):
         aprendizaje.cargar.cache_clear()
-        with patch.object(aprendizaje.ARCHIVO, "exists", return_value=True), patch.object(
-            aprendizaje.ARCHIVO, "read_text",
-            return_value='{"_meta":{"version":2},"https://iptv.example/live":{"n":1,"ok":1,"fail":0,"last":"2026-10-09T00:00:00+00:00"}}',
+        # pathlib.Path instances are immutable/slotted on current Python;
+        # patch the class methods and constrain the mocked path to ARCHIVO.
+        historial = '{"_meta":{"version":2},"https://iptv.example/live":{"n":1,"ok":1,"fail":0,"last":"2026-10-09T00:00:00+00:00"}}'
+        with patch.object(
+            aprendizaje.Path, "exists", autospec=True,
+            side_effect=lambda path: path == aprendizaje.ARCHIVO,
+        ), patch.object(
+            aprendizaje.Path, "read_text", autospec=True, return_value=historial,
         ) as lectura:
             aprendizaje.cargar()
             aprendizaje.cargar()
