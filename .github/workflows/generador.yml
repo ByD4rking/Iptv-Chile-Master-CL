@@ -23,8 +23,9 @@ concurrency:
 
 jobs:
   generar:
-    # Evita el bucle push -> Actions -> commit -> Actions.
-    if: github.event_name != 'push' || github.actor != 'github-actions[bot]'
+    # Este workflow publica en main; nunca permitir ejecución manual desde otra rama.
+    # También evita el bucle push -> Actions -> commit -> Actions.
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'push' || github.actor != 'github-actions[bot]')
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
