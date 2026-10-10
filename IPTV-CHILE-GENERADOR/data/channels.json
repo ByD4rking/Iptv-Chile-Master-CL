@@ -375,6 +375,13 @@
         "priority": 100,
         "match": "catalogo",
         "channel_key": "cl:cc11c1fdb3759d6730ad"
+      },
+      {
+        "url": "http://15.204.196.147:22880/MEGA2-MEGAMEDIA-EE.UU-PROVEEDOR/index.m3u8",
+        "source": "DEARBULUT-CHILE",
+        "priority": 90,
+        "match": "nombre_exacto_fallback",
+        "channel_key": "cl:cc11c1fdb3759d6730ad"
       }
     ]
   },
@@ -1284,9 +1291,7 @@
     "name": "Docevision (720p)",
     "group": "General",
     "logo": "https://cdn.m3u.cl/logo/1759_Docevision.png",
-    "aliases": [
-      "Docevision (1080p)"
-    ],
+    "aliases": [],
     "channel_key": "cl:ff28283b68ed390a5686",
     "sources": [
       {
@@ -1400,6 +1405,13 @@
         "source": "CATALOGO",
         "priority": 100,
         "match": "catalogo",
+        "channel_key": "cl:86c947085bf2ac5c0f2b"
+      },
+      {
+        "url": "https://v4.tustreaming.cl/edusauriotv/index.m3u8",
+        "source": "DEARBULUT-CHILE",
+        "priority": 90,
+        "match": "nombre_exacto_fallback",
         "channel_key": "cl:86c947085bf2ac5c0f2b"
       }
     ]
@@ -2399,7 +2411,9 @@
     "name": "TV+ (1080p)",
     "group": "General",
     "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/TV%2B_%282018%29.png/960px-TV%2B_%282018%29.png",
-    "aliases": [],
+    "aliases": [
+      "TV+ (720p)"
+    ],
     "channel_key": "cl:80c2ab3e9233218413cb",
     "sources": [
       {
@@ -2407,6 +2421,13 @@
         "source": "CATALOGO",
         "priority": 100,
         "match": "catalogo",
+        "channel_key": "cl:80c2ab3e9233218413cb"
+      },
+      {
+        "url": "http://190.234.82.52:8000/play/a0lz/index.m3u8",
+        "source": "DEARBULUT-CHILE",
+        "priority": 90,
+        "match": "nombre_exacto_fallback",
         "channel_key": "cl:80c2ab3e9233218413cb"
       }
     ]
@@ -4251,7 +4272,7 @@
     "channel_key": "cl:b0f5858d8b833d63defb",
     "sources": [
       {
-        "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjBmOTY3NThiLTQwYzgtNDgxYS1hMDliLTJkZGNlNDI4OGU0OSIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiJkMzlhN2JlNC1jNDQyLTExZjEtYTMwNy1kYTkzODI1NTIwNDgiLCJjbGllbnRJUCI6IjIwMC42OC4xMjguODMiLCJjaXR5IjoiTWV4aWNvIENpdHkiLCJwb3N0YWxDb2RlIjoiMTU1MzAiLCJjb3VudHJ5IjoiTVgiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjoxOS40MzAwMDAzMDUxNzU3OCwiZGV2aWNlTG9uIjotOTkuMDk5OTk4NDc0MTIxMSwicHJlZmVycmVkTGFuZ3VhZ2UiOiJlcyIsImRldmljZVR5cGUiOiJ3ZWIiLCJkZXZpY2VWZXJzaW9uIjoiMTMzLjAuMCIsImRldmljZU1ha2UiOiJjaHJvbWUiLCJkZXZpY2VNb2RlbCI6IndlYiIsImFwcE5hbWUiOiJ3ZWIiLCJhcHBWZXJzaW9uIjoiOC4xLjAiLCJjbGllbnRJRCI6IjhkZjZiODA2LWRjMGItNDE1Ny1hZGU4LWRlMjViZDYyMjE1YSIsImNtQXVkaWVuY2VJRCI6IiIsImlzQ2xpZW50RE5UIjpmYWxzZSwidXNlcklEIjoiIiwibG9nTGV2ZWwiOiJERUZBVUxUIiwidGltZVpvbmUiOiJBbWVyaWNhL01leGljb19DaXR5Iiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6IjhkZjZiODA2LWRjMGItNDE1Ny1hZGU4LWRlMjViZDYyMjE1YSIsImZ3VmNJRDJDb3BwYSI6IjhkZjZiODA2LWRjMGItNDE1Ny1hZGU4LWRlMjViZDYyMjE1YSIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiOGRmNmI4MDYtZGMwYi00MTU3LWFkZTgtZGUyNWJkNjIyMTVhIiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiMTA0NSIsIl9md18zUF9VSUQiOiJJREw6QXJpUWl6cmFlR3ZoaEx3cFpCbC0xbE9SUDU3VXM0YUwyNkwzNHFlNndrMGZGSkYxMngtZ2REdUU1aEIwdTY3RTFrcWQwQ055LXpfVHFkS3g5YjVxbXV5dGE0cThpeUY5bjRVNzBqUXhiZEtnVUg3S1pRS1lfc1NSR2xDcnpyLWZNWWczY2l2MlJOSXlHUGtWU2llYlc5V3lwLWtzSTZUNnd6VzdNai1DRi1PS0pkbjdlRFAyWmk2bTljeTVXUHcwT0g2V3J6YmZpeHYwR3F2TEdDQWdva1kzZUtxOFAzNHhpbUdfTFdSeVc2LWdvcG5EQmFhSVAtYnI5QUtwbXdjRkZ3WjVEQXR3YmF6VHowV0FoZ2tCMW9POWlXY2Jpa1RmT3NDekozVkhLOEhNVnBUbm9uWTMzbU01ajJiTFV1bGNGVUdsSUtzQVNBR3BtZXIydFY1M1NtQWcwRjFUV081V2poTzRrcVFWU3ciLCJmbXNfcnVsZWlkIjoiMTAwMTUsMTAwMjAsMTAwMDAsMTAwMDksMTAwMTMsMTAwMTQsMTAwMjEsMTAwMjMsMTAwMTYifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTE1OTI2NzIyMTksImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpPR1JtTm1JNE1EWXRaR013WWkwME1UVTNMV0ZrWlRndFpHVXlOV0prTmpJeU1UVmgiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxNjc5MDcyLCJpYXQiOjE3OTE1OTI2NzIsImp0aSI6ImMxOTI5NjYzLTUxNTQtNDFiZC05NTFkLTk0MjdjOTIwMGE0MCJ9.OkIb_XOXWiZ7WYt2H2rkaZgzBZ7TRE1SM8ZZO-abMe4&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=8df6b806-dc0b-4157-ade8-de25bd62215a&clientModelNumber=1.0.0&country=MX&deviceDNT=false&deviceId=8df6b806-dc0b-4157-ade8-de25bd62215a&deviceLat=19.4300&deviceLon=-99.1000&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=d39a7be4-c442-11f1-a307-da9382552048&sid=d39a7be4-c442-11f1-a307-da9382552048&userId=&country=MX&marketingRegion=MX&preferredLanguage=es-MX",
+        "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjBmOTY3NThiLTQwYzgtNDgxYS1hMDliLTJkZGNlNDI4OGU0OSIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiIwMTI4YjExNi1jNDc3LTExZjEtYmIzNC1kMjFhYTk1ZWQ5MmUiLCJjbGllbnRJUCI6IjIwMC42OC4xMjguODMiLCJjaXR5IjoiTWV4aWNvIENpdHkiLCJwb3N0YWxDb2RlIjoiMTU1MzAiLCJjb3VudHJ5IjoiTVgiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjoxOS40MzAwMDAzMDUxNzU3OCwiZGV2aWNlTG9uIjotOTkuMDk5OTk4NDc0MTIxMSwicHJlZmVycmVkTGFuZ3VhZ2UiOiJlcyIsImRldmljZVR5cGUiOiJ3ZWIiLCJkZXZpY2VWZXJzaW9uIjoiMTMzLjAuMCIsImRldmljZU1ha2UiOiJjaHJvbWUiLCJkZXZpY2VNb2RlbCI6IndlYiIsImFwcE5hbWUiOiJ3ZWIiLCJhcHBWZXJzaW9uIjoiOC4xLjAiLCJjbGllbnRJRCI6IjdkMWE0MjBjLWU3ZWItNDk0My1iZmQzLTc1OWEzZGEzYzJhNiIsImNtQXVkaWVuY2VJRCI6IiIsImlzQ2xpZW50RE5UIjpmYWxzZSwidXNlcklEIjoiIiwibG9nTGV2ZWwiOiJERUZBVUxUIiwidGltZVpvbmUiOiJBbWVyaWNhL01leGljb19DaXR5Iiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6IjdkMWE0MjBjLWU3ZWItNDk0My1iZmQzLTc1OWEzZGEzYzJhNiIsImZ3VmNJRDJDb3BwYSI6IjdkMWE0MjBjLWU3ZWItNDk0My1iZmQzLTc1OWEzZGEzYzJhNiIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiN2QxYTQyMGMtZTdlYi00OTQzLWJmZDMtNzU5YTNkYTNjMmE2IiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiMTA0NSIsIl9md18zUF9VSUQiOiJJREw6QXJpUWl6cmFlR3ZoaEx3cFpCbC0xbE9SUDU3VXM0YUwyNkwzNHFlNndrMGZGSkYxMngtZ2REdUU1aEIwdTY3RTFrcWQwQ055LXpfVHFkS3g5YjVxbXV5dGE0cThpeUY5bjRVNzBqUXhiZEtnVUg3S1pRS1lfc1NSR2xDcnpyLWZNWWczY2l2MlJOSXlHUGtWU2llYlc5V3lwLWtzSTZUNnd6VzdNai1DRi1PS0pkbjdlRFAyWmk2bTljeTVXUHcwT0g2V3J6YmZpeHYwR3F2TEdDQWdva1kzZUtxOFAzNHhpbUdfTFdSeVc2LWdvcG5EQmFhSVAtYnI5QUtwbXdjRkZ3WjVEQXR3YmF6VHowV0FoZ2tCMW9POWlXY2Jpa1RmT3NDekozVkhLOEhNVnBUbm9uWTMzbU01ajJiTFV1bGNGVUdsSUtzQVNBR3BtZXIydFY1M1NtQWcwRjFUV081V2poTzRrcVFWU3ciLCJmbXNfcnVsZWlkIjoiMTAwMDAsMTAwMTMsMTAwMTUsMTAwMjEsMTAwMDksMTAwMTQsMTAwMTYsMTAwMjAsMTAwMjMifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTE2MTUwODI0NzksImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpOMlF4WVRReU1HTXRaVGRsWWkwME9UUXpMV0ptWkRNdE56VTVZVE5rWVROak1tRTIiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxNzAxNDgyLCJpYXQiOjE3OTE2MTUwODIsImp0aSI6IjQzZGU4MDY1LTQyODgtNDMwYS1iZGJjLWNiYjFlODYxNjdmYiJ9.SUjjLWuRaS1ueHAnPbmT160WUzxCSxpNj4-X2VL9E2c&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=7d1a420c-e7eb-4943-bfd3-759a3da3c2a6&clientModelNumber=1.0.0&country=MX&deviceDNT=false&deviceId=7d1a420c-e7eb-4943-bfd3-759a3da3c2a6&deviceLat=19.4300&deviceLon=-99.1000&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=0128b116-c477-11f1-bb34-d21aa95ed92e&sid=0128b116-c477-11f1-bb34-d21aa95ed92e&userId=&country=MX&marketingRegion=MX&preferredLanguage=es-MX",
         "source": "NUESTRA-MAESTRA-CORREGIDO",
         "priority": 120,
         "match": "nombre_exacto_fallback",
@@ -4272,15 +4293,15 @@
         "channel_key": "cl:b0f5858d8b833d63defb"
       },
       {
-        "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjBmOTY3NThiLTQwYzgtNDgxYS1hMDliLTJkZGNlNDI4OGU0OSIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiJkMWNmOTdiNS1jNDQyLTExZjEtOWU3Zi01MmIzZDg3Mjg3YTciLCJjbGllbnRJUCI6IjEwNC4xMDMuMjM4LjAiLCJjaXR5IjoiQnVlbm9zIEFpcmVzIiwicG9zdGFsQ29kZSI6ImMxMjA2IGFiZSIsImNvdW50cnkiOiJBUiIsImRtYSI6MCwiYWN0aXZlUmVnaW9uIjoiVkUiLCJkZXZpY2VMYXQiOi0zNC42MTAwMDA2MTAzNTE1NiwiZGV2aWNlTG9uIjotNTguNDE5OTk4MTY4OTQ1MzEsInByZWZlcnJlZExhbmd1YWdlIjoiZXMiLCJkZXZpY2VUeXBlIjoid2ViIiwiZGV2aWNlVmVyc2lvbiI6IjEzMy4wLjAiLCJkZXZpY2VNYWtlIjoiY2hyb21lIiwiZGV2aWNlTW9kZWwiOiJ3ZWIiLCJhcHBOYW1lIjoid2ViIiwiYXBwVmVyc2lvbiI6IjguMS4wIiwiY2xpZW50SUQiOiIzM2NiOWFiNS1mNDY5LTRkZTYtYmRjNy1mMzA1ZDY2NTFkYmYiLCJjbUF1ZGllbmNlSUQiOiIiLCJpc0NsaWVudEROVCI6ZmFsc2UsInVzZXJJRCI6IiIsImxvZ0xldmVsIjoiREVGQVVMVCIsInRpbWVab25lIjoiQW1lcmljYS9BcmdlbnRpbmEvQnVlbm9zX0FpcmVzIiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6IjMzY2I5YWI1LWY0NjktNGRlNi1iZGM3LWYzMDVkNjY1MWRiZiIsImZ3VmNJRDJDb3BwYSI6IjMzY2I5YWI1LWY0NjktNGRlNi1iZGM3LWYzMDVkNjY1MWRiZiIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiMzNjYjlhYjUtZjQ2OS00ZGU2LWJkYzctZjMwNWQ2NjUxZGJmIiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiIiwiX2Z3XzNQX1VJRCI6IiIsImZtc19ydWxlaWQiOiIxMDAxNCwxMDAxNiwxMDAxNSwxMDAyMCwxMDAyMSwxMDAwMCwxMDAwOSwxMDAxMyJ9fSwiZHJtIjp7Im5hbWUiOiJ3aWRldmluZSIsImxldmVsIjoiTDMifSwic2Vzc2lvblN0YXJ0VGltZSI6MTc5MTU5MjY2OTIxMiwiaXNzIjoiYm9vdC5wbHV0by50diIsInN1YiI6InByaTp2MTpwbHV0bzpkZXZpY2VzOlZFOk16TmpZamxoWWpVdFpqUTJPUzAwWkdVMkxXSmtZemN0WmpNd05XUTJOalV4WkdKbSIsImF1ZCI6IioucGx1dG8udHYiLCJleHAiOjE3OTE2NzkwNjksImlhdCI6MTc5MTU5MjY2OSwianRpIjoiNTNjYjBlZTktMDZkOC00YTJlLWExMDgtYmM4YjdjZDg4YjgyIn0.zfLb5pruKKiRWiTmPwdkMiWzKAdLFNZoAhylxDkuXNQ&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=33cb9ab5-f469-4de6-bdc7-f305d6651dbf&clientModelNumber=1.0.0&country=AR&deviceDNT=false&deviceId=33cb9ab5-f469-4de6-bdc7-f305d6651dbf&deviceLat=-34.6100&deviceLon=-58.4200&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=d1cf97b5-c442-11f1-9e7f-52b3d87287a7&sid=d1cf97b5-c442-11f1-9e7f-52b3d87287a7&userId=&country=AR&marketingRegion=AR&preferredLanguage=es-AR",
-        "source": "LOCAL-PLUTO-AR",
+        "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjBmOTY3NThiLTQwYzgtNDgxYS1hMDliLTJkZGNlNDI4OGU0OSIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiIwMDhhNjQzNy1jNDc3LTExZjEtOGZkYy0zYWMzOTg2NDA0ZjYiLCJjbGllbnRJUCI6IjE2MS4yMzguMC4wIiwiY2l0eSI6IlNhbnRpYWdvIiwicG9zdGFsQ29kZSI6IjgzMjAwMDAiLCJjb3VudHJ5IjoiQ0wiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjotMzMuNDUwMDAwNzYyOTM5NDUsImRldmljZUxvbiI6LTcwLjY1MDAwMTUyNTg3ODksInByZWZlcnJlZExhbmd1YWdlIjoiZXMiLCJkZXZpY2VUeXBlIjoid2ViIiwiZGV2aWNlVmVyc2lvbiI6IjEzMy4wLjAiLCJkZXZpY2VNYWtlIjoiY2hyb21lIiwiZGV2aWNlTW9kZWwiOiJ3ZWIiLCJhcHBOYW1lIjoid2ViIiwiYXBwVmVyc2lvbiI6IjguMS4wIiwiY2xpZW50SUQiOiJkYTFmMWFhYy04ZDJkLTRhMDgtOTA0My00NWQxNDk2Y2I4MGQiLCJjbUF1ZGllbmNlSUQiOiIiLCJpc0NsaWVudEROVCI6ZmFsc2UsInVzZXJJRCI6IiIsImxvZ0xldmVsIjoiREVGQVVMVCIsInRpbWVab25lIjoiQW1lcmljYS9TYW50aWFnbyIsInNlcnZlclNpZGVBZHMiOmZhbHNlLCJlMmVCZWFjb25zIjpmYWxzZSwiZmVhdHVyZXMiOnsibXVsdGlQb2RBZHMiOnsiY29ob3J0IjoiIiwiZW5hYmxlZCI6dHJ1ZX0sInN0aXRjaGVyQWRTZXNzaW9uRXZlbnQiOnsiZW5hYmxlZCI6dHJ1ZX0sInN0aXRjaGVyRGFzaE5nIjp7ImppdFBhY2siOiJyZXBhY2tKaXQsZGVjcnlwdCJ9LCJzdGl0Y2hlckhsc05nIjp7ImRlbXV4ZWRBdWRpbyI6ImppdCJ9fSwiZm1zUGFyYW1zIjp7ImZ3VmNJRDIiOiJkYTFmMWFhYy04ZDJkLTRhMDgtOTA0My00NWQxNDk2Y2I4MGQiLCJmd1ZjSUQyQ29wcGEiOiJkYTFmMWFhYy04ZDJkLTRhMDgtOTA0My00NWQxNDk2Y2I4MGQiLCJjdXN0b21QYXJhbXMiOnsiZm1zX2xpdmVyYW1wX2lkbCI6IiIsImZtc19lbWFpbGhhc2giOiIiLCJmbXNfc3Vic2NyaWJlcmlkIjoiIiwiZm1zX2lmYSI6IiIsImZtc19pZGZ2IjoiIiwiZm1zX3VzZXJpZCI6ImRhMWYxYWFjLThkMmQtNGEwOC05MDQzLTQ1ZDE0OTZjYjgwZCIsImZtc192Y2lkMnR5cGUiOiJ1c2VyaWQiLCJmbXNfcmFtcF9pZCI6IiIsImZtc19oaF9yYW1wX2lkIjoiIiwiZm1zX2JpZGlkdHlwZSI6IiIsIl9md18zUF9VSUQiOiIiLCJmbXNfcnVsZWlkIjoiMTAwMDAsMTAwMDksMTAwMTMsMTAwMTQsMTAwMTYsMTAwMTUsMTAwMjAsMTAwMjEifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTE2MTUwODE0NDEsImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpaR0V4WmpGaFlXTXRPR1F5WkMwMFlUQTRMVGt3TkRNdE5EVmtNVFE1Tm1OaU9EQmsiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxNzAxNDgxLCJpYXQiOjE3OTE2MTUwODEsImp0aSI6Ijg4MzdmMTk5LTNmMjUtNDRiMS05NDNmLWRhYmMyNDIwNzhmYyJ9.saA7lpmi0iBl7EQ4VzLzzw01-dSMsa8X8E7TVvKvo9Y&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=da1f1aac-8d2d-4a08-9043-45d1496cb80d&clientModelNumber=1.0.0&country=CL&deviceDNT=false&deviceId=da1f1aac-8d2d-4a08-9043-45d1496cb80d&deviceLat=-33.4500&deviceLon=-70.6500&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=008a6437-c477-11f1-8fdc-3ac3986404f6&sid=008a6437-c477-11f1-8fdc-3ac3986404f6&userId=&country=CL&marketingRegion=CL&preferredLanguage=es-CL",
+        "source": "LOCAL-PLUTO-CL",
         "priority": 60,
         "match": "nombre_exacto_fallback",
         "channel_key": "cl:b0f5858d8b833d63defb"
       },
       {
-        "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjBmOTY3NThiLTQwYzgtNDgxYS1hMDliLTJkZGNlNDI4OGU0OSIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiJkMmI4ZDVlMi1jNDQyLTExZjEtODgwYy02YTVmMDQ3ZmE0MTciLCJjbGllbnRJUCI6IjE2MS4yMzguMC4wIiwiY2l0eSI6IlNhbnRpYWdvIiwicG9zdGFsQ29kZSI6IjgzMjAwMDAiLCJjb3VudHJ5IjoiQ0wiLCJkbWEiOjAsImFjdGl2ZVJlZ2lvbiI6IlZFIiwiZGV2aWNlTGF0IjotMzMuNDUwMDAwNzYyOTM5NDUsImRldmljZUxvbiI6LTcwLjY1MDAwMTUyNTg3ODksInByZWZlcnJlZExhbmd1YWdlIjoiZXMiLCJkZXZpY2VUeXBlIjoid2ViIiwiZGV2aWNlVmVyc2lvbiI6IjEzMy4wLjAiLCJkZXZpY2VNYWtlIjoiY2hyb21lIiwiZGV2aWNlTW9kZWwiOiJ3ZWIiLCJhcHBOYW1lIjoid2ViIiwiYXBwVmVyc2lvbiI6IjguMS4wIiwiY2xpZW50SUQiOiJiY2E3NjI5Ni1lNDk1LTRiMDAtYjMyNC04ZTFjODhlMjkyNjUiLCJjbUF1ZGllbmNlSUQiOiIiLCJpc0NsaWVudEROVCI6ZmFsc2UsInVzZXJJRCI6IiIsImxvZ0xldmVsIjoiREVGQVVMVCIsInRpbWVab25lIjoiQW1lcmljYS9TYW50aWFnbyIsInNlcnZlclNpZGVBZHMiOmZhbHNlLCJlMmVCZWFjb25zIjpmYWxzZSwiZmVhdHVyZXMiOnsibXVsdGlQb2RBZHMiOnsiY29ob3J0IjoiIiwiZW5hYmxlZCI6dHJ1ZX0sInN0aXRjaGVyQWRTZXNzaW9uRXZlbnQiOnsiZW5hYmxlZCI6dHJ1ZX0sInN0aXRjaGVyRGFzaE5nIjp7ImppdFBhY2siOiJyZXBhY2tKaXQsZGVjcnlwdCJ9LCJzdGl0Y2hlckhsc05nIjp7ImRlbXV4ZWRBdWRpbyI6ImppdCJ9fSwiZm1zUGFyYW1zIjp7ImZ3VmNJRDIiOiJiY2E3NjI5Ni1lNDk1LTRiMDAtYjMyNC04ZTFjODhlMjkyNjUiLCJmd1ZjSUQyQ29wcGEiOiJiY2E3NjI5Ni1lNDk1LTRiMDAtYjMyNC04ZTFjODhlMjkyNjUiLCJjdXN0b21QYXJhbXMiOnsiZm1zX2xpdmVyYW1wX2lkbCI6IiIsImZtc19lbWFpbGhhc2giOiIiLCJmbXNfc3Vic2NyaWJlcmlkIjoiIiwiZm1zX2lmYSI6IiIsImZtc19pZGZ2IjoiIiwiZm1zX3VzZXJpZCI6ImJjYTc2Mjk2LWU0OTUtNGIwMC1iMzI0LThlMWM4OGUyOTI2NSIsImZtc192Y2lkMnR5cGUiOiJ1c2VyaWQiLCJmbXNfcmFtcF9pZCI6IiIsImZtc19oaF9yYW1wX2lkIjoiIiwiZm1zX2JpZGlkdHlwZSI6IiIsIl9md18zUF9VSUQiOiIiLCJmbXNfcnVsZWlkIjoiMTAwMjAsMTAwMjEsMTAwMDAsMTAwMDksMTAwMTMsMTAwMTQsMTAwMTYsMTAwMTUifX0sImRybSI6eyJuYW1lIjoid2lkZXZpbmUiLCJsZXZlbCI6IkwzIn0sInNlc3Npb25TdGFydFRpbWUiOjE3OTE1OTI2NzA3NDEsImlzcyI6ImJvb3QucGx1dG8udHYiLCJzdWIiOiJwcmk6djE6cGx1dG86ZGV2aWNlczpWRTpZbU5oTnpZeU9UWXRaVFE1TlMwMFlqQXdMV0l6TWpRdE9HVXhZemc0WlRJNU1qWTEiLCJhdWQiOiIqLnBsdXRvLnR2IiwiZXhwIjoxNzkxNjc5MDcwLCJpYXQiOjE3OTE1OTI2NzAsImp0aSI6ImY3MDkwNDMwLTdlMTQtNDJkZS04ODEyLTE1YjRiZjViNGUxMSJ9.mqrNmmFd4TisBkIIfXFnMOrw_sSywjjJ61B37BPNdHg&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=bca76296-e495-4b00-b324-8e1c88e29265&clientModelNumber=1.0.0&country=CL&deviceDNT=false&deviceId=bca76296-e495-4b00-b324-8e1c88e29265&deviceLat=-33.4500&deviceLon=-70.6500&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=d2b8d5e2-c442-11f1-880c-6a5f047fa417&sid=d2b8d5e2-c442-11f1-880c-6a5f047fa417&userId=&country=CL&marketingRegion=CL&preferredLanguage=es-CL",
-        "source": "LOCAL-PLUTO-CL",
+        "url": "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/68224482c5d53e1351aaf2f2/master.m3u8?jwt=eyJhbGciOiJIUzI1NiIsImtpZCI6IjBmOTY3NThiLTQwYzgtNDgxYS1hMDliLTJkZGNlNDI4OGU0OSIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSUQiOiJmZmIwOTNmMy1jNDc2LTExZjEtYjNjOS0yMjE2ZGQyYTIyZWIiLCJjbGllbnRJUCI6IjEwNC4xMDMuMjM4LjAiLCJjaXR5IjoiQnVlbm9zIEFpcmVzIiwicG9zdGFsQ29kZSI6ImMxMjA2IGFiZSIsImNvdW50cnkiOiJBUiIsImRtYSI6MCwiYWN0aXZlUmVnaW9uIjoiVkUiLCJkZXZpY2VMYXQiOi0zNC42MTAwMDA2MTAzNTE1NiwiZGV2aWNlTG9uIjotNTguNDE5OTk4MTY4OTQ1MzEsInByZWZlcnJlZExhbmd1YWdlIjoiZXMiLCJkZXZpY2VUeXBlIjoid2ViIiwiZGV2aWNlVmVyc2lvbiI6IjEzMy4wLjAiLCJkZXZpY2VNYWtlIjoiY2hyb21lIiwiZGV2aWNlTW9kZWwiOiJ3ZWIiLCJhcHBOYW1lIjoid2ViIiwiYXBwVmVyc2lvbiI6IjguMS4wIiwiY2xpZW50SUQiOiJmZTgzM2M1ZC02MTVkLTRhNmUtYjQ0NS0yN2RkMjZiYTI5ZTQiLCJjbUF1ZGllbmNlSUQiOiIiLCJpc0NsaWVudEROVCI6ZmFsc2UsInVzZXJJRCI6IiIsImxvZ0xldmVsIjoiREVGQVVMVCIsInRpbWVab25lIjoiQW1lcmljYS9BcmdlbnRpbmEvQnVlbm9zX0FpcmVzIiwic2VydmVyU2lkZUFkcyI6ZmFsc2UsImUyZUJlYWNvbnMiOmZhbHNlLCJmZWF0dXJlcyI6eyJtdWx0aVBvZEFkcyI6eyJjb2hvcnQiOiIiLCJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJBZFNlc3Npb25FdmVudCI6eyJlbmFibGVkIjp0cnVlfSwic3RpdGNoZXJEYXNoTmciOnsiaml0UGFjayI6InJlcGFja0ppdCxkZWNyeXB0In0sInN0aXRjaGVySGxzTmciOnsiZGVtdXhlZEF1ZGlvIjoiaml0In19LCJmbXNQYXJhbXMiOnsiZndWY0lEMiI6ImZlODMzYzVkLTYxNWQtNGE2ZS1iNDQ1LTI3ZGQyNmJhMjllNCIsImZ3VmNJRDJDb3BwYSI6ImZlODMzYzVkLTYxNWQtNGE2ZS1iNDQ1LTI3ZGQyNmJhMjllNCIsImN1c3RvbVBhcmFtcyI6eyJmbXNfbGl2ZXJhbXBfaWRsIjoiIiwiZm1zX2VtYWlsaGFzaCI6IiIsImZtc19zdWJzY3JpYmVyaWQiOiIiLCJmbXNfaWZhIjoiIiwiZm1zX2lkZnYiOiIiLCJmbXNfdXNlcmlkIjoiZmU4MzNjNWQtNjE1ZC00YTZlLWI0NDUtMjdkZDI2YmEyOWU0IiwiZm1zX3ZjaWQydHlwZSI6InVzZXJpZCIsImZtc19yYW1wX2lkIjoiIiwiZm1zX2hoX3JhbXBfaWQiOiIiLCJmbXNfYmlkaWR0eXBlIjoiIiwiX2Z3XzNQX1VJRCI6IiIsImZtc19ydWxlaWQiOiIxMDAxNCwxMDAxNiwxMDAxNSwxMDAyMCwxMDAyMSwxMDAwMCwxMDAwOSwxMDAxMyJ9fSwiZHJtIjp7Im5hbWUiOiJ3aWRldmluZSIsImxldmVsIjoiTDMifSwic2Vzc2lvblN0YXJ0VGltZSI6MTc5MTYxNTA4MDAxNCwiaXNzIjoiYm9vdC5wbHV0by50diIsInN1YiI6InByaTp2MTpwbHV0bzpkZXZpY2VzOlZFOlptVTRNek5qTldRdE5qRTFaQzAwWVRabExXSTBORFV0TWpka1pESTJZbUV5T1dVMCIsImF1ZCI6IioucGx1dG8udHYiLCJleHAiOjE3OTE3MDE0ODAsImlhdCI6MTc5MTYxNTA4MCwianRpIjoiNjEwZDY1ODUtYjdlYS00MmQyLWJjMzYtMWVkZjYyMTMyYmZjIn0.Lw8on4c__DFMsLed8dZGCsYDfybrRn2XdwSKwyvv-7U&masterJWTPassthrough=true&advertisingId=&appName=web&appVersion=8.1.0&app_name=web&clientDeviceType=0&clientID=fe833c5d-615d-4a6e-b445-27dd26ba29e4&clientModelNumber=1.0.0&country=AR&deviceDNT=false&deviceId=fe833c5d-615d-4a6e-b445-27dd26ba29e4&deviceLat=-34.6100&deviceLon=-58.4200&deviceMake=chrome&deviceModel=web&deviceType=web&deviceVersion=133.0.0&marketingRegion=VE&serverSideAds=false&sessionID=ffb093f3-c476-11f1-b3c9-2216dd2a22eb&sid=ffb093f3-c476-11f1-b3c9-2216dd2a22eb&userId=&country=AR&marketingRegion=AR&preferredLanguage=es-AR",
+        "source": "LOCAL-PLUTO-AR",
         "priority": 60,
         "match": "nombre_exacto_fallback",
         "channel_key": "cl:b0f5858d8b833d63defb"
@@ -4459,6 +4480,13 @@
         "source": "NUESTRA-MAESTRA-CORREGIDO",
         "priority": 120,
         "match": "channel_key_por_url",
+        "channel_key": "cl:55a3f16404afea8da664"
+      },
+      {
+        "url": "https://v2.tustreaming.cl/radioamericatv/index.m3u8",
+        "source": "DEARBULUT-CHILE",
+        "priority": 90,
+        "match": "nombre_exacto_fallback",
         "channel_key": "cl:55a3f16404afea8da664"
       }
     ]
