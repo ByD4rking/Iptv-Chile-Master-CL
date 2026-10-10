@@ -369,6 +369,13 @@ def refresh_preserved_streams(region: Region, channels: list[dict]) -> list[dict
             print(f"[{region.code.upper()}] No se pudo renovar JWT de {channel_id}: {last_error}")
     if refreshed or failed:
         print(f"[{region.code.upper()}] JWT renovados en canales preservados: {refreshed}; fallos de renovación: {failed}")
+    if failed:
+        # No publicar URLs antiguas: pueden llevar un JWT vencido. La excepción
+        # hace que main conserve íntegra la playlist anterior de esta región.
+        raise RuntimeError(
+            f"{region.code.upper()}: {failed} canales preservados no pudieron renovar su URL HLS; "
+            "se cancela la actualización para conservar la lista válida anterior."
+        )
     return channels
 
 
@@ -483,26 +490,77 @@ def previous_count(path: Path) -> int:
         return 0
 
 
-def build_playlist(channels: list[dict], region: Region) -> str:
-    ordered = channels
-    lines = ["#EXTM3U"]
-    seen = set()
+def validate_playlist_content(content: str, *, minimum_channels: int = 1) -> int:
+    """Fail closed on malformed entries and duplicate IDs/streams before publication."""
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "#EXTM3U":
+        raise RuntimeError("Playlist inválida: falta la cabecera #EXTM3U.")
 
-    for channel in ordered:
-        stream = channel.get("stream") or ""
-        channel_id = channel.get("id") or ""
-        key = channel_id or stream
-        if key in seen:
+    ids: set[str] = set()
+    streams: set[str] = set()
+    entries = 0
+    index = 1
+    while index < len(lines):
+        line = lines[index].strip()
+        if not line:
+            index += 1
+            continue
+        if not line.startswith("#EXTINF:"):
+            if line.startswith("#"):
+                index += 1
+                continue
+            raise RuntimeError(f"Playlist inválida: URL sin #EXTINF en línea {index + 1}.")
+
+        entries += 1
+        match = re.search(r'tvg-id="([^"]+)"', line)
+        if not match or not match.group(1).strip():
+            raise RuntimeError(f"Playlist inválida: tvg-id ausente en entrada {entries}.")
+        channel_id = match.group(1).strip()
+        if channel_id in ids:
+            raise RuntimeError(f"Playlist inválida: ID duplicado {channel_id}.")
+        ids.add(channel_id)
+
+        index += 1
+        while index < len(lines) and lines[index].strip().startswith("#"):
+            index += 1
+        if index >= len(lines):
+            raise RuntimeError(f"Playlist inválida: falta stream para {channel_id}.")
+        stream = lines[index].strip()
+        if not valid_stream(stream):
+            raise RuntimeError(f"Playlist inválida: stream HLS inválido para {channel_id}.")
+        if stream in streams:
+            raise RuntimeError(f"Playlist inválida: stream duplicado para {channel_id}.")
+        streams.add(stream)
+        index += 1
+
+    if entries < minimum_channels:
+        raise RuntimeError(f"Playlist inválida: {entries} canales; mínimo requerido {minimum_channels}.")
+    if entries != len(streams):
+        raise RuntimeError(f"Playlist inválida: {entries} entradas y {len(streams)} streams.")
+    return entries
+
+
+def build_playlist(channels: list[dict], region: Region) -> str:
+    lines = ["#EXTM3U"]
+    seen_ids: set[str] = set()
+    seen_streams: set[str] = set()
+
+    for channel in channels:
+        channel_id = str(channel.get("id") or "").strip()
+        stream = str(channel.get("stream") or "").strip()
+        if not channel_id or not stream:
+            continue
+        if channel_id in seen_ids or stream in seen_streams:
             continue
         entry = channel_to_m3u(channel, region)
         if entry:
             lines.append(entry.rstrip())
-            seen.add(key)
+            seen_ids.add(channel_id)
+            seen_streams.add(stream)
 
-    if len(seen) == 0:
-        raise RuntimeError(f"{region.code.upper()}: no hay canales válidos.")
-
-    return "\n".join(lines) + "\n"
+    content = "\n".join(lines) + "\n"
+    validate_playlist_content(content)
+    return content
 
 
 def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool, list[dict]]:
@@ -520,7 +578,7 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     channels = refresh_preserved_streams(region, channels)
     channels = preserve_previous_order(playlist_path, channels)
     content = build_playlist(channels, region)
-    new_count = content.count("#EXTINF:")
+    new_count = validate_playlist_content(content)
 
     if old_count and REQUIRE_NONEMPTY_PREVIOUS and new_count <= 0:
         raise RuntimeError(
@@ -543,6 +601,13 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
         json.dumps(channels, indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
+
+    # Validar los bytes temporales antes de tocar el último archivo válido.
+    staged_content = tmp_playlist.read_text(encoding="utf-8")
+    validate_playlist_content(staged_content, minimum_channels=new_count)
+    staged_channels = json.loads(tmp_data.read_text(encoding="utf-8"))
+    if not isinstance(staged_channels, list) or len(staged_channels) < new_count:
+        raise RuntimeError(f"{region.code.upper()}: JSON temporal inconsistente; se conserva la playlist anterior.")
 
     tmp_playlist.replace(playlist_path)
     tmp_data.replace(data_path)
@@ -657,8 +722,11 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
         if entry:
             lines.append(entry.rstrip())
 
+    content = "\n".join(lines) + "\n"
+    validate_playlist_content(content, minimum_channels=new_count)
     tmp = output.with_suffix(".m3u.tmp")
-    tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    tmp.write_text(content, encoding="utf-8")
+    validate_playlist_content(tmp.read_text(encoding="utf-8"), minimum_channels=new_count)
     tmp.replace(output)
     print(
         f"[LATAM] {new_count} canales únicos -> {output} "
