@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -12,7 +13,7 @@ from regions import REGIONS, Region
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-OUTPUT_DIR = BASE_DIR / "output"
+OUTPUT_DIR = Path(os.environ.get("PLUTO_OUTPUT_DIR", str(BASE_DIR / "output"))).resolve()
 PLAYLIST_DIR = OUTPUT_DIR / "playlists"
 REGIONAL_DATA_DIR = OUTPUT_DIR / "regional"
 
@@ -843,16 +844,20 @@ def main() -> None:
 
     build_latam(fresh_regions)
 
-    # Real HLS verification is diagnostic and persistent; failures never delete
-    # previously published channels.
-    all_channels = []
-    for code in HEALTH_REGIONS:
-        path = PLAYLIST_DIR / f"pluto_{code}.m3u"
-        for entry in previous_entries(path):
-            entry["health_key"] = f"{code}:{entry.get('id') or entry.get('name') or ''}"
-            all_channels.append(entry)
-    health = audit_hls(all_channels)
-    print(f"HLS HEALTH: {health['ok']} OK / {health['failed']} fallos / {health['checked']} comprobados")
+    # Optional live-integration mode writes only to a temporary output directory
+    # and skips the expensive stream-by-stream health sweep. The publisher workflow
+    # leaves PLUTO_SKIP_HEALTH unset, so production behavior is unchanged.
+    if os.environ.get("PLUTO_SKIP_HEALTH") != "1":
+        all_channels = []
+        for code in HEALTH_REGIONS:
+            path = PLAYLIST_DIR / f"pluto_{code}.m3u"
+            for entry in previous_entries(path):
+                entry["health_key"] = f"{code}:{entry.get('id') or entry.get('name') or ''}"
+                all_channels.append(entry)
+        health = audit_hls(all_channels)
+        print(f"HLS HEALTH: {health['ok']} OK / {health['failed']} fallos / {health['checked']} comprobados")
+    else:
+        print("HLS HEALTH omitido por PLUTO_SKIP_HEALTH=1 (integración sin publicación).")
 
     print()
     print("RESUMEN")
