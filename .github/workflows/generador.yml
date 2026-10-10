@@ -193,6 +193,9 @@ jobs:
             # No mezclamos M3U/JSON generados de dos ejecuciones distintas.
             git reset --hard origin/main
             # La nueva base remota es la fuente de verdad después del reintento.
+            # GOD también queda anclada a la nueva base remota en cada reintento.
+            # Se captura inmediatamente después del reset, antes de regenerar.
+            sha256sum IPTV-CHILE-MAESTRA_GOD.m3u > /tmp/generador-guard/god.sha256
             sha256sum IPTV-CHILE-MAESTRA_CORREGIDO.m3u > /tmp/generador-guard/maestras.sha256
             find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/pluto.sha256
             find scripts -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/scripts.sha256
@@ -211,6 +214,7 @@ jobs:
             python IPTV-CHILE-GENERADOR/scripts/generar_reportes.py
 
             sha256sum -c /tmp/generador-guard/maestras.sha256
+            sha256sum -c /tmp/generador-guard/god.sha256
             sha256sum -c /tmp/generador-guard/pluto.sha256
             sha256sum -c /tmp/generador-guard/scripts.sha256
             sha256sum -c /tmp/generador-guard/source.sha256
