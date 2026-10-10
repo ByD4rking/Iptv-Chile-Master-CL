@@ -130,7 +130,7 @@ def main():
         # Ayuda a reproductores compatibles a recuperar automáticamente el HTTP/HLS
         # ante cortes transitorios. No cambia la URL ni mezcla fuentes entre canales.
         lines.append("#EXTVLCOPT:http-reconnect=true")
-        lines.append("#EXTVLCOPT:network-caching=1500")
+        lines.append("#EXTVLCOPT:network-caching=5000")
         lines.append(url)
         emitted.add(url)
         generated += 1

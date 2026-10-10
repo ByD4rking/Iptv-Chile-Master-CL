@@ -1,0 +1,91 @@
+name: Validar estabilidad IPTV
+
+on:
+  push:
+    branches:
+      - "codex/**"
+    paths:
+      - ".github/workflows/**"
+      - "IPTV-CHILE-GENERADOR/**"
+      - "pluto/src/**"
+      - "scripts/**"
+      - "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+      - "IPTV-CHILE-MAESTRA_GOD.m3u"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/**"
+      - "IPTV-CHILE-GENERADOR/**"
+      - "pluto/src/**"
+      - "scripts/**"
+      - "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+      - "IPTV-CHILE-MAESTRA_GOD.m3u"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validar-estabilidad-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias del verificador Pluto
+        run: python -m pip install -r pluto/requirements.txt
+
+      - name: Comprobar sintaxis Python
+        run: python -m compileall -q scripts pluto/src IPTV-CHILE-GENERADOR/scripts IPTV-CHILE-GENERADOR/tests
+
+      - name: Instalar dependencias del verificador M3U
+        run: python -m pip install requests urllib3
+
+      - name: Probar reintentos y backoff del verificador M3U
+        run: python -m unittest discover -s scripts -p 'test_verificar_m3u_reintentos.py'
+
+      - name: Verificar orden y reconexión de la lista general
+        run: python scripts/selftest_reconexion_principal.py
+
+      - name: Verificar salud y continuidad de la lista general
+        run: python scripts/selftest_health_principal.py
+
+      - name: Verificar orden histórico de Pluto
+        run: python -m unittest discover -s pluto/src -p 'test_*.py'
+
+      - name: Verificar fuentes y fallos transitorios del generador
+        run: python IPTV-CHILE-GENERADOR/tests/test_collect.py
+
+      - name: Verificar inventario M3U del generador
+        run: python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
+
+      - name: Verificar clasificación Teleon
+        run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
+
+      - name: Regenerar salida para verificar la configuración actual
+        run: python IPTV-CHILE-GENERADOR/scripts/generate.py
+
+      - name: Añadir candidatos Teleon ya validados
+        run: python IPTV-CHILE-GENERADOR/scripts/teleon_publish.py
+
+      - name: Verificar integridad histórica de GOD sin reescritura
+        run: python IPTV-CHILE-GENERADOR/scripts/guard.py
+
+      - name: Verificar integridad de listas y aislamiento
+        run: python IPTV-CHILE-GENERADOR/scripts/guard.py
+
+      - name: Verificar generador y lista GOD
+        run: python IPTV-CHILE-GENERADOR/scripts/selftest.py
+
+      - name: Revisar espacios y cambios mal formados
+        run: git diff --check

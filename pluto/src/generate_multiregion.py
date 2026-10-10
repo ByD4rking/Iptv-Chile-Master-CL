@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from channels import GROUPS, normalize_channel
 from client import PlutoClient
@@ -11,7 +13,7 @@ from regions import REGIONS, Region
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-OUTPUT_DIR = BASE_DIR / "output"
+OUTPUT_DIR = Path(os.environ.get("PLUTO_OUTPUT_DIR", str(BASE_DIR / "output"))).resolve()
 PLAYLIST_DIR = OUTPUT_DIR / "playlists"
 REGIONAL_DATA_DIR = OUTPUT_DIR / "regional"
 
@@ -20,6 +22,8 @@ MIN_PREVIOUS_RATIO = 0.50
 # Never publish an empty/zero-channel regional playlist when a previous
 # published catalog exists. A transient upstream failure must fail closed.
 REQUIRE_NONEMPTY_PREVIOUS = True
+# Probe every published region, including the separately generated LATAM list.
+HEALTH_REGIONS = ("ar", "br", "cl", "es", "mx", "us", "latam")
 # Preservation is catalog protection: transient omissions never delete channels.
 # Preserved entries get a freshly signed Pluto HLS URL before publication.
 PRESERVE_RETRY_COUNT = 2
@@ -242,11 +246,20 @@ def fetch_region(region: Region) -> list[dict]:
 
 
 def valid_stream(stream: str) -> bool:
-    return bool(
-        stream
-        and stream.startswith(("http://", "https://"))
-        and ".m3u8" in stream
-    )
+    """Accept only absolute HTTP(S) URLs whose path is an HLS playlist."""
+    if not isinstance(stream, str) or not stream.strip():
+        return False
+    try:
+        parsed = urlsplit(stream.strip())
+        return bool(
+            parsed.scheme.lower() in {"http", "https"}
+            and parsed.hostname
+            and parsed.username is None
+            and parsed.password is None
+            and parsed.path.lower().endswith(".m3u8")
+        )
+    except (ValueError, TypeError):
+        return False
 
 
 def esc(value) -> str:
@@ -367,6 +380,13 @@ def refresh_preserved_streams(region: Region, channels: list[dict]) -> list[dict
             print(f"[{region.code.upper()}] No se pudo renovar JWT de {channel_id}: {last_error}")
     if refreshed or failed:
         print(f"[{region.code.upper()}] JWT renovados en canales preservados: {refreshed}; fallos de renovación: {failed}")
+    if failed:
+        # No publicar URLs antiguas: pueden llevar un JWT vencido. La excepción
+        # hace que main conserve íntegra la playlist anterior de esta región.
+        raise RuntimeError(
+            f"{region.code.upper()}: {failed} canales preservados no pudieron renovar su URL HLS; "
+            "se cancela la actualización para conservar la lista válida anterior."
+        )
     return channels
 
 
@@ -415,6 +435,62 @@ def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[d
     return channels, preserved
 
 
+def preserve_previous_order(
+    path: Path,
+    channels: list[dict],
+    *,
+    sort_new: bool = True,
+) -> list[dict]:
+    """Keep published channel order; append newly discovered channels afterward."""
+    previous = previous_entries(path)
+    if not previous:
+        return sorted(channels, key=sort_key) if sort_new else list(channels)
+
+    by_id: dict[str, list[int]] = {}
+    by_name: dict[str, list[int]] = {}
+    for index, channel in enumerate(channels):
+        channel_id = str(channel.get("id") or "").strip()
+        name = normalize_channel_name(channel.get("name"))
+        if channel_id:
+            by_id.setdefault(channel_id, []).append(index)
+        if name:
+            by_name.setdefault(name, []).append(index)
+
+    previous_name_counts: dict[str, int] = {}
+    for channel in previous:
+        name = normalize_channel_name(channel.get("name"))
+        if name:
+            previous_name_counts[name] = previous_name_counts.get(name, 0) + 1
+
+    ordered: list[dict] = []
+    used: set[int] = set()
+    for old in previous:
+        old_id = str(old.get("id") or "").strip()
+        old_name = normalize_channel_name(old.get("name"))
+        candidates = by_id.get(old_id, [])
+        match = next((index for index in candidates if index not in used), None)
+        if (
+            match is None
+            and old_name
+            and previous_name_counts.get(old_name) == 1
+            and len(by_name.get(old_name, [])) == 1
+        ):
+            candidate = by_name[old_name][0]
+            if candidate not in used:
+                match = candidate
+        if match is not None:
+            used.add(match)
+            ordered.append(channels[match])
+
+    remaining = [
+        channel for index, channel in enumerate(channels) if index not in used
+    ]
+    if sort_new:
+        remaining.sort(key=sort_key)
+    ordered.extend(remaining)
+    return ordered
+
+
 def previous_count(path: Path) -> int:
     if not path.exists():
         return 0
@@ -425,26 +501,77 @@ def previous_count(path: Path) -> int:
         return 0
 
 
-def build_playlist(channels: list[dict], region: Region) -> str:
-    ordered = sorted(channels, key=sort_key)
-    lines = ["#EXTM3U"]
-    seen = set()
+def validate_playlist_content(content: str, *, minimum_channels: int = 1) -> int:
+    """Fail closed on malformed entries and duplicate IDs/streams before publication."""
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "#EXTM3U":
+        raise RuntimeError("Playlist inválida: falta la cabecera #EXTM3U.")
 
-    for channel in ordered:
-        stream = channel.get("stream") or ""
-        channel_id = channel.get("id") or ""
-        key = channel_id or stream
-        if key in seen:
+    ids: set[str] = set()
+    streams: set[str] = set()
+    entries = 0
+    index = 1
+    while index < len(lines):
+        line = lines[index].strip()
+        if not line:
+            index += 1
+            continue
+        if not line.startswith("#EXTINF:"):
+            if line.startswith("#"):
+                index += 1
+                continue
+            raise RuntimeError(f"Playlist inválida: URL sin #EXTINF en línea {index + 1}.")
+
+        entries += 1
+        match = re.search(r'tvg-id="([^"]+)"', line)
+        if not match or not match.group(1).strip():
+            raise RuntimeError(f"Playlist inválida: tvg-id ausente en entrada {entries}.")
+        channel_id = match.group(1).strip()
+        if channel_id in ids:
+            raise RuntimeError(f"Playlist inválida: ID duplicado {channel_id}.")
+        ids.add(channel_id)
+
+        index += 1
+        while index < len(lines) and lines[index].strip().startswith("#"):
+            index += 1
+        if index >= len(lines):
+            raise RuntimeError(f"Playlist inválida: falta stream para {channel_id}.")
+        stream = lines[index].strip()
+        if not valid_stream(stream):
+            raise RuntimeError(f"Playlist inválida: stream HLS inválido para {channel_id}.")
+        if stream in streams:
+            raise RuntimeError(f"Playlist inválida: stream duplicado para {channel_id}.")
+        streams.add(stream)
+        index += 1
+
+    if entries < minimum_channels:
+        raise RuntimeError(f"Playlist inválida: {entries} canales; mínimo requerido {minimum_channels}.")
+    if entries != len(streams):
+        raise RuntimeError(f"Playlist inválida: {entries} entradas y {len(streams)} streams.")
+    return entries
+
+
+def build_playlist(channels: list[dict], region: Region) -> str:
+    lines = ["#EXTM3U"]
+    seen_ids: set[str] = set()
+    seen_streams: set[str] = set()
+
+    for channel in channels:
+        channel_id = str(channel.get("id") or "").strip()
+        stream = str(channel.get("stream") or "").strip()
+        if not channel_id or not stream:
+            continue
+        if channel_id in seen_ids or stream in seen_streams:
             continue
         entry = channel_to_m3u(channel, region)
         if entry:
             lines.append(entry.rstrip())
-            seen.add(key)
+            seen_ids.add(channel_id)
+            seen_streams.add(stream)
 
-    if len(seen) == 0:
-        raise RuntimeError(f"{region.code.upper()}: no hay canales válidos.")
-
-    return "\n".join(lines) + "\n"
+    content = "\n".join(lines) + "\n"
+    validate_playlist_content(content)
+    return content
 
 
 def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool, list[dict]]:
@@ -460,8 +587,9 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
         print(f"[{region.code.upper()}] Conservados del catálogo anterior: {preserved} canales")
 
     channels = refresh_preserved_streams(region, channels)
+    channels = preserve_previous_order(playlist_path, channels)
     content = build_playlist(channels, region)
-    new_count = content.count("#EXTINF:")
+    new_count = validate_playlist_content(content)
 
     if old_count and REQUIRE_NONEMPTY_PREVIOUS and new_count <= 0:
         raise RuntimeError(
@@ -478,15 +606,79 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
 
     tmp_playlist = playlist_path.with_suffix(".m3u.tmp")
     tmp_data = data_path.with_suffix(".json.tmp")
+    backup_playlist = playlist_path.with_suffix(".m3u.rollback")
+    backup_data = data_path.with_suffix(".json.rollback")
+    had_playlist = playlist_path.exists()
+    had_data = data_path.exists()
 
-    tmp_playlist.write_text(content, encoding="utf-8")
-    tmp_data.write_text(
-        json.dumps(channels, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
+    # Snapshot before any write so even a staging failure has a known restore point.
+    old_playlist_bytes = playlist_path.read_bytes() if had_playlist else None
+    old_data_bytes = data_path.read_bytes() if had_data else None
+    published = False
+    rollback_complete = True
+    try:
+        # Stage and validate both artifacts before touching either live file.
+        tmp_playlist.write_text(content, encoding="utf-8")
+        serialized_channels = json.dumps(channels, indent=2, ensure_ascii=False)
+        tmp_data.write_text(serialized_channels, encoding="utf-8")
 
-    tmp_playlist.replace(playlist_path)
-    tmp_data.replace(data_path)
+        staged_content = tmp_playlist.read_text(encoding="utf-8")
+        staged_count = validate_playlist_content(staged_content, minimum_channels=new_count)
+        staged_channels = json.loads(tmp_data.read_text(encoding="utf-8"))
+        if not isinstance(staged_channels, list) or len(staged_channels) < staged_count:
+            raise RuntimeError(
+                f"{region.code.upper()}: JSON temporal inconsistente; "
+                "se conserva la playlist anterior."
+            )
+
+        # Keep disk recovery copies before touching the live files.
+        if old_playlist_bytes is not None:
+            backup_playlist.write_bytes(old_playlist_bytes)
+        if old_data_bytes is not None:
+            backup_data.write_bytes(old_data_bytes)
+
+        # JSON first, playlist last (playlist is the visible commit marker).
+        tmp_data.replace(data_path)
+        tmp_playlist.replace(playlist_path)
+
+        live_content = playlist_path.read_text(encoding="utf-8")
+        live_count = validate_playlist_content(live_content, minimum_channels=new_count)
+        live_channels = json.loads(data_path.read_text(encoding="utf-8"))
+        if live_count != new_count or not isinstance(live_channels, list) or len(live_channels) < live_count:
+            raise RuntimeError(f"{region.code.upper()}: validación post-escritura falló.")
+        published = True
+
+    except Exception as publish_error:
+        # Restore from the in-memory snapshot (not from a possibly incomplete
+        # backup file). Keep recovery files if any rollback operation fails.
+        try:
+            if had_playlist:
+                restore_playlist = playlist_path.with_suffix(".m3u.restore")
+                restore_playlist.write_bytes(old_playlist_bytes)
+                restore_playlist.replace(playlist_path)
+            else:
+                playlist_path.unlink(missing_ok=True)
+            if had_data:
+                restore_data = data_path.with_suffix(".json.restore")
+                restore_data.write_bytes(old_data_bytes)
+                restore_data.replace(data_path)
+            else:
+                data_path.unlink(missing_ok=True)
+        except Exception as rollback_error:
+            rollback_complete = False
+            raise RuntimeError(
+                f"{region.code.upper()}: falló la publicación ({publish_error}) y también "
+                f"el rollback ({rollback_error}); se conservan archivos .rollback para recuperación."
+            ) from rollback_error
+        raise
+    finally:
+        tmp_playlist.unlink(missing_ok=True)
+        tmp_data.unlink(missing_ok=True)
+        if published or rollback_complete:
+            backup_playlist.unlink(missing_ok=True)
+            backup_data.unlink(missing_ok=True)
+            playlist_path.with_suffix(".m3u.restore").unlink(missing_ok=True)
+            data_path.with_suffix(".json.restore").unlink(missing_ok=True)
 
     print(f"[{region.code.upper()}] {new_count} canales -> {playlist_path}")
     return playlist_path, new_count, True, channels
@@ -496,19 +688,14 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
     """
     Construye LATAM exclusivamente con datos frescos de MX + CL + AR.
 
-    No lee pluto_mx/cl/ar.m3u del disco para evitar reutilizar catálogos
-    antiguos que ya no son playlists publicadas. Si una fuente regional falla,
-    se conserva la LATAM anterior en vez de publicar una mezcla parcial.
+    Conserva el orden ya publicado para que una actualización del catálogo no
+    cambie de lugar los canales existentes; los canales nuevos se agregan al final.
     """
     PLAYLIST_DIR.mkdir(parents=True, exist_ok=True)
     output = PLAYLIST_DIR / "pluto_latam.m3u"
 
     regionales = []
     errores = []
-
-    # Reuse the fresh regional catalogs collected by main(). This avoids
-    # querying Pluto twice for MX/CL/AR in the same run and keeps LATAM on
-    # one consistent snapshot of the source catalogs.
     for code in ("mx", "cl", "ar"):
         channels = fresh_regions.get(code)
         if not channels:
@@ -528,20 +715,16 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
             + " | ".join(errores)
         )
 
-    lines = ["#EXTM3U"]
+    merged_channels = []
     seen = set()
     source_counts = {}
-
     for code, channels in regionales:
         added = 0
         for channel in channels:
             key = str(channel.get("id") or channel.get("stream") or "").strip()
-            if not key or key in seen:
+            if not key or key in seen or not channel_to_m3u(channel, REGIONS["mx"]):
                 continue
-            entry = channel_to_m3u(channel, REGIONS["mx"])
-            if not entry:
-                continue
-            lines.append(entry.rstrip())
+            merged_channels.append(channel)
             seen.add(key)
             added += 1
         source_counts[code] = added
@@ -550,16 +733,18 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
         raise RuntimeError("LATAM: no hay canales válidos.")
 
     old_count = previous_count(output)
-    # LATAM también conserva cualquier canal que haya desaparecido temporalmente
-    # de las fuentes regionales. La comparación usa ID, stream o nombre único,
-    # evitando depender solo de IDs que Pluto puede rotar.
     previous = previous_entries(output)
-    seen_ids = {str(channel.get("id") or "").strip() for _, channels in regionales for channel in channels}
-    seen_streams = {str(channel.get("stream") or "").strip() for _, channels in regionales for channel in channels}
+    seen_ids = {
+        str(channel.get("id") or "").strip()
+        for channel in merged_channels
+    }
+    seen_streams = {
+        str(channel.get("stream") or "").strip()
+        for channel in merged_channels
+    }
     seen_names = {
         normalize_channel_name(channel.get("name"))
-        for _, channels in regionales
-        for channel in channels
+        for channel in merged_channels
         if normalize_channel_name(channel.get("name"))
     }
     preserved = 0
@@ -571,10 +756,9 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
             continue
         if old_name and old_name in seen_names:
             continue
-        entry = channel_to_m3u(old, REGIONS["mx"])
-        if not entry:
+        if not channel_to_m3u(old, REGIONS["mx"]):
             continue
-        lines.append(entry.rstrip())
+        merged_channels.append(old)
         if old_id:
             seen_ids.add(old_id)
         if old_stream:
@@ -583,10 +767,11 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
             seen_names.add(old_name)
         seen.add(old_id or old_stream)
         preserved += 1
+
     if preserved:
         print(f"[LATAM] Conservados del catálogo anterior: {preserved} canales")
 
-    new_count = len(seen)
+    new_count = len(merged_channels)
     if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):
         print(
             f"[LATAM] BLOQUEADO: {new_count} canales frente a {old_count} "
@@ -594,8 +779,22 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
         )
         return output
 
+    ordered_channels = preserve_previous_order(
+        output,
+        merged_channels,
+        sort_new=False,
+    )
+    lines = ["#EXTM3U"]
+    for channel in ordered_channels:
+        entry = channel_to_m3u(channel, REGIONS["mx"])
+        if entry:
+            lines.append(entry.rstrip())
+
+    content = "\n".join(lines) + "\n"
+    validate_playlist_content(content, minimum_channels=new_count)
     tmp = output.with_suffix(".m3u.tmp")
-    tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    tmp.write_text(content, encoding="utf-8")
+    validate_playlist_content(tmp.read_text(encoding="utf-8"), minimum_channels=new_count)
     tmp.replace(output)
     print(
         f"[LATAM] {new_count} canales únicos -> {output} "
@@ -604,7 +803,6 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
         f"AR: {source_counts.get('ar', 0)})"
     )
     return output
-
 
 def main() -> None:
     print("================================")
@@ -646,16 +844,20 @@ def main() -> None:
 
     build_latam(fresh_regions)
 
-    # Real HLS verification is diagnostic and persistent; failures never delete
-    # previously published channels.
-    all_channels = []
-    for code in ("ar", "br", "cl", "es", "mx", "us"):
-        path = PLAYLIST_DIR / f"pluto_{code}.m3u"
-        for entry in previous_entries(path):
-            entry["health_key"] = f"{code}:{entry.get('id') or entry.get('name') or ''}"
-            all_channels.append(entry)
-    health = audit_hls(all_channels)
-    print(f"HLS HEALTH: {health['ok']} OK / {health['failed']} fallos / {health['checked']} comprobados")
+    # Optional live-integration mode writes only to a temporary output directory
+    # and skips the expensive stream-by-stream health sweep. The publisher workflow
+    # leaves PLUTO_SKIP_HEALTH unset, so production behavior is unchanged.
+    if os.environ.get("PLUTO_SKIP_HEALTH") != "1":
+        all_channels = []
+        for code in HEALTH_REGIONS:
+            path = PLAYLIST_DIR / f"pluto_{code}.m3u"
+            for entry in previous_entries(path):
+                entry["health_key"] = f"{code}:{entry.get('id') or entry.get('name') or ''}"
+                all_channels.append(entry)
+        health = audit_hls(all_channels)
+        print(f"HLS HEALTH: {health['ok']} OK / {health['failed']} fallos / {health['checked']} comprobados")
+    else:
+        print("HLS HEALTH omitido por PLUTO_SKIP_HEALTH=1 (integración sin publicación).")
 
     print()
     print("RESUMEN")

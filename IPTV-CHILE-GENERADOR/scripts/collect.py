@@ -4,6 +4,7 @@ import re
 import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from atomic import atomic_write_json
@@ -31,6 +32,19 @@ def load_json(path, default):
 
 def save_json(path, data):
     atomic_write_json(path, data)
+
+
+def prune_source_health(health, sources):
+    """Drop health records for sources no longer configured."""
+    configured_names = {
+        str(source.get("name") or "FUENTE").strip()
+        for source in sources
+    }
+    return {
+        name: state
+        for name, state in health.items()
+        if name in configured_names
+    }
 
 
 def read_source(source):
@@ -184,7 +198,7 @@ def main():
 
     all_entries = []
     successful_sources = 0
-    health = load_json(SOURCE_HEALTH_FILE, {})
+    health = prune_source_health(load_json(SOURCE_HEALTH_FILE, {}), sources)
     from datetime import datetime, timezone
     checked_at = datetime.now(timezone.utc).isoformat()
 
