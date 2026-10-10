@@ -1,0 +1,52 @@
+name: Validar endurecimiento del generador IPTV sin publicar
+
+on:
+  push:
+    branches:
+      - "codex/**"
+    paths:
+      - "IPTV-CHILE-GENERADOR/scripts/**"
+      - "IPTV-CHILE-GENERADOR/tests/**"
+      - ".github/workflows/generador.yml"
+      - ".github/workflows/validar-generador.yml"
+      - "IPTV-CHILE-MAESTRA_GOD.m3u"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "IPTV-CHILE-GENERADOR/scripts/**"
+      - "IPTV-CHILE-GENERADOR/tests/**"
+      - ".github/workflows/generador.yml"
+      - ".github/workflows/validar-generador.yml"
+      - "IPTV-CHILE-MAESTRA_GOD.m3u"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validar-generador-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Validar sintaxis Python
+        run: python -m compileall -q IPTV-CHILE-GENERADOR/scripts IPTV-CHILE-GENERADOR/tests
+      - name: Regresión protección GOD
+        run: python IPTV-CHILE-GENERADOR/tests/test_workflow_protection.py
+      - name: Regresión de reintentos, fuentes y salud
+        run: python IPTV-CHILE-GENERADOR/tests/test_collect.py
+      - name: Regresión de inventario M3U
+        run: python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
+      - name: Regresión clasificador Teleon
+        run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
+      - name: Verificar integridad histórica de GOD
+        run: python IPTV-CHILE-GENERADOR/scripts/guard.py

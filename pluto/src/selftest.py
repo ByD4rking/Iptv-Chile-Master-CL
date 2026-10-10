@@ -123,6 +123,13 @@ def main() -> None:
         "def refresh_preserved_streams(",
         "def build_latam(",
         "if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):",
+        'HEALTH_REGIONS = ("ar", "br", "cl", "es", "mx", "us", "latam")',
+        "for code in HEALTH_REGIONS:",
+        "def preserve_previous_order(",
+        "channels = preserve_previous_order(playlist_path, channels)",
+        "ordered_channels = preserve_previous_order(",
+        "sort_new=False,",
+
     ):
         if fragment not in generator:
             fail(f"generate_multiregion.py: falta protección requerida: {fragment}")

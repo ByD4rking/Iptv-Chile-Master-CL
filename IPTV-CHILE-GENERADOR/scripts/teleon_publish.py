@@ -94,7 +94,7 @@ def main():
         lines = [
             f'#EXTINF:-1 tvg-id="{safe(tvg_id)}" tvg-name="{safe(name)}" group-title="{safe(group)}",{name}',
             "#EXTVLCOPT:http-reconnect=true",
-            "#EXTVLCOPT:network-caching=1500",
+            "#EXTVLCOPT:network-caching=5000",
         ]
         for key, value in (meta.get("headers") or {}).items():
             if key.lower() == "referer":

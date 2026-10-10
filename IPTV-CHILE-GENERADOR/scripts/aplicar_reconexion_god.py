@@ -1,10 +1,11 @@
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 GOD = ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"
 
 RECONNECT = "#EXTVLCOPT:http-reconnect=true"
-CACHING = "#EXTVLCOPT:network-caching=1500"
+CACHING = "#EXTVLCOPT:network-caching=5000"
 
 
 def is_pluto(url: str) -> bool:
@@ -33,7 +34,15 @@ def process_block(block: list[str], newline: str) -> tuple[list[str], bool]:
     if not url or is_pluto(url):
         return block, False
 
-    body = [line for line in block[1:] if line.strip() not in {RECONNECT, CACHING}]
+    body = [
+        line for line in block[1:]
+        if line.strip() != RECONNECT
+        and not re.fullmatch(
+            r"#EXTVLCOPT:network-caching=\d+",
+            line.strip(),
+            flags=re.IGNORECASE,
+        )
+    ]
     return [block[0], RECONNECT + newline, CACHING + newline, *body], True
 
 
