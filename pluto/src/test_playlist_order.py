@@ -10,11 +10,11 @@ from generate_multiregion import preserve_previous_order, validate_playlist_cont
 class PlaylistOrderTests(unittest.TestCase):
     def test_valid_playlist_passes_validation(self):
         content = (
-            "#EXTM3U\\n"
-            '#EXTINF:-1 tvg-id="one" tvg-name="Uno",Uno\\n'
-            "https://example.test/one/master.m3u8\\n"
-            '#EXTINF:-1 tvg-id="two" tvg-name="Dos",Dos\\n'
-            "https://example.test/two/master.m3u8\\n"
+            "#EXTM3U\n"
+            '#EXTINF:-1 tvg-id="one" tvg-name="Uno",Uno\n'
+            "https://example.test/one/master.m3u8\n"
+            '#EXTINF:-1 tvg-id="two" tvg-name="Dos",Dos\n'
+            "https://example.test/two/master.m3u8\n"
         )
         self.assertEqual(validate_playlist_content(content), 2)
 
@@ -22,32 +22,32 @@ class PlaylistOrderTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             validate_playlist_content("")
         with self.assertRaises(RuntimeError):
-            validate_playlist_content('#EXTINF:-1 tvg-id="one"\\nhttps://example.test/one/master.m3u8\\n')
+            validate_playlist_content('#EXTINF:-1 tvg-id="one"\nhttps://example.test/one/master.m3u8\n')
 
     def test_duplicate_channel_id_is_rejected(self):
         content = (
-            "#EXTM3U\\n"
-            '#EXTINF:-1 tvg-id="same",Uno\\nhttps://example.test/one/master.m3u8\\n'
-            '#EXTINF:-1 tvg-id="same",Dos\\nhttps://example.test/two/master.m3u8\\n'
+            "#EXTM3U\n"
+            '#EXTINF:-1 tvg-id="same",Uno\nhttps://example.test/one/master.m3u8\n'
+            '#EXTINF:-1 tvg-id="same",Dos\nhttps://example.test/two/master.m3u8\n'
         )
         with self.assertRaisesRegex(RuntimeError, "ID duplicado"):
             validate_playlist_content(content)
 
     def test_duplicate_stream_is_rejected(self):
         content = (
-            "#EXTM3U\\n"
-            '#EXTINF:-1 tvg-id="one",Uno\\nhttps://example.test/shared/master.m3u8\\n'
-            '#EXTINF:-1 tvg-id="two",Dos\\nhttps://example.test/shared/master.m3u8\\n'
+            "#EXTM3U\n"
+            '#EXTINF:-1 tvg-id="one",Uno\nhttps://example.test/shared/master.m3u8\n'
+            '#EXTINF:-1 tvg-id="two",Dos\nhttps://example.test/shared/master.m3u8\n'
         )
         with self.assertRaisesRegex(RuntimeError, "stream duplicado"):
             validate_playlist_content(content)
 
     def test_url_without_extinf_is_rejected(self):
         with self.assertRaisesRegex(RuntimeError, "sin #EXTINF"):
-            validate_playlist_content("#EXTM3U\\nhttps://example.test/orphan/master.m3u8\\n")
+            validate_playlist_content("#EXTM3U\nhttps://example.test/orphan/master.m3u8\n")
 
     def test_non_hls_stream_is_rejected(self):
-        content = '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://example.test/one/video.mp4\\n'
+        content = '#EXTM3U\n#EXTINF:-1 tvg-id="one",Uno\nhttps://example.test/one/video.mp4\n'
         with self.assertRaisesRegex(RuntimeError, "stream HLS inválido"):
             validate_playlist_content(content)
 
@@ -55,11 +55,11 @@ class PlaylistOrderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             playlist = Path(temporary_directory) / "previous.m3u"
             playlist.write_text(
-                "#EXTM3U\\n"
-                '#EXTINF:-1 tvg-id="channel-b" tvg-name="Canal B",Canal B\\n'
-                "https://example.test/b/master.m3u8\\n"
-                '#EXTINF:-1 tvg-id="channel-a" tvg-name="Canal A",Canal A\\n'
-                "https://example.test/a/master.m3u8\\n",
+                "#EXTM3U\n"
+                '#EXTINF:-1 tvg-id="channel-b" tvg-name="Canal B",Canal B\n'
+                "https://example.test/b/master.m3u8\n"
+                '#EXTINF:-1 tvg-id="channel-a" tvg-name="Canal A",Canal A\n'
+                "https://example.test/a/master.m3u8\n",
                 encoding="utf-8",
             )
             fresh = [
@@ -74,9 +74,9 @@ class PlaylistOrderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary_directory:
             playlist = Path(temporary_directory) / "previous.m3u"
             playlist.write_text(
-                "#EXTM3U\\n"
-                '#EXTINF:-1 tvg-id="old-id" tvg-name="Canal Uno",Canal Uno\\n'
-                "https://example.test/one/master.m3u8\\n",
+                "#EXTM3U\n"
+                '#EXTINF:-1 tvg-id="old-id" tvg-name="Canal Uno",Canal Uno\n'
+                "https://example.test/one/master.m3u8\n",
                 encoding="utf-8",
             )
             fresh = [
