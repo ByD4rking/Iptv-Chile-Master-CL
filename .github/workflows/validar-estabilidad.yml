@@ -78,8 +78,8 @@ jobs:
       - name: Añadir candidatos Teleon ya validados
         run: python IPTV-CHILE-GENERADOR/scripts/teleon_publish.py
 
-      - name: Aplicar reconexión a GOD sin alterar los canales
-        run: python IPTV-CHILE-GENERADOR/scripts/aplicar_reconexion_god.py
+      - name: Verificar integridad histórica de GOD sin reescritura
+        run: python IPTV-CHILE-GENERADOR/scripts/guard.py
 
       - name: Verificar integridad de listas y aislamiento
         run: python IPTV-CHILE-GENERADOR/scripts/guard.py
