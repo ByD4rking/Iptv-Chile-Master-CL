@@ -1,0 +1,42 @@
+name: IPTV Generator - pull request tests
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "IPTV-CHILE-GENERADOR/scripts/**"
+      - "IPTV-CHILE-GENERADOR/tests/**"
+      - ".github/workflows/generador.yml"
+      - ".github/workflows/generador-tests.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: generator-tests-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Configure Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+      - name: Validate Python syntax
+        run: python -m compileall -q IPTV-CHILE-GENERADOR/scripts IPTV-CHILE-GENERADOR/tests
+      - name: M3U inventory tests
+        run: python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
+      - name: Source collection tests
+        run: python IPTV-CHILE-GENERADOR/tests/test_collect.py
+      - name: HLS VOD and LIVE regression tests
+        run: python IPTV-CHILE-GENERADOR/tests/test_quality_hls.py
+      - name: Teleon classifier tests
+        run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
+      - name: Generator workflow protection tests
+        run: python IPTV-CHILE-GENERADOR/tests/test_workflow_protection.py
