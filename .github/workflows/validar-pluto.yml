@@ -84,5 +84,58 @@ jobs:
           print(f"LIVE API OK: {total} entradas regionales generadas; archivos solo en directorio temporal, sin publicar.")
           PY
 
+      - name: Sondeo HLS real de muestras por región (sin guardar resultados)
+        timeout-minutes: 10
+        env:
+          PLUTO_OUTPUT_DIR: ${{ runner.temp }}/pluto-live-output
+          PYTHONPATH: pluto/src
+        run: |
+          python - <<'PY'
+          from concurrent.futures import ThreadPoolExecutor, as_completed
+          import os
+          from pathlib import Path
+          from health import probe
+
+          root = Path(os.environ["PLUTO_OUTPUT_DIR"]) / "playlists"
+          samples = {}
+          for region in ("ar", "br", "cl", "es", "latam", "mx", "us"):
+              path = root / f"pluto_{region}.m3u"
+              streams = [line.strip() for line in path.read_text(encoding="utf-8-sig").splitlines()
+                         if line.strip().startswith(("http://", "https://"))]
+              samples[region] = streams[:2]
+
+          outcomes = {}
+          with ThreadPoolExecutor(max_workers=14) as pool:
+              futures = {
+                  pool.submit(probe, stream): (region, index, stream)
+                  for region, streams in samples.items()
+                  for index, stream in enumerate(streams, 1)
+              }
+              for future in as_completed(futures):
+                  region, index, stream = futures[future]
+                  try:
+                      result = future.result()
+                  except Exception as exc:
+                      result = {"ok": False, "message": type(exc).__name__, "attempts": 0}
+                  outcomes.setdefault(region, []).append(result)
+                  print(
+                      f"HLS {region.upper()} muestra {index}: "
+                      f"{'OK' if result.get('ok') else 'FALLO'}; "
+                      f"intentos={result.get('attempts')}; "
+                      f"detalle={result.get('message')}"
+                  )
+
+          failed_regions = []
+          for region in ("ar", "br", "cl", "es", "latam", "mx", "us"):
+              results = outcomes.get(region, [])
+              successes = sum(bool(item.get("ok")) for item in results)
+              print(f"HLS RESUMEN {region.upper()}: {successes}/{len(results)} muestras reproducibles por HTTP")
+              if successes == 0:
+                  failed_regions.append(region.upper())
+          if failed_regions:
+              raise SystemExit("Sin ninguna muestra HLS funcional en: " + ", ".join(failed_regions))
+          print("HLS SAMPLE OK: al menos un master/variant/segmento funcional por cada región.")
+          PY
+
       - name: Autoprueba estructural Pluto
         run: python pluto/src/selftest.py
