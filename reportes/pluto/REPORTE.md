@@ -12,7 +12,7 @@
 
 ## Salud de streams
 - Archivo: `pluto/output/health/streams.json`
-- Registros: **1370**
+- Registros: **1579**
 
 **Total de canales publicados: 1579**
 
