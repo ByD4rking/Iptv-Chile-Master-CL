@@ -201,10 +201,16 @@ def media_segment_urls(text, base_url, limit=HLS_STABILITY_SEGMENTS):
 
 def validate_hls_segments(text, base_url):
     segment_urls = media_segment_urls(text, base_url)
-    if len(segment_urls) < HLS_STABILITY_SEGMENTS:
+    # Una VOD terminada puede tener menos de tres segmentos; valida los
+    # segmentos muestreados disponibles (hasta HLS_STABILITY_SEGMENTS).
+    # Para LIVE se mantiene la ventana completa para no aprobar snapshots frágiles.
+    is_finished_vod = "#EXT-X-ENDLIST" in text
+    required_segments = 1 if is_finished_vod else HLS_STABILITY_SEGMENTS
+    if len(segment_urls) < required_segments:
         return False, len(segment_urls), (
-            f"Playlist HLS solo expuso {len(segment_urls)} segmento(s); "
-            f"se requieren {HLS_STABILITY_SEGMENTS}."
+            f"Playlist HLS {'VOD terminada' if is_finished_vod else 'LIVE'} "
+            f"solo expuso {len(segment_urls)} segmento(s); "
+            f"se requieren {required_segments}."
         )
 
     for index, segment_url in enumerate(segment_urls, 1):
