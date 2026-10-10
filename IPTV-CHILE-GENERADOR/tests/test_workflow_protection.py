@@ -31,8 +31,8 @@ class WorkflowProtectionTests(unittest.TestCase):
             retry_setup,
             "Cada reintento debe anclar el hash de GOD a la nueva base remota.",
         )
-        generation_end = workflow.index("sha256sum -c /tmp/generador-guard/maestras.sha256", retry_end)
-        retry_checks = workflow[retry_end:generation_end]
+        retry_checks_end = workflow.index("while IFS= read -r line;", retry_end)
+        retry_checks = workflow[retry_end:retry_checks_end]
         self.assertIn(
             "sha256sum -c /tmp/generador-guard/god.sha256",
             retry_checks,
