@@ -201,9 +201,9 @@ def media_segment_urls(text, base_url, limit=HLS_STABILITY_SEGMENTS):
 
 def validate_hls_segments(text, base_url):
     segment_urls = media_segment_urls(text, base_url)
-    # Una VOD terminada no necesita tres segmentos para demostrar que reproduce:
-    # valida todos los segmentos disponibles (al menos uno). Para LIVE seguimos
-    # exigiendo la ventana de estabilidad completa para no aprobar snapshots frágiles.
+    # Una VOD terminada puede tener menos de tres segmentos; valida los
+    # segmentos muestreados disponibles (hasta HLS_STABILITY_SEGMENTS).
+    # Para LIVE se mantiene la ventana completa para no aprobar snapshots frágiles.
     is_finished_vod = "#EXT-X-ENDLIST" in text
     required_segments = 1 if is_finished_vod else HLS_STABILITY_SEGMENTS
     if len(segment_urls) < required_segments:
