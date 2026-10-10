@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from channels import GROUPS, normalize_channel
 from client import PlutoClient
@@ -244,11 +245,20 @@ def fetch_region(region: Region) -> list[dict]:
 
 
 def valid_stream(stream: str) -> bool:
-    return bool(
-        stream
-        and stream.startswith(("http://", "https://"))
-        and ".m3u8" in stream
-    )
+    """Accept only absolute HTTP(S) URLs whose path is an HLS playlist."""
+    if not isinstance(stream, str) or not stream.strip():
+        return False
+    try:
+        parsed = urlsplit(stream.strip())
+        return bool(
+            parsed.scheme.lower() in {"http", "https"}
+            and parsed.hostname
+            and parsed.username is None
+            and parsed.password is None
+            and parsed.path.lower().endswith(".m3u8")
+        )
+    except (ValueError, TypeError):
+        return False
 
 
 def esc(value) -> str:
