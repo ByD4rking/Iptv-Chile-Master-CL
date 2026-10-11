@@ -2,7 +2,7 @@
 
 > **Versión actual: v1.0.0 — 🟢 ESTABLE**
 >
-> El proyecto utiliza un ciclo de versiones **BETA → 🧪 FASE DE PRUEBAS — INESTABLE → CANDIDATA A LANZAMIENTO → ESTABLE**. Consulta [docs/VERSIONADO.md](docs/VERSIONADO.md) para las reglas de promoción.
+> El proyecto utiliza un ciclo de versiones **BETA → 🧪 FASE DE PRUEBAS — INESTABLE → CANDIDATA A LANZAMIENTO → ESTABLE**. Consulta [docs/VERSIONADO.md](https://github.com/ByD4rking/Iptv-Chile-Master-CL/blob/main/docs/VERSIONADO.md) para las reglas de promoción.
 
 > **Colección, organización y actualización automatizada de listas IPTV en formato M3U.**
 
@@ -22,9 +22,9 @@ Su estructura se mantiene organizada por categorías y prioriza la conservación
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -64,9 +64,9 @@ Su objetivo es ofrecer una colección mucho más extensa, manteniendo una organi
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_GOD.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -123,23 +123,23 @@ Esto significa que, cuando un mismo canal aparece en varias regiones, el proyect
 
 ### 📋 Playlists oficiales
 
-| Región | Archivo | Uso |
-| :--- | :--- | :--- |
-| 🌎 **Pluto TV LATAM** | `pluto_latam.m3u` | Contenido orientado a Latinoamérica |
-| 🇪🇸 **Pluto TV España** | `pluto_es.m3u` | Contenido específico de España |
-| 🇲🇽 **Pluto TV México** | `pluto_mx.m3u` | Contenido específico de México |
-| 🇦🇷 **Pluto TV Argentina** | `pluto_ar.m3u` | Contenido específico de Argentina |
-| 🇧🇷 **Pluto TV Brasil** | `pluto_br.m3u` | Contenido específico de Brasil |
-| 🇨🇱 **Pluto TV Chile** | `pluto_cl.m3u` | Contenido específico de Chile |
-| 🇺🇸 **Pluto TV Estados Unidos** | `pluto_us.m3u` | Contenido específico de Estados Unidos |
+| Región                         | Archivo           | Uso                                    |
+| ------------------------------ | ----------------- | -------------------------------------- |
+| 🌎 **Pluto TV LATAM**           | `pluto_latam.m3u` | Contenido orientado a Latinoamérica    |
+| 🇪🇸 **Pluto TV España**         | `pluto_es.m3u`    | Contenido específico de España         |
+| 🇲🇽 **Pluto TV México**         | `pluto_mx.m3u`    | Contenido específico de México         |
+| 🇦🇷 **Pluto TV Argentina**      | `pluto_ar.m3u`    | Contenido específico de Argentina      |
+| 🇧🇷 **Pluto TV Brasil**         | `pluto_br.m3u`    | Contenido específico de Brasil         |
+| 🇨🇱 **Pluto TV Chile**          | `pluto_cl.m3u`    | Contenido específico de Chile          |
+| 🇺🇸 **Pluto TV Estados Unidos** | `pluto_us.m3u`    | Contenido específico de Estados Unidos |
 
 ### 📥 Acceso a la lista — Pluto TV LATAM
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_latam.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -153,9 +153,9 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_es.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -169,9 +169,9 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_mx.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -185,9 +185,9 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_ar.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -201,9 +201,9 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_br.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -217,9 +217,9 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_cl.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -233,9 +233,9 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 
 **🔗 RAW — copiar URL**
 
-~~~text
+```
 https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/pluto_us.m3u
-~~~
+```
 
 **⬇️ Descarga directa — archivo local**
 
@@ -257,7 +257,7 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 - **Quieres ampliar la cobertura:** puedes cargar varias o todas las listas en un reproductor que admita múltiples playlists.
 - **Quieres evitar administrar varias listas:** puedes utilizar la lista principal o GOD del proyecto cuando corresponda.
 
- > Pluto TV se mantiene como un bloque separado de la lista principal y de la GOD. Las siete playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual.
+> Pluto TV se mantiene como un bloque separado de la lista principal y de la GOD. Las siete playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual.
 
 ---
 
@@ -321,14 +321,14 @@ También puede utilizarse **IPTV Smarters Pro** en los dispositivos y versiones 
 
 ### 🧭 Resumen por dispositivo
 
-| Dispositivo | Opciones recomendadas |
-| :--- | :--- |
-| 📱 **Android** | **Televizo + MPV** |
-| 🤖 **Android TV** | **Televizo / TiviMate / OTT Navigator** |
-| 💻 **Windows / PC** | **FredTV / MPV / IPTVnator** |
-| 🍏 **macOS** | **IPTVnator / MPV / VLC** |
-| 📱 **iPhone / iPad** | **GSE Smart IPTV + VLC** |
-| 📺 **Samsung / LG / Smart TV** | **SS IPTV / IPTV Smarters Pro** |
+| Dispositivo                   | Opciones recomendadas                   |
+| ----------------------------- | --------------------------------------- |
+| 📱 **Android**                 | **Televizo + MPV**                      |
+| 🤖 **Android TV**              | **Televizo / TiviMate / OTT Navigator** |
+| 💻 **Windows / PC**            | **FredTV / MPV / IPTVnator**            |
+| 🍏 **macOS**                   | **IPTVnator / MPV / VLC**               |
+| 📱 **iPhone / iPad**           | **GSE Smart IPTV + VLC**                |
+| 📺 **Samsung / LG / Smart TV** | **SS IPTV / IPTV Smarters Pro**         |
 
 ### 🛠️ Solución para pantalla negra, cortes o reproducción poco fluida
 
@@ -391,8 +391,8 @@ La automatización busca **actualizar sin destruir la estructura existente**: lo
 
 La estructura se mantiene separada por función y por fuente. **IPTV-CHILE-GENERADOR es un componente independiente**: genera y publica su propia playlist sin reingestar ni modificar las listas maestras ni las playlists Pluto.
 
-~~~text
-IPTV-CHILE-MASTER-CL/
+```
+Iptv-Chile-Master-CL/
 ├── IPTV-CHILE-MAESTRA_CORREGIDO.m3u      # Lista principal
 ├── IPTV-CHILE-MAESTRA_GOD.m3u            # Lista GOD
 ├── IPTV-CHILE-GENERADOR/
@@ -414,31 +414,34 @@ IPTV-CHILE-MASTER-CL/
 │           ├── pluto_cl.m3u
 │           └── pluto_us.m3u
 ├── scripts/                              # Scripts generales del proyecto
+├── reportes/                             # Reportes de estado
+├── docs/                                 # Documentación (VERSIONADO.md, etc.)
 ├── .github/
 │   └── workflows/
 │       ├── actualizar.yml                # Actualización general
 │       ├── generador.yml                 # Generador aislado
 │       └── pluto.yml                     # Pluto TV
-├── REPORTE.md
 ├── actualizar-todo.ps1
+├── CHANGELOG.md
+├── VERSION
 ├── README.md
 └── LICENSE
-~~~
+```
 
 ### 🔒 Separación de las listas
 
-| Componente | Playlist | Alcance |
-| :--- | :--- | :--- |
-| 🇨🇱 **Principal** | `IPTV-CHILE-MAESTRA_CORREGIDO.m3u` | Lista maestra controlada |
-| 🔥 **GOD** | `IPTV-CHILE-MAESTRA_GOD.m3u` | Colección ampliada |
-| 🧪 **Generador** | `IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u` | Generación independiente |
-| 🪐 **Pluto LATAM** | `pluto_latam.m3u` | Playlist regional independiente |
-| 🇪🇸 **Pluto España** | `pluto_es.m3u` | Playlist regional independiente |
-| 🇲🇽 **Pluto México** | `pluto_mx.m3u` | Playlist regional independiente |
-| 🇦🇷 **Pluto Argentina** | `pluto_ar.m3u` | Playlist regional independiente |
-| 🇧🇷 **Pluto Brasil** | `pluto_br.m3u` | Playlist regional independiente |
-| 🇨🇱 **Pluto Chile** | `pluto_cl.m3u` | Playlist regional independiente |
-| 🇺🇸 **Pluto Estados Unidos** | `pluto_us.m3u` | Playlist regional independiente |
+| Componente                  | Playlist                                        | Alcance                         |
+| --------------------------- | ----------------------------------------------- | ------------------------------- |
+| 🇨🇱 **Principal**            | `IPTV-CHILE-MAESTRA_CORREGIDO.m3u`              | Lista maestra controlada        |
+| 🔥 **GOD**                   | `IPTV-CHILE-MAESTRA_GOD.m3u`                    | Colección ampliada              |
+| 🧪 **Generador**             | `IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u` | Generación independiente        |
+| 🪐 **Pluto LATAM**           | `pluto_latam.m3u`                               | Playlist regional independiente |
+| 🇪🇸 **Pluto España**         | `pluto_es.m3u`                                  | Playlist regional independiente |
+| 🇲🇽 **Pluto México**         | `pluto_mx.m3u`                                  | Playlist regional independiente |
+| 🇦🇷 **Pluto Argentina**      | `pluto_ar.m3u`                                  | Playlist regional independiente |
+| 🇧🇷 **Pluto Brasil**         | `pluto_br.m3u`                                  | Playlist regional independiente |
+| 🇨🇱 **Pluto Chile**          | `pluto_cl.m3u`                                  | Playlist regional independiente |
+| 🇺🇸 **Pluto Estados Unidos** | `pluto_us.m3u`                                  | Playlist regional independiente |
 
 ### 🧪 IPTV-CHILE-GENERADOR
 
@@ -468,7 +471,6 @@ Cada bloque tiene su propio flujo de mantenimiento:
 
 La actualización del generador **no debe reingestar las listas Pluto ni `IPTV-CHILE-MAESTRA_CORREGIDO.m3u`**. El aislamiento se comprueba antes y después de la generación.
 
-
 ---
 
 ## ⚠️ Aviso importante
@@ -485,7 +487,7 @@ Este proyecto recopila y organiza **fuentes IPTV públicas de terceros**.
 
 ## 📜 Licencia
 
-Consulta el archivo [LICENSE](LICENSE) del repositorio para conocer las condiciones aplicables al código y a los archivos del proyecto.
+Consulta el archivo [LICENSE](https://github.com/ByD4rking/Iptv-Chile-Master-CL/blob/main/LICENSE) del repositorio para conocer las condiciones aplicables al código y a los archivos del proyecto.
 
 ---
 
