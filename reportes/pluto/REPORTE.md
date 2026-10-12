@@ -5,15 +5,15 @@
 - **AR**: 201 canales, 201 streams
 - **BR**: 183 canales, 183 streams
 - **CL**: 201 canales, 201 streams
-- **ES**: 146 canales, 146 streams
+- **ES**: 148 canales, 148 streams
 - **LATAM**: 209 canales, 209 streams
 - **MX**: 205 canales, 205 streams
 - **US**: 434 canales, 434 streams
 
 ## Salud de streams
 - Archivo: `pluto/output/health/streams.json`
-- Registros: **1579**
+- Registros: **1581**
 
-**Total de canales publicados: 1579**
+**Total de canales publicados: 1581**
 
 Este reporte pertenece exclusivamente al pipeline Pluto y no modifica Principal, GOD ni Generador.
