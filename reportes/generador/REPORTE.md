@@ -1,10 +1,10 @@
 # Reporte de estado - IPTV-CHILE-GENERADOR
 
-- Canales publicados: **182**
-- URLs únicas: **182**
-- Candidatos evaluados: **303**
-- Playback OK: **198**
-- Manifest generado: **182 canales**
+- Canales publicados: **191**
+- URLs únicas: **191**
+- Candidatos evaluados: **307**
+- Playback OK: **209**
+- Manifest generado: **191 canales**
 - Teleon candidatos validados: **0**
 - Teleon playback OK: **0**
 
