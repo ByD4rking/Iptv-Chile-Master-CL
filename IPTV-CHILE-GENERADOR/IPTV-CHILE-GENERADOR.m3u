@@ -1,6 +1,10 @@
 #EXTM3U
 # IPTV-CHILE-GENERADOR | 2026-10-15
-# IPTV-CHILE-GENERADOR-CHANNELS-SHA256: 325256b54c36842e657cf0c78a669ddd380274eefa182b96ffb9c2652b2f1716
+# IPTV-CHILE-GENERADOR-CHANNELS-SHA256: 3c6dd238bd8cc9ebce405da2d2332e0b0c80b56edf474d1891411de9b90da961
+#EXTINF:-1 tvg-name="EnerGeek (1080p)" tvg-id="a2048bdccbc2fe4f327e" tvg-logo="https://cdn.energeek.cl/logos/EG-Retro-2025_pfp.png" group-title="Animation",EnerGeek (1080p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://cl-2.backend.energeek.cl/bkp/egretroweb/index.m3u8?token=IPTVgh26
 #EXTINF:-1 tvg-name="EnerGeek FAN (1080p)" tvg-id="67d6892f14e2159daa35" tvg-logo="https://cdn.energeek.cl/logos/EG-Fan-2025_pfp.png" group-title="Animation",EnerGeek FAN (1080p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -45,10 +49,6 @@ https://barinaslive1.boldmss.com/COMEDY/COMEDY.isml/COMEDY.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8
-#EXTINF:-1 tvg-name="Chiloe Red 25 (720p)" tvg-id="100f3506d4735afb1eca" tvg-logo="https://i.imgur.com/3tqrImm.png" group-title="Culture",Chiloe Red 25 (720p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://v2.tustreaming.cl/chiloered/index.m3u8
 #EXTINF:-1 tvg-name="Cultura Online" tvg-id="e686d7412d6566c1c09f" tvg-logo="https://i.imgur.com/w8td5Lq.png" group-title="Culture",Cultura Online
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -61,10 +61,6 @@ https://unlimited1-us.dps.live/holvoettv/holvoettv.smil/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 http://15.204.246.24:8080/Mega2HD/index.m3u8
-#EXTINF:-1 tvg-name="Radio Suyai TV (1080p)" tvg-id="945df91a0df765e447b6" tvg-logo="https://stream-tools.zenomedia.com/content/stations/883465cc-a2ee-418a-972d-2c937707687d/image/?keep=w&lu=1775615385000&resize=350x350" group-title="Culture",Radio Suyai TV (1080p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://cl-2.backend.energeek.cl/RadioSuyai-Neo/index.m3u8
 #EXTINF:-1 tvg-name="Suyai TV (1080p)" tvg-id="3f85f45566e90fcdffb8" tvg-logo="https://suyaitv.cl/wp-content/uploads/2024/10/ico_Suyai_TV_512.png" group-title="Culture",Suyai TV (1080p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -113,6 +109,10 @@ https://v1.tustreaming.cl/emociontv/index.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://v4.tustreaming.cl/limachemovil/index.m3u8
+#EXTINF:-1 tvg-name="La Melinkana TV (720p)" tvg-id="903a94e486cc98be38ec" tvg-logo="https://i.imgur.com/I0nzI1y.png" group-title="Entertainment",La Melinkana TV (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://v1.tustreaming.cl/melinkana/index.m3u8
 #EXTINF:-1 tvg-name="La Nuestra (1080p)" tvg-id="3a71e6a1d70ea1a7f094" tvg-logo="https://i.imgur.com/WExojSG.png" group-title="Entertainment",La Nuestra (1080p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -125,14 +125,6 @@ http://15.204.246.24:8080/MTVHD/index.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://vdochile.com:3194/live/mvqutymylive.m3u8
-#EXTINF:-1 tvg-name="Zona Play TV (720p)" tvg-id="6b0a38a6d3001b3ee053" tvg-logo="https://i.imgur.com/GewcpHv.png" group-title="Entertainment",Zona Play TV (720p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://tv1.mediacp.eu:3131/live/dilxbgxylive.m3u8
-#EXTINF:-1 tvg-name="Chile Channel (720p)" tvg-id="83e05b185658111755ed" tvg-logo="https://i.imgur.com/F1it6fh.png" group-title="Entertainment;Travel",Chile Channel (720p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://v2.tustreaming.cl/chilechannel/index.m3u8
 #EXTINF:-1 tvg-name="AM Canal" tvg-id="a917ab44af5106e59291" tvg-logo="https://i.imgur.com/wfi9NXL.png" group-title="General",AM Canal
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -169,6 +161,10 @@ https://tls-cl.cdnz.cl/canal21tv/live/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 http://15.204.246.24:8080/Canal13HD/index.m3u8
+#EXTINF:-1 tvg-name="Canal 30 Loncomilla (720p)" tvg-id="7e4f71c67ed77c29cc49" tvg-logo="https://i.imgur.com/dgUHqrQ.png" group-title="General",Canal 30 Loncomilla (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://v1.tustreaming.cl/canal30loncomilla/index.m3u8
 #EXTINF:-1 tvg-name="Canal 5 Puerto Montt" tvg-id="84fbf4eb4b892aa81c27" tvg-logo="https://i.imgur.com/pLobTRW.png" group-title="General",Canal 5 Puerto Montt
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -265,6 +261,10 @@ https://vdochile.com:3134/stream/play.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://v2.tustreaming.cl/lcomarcatv/index.m3u8
+#EXTINF:-1 tvg-name="La Metro TV (1080p)" tvg-id="835a1b9714b398daeec3" tvg-logo="https://i.imgur.com/0aoI5Zd.jpeg" group-title="General",La Metro TV (1080p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://jireh-8-hls-video-us-isp.dps.live/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/metropolitanatv/metropolitanatv.smil/playlist.m3u8
 #EXTINF:-1 tvg-name="La Popular TV" tvg-id="9ea9527157d330a243df" tvg-logo="https://i.imgur.com/AWdgMCC.png" group-title="General",La Popular TV
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -301,6 +301,10 @@ https://scl.edge.grupoz.cl/miradio2/live/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://video.ipstream.cl:3710/hybrid/play.m3u8
+#EXTINF:-1 tvg-name="Nina TV (720p)" tvg-id="afb0f71f7cc01a896520" tvg-logo="https://cdn.m3u.cl/logo/1552_Nina_TV.png" group-title="General",Nina TV (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://tv1.ninatv.cl/hls/stream.m3u8
 #EXTINF:-1 tvg-name="Odisea TV (720p)" tvg-id="46c810103e80490338a7" tvg-logo="https://i.imgur.com/8SCnoiZ.png" group-title="General",Odisea TV (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -341,10 +345,6 @@ https://v1.tustreaming.cl/frecuencia1tv/index.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://v2.tustreaming.cl/rln/index.m3u8
-#EXTINF:-1 tvg-name="Radio Nuble (720p)" tvg-id="5e733b30f2981a58ce6c" tvg-logo="https://cdn.m3u.cl/logo/870_Radio_Nuble.png" group-title="General",Radio Nuble (720p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://tv.telselec.cl:3376/live/nublefmlive.m3u8
 #EXTINF:-1 tvg-name="Radio Panoramica (720p)" tvg-id="f9d76478561210c3ae35" tvg-logo="https://cdn.m3u.cl/logo/1502_Radio_Panoramica.png" group-title="General",Radio Panoramica (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -573,10 +573,6 @@ https://redirector.dps.live/hls/t13/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://tr.live.clarovtrcdn.vtrplay.com/telecanalsdchi/vxfmt=dp/playlist.m3u8?device_profile=STB_HLS_VCAS_LIVE_HD
-#EXTINF:-1 tvg-name="TeleCauquenes (720p)" tvg-id="c6b0616af0f910b0104b" tvg-logo="https://i.imgur.com/cNYDqhp.png" group-title="News",TeleCauquenes (720p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://lbgo.bozztv.com/ssh101/ssh101/telecauquenestv/playlist.m3u8
 #EXTINF:-1 tvg-name="Turno (720p)" tvg-id="92ebe9dd4bc51ccb1961" tvg-logo="https://i.imgur.com/XuSeHBt.png" group-title="News",Turno (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -597,10 +593,18 @@ https://live-evg10.tv360.bitel.com.pe/bitel/alasdeaguilaSRT/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://unlimited1-us.dps.live/isb/isb.smil/playlist.m3u8
+#EXTINF:-1 tvg-name="Fortaleza TV (1080p)" tvg-id="08af89967f39d963b3d5" tvg-logo="https://i.imgur.com/BJpop5n.png" group-title="Religious",Fortaleza TV (1080p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://multimedia.fortalezatv.cl/video/video.m3u8
 #EXTINF:-1 tvg-name="ISA TV" tvg-id="f3158a288aedc6f67e97" tvg-logo="https://i.imgur.com/24qGdyn.jpeg" group-title="Religious",ISA TV
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://scl.edge.grupoz.cl/isatv/live/playlist.m3u8
+#EXTINF:-1 tvg-name="MTNA TV" tvg-id="e4585e7041482dfcbe27" tvg-logo="https://i.imgur.com/v7SA92F.png" group-title="Religious",MTNA TV
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://live.mtna.tv/hls/mtna/mtna.m3u8
 #EXTINF:-1 tvg-name="Nuevo Tiempo TV (720p)" tvg-id="351ded065366b98e1e96" tvg-logo="https://i.imgur.com/eCPzibM.png" group-title="Religious",Nuevo Tiempo TV (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
