@@ -10,41 +10,15 @@
     "comparison_against": "data/teleon_discovery.json"
   },
   "metrics": {
-    "entries_parsed": 197,
-    "unique_urls": 197,
+    "entries_parsed": 196,
+    "unique_urls": 196,
     "duplicate_urls": 0,
     "known_to_teleon": 0,
-    "new_urls_vs_teleon": 197,
-    "new_url_candidates": 197
+    "new_urls_vs_teleon": 196,
+    "new_url_candidates": 196
   },
   "duplicates": [],
   "entries": [
-    {
-      "name": "EnerGeek (1080p)",
-      "tvg_name": "EnerGeek (1080p)",
-      "tvg_id": "a2048bdccbc2fe4f327e",
-      "logo": "https://cdn.energeek.cl/logos/EG-Retro-2025_pfp.png",
-      "groups": [
-        "Animation"
-      ],
-      "url": "https://cl-2.backend.energeek.cl/bkp/egretroweb/index.m3u8?token=IPTVgh26",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "EnerGeek FAN (1080p)",
-      "tvg_name": "EnerGeek FAN (1080p)",
-      "tvg_id": "67d6892f14e2159daa35",
-      "logo": "https://cdn.energeek.cl/logos/EG-Fan-2025_pfp.png",
-      "groups": [
-        "Animation"
-      ],
-      "url": "https://cl-2.backend.energeek.cl/bkp/egfan/mobile/index.m3u8?token=IPTVgh26",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
     {
       "name": "ETC TV (1080p)",
       "tvg_name": "ETC TV (1080p)",
@@ -180,6 +154,19 @@
       }
     },
     {
+      "name": "Chiloe Red 25 (720p)",
+      "tvg_name": "Chiloe Red 25 (720p)",
+      "tvg_id": "100f3506d4735afb1eca",
+      "logo": "https://i.imgur.com/3tqrImm.png",
+      "groups": [
+        "Culture"
+      ],
+      "url": "https://v2.tustreaming.cl/chiloered/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Holvoet TV (720p) [Not 24/7]",
       "tvg_name": "Holvoet TV (720p) [Not 24/7]",
       "tvg_id": "ac258a5437e358eb0552",
@@ -200,7 +187,7 @@
       "groups": [
         "Culture"
       ],
-      "url": "http://15.204.196.147:22880/MEGA2-MEGAMEDIA-EE.UU-PROVEEDOR/index.m3u8",
+      "url": "http://15.204.246.24:8080/Mega2HD/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -362,14 +349,14 @@
       }
     },
     {
-      "name": "Estacion Limache TV (720p)",
-      "tvg_name": "Estacion Limache TV (720p)",
-      "tvg_id": "aace81180846eeaf7ce1",
-      "logo": "https://i.imgur.com/YAADx7P.png",
+      "name": "Emocion TV (720p)",
+      "tvg_name": "Emocion TV (720p)",
+      "tvg_id": "5504f7e7f50fde9847b7",
+      "logo": "https://i.imgur.com/OJ3omla.jpeg",
       "groups": [
         "Entertainment"
       ],
-      "url": "https://v4.tustreaming.cl/limachemovil/index.m3u8",
+      "url": "https://v1.tustreaming.cl/emociontv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -427,19 +414,6 @@
       }
     },
     {
-      "name": "Zona Play TV (720p)",
-      "tvg_name": "Zona Play TV (720p)",
-      "tvg_id": "6b0a38a6d3001b3ee053",
-      "logo": "https://i.imgur.com/GewcpHv.png",
-      "groups": [
-        "Entertainment"
-      ],
-      "url": "https://tv1.mediacp.eu:3131/live/dilxbgxylive.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Chile Channel (720p)",
       "tvg_name": "Chile Channel (720p)",
       "tvg_id": "83e05b185658111755ed",
@@ -462,19 +436,6 @@
         "General"
       ],
       "url": "https://unlimited6-cl.dps.live/atv/atv.smil/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Arica TV",
-      "tvg_name": "Arica TV",
-      "tvg_id": "39f38831a9c92703931a",
-      "logo": "https://i.imgur.com/I67WOgT.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://envivo.arica.tv/hls/Live2025AricaTV.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -805,6 +766,19 @@
       }
     },
     {
+      "name": "Iquique TV (1080p)",
+      "tvg_name": "Iquique TV (1080p)",
+      "tvg_id": "eb90b200fb82bcfb3908",
+      "logo": "https://i.imgur.com/ZpXXLox.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://origin.skarnetchile.com:8081/iquiquetv-hd/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Islita TV (1080p)",
       "tvg_name": "Islita TV (1080p)",
       "tvg_id": "b1308e51f2cfc030a2ff",
@@ -1000,19 +974,6 @@
       }
     },
     {
-      "name": "Odisea TV (720p)",
-      "tvg_name": "Odisea TV (720p)",
-      "tvg_id": "46c810103e80490338a7",
-      "logo": "https://i.imgur.com/8SCnoiZ.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/odiseatv/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Oli TV (Chile) (1080p)",
       "tvg_name": "Oli TV (Chile) (1080p)",
       "tvg_id": "5580af0518d372a4a0d2",
@@ -1060,6 +1021,19 @@
         "General"
       ],
       "url": "https://v2.tustreaming.cl/radioancoatv/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Radio Chiloe (720p)",
+      "tvg_name": "Radio Chiloe (720p)",
+      "tvg_id": "e2d4a88d0c03be9ff4b3",
+      "logo": "https://cdn.m3u.cl/logo/409_Radio_Chiloe.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://videostream.chileservidores.com:8081/chiloe1/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1151,19 +1125,6 @@
         "General"
       ],
       "url": "https://rusach2.janus.cl/playlist/stream.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Radio Via Libre (720p)",
-      "tvg_name": "Radio Via Libre (720p)",
-      "tvg_id": "c0d18828f07e071b737e",
-      "logo": "https://cdn.m3u.cl/logo/396_Radio_Via_Libre.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://live20.bozztv.com/akamaissh101/ssh101/vialibretv/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1281,6 +1242,19 @@
         "General"
       ],
       "url": "http://168.196.127.137:6001/play/a03n/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "TV Show Fortaleza (720p)",
+      "tvg_name": "TV Show Fortaleza (720p)",
+      "tvg_id": "3e56d39bfafe54979e7d",
+      "logo": "https://static.wixstatic.com/media/9af6b8_e963e864c8fb40d3954f5c1c8cab1b40~mv2.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://stmv8.samcast.com.br/raimundoanselmolimamororo1908/raimundoanselmolimamororo1908/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1456,19 +1430,6 @@
       }
     },
     {
-      "name": "EnerGeek Radio (1080p)",
-      "tvg_name": "EnerGeek Radio (1080p)",
-      "tvg_id": "1dcddc288b223b149330",
-      "logo": "https://cdn.energeek.cl/logos/EG-Radio-2025_pfp.png",
-      "groups": [
-        "Music"
-      ],
-      "url": "https://cl-2.backend.energeek.cl/bkp/egradio/mobile/index.m3u8?token=IPTVgh26",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "FM Plus TV (720p)",
       "tvg_name": "FM Plus TV (720p)",
       "tvg_id": "909c8ae6d6b99fb7b3b8",
@@ -1477,6 +1438,19 @@
         "Music"
       ],
       "url": "https://v2.tustreaming.cl/fmplus/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Genial TV (720p)",
+      "tvg_name": "Genial TV (720p)",
+      "tvg_id": "40d00f1ffa01189efe79",
+      "logo": "https://i.imgur.com/uBC8e96.png",
+      "groups": [
+        "Music"
+      ],
+      "url": "https://v1.tustreaming.cl/genialtv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1599,6 +1573,19 @@
       }
     },
     {
+      "name": "Radio Zona 90.3 (720p)",
+      "tvg_name": "Radio Zona 90.3 (720p)",
+      "tvg_id": "0a7e2fed354a94985cb3",
+      "logo": "https://cdn.m3u.cl/logo/1629_Radio_Zona_90_3.png",
+      "groups": [
+        "Music"
+      ],
+      "url": "https://live.tvcontrolcp.com:8081/radiozona/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Retro Plus 2 (720p)",
       "tvg_name": "Retro Plus 2 (720p)",
       "tvg_id": "8e070c5e3e724cdf4031",
@@ -1633,19 +1620,6 @@
         "Music"
       ],
       "url": "https://tls-cl.cdnz.cl/rewindtv/live/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Ritoque TV (720p)",
-      "tvg_name": "Ritoque TV (720p)",
-      "tvg_id": "3fa9ef435cf7443de2fb",
-      "logo": "https://i.imgur.com/nTVJcFA.png",
-      "groups": [
-        "Music"
-      ],
-      "url": "https://streaming.purum.cl/ritoquetv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1854,6 +1828,19 @@
         "News"
       ],
       "url": "https://tr.live.clarovtrcdn.vtrplay.com/telecanalsdchi/vxfmt=dp/playlist.m3u8?device_profile=STB_HLS_VCAS_LIVE_HD",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Turno (720p)",
+      "tvg_name": "Turno (720p)",
+      "tvg_id": "92ebe9dd4bc51ccb1961",
+      "logo": "https://i.imgur.com/XuSeHBt.png",
+      "groups": [
+        "News"
+      ],
+      "url": "https://redirector.dps.live/hls/turno/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -2119,6 +2106,19 @@
       }
     },
     {
+      "name": "Atacama TV",
+      "tvg_name": "Atacama TV",
+      "tvg_id": "56da641c57de07963949",
+      "logo": "https://i.postimg.cc/rwS082hL/atacama-tv.png",
+      "groups": [
+        "Undefined"
+      ],
+      "url": "https://v2.tustreaming.cl/atacamatv/tracks-v1a1/mono.ts.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Atacama TV (720p)",
       "tvg_name": "Atacama TV (720p)",
       "tvg_id": "626d3967e440d0989d2f",
@@ -2288,19 +2288,6 @@
       }
     },
     {
-      "name": "Radio America TV (720p)",
-      "tvg_name": "Radio America TV (720p)",
-      "tvg_id": "55a3f16404afea8da664",
-      "logo": "https://i.imgur.com/8DXWU8z.png",
-      "groups": [
-        "Undefined"
-      ],
-      "url": "https://v2.tustreaming.cl/americamovil/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Radio Popular TV",
       "tvg_name": "Radio Popular TV",
       "tvg_id": "f9423dac5979a816712d",
@@ -2327,6 +2314,19 @@
       }
     },
     {
+      "name": "Radio Ritmo FM (1080p) [Not 24/7]",
+      "tvg_name": "Radio Ritmo FM (1080p) [Not 24/7]",
+      "tvg_id": "7b5e31985b8d851101b4",
+      "logo": "https://i.imgur.com/qU3E0kX.png",
+      "groups": [
+        "Undefined"
+      ],
+      "url": "https://panel.tvstream.cl:1936/8046/8046/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Rocco TV",
       "tvg_name": "Rocco TV",
       "tvg_id": "bb12f48bc43e822e2426",
@@ -2335,19 +2335,6 @@
         "Undefined"
       ],
       "url": "https://5ff3d9babae13.streamlock.net/wympnqeqts/wympnqeqts/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "RTC Television",
-      "tvg_name": "RTC Television",
-      "tvg_id": "a97fc3e9198792a5a55f",
-      "logo": "https://i.imgur.com/w91IBj7.png",
-      "groups": [
-        "Undefined"
-      ],
-      "url": "https://scl.edge.grupoz.cl/rtcstreaming/live/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
