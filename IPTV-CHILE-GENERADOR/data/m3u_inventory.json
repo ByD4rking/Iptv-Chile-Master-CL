@@ -10,12 +10,12 @@
     "comparison_against": "data/teleon_discovery.json"
   },
   "metrics": {
-    "entries_parsed": 194,
-    "unique_urls": 194,
+    "entries_parsed": 197,
+    "unique_urls": 197,
     "duplicate_urls": 0,
     "known_to_teleon": 0,
-    "new_urls_vs_teleon": 194,
-    "new_url_candidates": 194
+    "new_urls_vs_teleon": 197,
+    "new_url_candidates": 197
   },
   "duplicates": [],
   "entries": [
@@ -122,7 +122,7 @@
       "groups": [
         "Business"
       ],
-      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
+      "url": "https://v4.tustreaming.cl/tevexinter/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -266,6 +266,32 @@
         "Culture"
       ],
       "url": "https://verso.coopcom.cl/live/SHf6GLCpn4hDSpWdzaDzgX0ciU82/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "ClickTV Chile (720p)",
+      "tvg_name": "ClickTV Chile (720p)",
+      "tvg_id": "77bba8c91f8aff6de79e",
+      "logo": "https://i.imgur.com/H0XNbMS.png",
+      "groups": [
+        "Documentary"
+      ],
+      "url": "https://v2.tustreaming.cl/clicktv/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "GVision (288p)",
+      "tvg_name": "GVision (288p)",
+      "tvg_id": "a05dfbf57fd3e92f27f3",
+      "logo": "https://i.imgur.com/jUPHG21.png",
+      "groups": [
+        "Education"
+      ],
+      "url": "https://videostream.chileservidores.com:8081/tome/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -440,20 +466,6 @@
       }
     },
     {
-      "name": "Chile Channel (720p)",
-      "tvg_name": "Chile Channel (720p)",
-      "tvg_id": "83e05b185658111755ed",
-      "logo": "https://i.imgur.com/F1it6fh.png",
-      "groups": [
-        "Entertainment",
-        "Travel"
-      ],
-      "url": "https://v2.tustreaming.cl/chilechannel/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "AM Canal",
       "tvg_name": "AM Canal",
       "tvg_id": "a917ab44af5106e59291",
@@ -553,19 +565,6 @@
         "General"
       ],
       "url": "https://5ff3d9babae13.streamlock.net/aufymdjpjf/aufymdjpjf/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Canal Local (720p)",
-      "tvg_name": "Canal Local (720p)",
-      "tvg_id": "f64c7b5b7402f3f255e6",
-      "logo": "https://i.imgur.com/ReZXqWR.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/canallocalcl/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1026,6 +1025,19 @@
       }
     },
     {
+      "name": "Radio Chiloe (720p)",
+      "tvg_name": "Radio Chiloe (720p)",
+      "tvg_id": "e2d4a88d0c03be9ff4b3",
+      "logo": "https://cdn.m3u.cl/logo/409_Radio_Chiloe.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://videostream.chileservidores.com:8081/chiloe1/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Radio Contemporanea Coihueco (720p)",
       "tvg_name": "Radio Contemporanea Coihueco (720p)",
       "tvg_id": "da35753cea2ff81a03f6",
@@ -1047,19 +1059,6 @@
         "General"
       ],
       "url": "https://v2.tustreaming.cl/fantasiatv/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Radio Frecuencia Uno (720p)",
-      "tvg_name": "Radio Frecuencia Uno (720p)",
-      "tvg_id": "13e463c187ed304969d2",
-      "logo": "https://cdn.m3u.cl/logo/1646_Radio_Frecuencia_Uno.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v1.tustreaming.cl/frecuencia1tv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1260,6 +1259,19 @@
       }
     },
     {
+      "name": "TV Show Fortaleza (720p)",
+      "tvg_name": "TV Show Fortaleza (720p)",
+      "tvg_id": "3e56d39bfafe54979e7d",
+      "logo": "https://static.wixstatic.com/media/9af6b8_e963e864c8fb40d3954f5c1c8cab1b40~mv2.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://stmv8.samcast.com.br/raimundoanselmolimamororo1908/raimundoanselmolimamororo1908/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "TV+ (1080p)",
       "tvg_name": "TV+ (1080p)",
       "tvg_id": "80c2ab3e9233218413cb",
@@ -1451,6 +1463,19 @@
         "Music"
       ],
       "url": "https://cl-2.backend.energeek.cl/bkp/egradio/mobile/index.m3u8?token=IPTVgh26",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "FM Plus TV (720p)",
+      "tvg_name": "FM Plus TV (720p)",
+      "tvg_id": "909c8ae6d6b99fb7b3b8",
+      "logo": "https://i.imgur.com/1UokOyN.png",
+      "groups": [
+        "Music"
+      ],
+      "url": "https://v2.tustreaming.cl/fmplus/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1958,6 +1983,19 @@
         "Religious"
       ],
       "url": "https://tv.arkeo.cl:1936/preludio/preludio/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Radio Armonia TV (720p)",
+      "tvg_name": "Radio Armonia TV (720p)",
+      "tvg_id": "4cfe8c7dffe941bb9513",
+      "logo": "https://i.imgur.com/puWBnP3.png",
+      "groups": [
+        "Religious"
+      ],
+      "url": "https://v2.tustreaming.cl/armoniamovil/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
