@@ -10,15 +10,28 @@
     "comparison_against": "data/teleon_discovery.json"
   },
   "metrics": {
-    "entries_parsed": 195,
-    "unique_urls": 195,
+    "entries_parsed": 193,
+    "unique_urls": 193,
     "duplicate_urls": 0,
     "known_to_teleon": 0,
-    "new_urls_vs_teleon": 195,
-    "new_url_candidates": 195
+    "new_urls_vs_teleon": 193,
+    "new_url_candidates": 193
   },
   "duplicates": [],
   "entries": [
+    {
+      "name": "EnerGeek (1080p)",
+      "tvg_name": "EnerGeek (1080p)",
+      "tvg_id": "a2048bdccbc2fe4f327e",
+      "logo": "https://cdn.energeek.cl/logos/EG-Retro-2025_pfp.png",
+      "groups": [
+        "Animation"
+      ],
+      "url": "https://cl-2.backend.energeek.cl/bkp/egretroweb/index.m3u8?token=IPTVgh26",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
     {
       "name": "EnerGeek FAN (1080p)",
       "tvg_name": "EnerGeek FAN (1080p)",
@@ -27,7 +40,7 @@
       "groups": [
         "Animation"
       ],
-      "url": "https://cl-2.backend.energeek.cl/bkp/egfan/mobile/index.m3u8?token=IPTVgh26",
+      "url": "https://cl-2.backend.energeek.cl/bkp/egfanweb/index.m3u8?token=W3bEnerG33k2026",
       "headers": {
         "http-reconnect": "true"
       }
@@ -109,7 +122,7 @@
       "groups": [
         "Business"
       ],
-      "url": "https://v4.tustreaming.cl/tevexinter/index.m3u8",
+      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -206,19 +219,6 @@
       }
     },
     {
-      "name": "Radio Suyai TV (1080p)",
-      "tvg_name": "Radio Suyai TV (1080p)",
-      "tvg_id": "945df91a0df765e447b6",
-      "logo": "https://stream-tools.zenomedia.com/content/stations/883465cc-a2ee-418a-972d-2c937707687d/image/?keep=w&lu=1775615385000&resize=350x350",
-      "groups": [
-        "Culture"
-      ],
-      "url": "https://cl-2.backend.energeek.cl/RadioSuyai-Neo/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Suyai TV (1080p)",
       "tvg_name": "Suyai TV (1080p)",
       "tvg_id": "3f85f45566e90fcdffb8",
@@ -253,6 +253,19 @@
         "Culture"
       ],
       "url": "https://verso.coopcom.cl/live/SHf6GLCpn4hDSpWdzaDzgX0ciU82/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "ClickTV Chile (720p)",
+      "tvg_name": "ClickTV Chile (720p)",
+      "tvg_id": "77bba8c91f8aff6de79e",
+      "logo": "https://i.imgur.com/H0XNbMS.png",
+      "groups": [
+        "Documentary"
+      ],
+      "url": "https://v2.tustreaming.cl/clicktv/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -344,19 +357,6 @@
         "Entertainment"
       ],
       "url": "http://streaming.multicontenidos.cl:8081/live/canalfeliz/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Emocion TV (720p)",
-      "tvg_name": "Emocion TV (720p)",
-      "tvg_id": "5504f7e7f50fde9847b7",
-      "logo": "https://i.imgur.com/OJ3omla.jpeg",
-      "groups": [
-        "Entertainment"
-      ],
-      "url": "https://v1.tustreaming.cl/emociontv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -610,19 +610,6 @@
       }
     },
     {
-      "name": "China Channel (720p)",
-      "tvg_name": "China Channel (720p)",
-      "tvg_id": "b3fae0e020c6f740bf77",
-      "logo": "https://cdn.m3u.cl/logo/1769_China_Channel.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/chinachannel/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Concepcion TV (720p)",
       "tvg_name": "Concepcion TV (720p)",
       "tvg_id": "9711eb40ddad61b79f83",
@@ -766,19 +753,6 @@
       }
     },
     {
-      "name": "Iquique TV (1080p)",
-      "tvg_name": "Iquique TV (1080p)",
-      "tvg_id": "eb90b200fb82bcfb3908",
-      "logo": "https://i.imgur.com/ZpXXLox.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://origin.skarnetchile.com:8081/iquiquetv-hd/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Islita TV (1080p)",
       "tvg_name": "Islita TV (1080p)",
       "tvg_id": "b1308e51f2cfc030a2ff",
@@ -826,6 +800,19 @@
         "General"
       ],
       "url": "https://vdochile.com:3134/stream/play.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "La Comarca TV (720p)",
+      "tvg_name": "La Comarca TV (720p)",
+      "tvg_id": "39c6e2d4fd95c58bf5f2",
+      "logo": "https://cdn.m3u.cl/logo/1698_La_Comarca_TV.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v2.tustreaming.cl/lcomarcatv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -948,19 +935,6 @@
       }
     },
     {
-      "name": "Nina TV (720p)",
-      "tvg_name": "Nina TV (720p)",
-      "tvg_id": "afb0f71f7cc01a896520",
-      "logo": "https://cdn.m3u.cl/logo/1552_Nina_TV.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://tv1.ninatv.cl/hls/stream.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Odisea TV (720p)",
       "tvg_name": "Odisea TV (720p)",
       "tvg_id": "46c810103e80490338a7",
@@ -1047,19 +1021,6 @@
         "General"
       ],
       "url": "https://tv.arkeo.cl:19360/8046/8046.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Radio Fantasia TV (720p)",
-      "tvg_name": "Radio Fantasia TV (720p)",
-      "tvg_id": "4504c20b84dd00208eea",
-      "logo": "https://cdn.m3u.cl/logo/389_Radio_Fantasia_TV.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/fantasiatv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1390,6 +1351,20 @@
       }
     },
     {
+      "name": "Star Channel (Chile) (720p)",
+      "tvg_name": "Star Channel (Chile) (720p)",
+      "tvg_id": "bea93a95594a82be43be",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Star_Channel_2020.svg/960px-Star_Channel_2020.svg.png",
+      "groups": [
+        "Movies",
+        "Series"
+      ],
+      "url": "http://138.121.15.230:9002/STAR-CHANNEL/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "13 Festival (1080p)",
       "tvg_name": "13 Festival (1080p)",
       "tvg_id": "cd6674231e8a7345fc30",
@@ -1450,6 +1425,19 @@
         "Music"
       ],
       "url": "https://cl-2.backend.energeek.cl/bkp/egradio/mobile/index.m3u8?token=IPTVgh26",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "FM Plus TV (720p)",
+      "tvg_name": "FM Plus TV (720p)",
+      "tvg_id": "909c8ae6d6b99fb7b3b8",
+      "logo": "https://i.imgur.com/1UokOyN.png",
+      "groups": [
+        "Music"
+      ],
+      "url": "https://v2.tustreaming.cl/fmplus/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1905,19 +1893,6 @@
         "Religious"
       ],
       "url": "https://unlimited1-us.dps.live/isb/isb.smil/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Fortaleza TV (1080p)",
-      "tvg_name": "Fortaleza TV (1080p)",
-      "tvg_id": "08af89967f39d963b3d5",
-      "logo": "https://i.imgur.com/BJpop5n.png",
-      "groups": [
-        "Religious"
-      ],
-      "url": "https://multimedia.fortalezatv.cl/video/video.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -2495,14 +2470,14 @@
       }
     },
     {
-      "name": "UTV (Chile) (720p)",
-      "tvg_name": "UTV (Chile) (720p)",
-      "tvg_id": "edf812335af3f37e3cbd",
-      "logo": "https://i.imgur.com/ZJNSpfZ.png",
+      "name": "TVR (1080p)",
+      "tvg_name": "TVR (1080p)",
+      "tvg_id": "1d36be87f8ada23c462b",
+      "logo": "https://i.postimg.cc/prDRDZw3/TVR-Logo.png",
       "groups": [
         "Undefined"
       ],
-      "url": "https://v2.tustreaming.cl/utv/index.m3u8",
+      "url": "https://unlimited1-us.dps.live/tvr/tvr.smil/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
