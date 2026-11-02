@@ -1894,8 +1894,13 @@ def integrar_alternativas_pluto(lineas, session):
         valor = re.sub(r"\s*\[(?:en|es)\]\s*$", "", valor)
         valor = re.sub(r"\s*\[opc\.?\s*\d+\]\s*$", "", valor)
         valor = re.sub(r"\s*\(opci[oó]n\s*\d+\)\s*$", "", valor)
+        valor = re.sub(r"\s*\((?:ee\.?uu\.?|estados unidos|usa|us|mx|mexico|latam|america latina)\)\s*", " ", valor)
         valor = re.sub(r"\s*\([^)]*\)\s*", " ", valor)
-        return re.sub(r"\s+", " ", valor).strip()
+        valor = re.sub(r"\s*\[(?:en|es)\]\s*$", "", valor)
+        valor = re.sub(r"\s+", " ", valor).strip()
+        if valor.startswith("ufc"):
+            return "ufc"
+        return valor
 
     def objetivo(nombre):
         k = clave(nombre)
