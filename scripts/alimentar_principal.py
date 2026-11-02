@@ -1882,7 +1882,7 @@ def validar_orden_canales(orden_anterior, lineas_nuevas):
 
 
 def integrar_alternativas_pluto(lineas, session):
-    """Añade alternativas Pluto MX solo si el ID existe en Pluto LATAM y en la principal."""
+    """Inserta alternativas MX junto al canal base, sin reordenar otras entradas."""
     try:
         response = session.get(FUENTE_PLUTO_ALTERNATIVAS, timeout=30)
         response.raise_for_status()
@@ -1899,55 +1899,54 @@ def integrar_alternativas_pluto(lineas, session):
         print(f"  -> AVISO: no se pudo validar Pluto MX contra LATAM: {exc}")
         return lineas, {"fuente_ok": False, "agregadas": 0, "sin_coincidencia": 0}
 
-    ids_latam = set()
-    for canal in canales_latam:
+    def canal_id(canal):
         cid = extraer_pluto_id(canal.get("url", ""))
         if not cid:
             match = re.search(r'tvg-id="([a-f0-9]{24})"', canal.get("extinf", ""), re.I)
-            cid = match.group(1).lower() if match else ""
-        if cid:
-            ids_latam.add(cid.lower())
+            cid = match.group(1) if match else ""
+        return cid.lower()
 
+    ids_latam = {canal_id(c) for c in canales_latam if canal_id(c)}
     existentes = defaultdict(list)
     urls = set()
+    bloques = []
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
             i += 1
             continue
-        extinf = lineas[i]
+        inicio = i
         j = i + 1
         while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             j += 1
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
             url = lineas[j].strip()
-            urls.add(url)
             cid = extraer_pluto_id(url)
             if not cid:
-                match = re.search(r'tvg-id="([a-f0-9]{24})"', extinf, re.I)
-                cid = match.group(1).lower() if match else ""
-            if cid and cid.lower() in ids_latam:
-                existentes[cid.lower()].append({
-                    "extinf": extinf,
-                    "categoria": extraer_categoria(extinf),
-                    "nombre": extraer_nombre(extinf),
+                match = re.search(r'tvg-id="([a-f0-9]{24})"', lineas[inicio], re.I)
+                cid = match.group(1) if match else ""
+            cid = cid.lower()
+            urls.add(url)
+            if cid and cid in ids_latam:
+                existentes[cid].append({
+                    "inicio": inicio,
+                    "extinf": lineas[inicio],
+                    "categoria": extraer_categoria(lineas[inicio]),
+                    "nombre": extraer_nombre(lineas[inicio]),
                 })
+            bloques.append((inicio, j + 1, cid))
             i = j + 1
         else:
             i = j
 
-    por_categoria = defaultdict(list)
+    alternativas_por_id = defaultdict(list)
     agregadas = 0
     sin_coincidencia = 0
     for canal in canales_fuente:
-        url = canal.get("url", "").strip()
+        url = (canal.get("url") or "").strip()
         if not url or url in urls:
             continue
-        cid = extraer_pluto_id(url)
-        if not cid:
-            match = re.search(r'tvg-id="([a-f0-9]{24})"', canal.get("extinf", ""), re.I)
-            cid = match.group(1).lower() if match else ""
-        cid = cid.lower()
+        cid = canal_id(canal)
         if not cid or cid not in ids_latam:
             continue
         candidatos = existentes.get(cid, [])
@@ -1956,41 +1955,70 @@ def integrar_alternativas_pluto(lineas, session):
             continue
 
         base = candidatos[0]
-        numero = len(candidatos) + 1
+        # Quita sufijos anteriores correctamente (paréntesis o corchetes).
         nombre_base = re.sub(
-            r"\s*(?:\\[\s*opc\\.?\s*\\d+\s*\\]|\\(\s*opci[oó]n\s*\\d+\s*\\))\s*$",
+            r"\s*(?:\[\s*opc(?:ión)?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
             "",
             base["nombre"],
             flags=re.I,
         ).strip()
-        extinf = base["extinf"]
-        extinf = re.sub(r",(.*)$", f",{nombre_base} (OPCIÓN {numero})", extinf, count=1)
+        numero = len(candidatos) + len(alternativas_por_id[cid]) + 1
+        extinf = re.sub(
+            r",(.*)$",
+            lambda m: f",{nombre_base} (OPCIÓN {numero})",
+            base["extinf"],
+            count=1,
+        )
         bloque = [extinf]
         bloque.extend(canal.get("extras", []))
         bloque.append(url)
-        por_categoria[base["categoria"]].append(bloque)
+        alternativas_por_id[cid].append(bloque)
         urls.add(url)
-        existentes[cid].append({"extinf": extinf, "categoria": base["categoria"], "nombre": f"{nombre_base} (OPCIÓN {numero})"})
         agregadas += 1
 
-    salida = list(lineas)
-    inserciones = []
-    for categoria, bloques in por_categoria.items():
-        rango = encontrar_rango_categoria(salida, categoria)
-        if rango:
-            inserciones.append((rango[1] + 1, bloques))
-    for posicion, bloques in sorted(inserciones, key=lambda item: item[0], reverse=True):
-        plano = []
-        for bloque in bloques:
-            plano.extend(bloque)
-        salida[posicion:posicion] = plano
+    if not alternativas_por_id:
+        return lineas, {
+            "fuente_ok": True,
+            "agregadas": 0,
+            "sin_coincidencia": sin_coincidencia,
+        }
+
+    # Reconstruye los bloques originales y coloca las opciones inmediatamente
+    # después del primer canal base equivalente. El resto de la lista no se mueve.
+    salida = []
+    insertados = set()
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            url = lineas[j].strip()
+            cid = extraer_pluto_id(url)
+            if not cid:
+                match = re.search(r'tvg-id="([a-f0-9]{24})"', lineas[inicio], re.I)
+                cid = match.group(1) if match else ""
+            cid = cid.lower()
+            salida.extend(lineas[inicio:j + 1])
+            if cid in alternativas_por_id and cid not in insertados:
+                for bloque in alternativas_por_id[cid]:
+                    salida.extend(bloque)
+                insertados.add(cid)
+            i = j + 1
+        else:
+            salida.append(lineas[i])
+            i += 1
 
     return salida, {
         "fuente_ok": True,
         "agregadas": agregadas,
         "sin_coincidencia": sin_coincidencia,
     }
-
 
 def escribir_principal_atomico(texto):
     """Escribe en temporal, valida y reemplaza de forma atómica."""
