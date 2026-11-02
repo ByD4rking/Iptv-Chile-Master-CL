@@ -1882,8 +1882,7 @@ def validar_orden_canales(orden_anterior, lineas_nuevas):
 
 
 def integrar_alternativas_pluto(lineas, session):
-    """Añade alternativas Pluto MX solo a Pokémon, UFC y South Park ya existentes."""
-    objetivos = {"pokemon", "ufc"}
+    """Añade alternativas Pluto MX solo si el ID existe en Pluto LATAM y en la principal."""
     try:
         response = session.get(FUENTE_PLUTO_ALTERNATIVAS, timeout=30)
         response.raise_for_status()
@@ -1892,23 +1891,22 @@ def integrar_alternativas_pluto(lineas, session):
         print(f"  -> AVISO: Pluto MX alternativo no disponible: {exc}")
         return lineas, {"fuente_ok": False, "agregadas": 0, "sin_coincidencia": 0}
 
-    def clave(nombre):
-        valor = normalizar(nombre)
-        valor = re.sub(r"\s*\(\d{3,4}p\)\s*", " ", valor)
-        valor = re.sub(r"\s*\[(?:en|es)\]\s*$", "", valor)
-        valor = re.sub(r"\s*\[opc\.?\s*\d+\]\s*$", "", valor)
-        valor = re.sub(r"\s*\(opci[oó]n\s*\d+\)\s*$", "", valor)
-        valor = re.sub(r"\s*\((?:ee\.?uu\.?|estados unidos|usa|us|mx|mexico|latam|america latina)\)\s*", " ", valor)
-        valor = re.sub(r"\s*\([^)]*\)\s*", " ", valor)
-        valor = re.sub(r"\s*\[(?:en|es)\]\s*$", "", valor)
-        valor = re.sub(r"\s+", " ", valor).strip()
-        if valor.startswith("ufc"):
-            return "ufc"
-        return valor
+    try:
+        response_latam = session.get(FUENTE_PLUTO_CANONICA, timeout=30)
+        response_latam.raise_for_status()
+        canales_latam = parsear_m3u(response_latam.text)
+    except Exception as exc:
+        print(f"  -> AVISO: no se pudo validar Pluto MX contra LATAM: {exc}")
+        return lineas, {"fuente_ok": False, "agregadas": 0, "sin_coincidencia": 0}
 
-    def objetivo(nombre):
-        k = clave(nombre)
-        return k in objetivos or k.startswith("south park") or k == "comedy central south park"
+    ids_latam = set()
+    for canal in canales_latam:
+        cid = extraer_pluto_id(canal.get("url", ""))
+        if not cid:
+            match = re.search(r'tvg-id="([a-f0-9]{24})"', canal.get("extinf", ""), re.I)
+            cid = match.group(1).lower() if match else ""
+        if cid:
+            ids_latam.add(cid.lower())
 
     existentes = defaultdict(list)
     urls = set()
@@ -1923,13 +1921,16 @@ def integrar_alternativas_pluto(lineas, session):
             j += 1
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
             url = lineas[j].strip()
-            nombre = extraer_nombre(extinf)
             urls.add(url)
-            if objetivo(nombre):
-                existentes[clave(nombre)].append({
+            cid = extraer_pluto_id(url)
+            if not cid:
+                match = re.search(r'tvg-id="([a-f0-9]{24})"', extinf, re.I)
+                cid = match.group(1).lower() if match else ""
+            if cid and cid.lower() in ids_latam:
+                existentes[cid.lower()].append({
                     "extinf": extinf,
                     "categoria": extraer_categoria(extinf),
-                    "nombre": nombre,
+                    "nombre": extraer_nombre(extinf),
                 })
             i = j + 1
         else:
@@ -1940,11 +1941,16 @@ def integrar_alternativas_pluto(lineas, session):
     sin_coincidencia = 0
     for canal in canales_fuente:
         url = canal.get("url", "").strip()
-        nombre = canal.get("nombre", "").strip()
-        k = clave(nombre)
-        if not url or url in urls or not objetivo(nombre):
+        if not url or url in urls:
             continue
-        candidatos = existentes.get(k, [])
+        cid = extraer_pluto_id(url)
+        if not cid:
+            match = re.search(r'tvg-id="([a-f0-9]{24})"', canal.get("extinf", ""), re.I)
+            cid = match.group(1).lower() if match else ""
+        cid = cid.lower()
+        if not cid or cid not in ids_latam:
+            continue
+        candidatos = existentes.get(cid, [])
         if not candidatos:
             sin_coincidencia += 1
             continue
@@ -1952,27 +1958,19 @@ def integrar_alternativas_pluto(lineas, session):
         base = candidatos[0]
         numero = len(candidatos) + 1
         nombre_base = re.sub(
-            r"\s*(?:\[\s*opc\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
+            r"\\s*(?:\\[\\s*opc\\.?\\s*\\d+\\s*\\]|\\(\\s*opci[oó]n\\s*\\d+\\s*\\))\\s*$",
             "",
             base["nombre"],
             flags=re.I,
         ).strip()
         extinf = base["extinf"]
-        if re.search(r'tvg-id="[^"]*"', extinf, re.I):
-            slug = re.sub(r"[^a-z0-9]+", "-", k).strip("-")
-            extinf = re.sub(
-                r'tvg-id="[^"]*"',
-                f'tvg-id="pluto-mx-alt-{slug}-{numero}"',
-                extinf,
-                count=1,
-                flags=re.I,
-            )
         extinf = re.sub(r",(.*)$", f",{nombre_base} (OPCIÓN {numero})", extinf, count=1)
         bloque = [extinf]
         bloque.extend(canal.get("extras", []))
         bloque.append(url)
         por_categoria[base["categoria"]].append(bloque)
         urls.add(url)
+        existentes[cid].append({"extinf": extinf, "categoria": base["categoria"], "nombre": f"{nombre_base} (OPCIÓN {numero})"})
         agregadas += 1
 
     salida = list(lineas)
