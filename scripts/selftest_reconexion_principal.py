@@ -52,7 +52,7 @@ def main() -> None:
     assert channel_records(source) == channel_records(result)
     text = "\n".join(result)
     assert text.count("#EXTVLCOPT:network-caching=5000") == 2
-    assert "#EXTVLCOPT:network-caching=1500" not in text
+    assert text.count("#EXTVLCOPT:network-caching=1500") == 1  # solo se conserva en el bloque Pluto
     assert text.count("#EXTVLCOPT:http-reconnect=true") == 2
     assert reconnects_added == 1
     assert text.count("https://example.test/canal-a.m3u8") == 1
