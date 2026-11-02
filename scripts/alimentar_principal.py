@@ -820,7 +820,7 @@ def es_url_pluto(url):
         "pluto.tv" in u
         or ("stitcher" in u and "pluto" in u)
         or ("pluto" in u and ("/channel/" in u or "/channels/" in u))
-        or bool(re.search(r"jmp2\\.uk/plu-[a-f0-9]{20,}", u))
+        or "jmp2.uk/plu-" in u
     )
 
 
