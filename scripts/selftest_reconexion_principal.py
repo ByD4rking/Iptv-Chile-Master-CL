@@ -50,7 +50,7 @@ def main() -> None:
     result, reconnects_added = aplicar_reconexion_por_canal(source)
     validar_orden_canales(before_order, result)
     assert channel_records(source) == channel_records(result)
-    text = "\\n".join(result)
+    text = "\n".join(result)
     assert text.count("#EXTVLCOPT:network-caching=5000") == 2
     assert "#EXTVLCOPT:network-caching=1500" not in text
     assert text.count("#EXTVLCOPT:http-reconnect=true") == 2
@@ -82,7 +82,7 @@ def main() -> None:
     class FakeSession:
         def get(self, url, timeout):
             if url.endswith("PlutoTV.MX.m3u"):
-                return FakeResponse("\\n".join([
+                return FakeResponse("\n".join([
                     "#EXTM3U",
                     '#EXTINF:-1 tvg-id="",UFC (720p)',
                     "https://jmp2.uk/plu-67a52cd4ec91870008a62164.m3u8",
@@ -93,7 +93,7 @@ def main() -> None:
                     '#EXTINF:-1 tvg-id="",Canal fuera de LATAM',
                     "https://jmp2.uk/plu-aaaaaaaaaaaaaaaaaaaaaaaa.m3u8",
                 ]))
-            return FakeResponse("\\n".join([
+            return FakeResponse("\n".join([
                 "#EXTM3U",
                 '#EXTINF:-1 tvg-id="67a52cd4ec91870008a62164" group-title="Deportes",UFC',
                 "https://jmp2.uk/plu-67a52cd4ec91870008a62164.m3u8",
@@ -116,7 +116,7 @@ def main() -> None:
     assert extraer_pluto_id("https://jmp2.uk/plu-67a52cd4ec91870008a62164.m3u8") == "67a52cd4ec91870008a62164"
 
     resultado, auditoria = integrar_alternativas_pluto(base, FakeSession())
-    resultado_texto = "\\n".join(resultado)
+    resultado_texto = "\n".join(resultado)
     assert auditoria["fuente_ok"] is True
     assert auditoria["agregadas"] == 3, auditoria
     assert auditoria["sin_coincidencia"] == 0, auditoria

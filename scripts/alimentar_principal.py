@@ -1958,7 +1958,7 @@ def integrar_alternativas_pluto(lineas, session):
         base = candidatos[0]
         numero = len(candidatos) + 1
         nombre_base = re.sub(
-            r"\\s*(?:\\[\\s*opc\\.?\\s*\\d+\\s*\\]|\\(\\s*opci[oó]n\\s*\\d+\\s*\\))\\s*$",
+            r"\s*(?:\\[\s*opc\\.?\s*\\d+\s*\\]|\\(\s*opci[oó]n\s*\\d+\s*\\))\s*$",
             "",
             base["nombre"],
             flags=re.I,
