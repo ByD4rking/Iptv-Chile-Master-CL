@@ -10,6 +10,8 @@ from alimentar_principal import (
     aplicar_reconexion_por_canal,
     validar_orden_canales,
     integrar_alternativas_pluto,
+    es_url_pluto,
+    extraer_pluto_id,
 )
 
 
@@ -105,6 +107,9 @@ def main() -> None:
         '#EXTINF:-1 tvg-id="sp-base" group-title="Comedia",Comedy Central South Park',
         "https://example.test/southpark-base.m3u8",
     ]
+    assert es_url_pluto("https://jmp2.uk/plu-67a52cd4ec91870008a62164.m3u8")
+    assert extraer_pluto_id("https://jmp2.uk/plu-67a52cd4ec91870008a62164.m3u8") == "67a52cd4ec91870008a62164"
+
     resultado, auditoria = integrar_alternativas_pluto(base, FakeSession())
     resultado_texto = "\n".join(resultado)
     assert auditoria["fuente_ok"] is True
