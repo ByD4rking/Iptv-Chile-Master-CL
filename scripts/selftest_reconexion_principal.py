@@ -81,13 +81,13 @@ def main() -> None:
 
     # Pluto MX solo puede añadir alternativas a señales que ya existen.
     class FakeResponse:
-        text = "\\n".join([
+        text = "\n".join([
             "#EXTM3U",
-            "#EXTINF:-1 tvg-id=\\"\\" ,UFC (720p)",
+            '#EXTINF:-1 tvg-id="",UFC (720p)',
             "https://jmp2.uk/plu-67a52cd4ec91870008a62164.m3u8",
-            "#EXTINF:-1 tvg-id=\\"\\" ,Comedy Central South Park",
+            '#EXTINF:-1 tvg-id="",Comedy Central South Park',
             "https://jmp2.uk/plu-609ae5cd48d3200007b0a98e.m3u8",
-            "#EXTINF:-1 tvg-id=\\"\\" ,Pokémon",
+            '#EXTINF:-1 tvg-id="",Pokémon',
             "https://jmp2.uk/plu-6870072ca9d5c45c3e9466f1.m3u8",
         ])
 
@@ -106,15 +106,15 @@ def main() -> None:
         "https://example.test/southpark-base.m3u8",
     ]
     resultado, auditoria = integrar_alternativas_pluto(base, FakeSession())
-    resultado_texto = "\\n".join(resultado)
+    resultado_texto = "\n".join(resultado)
     assert auditoria["fuente_ok"] is True
     assert auditoria["agregadas"] == 2, auditoria
     assert "UFC (EE.UU.) [EN]" in resultado_texto
     assert "UFC (OPCIÓN 2)" in resultado_texto
     assert "Comedy Central South Park (OPCIÓN 2)" in resultado_texto
     assert "Pokémon" not in resultado_texto
-    assert resultado_texto.count("group-title=\\"Deportes\\"") == 1
-    assert resultado_texto.count("group-title=\\"Comedia\\"") == 1
+    assert resultado_texto.count('group-title="Deportes"') == 1
+    assert resultado_texto.count('group-title="Comedia"') == 1
     assert "https://example.test/ufc-base.m3u8" in resultado_texto
     assert "https://example.test/southpark-base.m3u8" in resultado_texto
 
