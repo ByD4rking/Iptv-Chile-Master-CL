@@ -805,8 +805,11 @@ def mover_pluto_brasil_a_brasil(lineas, session):
     return lineas, 0, 0
 
 def extraer_pluto_id(url):
-    """Obtiene el channel ID de una URL Pluto, sin depender del dominio."""
-    m = re.search(r"/channel[s]?/([a-f0-9]{20,})", url or "", re.I)
+    """Obtiene el channel ID de una URL Pluto, incluido el formato jmp2.uk/plu-ID."""
+    valor = url or ""
+    m = re.search(r"/channel[s]?/([a-f0-9]{20,})", valor, re.I)
+    if not m:
+        m = re.search(r"/plu-([a-f0-9]{20,})(?:\\.[a-z0-9]+)?(?:[?#]|$)", valor, re.I)
     return m.group(1).lower() if m else ""
 
 
@@ -817,6 +820,7 @@ def es_url_pluto(url):
         "pluto.tv" in u
         or ("stitcher" in u and "pluto" in u)
         or ("pluto" in u and ("/channel/" in u or "/channels/" in u))
+        or bool(re.search(r"jmp2\\.uk/plu-[a-f0-9]{20,}", u))
     )
 
 
