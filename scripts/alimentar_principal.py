@@ -809,7 +809,7 @@ def extraer_pluto_id(url):
     valor = url or ""
     m = re.search(r"/channel[s]?/([a-f0-9]{20,})", valor, re.I)
     if not m:
-        m = re.search(r"/plu-([a-f0-9]{20,})(?:\\.[a-z0-9]+)?(?:[?#]|$)", valor, re.I)
+        m = re.search(r"/plu-([a-f0-9]{20,})", valor, re.I)
     return m.group(1).lower() if m else ""
 
 
