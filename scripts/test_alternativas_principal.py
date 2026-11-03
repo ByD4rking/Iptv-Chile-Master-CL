@@ -1,5 +1,6 @@
 import unittest
 import alimentar_principal as ap
+import sincronizar_complementos as sc
 
 
 def block(channel_id, category, name, url):
@@ -157,6 +158,31 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual([item[0].split(",", 1)[1] for item in cartoonito],
                          ["Cartoonito HD", "Cartoonito HD [Opción 2]"])
         self.assertEqual(cartoonito[1][-1], "https://four.example/cartoonito.m3u8")
+
+
+    def test_restore_recognizes_historical_opc_dot_suffix(self):
+        original = ["#EXTM3U"]
+        original += block("", "CHILE TV", "La Red SD (Nacional)[Opc.2]", "https://a.example/la-red-2.m3u8")
+        original += block("", "CHILE TV", "La Red SD (Nacional)[Opc.3]", "https://a.example/la-red-3.m3u8")
+        original += block("", "CHILE TV", "ChileVisión HD (Geo-Blocked)", "https://a.example/chv.m3u8")
+        current = ["#EXTM3U"]
+        current += block("", "CHILE TV", "ChileVisión HD (Geo-Blocked)", "https://a.example/chv.m3u8")
+        current += block("", "CHILE TV", "La Red SD (Nacional)", "https://a.example/la-red-2.m3u8")
+        current += block("", "CHILE TV", "La Red SD (Nacional) [Opción 2]", "https://a.example/la-red-3.m3u8")
+        restored = ap.restaurar_orden_original_por_categoria(current, original)
+        parsed = self.entries(restored)
+        names = [item[0].split(",", 1)[1] for item in parsed]
+        self.assertLess(names.index("La Red SD (Nacional)"), names.index("ChileVisión HD (Geo-Blocked)"))
+        ap.validar_orden_canales(original, restored)
+
+    def test_remove_los_pitufos_es_by_url_region_even_without_es_label(self):
+        lines = ["#EXTM3U"]
+        lines += block("pitufos.es", "Infantiles", "Los Pitufos", "https://pluto.example/live.m3u8?country=ES&marketingRegion=ES")
+        lines += block("pitufos.mx", "Infantiles", "Los Pitufos", "https://pluto.example/live.m3u8?country=MX&marketingRegion=MX")
+        output = sc.quitar_los_pitufos_es(lines)
+        parsed = self.entries(output)
+        self.assertEqual(len(parsed), 1)
+        self.assertIn("country=MX", parsed[0][-1])
 
 
 if __name__ == "__main__":
