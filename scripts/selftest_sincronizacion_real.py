@@ -175,7 +175,7 @@ def identity_key(item: dict, other_ids: set[str], unique_names: set[str]) -> str
     # Un tvg-id estable prevalece sobre variaciones de presentación del nombre
     # (p. ej. "C y G TV" frente a "C y G TV | CL").
     channel_id = norm(item.get("id", ""))
-    if channel_id:
+    if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"}:
         return "id:" + channel_id
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
