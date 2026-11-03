@@ -1969,9 +1969,20 @@ def validar_orden_canales(lineas_anteriores, lineas_nuevas, categorias_reordenab
         anterior_vigente = [clave for clave in orden_anterior if clave in conjunto_actual]
         actual_anterior = [clave for clave in orden_actual if clave in conjunto_anterior]
         if anterior_vigente != actual_anterior:
+            posicion = next(
+                (
+                    indice for indice, (antes, despues)
+                    in enumerate(zip(anterior_vigente, actual_anterior))
+                    if antes != despues
+                ),
+                min(len(anterior_vigente), len(actual_anterior)),
+            )
+            antes = anterior_vigente[posicion:posicion + 4]
+            despues = actual_anterior[posicion:posicion + 4]
             raise RuntimeError(
                 "ORDEN BLOQUEADO: la actualización reordenó canales dentro de "
-                f"la categoría '{categoria}'."
+                f"la categoría '{categoria}'. Primera diferencia en posición {posicion}: "
+                f"antes={antes}; después={despues}."
             )
 
 
