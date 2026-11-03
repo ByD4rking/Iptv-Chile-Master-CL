@@ -405,13 +405,17 @@ def main(args: argparse.Namespace) -> None:
     before_by_category = defaultdict(list)
     after_by_category = defaultdict(list)
     for item in before_kept:
-        before_by_category[norm(item["category"])].append(
-            identity_key(item, after_ids_nonpluto, unique_names)
-        )
+        category = norm(item["category"])
+        key = identity_key(item, after_ids_nonpluto, unique_names)
+        if key not in before_by_category[category]:
+            before_by_category[category].append(key)
     for item in after_nonpluto:
-        after_by_category[norm(item["category"])].append(
-            identity_key(item, before_ids, unique_names)
-        )
+        category = norm(item["category"])
+        key = identity_key(item, before_ids, unique_names)
+        # Las URLs alternativas del mismo tvg-id forman un solo canal lógico
+        # para comparar orden; no deben contarse como canales nuevos.
+        if key not in after_by_category[category]:
+            after_by_category[category].append(key)
 
     global_after_counts = Counter(
         identity_key(item, before_ids, unique_names)
