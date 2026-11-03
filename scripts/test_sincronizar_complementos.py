@@ -212,6 +212,75 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertNotIn("https://old.example/cartoonito.m3u8", output)
         self.assertEqual(stats["url_actualizadas"], 1)
 
+    def test_principal_uses_external_mx_without_jwt(self):
+        self.assertEqual(ap.FUENTES_PLUTO_PRINCIPAL, ap.FUENTES_PLUTO[:2])
+        self.assertNotIn(ap.FUENTES_PLUTO[2], ap.FUENTES_PLUTO_PRINCIPAL)
+        self.assertIn(ap.FUENTE_PLUTO_ALTERNATIVAS, FUENTES_PLUTO_COMPLETAS)
+        self.assertNotIn(ap.FUENTES_PLUTO[2], FUENTES_PLUTO_COMPLETAS)
+        self.assertEqual(ap.FUENTES_PLUTO_CATALOGO, ap.FUENTES_PLUTO_PRINCIPAL)
+
+    def test_alimentador_removes_only_es_pitufos_and_reorders_kids(self):
+        base = ["#EXTM3U"] + (
+            entry(
+                "yugioh.es",
+                "Anime",
+                "Yu-Gi-Oh! Español",
+                "https://stitcher.pluto.tv/channel/yugioh-es/master.m3u8?country=ES&marketingRegion=ES",
+            )
+            + entry(
+                "yugioh.latam",
+                "Anime",
+                "Yu-Gi-Oh",
+                "https://stitcher.pluto.tv/channel/yugioh-latam/master.m3u8?country=MX&marketingRegion=MX",
+            )
+            + entry(
+                "pitufos.es",
+                "Infantiles",
+                "Los Pitufos",
+                "https://stitcher.pluto.tv/channel/pitufos-es/master.m3u8?country=ES&marketingRegion=ES",
+            )
+            + entry(
+                "pitufos.latam",
+                "Retro",
+                "Los Pitufos",
+                "https://stitcher.pluto.tv/channel/pitufos-latam/master.m3u8?country=MX&marketingRegion=MX",
+            )
+            + entry("popeye.id", "Retro", "Popeye", "https://stitcher.pluto.tv/channel/popeye/master.m3u8?country=MX")
+            + entry("heidi.id", "Infantiles", "Heidi", "https://stitcher.pluto.tv/channel/heidi/master.m3u8?country=ES")
+            + entry("other.id", "Infantiles", "Otro infantil", "https://kids.example/other.m3u8")
+            + entry("competition.id", "Competencia", "Evento", "https://sports.example/event.m3u8")
+        )
+        output = ap.aplicar_ajustes_referencia(base, set())
+        self.assertNotIn("yugioh-es", "\n".join(output))
+        self.assertIn("https://stitcher.pluto.tv/channel/yugioh-latam/master.m3u8?country=MX&marketingRegion=MX", output)
+        self.assertNotIn("pitufos-es", "\n".join(output))
+        self.assertIn("https://stitcher.pluto.tv/channel/pitufos-latam/master.m3u8?country=MX&marketingRegion=MX", output)
+        infant_names = [
+            ap.normalizar(ap.extraer_nombre(line))
+            for line in output
+            if line.startswith("#EXTINF") and ap.normalizar(ap.extraer_categoria(line)) in {"infantil", "infantiles"}
+        ]
+        unique_names = []
+        for name in infant_names:
+            if name not in unique_names:
+                unique_names.append(name)
+        self.assertEqual(unique_names[:3], ["popeye", "los pitufos", "heidi"])
+
+    def test_reemplazo_preserves_external_mx_jmp2_urls(self):
+        class EmptySession:
+            def get(self, *args, **kwargs):
+                class Response:
+                    text = "#EXTM3U"
+                    def raise_for_status(self):
+                        return None
+                return Response()
+
+        url = "https://jmp2.uk/plu-6870072ca9d5c45c3e9466f1.m3u8"
+        base = ["#EXTM3U", '#EXTINF:-1 tvg-id="6870072ca9d5c45c3e9466f1" tvg-name="Pokémon" group-title="Anime",Pokémon', url]
+        output, stats = ap.reemplazar_pluto_tercero_por_propio(base, EmptySession())
+        self.assertEqual(output, base)
+        self.assertEqual(stats["mx_externos_conservados"], 1)
+
     def test_new_channel_is_added(self):
         source = [
             candidate(
