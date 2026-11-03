@@ -117,12 +117,12 @@ def test_ordenamiento_solicitado_de_entretenimiento_no_bloquea_la_lista() -> Non
     entertainment_keys = set(firma_orden_canales([
         line for line in before
         if line.startswith("#EXTINF")
-        and extraer_categoria(line).strip().lower() == "entretenimiento / cine / series"
+        and 'group-title="Entretenimiento / Cine / Series"' in line
     ]))
     entertainment_keys.update(firma_orden_canales([
         line for line in after
         if line.startswith("#EXTINF")
-        and extraer_categoria(line).strip().lower() == "entretenimiento / cine / series"
+        and 'group-title="Entretenimiento / Cine / Series"' in line
     ]))
     validar_orden_canales(
         before_order,
