@@ -38,7 +38,7 @@ def main():
     result = synchronize_once()
 
     current_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
-    ordered_lines, order_stats = alimentador.restaurar_orden_original_por_categoria(
+    ordered_lines = alimentador.restaurar_orden_original_por_categoria(
         current_lines,
         original_lines,
     )
@@ -72,7 +72,7 @@ def main():
     temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
     temporary.replace(PRINCIPAL)
 
-    print("[ORQUESTADOR] Orden previo restaurado:", order_stats)
+    print("[ORQUESTADOR] Orden previo restaurado por categoría.")
     print("[ORQUESTADOR] Bloque MAGMA:", magma_stats)
     print("[ORQUESTADOR] Resultado de sincronización:", result)
     return result
