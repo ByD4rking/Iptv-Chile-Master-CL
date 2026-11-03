@@ -31,6 +31,8 @@ FUENTES_PLUTO_COMPLETAS = [
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
+    # Feed adicional de alternativas Pluto MX ya utilizado por el alimentador.
+    ap.FUENTE_PLUTO_ALTERNATIVAS,
 ]
 
 
