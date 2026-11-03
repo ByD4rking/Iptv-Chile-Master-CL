@@ -52,6 +52,11 @@ jobs:
       - name: Instalar dependencias del verificador M3U
         run: python -m pip install requests urllib3
 
+      - name: Verificar alternativas y reglas de la lista principal
+        run: |
+          python -m unittest discover -s scripts -p 'test_alternativas_principal.py' -v
+          python scripts/alimentar_principal.py
+
       - name: Probar reintentos y backoff del verificador M3U
         run: python -m unittest discover -s scripts -p 'test_verificar_m3u_reintentos.py'
 
