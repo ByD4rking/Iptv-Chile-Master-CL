@@ -180,52 +180,55 @@ def _merge_alternative_extinf(primary: str, alternative: str, destination: str) 
 
 
 def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]) -> list[str]:
-    """Agrupa por tvg-id, comparte metadatos y numera opciones sin tocar tvg-name."""
+    """Agrupa URLs por nombre/categoría inequívocos y comparte ID, nombre y logo."""
     prefix, blocks, trailing = _read_blocks(lines)
-    grouped: dict[str, list[dict]] = defaultdict(list)
+    grouped: dict[tuple[str, str], list[dict]] = defaultdict(list)
     for block in blocks:
         if not block.get("url"):
             continue
-        identity = _identity(
-            {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
-            pluto=_is_pluto_url(block["url"]),
-        )
-        if identity:
-            grouped[identity].append(block)
+        canonical_name = _canonical_channel_name({
+            "extinf": block["extinf"],
+            "nombre": ap.extraer_nombre(block["extinf"]),
+            "url": block["url"],
+        })
+        category = ap.normalizar(ap.extraer_categoria(block["extinf"]))
+        if canonical_name:
+            grouped[(category, canonical_name)].append(block)
 
     ordered: list[dict] = []
-    emitted: set[str] = set()
+    emitted: set[tuple[str, str]] = set()
     for block in blocks:
         if not block.get("url"):
             ordered.append(block)
             continue
-        identity = _identity(
-            {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
-            pluto=ap.es_url_pluto(block["url"]),
-        )
-        group = grouped.get(identity, [])
-        group_categories = {
-            ap.normalizar(ap.extraer_categoria(item["extinf"]))
-            for item in group
-        }
-        if not identity or len(group) < 2 or len(group_categories) > 1:
-            extinf = _set_display_name(block["extinf"], _clean_channel_display(ap.extraer_nombre(block["extinf"])))
+        canonical_name = _canonical_channel_name({
+            "extinf": block["extinf"],
+            "nombre": ap.extraer_nombre(block["extinf"]),
+            "url": block["url"],
+        })
+        category_key = ap.normalizar(ap.extraer_categoria(block["extinf"]))
+        group_key = (category_key, canonical_name)
+        group = grouped.get(group_key, [])
+        if not canonical_name or len(group) < 2:
+            extinf = block["extinf"]
+            clean_display = _clean_channel_display(ap.extraer_nombre(extinf))
+            extinf = _set_display_name(extinf, clean_display)
+            clean_tvg_name = _clean_channel_display(_attr(extinf, "tvg-name"))
+            if clean_tvg_name:
+                extinf = _set_attr(extinf, "tvg-name", clean_tvg_name)
             block["extinf"] = extinf
             block["raw"] = [extinf] + block["extras"] + [block["url"]]
             ordered.append(block)
             continue
-        if identity in emitted:
+        if group_key in emitted:
             continue
-        emitted.add(identity)
+        emitted.add(group_key)
 
-        # URL principal primero según la prioridad de fuente conocida; los
-        # bloques históricos sin procedencia conocida conservan su orden detrás.
+        # Prioridad: Pluto LATAM, Pluto MX externo sin JWT, MAGNA y después
+        # URLs históricas cuya fuente ya no está disponible.
         unique: list[dict] = []
         seen_urls: set[str] = set()
-        for item in sorted(
-            group,
-            key=lambda value: url_priority.get(value["url"], 10),
-        ):
+        for item in sorted(group, key=lambda value: url_priority.get(value["url"], 10)):
             if item["url"] not in seen_urls:
                 seen_urls.add(item["url"])
                 unique.append(item)
@@ -233,12 +236,46 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             continue
 
         primary = unique[0]
-        primary_extinf = primary["extinf"]
-        base_display = _clean_channel_display(ap.extraer_nombre(primary_extinf))
-        base_tvg_name = _clean_channel_display(_attr(primary_extinf, "tvg-name"))
-        channel_id = _attr(primary_extinf, "tvg-id")
-        category = ap.extraer_categoria(primary_extinf)
-        logo = next((_attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo") for item in unique if _attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo")), "")
+        base_display = _clean_channel_display(ap.extraer_nombre(primary["extinf"]))
+        if not base_display:
+            base_display = _clean_channel_display(_attr(primary["extinf"], "tvg-name"))
+        base_tvg_name = next(
+            (
+                _clean_channel_display(_attr(item["extinf"], "tvg-name"))
+                for item in unique
+                if _clean_channel_display(_attr(item["extinf"], "tvg-name"))
+            ),
+            base_display,
+        )
+
+        channel_id = ""
+        for item in unique:
+            url = item.get("url", "")
+            if _is_pluto_url(url):
+                channel_id = ap.extraer_pluto_id(url)
+                if not channel_id:
+                    match = re.search(r"/plu-([a-f0-9]{20,})\.m3u8", url, re.I)
+                    channel_id = match.group(1) if match else ""
+                if channel_id:
+                    break
+        if not channel_id:
+            channel_id = next(
+                (_attr(item["extinf"], "tvg-id") for item in unique if _attr(item["extinf"], "tvg-id")),
+                "",
+            )
+
+        category = next(
+            (ap.extraer_categoria(item["extinf"]) for item in unique if ap.extraer_categoria(item["extinf"])),
+            "",
+        )
+        logo = next(
+            (
+                _attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo")
+                for item in unique
+                if _attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo")
+            ),
+            "",
+        )
         for option_index, item in enumerate(unique, start=1):
             extinf = item["extinf"]
             if channel_id:
