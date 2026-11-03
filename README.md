@@ -111,13 +111,13 @@ El proyecto mantiene siete playlists independientes de Pluto TV, cada una corres
 
 Puedes utilizar **una sola, varias o las siete** según lo que necesites. No es obligatorio cargarlas juntas.
 
-La lista principal integra exclusivamente las tres fuentes regionales definidas para esta función: **Pluto TV LATAM, Pluto TV España y Pluto TV México**. Las otras cuatro regiones (Argentina, Brasil, Chile y Estados Unidos) se mantienen como playlists independientes y no se incorporan a la principal.
+La lista principal integra **Pluto TV LATAM y Pluto TV España** desde nuestras playlists propias, ambas con URLs JWT renovables, y **Pluto TV México** desde la lista externa `PlutoTV.MX.m3u`, que utiliza enlaces `jmp2.uk` sin JWT. La playlist propia `pluto_mx.m3u` (generada con JWT) se mantiene independiente y no se copia a la principal. Las otras cuatro regiones (Argentina, Brasil, Chile y Estados Unidos) también permanecen independientes.
 
-**Prioridad de integración en la lista principal:**
+**Prioridad para agrupar alternativas en la lista principal:**
 
-**LATAM → España → México**
+**Pluto LATAM → Pluto MX externo → MAGNA → otras fuentes**
 
-Cuando un mismo canal aparece en varias fuentes, el sistema conserva la fuente propietaria registrada para ese canal; para canales nuevos sin historial, utiliza este orden como prioridad inicial.
+Cuando un canal aparece en varias fuentes, sus URLs quedan juntas y consecutivas: URL principal, `[Opción 2]`, `[Opción 3]`, etc. Todas comparten nombre canónico, `tvg-id` y logo disponible; el nombre visible no incorpora el nombre del proveedor.
 
 > **Importante:** esta prioridad no limita al usuario. Cada playlist Pluto puede utilizarse por separado y directamente mediante su URL RAW.
 
@@ -257,7 +257,7 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 - **Quieres ampliar la cobertura:** puedes cargar varias o todas las listas en un reproductor que admita múltiples playlists.
 - **Quieres evitar administrar varias listas:** puedes utilizar la lista principal o GOD del proyecto cuando corresponda.
 
-> Las siete playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual. Solo LATAM, España y México alimentan la lista principal mediante la sincronización incremental.
+> Las siete playlists regionales conservan su identidad y pueden utilizarse individualmente. La principal consume LATAM/ES tokenizadas y Pluto MX externo sin JWT; la playlist propia `pluto_mx.m3u` permanece separada.
 
 ---
 
@@ -375,8 +375,11 @@ El repositorio utiliza procesos automatizados para mantener y revisar las playli
 Entre las tareas de mantenimiento se incluyen:
 
 - 🔄 Actualización de todas las fuentes complementarias en cada ciclo.
-- ➕ Incorporación de canales nuevos desde IPTVSV, MAGNA, M3U.CL y Pluto LATAM, España y México.
+- ➕ Incorporación de canales nuevos desde IPTVSV, MAGNA, M3U.CL, Pluto LATAM/ES y Pluto MX externo sin JWT.
 - 🔗 Actualización de URL y metadatos por identidad estable del canal.
+- 🔢 Agrupación de todas las URLs de un mismo canal como principal y `[Opción 2]`, `[Opción 3]`, etc., conservando nombre, `tvg-id` y logo.
+- 🧸 Prioridad infantil: Popeye, Los Pitufos y Heidi al inicio; se elimina solo Los Pitufos de Pluto ES.
+- 🪐 Pluto LATAM/ES se regeneran cada hora; tras finalizar correctamente ese workflow, la maestra se actualiza para copiar los JWT recientes.
 - ↔️ Reclasificación y movimiento de canales cuando cambia su categoría de origen.
 - 🧾 Manifiesto persistente de fuente propietaria para evitar que una lista sobrescriba los aportes de otra.
 - 🧹 Detección y eliminación de URLs duplicadas cuando corresponde.
