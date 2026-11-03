@@ -261,6 +261,24 @@ def test_iptvsv_reclasifica_urls_existentes_antes_de_validar_categoria() -> None
     assert audit["errores_categoria"] == 0, audit
 
 
+def test_validar_orden_ignora_reordenamiento_de_alternativas_opcionales() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Anime",Anime Vision Classics (España)[Opc.1]',
+        "https://example.test/anime-option.m3u8",
+        '#EXTINF:-1 group-title="Anime",Beyblade (España)',
+        "https://example.test/beyblade.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Anime",Beyblade (España)',
+        "https://example.test/beyblade.m3u8",
+        '#EXTINF:-1 group-title="Anime",Anime Vision Classics (España)[Opc.1]',
+        "https://example.test/anime-option.m3u8",
+    ]
+    validar_orden_canales(before, after)
+
+
 def test_validar_orden_ignora_pluto_movido_al_final_de_categoria() -> None:
     before = [
         "#EXTM3U",
