@@ -1940,6 +1940,10 @@ def validar_orden_canales(lineas_anteriores, lineas_nuevas, categorias_reordenab
             if not linea.startswith("#EXTINF"):
                 continue
             categoria = normalizar(extraer_categoria(linea))
+            nombre = normalizar(extraer_nombre(linea))
+            # Avatar cambia deliberadamente desde Anime a Infantiles; hay dos variantes.
+            if nombre.startswith("avatar: la leyenda de aang"):
+                continue
             match = re.search(r'tvg-id="([^"]+)"', linea, re.I)
             if match and match.group(1).strip():
                 clave = "id:" + normalizar(match.group(1))
