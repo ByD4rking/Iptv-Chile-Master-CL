@@ -802,12 +802,16 @@ def obtener_ids_pluto_existentes(lineas):
         url = lineas[j].strip()
         if not es_url_pluto(url):
             continue
+        # El ID de URL y tvg-id pueden ser distintos en fuentes externas.
+        # Excluir ambos evita que una reubicación Pluto parezca reordenar un
+        # canal normal cuando su tvg-id no coincide con el channel ID.
         channel_id = extraer_pluto_id(url)
-        if not channel_id:
-            match = re.search(r'tvg-id="([^"]+)"', linea, re.I)
-            channel_id = match.group(1).strip().lower() if match else ""
         if channel_id:
             ids.add(channel_id)
+        match = re.search(r'tvg-id="([^"]+)"', linea, re.I)
+        tvg_id = match.group(1).strip().lower() if match else ""
+        if tvg_id:
+            ids.add(tvg_id)
     return ids
 
 
