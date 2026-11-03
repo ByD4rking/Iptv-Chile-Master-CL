@@ -46,6 +46,14 @@ def _is_pluto_url(url: str) -> bool:
     )
 
 
+TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
+
+
+def _valid_tvg_id(value: str) -> str:
+    value = str(value or "").strip()
+    return value if ap.normalizar(value) not in TVG_IDS_INVALIDOS else ""
+
+
 def _identity(channel: dict, *, pluto: bool = False) -> str:
     extinf = channel.get("extinf", "")
     url = channel.get("url", "") or ""
@@ -56,7 +64,7 @@ def _identity(channel: dict, *, pluto: bool = False) -> str:
             match = re.search(r"/plu-([a-f0-9]{20,})\.m3u8", url, re.I)
             channel_id = match.group(1) if match else ""
     if not channel_id:
-        channel_id = _attr(extinf, "tvg-id")
+        channel_id = _valid_tvg_id(_attr(extinf, "tvg-id"))
     if channel_id:
         return "id:" + ap.normalizar(channel_id)
     name = ap.normalizar(_attr(extinf, "tvg-name") or channel.get("nombre", ""))
@@ -266,9 +274,9 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
         group_key = (category_key, canonical_name)
         group = grouped.get(group_key, [])
         group_ids = {
-            _attr(item["extinf"], "tvg-id")
+            _valid_tvg_id(_attr(item["extinf"], "tvg-id"))
             for item in group
-            if _attr(item["extinf"], "tvg-id")
+            if _valid_tvg_id(_attr(item["extinf"], "tvg-id"))
         }
         if not canonical_name or len(group) < 2 or len(group_ids) > 1:
             extinf = block["extinf"]
@@ -321,7 +329,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
                     break
         if not channel_id:
             channel_id = next(
-                (_attr(item["extinf"], "tvg-id") for item in unique if _attr(item["extinf"], "tvg-id")),
+                (_valid_tvg_id(_attr(item["extinf"], "tvg-id")) for item in unique if _valid_tvg_id(_attr(item["extinf"], "tvg-id"))),
                 "",
             )
 
@@ -404,8 +412,8 @@ def _set_attr(extinf: str, key: str, value: str) -> str:
 def _merge_extinf(current: str, source: str, destination: str) -> str:
     """Actualiza categoría/logos sin sobrescribir la identidad ya existente."""
     result = current
-    existing_id = _attr(current, "tvg-id")
-    source_id = _attr(source, "tvg-id")
+    existing_id = _valid_tvg_id(_attr(current, "tvg-id"))
+    source_id = _valid_tvg_id(_attr(source, "tvg-id"))
     if existing_id and source_id:
         result = _set_attr(result, "tvg-id", source_id)
 
