@@ -180,6 +180,9 @@ def main(args: argparse.Namespace) -> None:
     after = parse_entries(PRINCIPAL)
     after_playable = [item for item in after if item["url"]]
     after_ids = {norm(item["id"]) for item in after_playable if item["id"]}
+    after_nonpluto = [
+        item for item in after_playable if not ap.es_url_pluto(item["url"])
+    ]
     missing_pluto_latam_mx = allowed_anime_ids - after_ids
     if missing_pluto_latam_mx:
         raise AssertionError(
@@ -238,6 +241,7 @@ def main(args: argparse.Namespace) -> None:
         if not item["is_pitufos"]
         and norm(item["category"]) not in allowed_cleanup_categories
         and item["url"]
+        and not ap.es_url_pluto(item["url"])
         and not (
             norm(item["id"]) in es_only_ids
             and norm(item["category"]) == "anime"
@@ -249,7 +253,7 @@ def main(args: argparse.Namespace) -> None:
         if item["tvg_name"] or item["name"]
     )
     after_name_counts = Counter(
-        item["tvg_name"] or item["name"] for item in after_playable
+        item["tvg_name"] or item["name"] for item in after_nonpluto
         if item["tvg_name"] or item["name"]
     )
     unique_names = {
@@ -257,15 +261,15 @@ def main(args: argparse.Namespace) -> None:
         if count == 1 and after_name_counts.get(name, 0) == 1
     }
     before_ids = {norm(item["id"]) for item in before_kept if item["id"]}
-    after_ids = {norm(item["id"]) for item in after_playable if item["id"]}
+    after_ids_nonpluto = {norm(item["id"]) for item in after_nonpluto if item["id"]}
 
     before_by_category = defaultdict(list)
     after_by_category = defaultdict(list)
     for item in before_kept:
         before_by_category[norm(item["category"])].append(
-            identity_key(item, after_ids, unique_names)
+            identity_key(item, after_ids_nonpluto, unique_names)
         )
-    for item in after_playable:
+    for item in after_nonpluto:
         after_by_category[norm(item["category"])].append(
             identity_key(item, before_ids, unique_names)
         )
