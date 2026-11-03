@@ -58,6 +58,28 @@ class ComplementSyncTests(unittest.TestCase):
         output, _ = reconcile_lines(self.base, source)
         self.assertIn("https://keep.example/kids.m3u8", output)
 
+    def test_existing_channel_uses_its_recorded_source_owner(self):
+        manifest = {"id:sports.one": {"source": ap.FUENTE_MAGMA}}
+        source = [
+            candidate("sports.one", "Deportes", "Canal Uno", "https://iptvsv.example/live.m3u8", ap.FUENTE_IPTVSV),
+            candidate("sports.one", "Deportes", "Canal Uno", "https://magma.example/live.m3u8", ap.FUENTE_MAGMA),
+        ]
+        output, stats = reconcile_lines(self.base, source, manifest)
+        self.assertIn("https://magma.example/live.m3u8", output)
+        self.assertNotIn("https://old.example/one.m3u8", output)
+        self.assertEqual(manifest["id:sports.one"]["source"], ap.FUENTE_MAGMA)
+        self.assertEqual(stats["url_actualizadas"], 1)
+
+    def test_other_source_cannot_take_over_when_owner_is_temporarily_missing(self):
+        manifest = {"id:sports.one": {"source": ap.FUENTE_MAGMA}}
+        source = [
+            candidate("sports.one", "Deportes", "Canal Uno", "https://iptvsv.example/live.m3u8", ap.FUENTE_IPTVSV),
+        ]
+        output, stats = reconcile_lines(self.base, source, manifest)
+        self.assertIn("https://old.example/one.m3u8", output)
+        self.assertNotIn("https://iptvsv.example/live.m3u8", output)
+        self.assertEqual(stats["url_actualizadas"], 0)
+
     def test_ambiguous_name_does_not_overwrite(self):
         base = ["#EXTM3U"] + entry("id.a", "Deportes", "Canal Repetido", "https://a.example/live.m3u8") + entry(
             "id.b", "Deportes", "Canal Repetido", "https://b.example/live.m3u8"
