@@ -455,7 +455,11 @@ def test_pluto_mx_tvg_id_keeps_extinf_duration() -> None:
                     '#EXTINF:-1 tvg-id="",Claro Sports (720p)',
                     f"https://jmp2.uk/plu-{channel_id}.m3u8",
                 ]))
-            return FakeResponse("#EXTM3U")
+            return FakeResponse("\\n".join([
+                "#EXTM3U",
+                '#EXTINF:-1 tvg-id="6320d2755e54db000783fd87" group-title="Deportes",Claro Sports',
+                f"https://jmp2.uk/plu-{channel_id}.m3u8",
+            ]))
 
     base = [
         "#EXTM3U",
