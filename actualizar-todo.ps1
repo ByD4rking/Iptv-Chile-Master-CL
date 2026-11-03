@@ -1,163 +1,57 @@
 # ============================================================
-# IPTV CHILE MASTER - ACTUALIZACION TODO EN UNO
+# IPTV CHILE MASTER - ACTUALIZAR LISTA PRINCIPAL
 # ============================================================
 
 $ErrorActionPreference = "Stop"
 
-# Ir siempre a la carpeta donde está este script
 $BASE = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $BASE
 
-$PYTHON = "C:\Users\ByD4rk\AppData\Local\Programs\Python\Python313\python.exe"
+$PYTHON_CMD = Get-Command python -ErrorAction SilentlyContinue
+if (!$PYTHON_CMD) {
+    $PYTHON_CMD = Get-Command py -ErrorAction SilentlyContinue
+}
+if (!$PYTHON_CMD) {
+    throw "No se encontró Python en PATH. Instala Python o agrega python.exe al PATH."
+}
+$PYTHON = $PYTHON_CMD.Source
 
 Write-Host ""
 Write-Host "============================================================"
-Write-Host "        IPTV CHILE MASTER - ACTUALIZACION COMPLETA"
+Write-Host "       IPTV CHILE MASTER - ACTUALIZAR LISTA PRINCIPAL"
 Write-Host "============================================================"
 Write-Host ""
 
-# ------------------------------------------------------------
-# Comprobar archivos
-# ------------------------------------------------------------
+$ORCHESTRATOR = Join-Path $BASE "scripts\ejecutar_actualizacion_principal.py"
+$SYNC = Join-Path $BASE "scripts\sincronizar_complementos.py"
 
-if (!(Test-Path $PYTHON)) {
-    Write-Host "ERROR: No se encontró Python:"
-    Write-Host $PYTHON
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
+if (!(Test-Path $ORCHESTRATOR)) {
+    throw "No existe scripts\ejecutar_actualizacion_principal.py"
+}
+if (!(Test-Path $SYNC)) {
+    throw "No existe scripts\sincronizar_complementos.py"
 }
 
-if (!(Test-Path "$BASE\scripts\ejecutar_actualizacion_principal.py")) {
-    Write-Host "ERROR: No existe scripts\ejecutar_actualizacion_principal.py"
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
-}
-
-if (!(Test-Path "$BASE\scripts\mega_lista.py")) {
-    Write-Host "ERROR: No existe scripts\mega_lista.py"
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
-}
-
-# ============================================================
-# 1. ACTUALIZAR LISTA PRINCIPAL
-# ============================================================
-
-Write-Host "[1/3] Actualizando lista principal..."
-Write-Host ""
-
-& $PYTHON "$BASE\scripts\ejecutar_actualizacion_principal.py"
-
+Write-Host "[1/2] Ejecutando alimentador principal y validaciones..."
+& $PYTHON $ORCHESTRATOR
 if ($LASTEXITCODE -ne 0) {
-    Write-Host ""
-    Write-Host "ERROR: ejecutar_actualizacion_principal.py fallo."
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
+    throw "Falló ejecutar_actualizacion_principal.py (código $LASTEXITCODE)."
 }
 
 Write-Host ""
-Write-Host "[1b/3] Reconciliando nuevamente todas las fuentes complementarias..."
-& $PYTHON "$BASE\scripts\sincronizar_complementos.py"
-
+Write-Host "[2/2] Reconciliando MAGNA, IPTVSV y Pluto LATAM/ES/MX..."
+& $PYTHON $SYNC
 if ($LASTEXITCODE -ne 0) {
-    Write-Host ""
-    Write-Host "ERROR: sincronizar_complementos.py fallo."
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
+    throw "Falló sincronizar_complementos.py (código $LASTEXITCODE)."
 }
-
-# ============================================================
-# 2. GENERAR LISTA GOD
-# ============================================================
-
-Write-Host ""
-Write-Host "[2/3] Generando lista GOD..."
-Write-Host ""
-
-& $PYTHON "$BASE\scripts\mega_lista.py"
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host ""
-    Write-Host "ERROR: mega_lista.py fallo."
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
-}
-
-# ============================================================
-# 3. SUBIR TODO A GITHUB
-# ============================================================
-
-Write-Host ""
-Write-Host "[3/3] Guardando cambios en GitHub..."
-Write-Host ""
-
-git add .
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: git add fallo."
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
-}
-
-# Comprobar si hay cambios
-git diff --cached --quiet
-
-if ($LASTEXITCODE -ne 0) {
-
-    git commit -m "Actualizar listas IPTV"
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: git commit fallo."
-        Read-Host "Pulsa ENTER para cerrar"
-        exit 1
-    }
-
-} else {
-
-    Write-Host "No hay cambios nuevos para subir."
-}
-
-# Traer cambios de GitHub antes de subir
-Write-Host ""
-Write-Host "Sincronizando con GitHub..."
-
-git pull --rebase origin main
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host ""
-    Write-Host "ERROR: git pull --rebase fallo."
-    Write-Host "Puede haber un conflicto que necesita revisión."
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
-}
-
-# Subir
-Write-Host ""
-Write-Host "Subiendo cambios..."
-
-git push origin main
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Host ""
-    Write-Host "ERROR: git push fallo."
-    Read-Host "Pulsa ENTER para cerrar"
-    exit 1
-}
-
-# ============================================================
-# FINAL
-# ============================================================
 
 Write-Host ""
 Write-Host "============================================================"
-Write-Host "          ACTUALIZACION TERMINADA CORRECTAMENTE"
+Write-Host "ACTUALIZACIÓN LOCAL DE LA LISTA PRINCIPAL TERMINADA"
 Write-Host "============================================================"
+Write-Host "No se generó ni modificó la lista GOD."
+Write-Host "No se modificó el Generador ni las playlists regionales Pluto."
+Write-Host "No se hizo commit ni push a main."
 Write-Host ""
-
-git status
-
-Write-Host ""
-Write-Host "Todo listo."
-Write-Host ""
-
-Read-Host "Pulsa ENTER para cerrar"
+Write-Host "Cambios locales pendientes de revisión:"
+git status --short
