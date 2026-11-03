@@ -7,6 +7,10 @@ on:
     paths:
       - "scripts/**"
       - ".github/workflows/actualizar.yml"
+  pull_request:
+    paths:
+      - "scripts/**"
+      - ".github/workflows/actualizar.yml"
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
@@ -21,6 +25,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  probar_sincronizacion:
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Descargar cambios de la PR
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: python -m pip install requests
+
+      - name: Compilar sincronizador y pruebas
+        run: |
+          python -m py_compile scripts/alimentar_principal.py scripts/sincronizar_complementos.py scripts/test_sincronizar_complementos.py
+
+      - name: Ejecutar pruebas de sincronización
+        run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py'
+
   actualizar:
     # Este workflow publica en main; no ejecutar desde ramas de trabajo.
     if: github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
