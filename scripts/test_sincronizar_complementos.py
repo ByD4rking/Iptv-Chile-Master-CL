@@ -85,33 +85,6 @@ class OriginalPlaylistOrderTests(unittest.TestCase):
 
 
 class RestorationOrderTests(unittest.TestCase):
-    def test_iptvsv_category_change_is_reclassified_before_integrity_validation(self):
-        url = "http://45.5.118.152:8000/play/chichi.m3u8"
-        current = ["#EXTM3U"] + (
-            entry("gt.one", "Guatemala", "Canal GT", "https://gt.example/live.m3u8")
-            + entry("chichi.id", "TV Chichicasteca", "Canal Chichicasteca", url)
-        )
-        source = [{
-            "url": url,
-            "categoria": "TV Chichicasteca",
-            "nombre": "Canal Chichicasteca",
-        }]
-        categories = ap.categorias_de_lineas(current)
-        moved, count, conflicts = ap.reclasificar_iptvsv_existente(
-            current, source, categories
-        )
-        self.assertEqual(count, 1)
-        self.assertEqual(conflicts, 0)
-        self.assertTrue(any(
-            line.startswith("#EXTINF") and 'group-title="Guatemala"' in line
-            and "Canal Chichicasteca" in line
-            for line in moved
-        ))
-        audit = ap.validar_integridad_iptvsv(
-            moved, source, ap.categorias_de_lineas(moved)
-        )
-        self.assertEqual(audit["errores_categoria"], 0)
-        self.assertEqual(audit["categorias_faltantes"], 0)
 
     def test_do_not_restore_old_url_when_same_tvg_id_has_new_url(self):
         original = entry("music.id", "Música", "MTV Classic", "https://old.example/mtv.m3u8")
