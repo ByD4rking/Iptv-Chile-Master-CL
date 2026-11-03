@@ -172,9 +172,9 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             candidate["destination_hint"] = destination
             candidate["is_pluto"] = source_url in FUENTES_PLUTO_COMPLETAS
             identity = _identity(candidate, pluto=candidate["is_pluto"])
-            if identity and identity in seen_source_identity:
+            if identity.startswith("id:") and identity in seen_source_identity:
                 continue
-            if identity:
+            if identity.startswith("id:"):
                 seen_source_identity.add(identity)
             candidate["identity"] = identity
             candidates.append(candidate)
