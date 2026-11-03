@@ -81,6 +81,12 @@ def normalizar_nombre_canal(value):
     """Clave de nombre estable para preservar orden entre fuentes con etiquetas distintas."""
     value = normalizar(value)
     value = re.sub(
+        r"\s*(?:\[\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|\(\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
+        "",
+        value,
+        flags=re.I,
+    )
+    value = re.sub(
         r"\s*(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))\s*$",
         "",
         value,
@@ -88,6 +94,12 @@ def normalizar_nombre_canal(value):
     )
     value = re.sub(r"\s*\|\s*(?:cl|chile)\s*$", "", value, flags=re.I)
     value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value, flags=re.I)
+    value = re.sub(
+        r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es)|espanol|españa|spanish|hd|sd|fhd|uhd)$",
+        "",
+        value,
+        flags=re.I,
+    )
     return re.sub(r"[^a-z0-9]+", "", value)
 TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
 
