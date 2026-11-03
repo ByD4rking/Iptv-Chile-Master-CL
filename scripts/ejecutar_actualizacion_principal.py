@@ -86,6 +86,28 @@ def main():
     ordered_lines = _prioritize_infantiles(ordered_lines)
     ordered_lines = normalizar_nombres_solicitados(ordered_lines)
 
+    # Última restauración de orden después de sincronizar y agrupar alternativas.
+    # CHILE TV y Anime no son categorías reordenables: los canales históricos
+    # mantienen su posición; los nuevos quedan al final. Infantiles y MAGMA
+    # conservan sus reglas explícitas.
+    ordered_lines = alimentador.restaurar_orden_original_por_categoria(
+        ordered_lines,
+        original_lines,
+        categorias_reordenables={
+            "Entretenimiento / Cine / Series",
+            "Infantiles",
+        },
+    )
+    ordered_lines = quitar_los_pitufos_es(ordered_lines)
+    alimentador.validar_orden_canales(
+        original_lines,
+        ordered_lines,
+        categorias_reordenables={
+            "Entretenimiento / Cine / Series",
+            "Infantiles",
+        },
+    )
+
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
     temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
     temporary.replace(PRINCIPAL)
