@@ -3377,10 +3377,15 @@ def main():
         aliases_pluto_finales_actualizados,
     )
     if ids_pluto_ausentes:
+        detalle_ids = {
+            identidad: sorted(aliases_pluto_fuentes.get(identidad, {identidad}))
+            for identidad in sorted(ids_pluto_ausentes)
+        }
         raise RuntimeError(
             "VALIDACION PLUTO FALLIDA: faltan "
             f"{len(ids_pluto_ausentes)} IDs de las fuentes propias "
-            "después del autorreparo."
+            "después del autorreparo. "
+            f"Identidades no encontradas y aliases: {detalle_ids}"
         )
 
     print("\n" + "=" * 72)
