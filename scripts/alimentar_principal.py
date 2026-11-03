@@ -87,7 +87,7 @@ def normalizar_nombre_canal(value):
         flags=re.I,
     )
     value = re.sub(
-        r"\s*(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))\s*$",
+        r"\s*(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|\(\s*(?:opcion|option)\s*\d+\s*\))\s*$",
         "",
         value,
         flags=re.I,
