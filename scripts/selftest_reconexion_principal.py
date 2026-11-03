@@ -60,12 +60,12 @@ def main() -> None:
     assert text.count("#EXTVLCOPT:network-caching=1500") == 1  # solo se conserva en Pluto
     assert text.count("#EXTVLCOPT:http-reconnect=true") == 2
     assert reconnects_added == 1
-    assert result[result.index("#EXTINF:-1 tvg-id=\"pluto-a\""):].count(
-        "#EXTVLCOPT:network-caching=1500"
-    ) == 1
-    assert result[result.index("#EXTINF:-1 tvg-id=\"pluto-a\""):].count(
-        "#EXTVLCOPT:network-caching=5000"
-    ) == 0
+    pluto_index = next(
+        i for i, linea in enumerate(result)
+        if linea.startswith('#EXTINF:-1 tvg-id="pluto-a"')
+    )
+    assert result[pluto_index:].count("#EXTVLCOPT:network-caching=1500") == 1
+    assert result[pluto_index:].count("#EXTVLCOPT:network-caching=5000") == 0
     assert result.count("https://example.test/canal-a.m3u8") == 1
     assert result.count("https://example.test/canal-b.m3u8") == 1
 
