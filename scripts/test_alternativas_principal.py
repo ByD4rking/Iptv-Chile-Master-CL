@@ -319,15 +319,14 @@ class TestAlternativasPrincipal(unittest.TestCase):
             self.assertIn(f'tvg-logo="{logo}"', item[0])
             self.assertIn(f'logo="{logo}"', item[0])
 
-    def test_parenthetical_opc_suffix_is_cleaned_before_numbering(self):
-        lines = ["#EXTM3U"]
-        lines += block("", "Infantiles", "Disney Jr HD (Opc.3)", "https://a.example/disneyjr-1.m3u8")
-        lines += block("", "Infantiles", "Disney Jr HD (Opc.3)", "https://a.example/disneyjr-2.m3u8")
-        output = ap.agrupar_alternativas_por_identidad(lines)
-        parsed = self.entries(output)
-        self.assertEqual([item[0].split(",", 1)[1] for item in parsed],
-                         ["Disney Jr HD", "Disney Jr HD [Opción 2]"])
-        self.assertEqual(sc._without_option_suffix("Disney Jr HD (Opc.3)"), "Disney Jr HD")
+    def test_parenthetical_opc_suffix_is_preserved_as_variant_name(self):
+        self.assertEqual(sc._without_option_suffix("Cartoonito HD (Opc.3)"), "Cartoonito HD (Opc.3)")
+        self.assertEqual(ap.normalizar_nombre_canal("Cartoonito HD (Opc.3)"),
+                         "cartoonitohdopc3")
+        self.assertNotEqual(
+            ap.normalizar_nombre_canal("Cartoonito HD (Opc.3)"),
+            ap.normalizar_nombre_canal("Cartoonito HD (Opc.4)"),
+        )
 
 
 if __name__ == "__main__":
