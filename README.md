@@ -111,13 +111,13 @@ El proyecto mantiene siete playlists independientes de Pluto TV, cada una corres
 
 Puedes utilizar **una sola, varias o las siete** según lo que necesites. No es obligatorio cargarlas juntas.
 
-La integración conjunta se utiliza para complementar la lista principal, evitar duplicados y mantener actualizadas las URL y categorías. Las playlists regionales siguen disponibles de forma independiente.
+La lista principal integra exclusivamente las tres fuentes regionales definidas para esta función: **Pluto TV LATAM, Pluto TV España y Pluto TV México**. Las otras cuatro regiones (Argentina, Brasil, Chile y Estados Unidos) se mantienen como playlists independientes y no se incorporan a la principal.
 
 **Prioridad de integración en la lista principal:**
 
-**LATAM → España → México → Chile → Argentina → Brasil → Estados Unidos**
+**LATAM → España → México**
 
-Las siete regiones complementan la lista principal. Cuando un mismo canal aparece en varias fuentes, el sistema conserva la fuente propietaria registrada para ese canal; para canales nuevos sin historial, utiliza este orden como prioridad inicial.
+Cuando un mismo canal aparece en varias fuentes, el sistema conserva la fuente propietaria registrada para ese canal; para canales nuevos sin historial, utiliza este orden como prioridad inicial.
 
 > **Importante:** esta prioridad no limita al usuario. Cada playlist Pluto puede utilizarse por separado y directamente mediante su URL RAW.
 
@@ -257,7 +257,7 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 - **Quieres ampliar la cobertura:** puedes cargar varias o todas las listas en un reproductor que admita múltiples playlists.
 - **Quieres evitar administrar varias listas:** puedes utilizar la lista principal o GOD del proyecto cuando corresponda.
 
-> Las siete playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual. Sus catálogos también alimentan la lista principal mediante el proceso común de sincronización incremental.
+> Las siete playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual. Solo LATAM, España y México alimentan la lista principal mediante la sincronización incremental.
 
 ---
 
@@ -375,7 +375,7 @@ El repositorio utiliza procesos automatizados para mantener y revisar las playli
 Entre las tareas de mantenimiento se incluyen:
 
 - 🔄 Actualización de todas las fuentes complementarias en cada ciclo.
-- ➕ Incorporación de canales nuevos desde IPTVSV, MAGNA, M3U.CL y las siete regiones Pluto.
+- ➕ Incorporación de canales nuevos desde IPTVSV, MAGNA, M3U.CL y Pluto LATAM, España y México.
 - 🔗 Actualización de URL y metadatos por identidad estable del canal.
 - ↔️ Reclasificación y movimiento de canales cuando cambia su categoría de origen.
 - 🧾 Manifiesto persistente de fuente propietaria para evitar que una lista sobrescriba los aportes de otra.
