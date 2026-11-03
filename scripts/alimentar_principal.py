@@ -2211,6 +2211,7 @@ def cargar_ids_pluto_es_anime(session):
         if not canales_anime:
             raise ValueError("el catálogo Pluto ES no contiene canales de Anime verificables")
 
+        ids_obtenidos_fuente = set()
         for canal_es in canales_anime:
             identidad_es = extraer_pluto_id(canal_es.get("url", ""))
             if not identidad_es:
@@ -2221,10 +2222,11 @@ def cargar_ids_pluto_es_anime(session):
                 )
                 identidad_es = m_es.group(1).lower() if m_es else ""
             if identidad_es:
-                ids_pluto_es_anime.add(identidad_es)
+                ids_obtenidos_fuente.add(identidad_es)
 
-        if len(ids_pluto_es_anime) == len(PLUTO_ES_ANIME_IDS_HISTORICOS):
-            raise ValueError("el catálogo Pluto ES no aportó ninguna identidad de Anime")
+        if not ids_obtenidos_fuente:
+            raise ValueError("el catálogo Pluto ES no aportó identidades de Anime")
+        ids_pluto_es_anime.update(ids_obtenidos_fuente)
     except Exception as exc:
         raise RuntimeError(
             "No se pudo validar la identidad de Pluto ES; se cancela la actualización "
