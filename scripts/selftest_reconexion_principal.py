@@ -14,6 +14,8 @@ from alimentar_principal import (
     aplicar_ajustes_referencia,
     FUENTE_MAGMA,
     FUENTE_PLUTO_ALTERNATIVAS,
+    reubicar_bloques_pluto_sin_reordenar_principal,
+    reemplazar_categoria,
 )
 
 
@@ -97,6 +99,8 @@ def test_ajustes_referencia() -> None:
         "https://example.test/delmi-2.m3u8",
         '#EXTINF:-1 tvg-id="anime-es" group-title="Anime",Canal Anime [Pluto ES]',
         "https://jmp2.uk/plu-aaaaaaaaaaaaaaaaaaaaaaaa.m3u8",
+        '#EXTINF:-1 tvg-id="608035b8d8705f0007260287" group-title="Anime",Pluto TV Anime',
+        "https://jmp2.uk/plu-608035b8d8705f0007260287.m3u8",
         '#EXTINF:-1 tvg-id="cine-es" group-title="Cine",Cine Pluto ES',
         "https://jmp2.uk/plu-bbbbbbbbbbbbbbbbbbbbbbbb.m3u8",
         '#EXTINF:-1 tvg-id="baby" group-title="Infantiles",Baby Shark TV',
@@ -200,6 +204,31 @@ def test_pluto_mx_importer() -> None:
     assert again.count("https://jmp2.uk/plu-6870072ca9d5c45c3e9466f1.m3u8") == 1
 
 
+
+def test_pluto_options_remain_adjacent() -> None:
+    channel_id = "aaaaaaaaaaaaaaaaaaaaaaaa"
+    source = [
+        "#EXTM3U",
+        f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Competencia",Canal Base (OPCIÓN 2)',
+        f"https://jmp2.uk/plu-{channel_id}.m3u8",
+        '#EXTINF:-1 tvg-id="wipeout" group-title="Competencia",Wipe Out',
+        "https://example.test/wipeout.m3u8",
+        f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Competencia",Canal Base',
+        f"https://service-stitcher.clusters.pluto.tv/v2/channel/{channel_id}/master.m3u8",
+    ]
+    result, _, _ = reubicar_bloques_pluto_sin_reordenar_principal(source)
+    names = [line for line in result if line.startswith("#EXTINF")]
+    base_index = next(i for i, line in enumerate(names) if line.endswith(",Canal Base"))
+    option_index = next(i for i, line in enumerate(names) if line.endswith(",Canal Base (OPCIÓN 2)"))
+    assert option_index == base_index + 1, names
+
+
+def test_extinf_category_fallback_preserves_duration() -> None:
+    line = '#EXTINF:-1 tvg-id="demo",Canal demo'
+    updated = reemplazar_categoria(line, "Estilo De Vida")
+    assert updated == '#EXTINF:-1 group-title="Estilo De Vida" tvg-id="demo",Canal demo'
+    assert "-1 group-title=" in updated and 'Vida"-1' not in updated
+
 def test_external_source_urls() -> None:
     assert FUENTE_MAGMA == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u"
     assert FUENTE_PLUTO_ALTERNATIVAS == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
@@ -209,6 +238,8 @@ if __name__ == "__main__":
     main()
     test_ajustes_referencia()
     test_pluto_mx_importer()
+    test_pluto_options_remain_adjacent()
+    test_extinf_category_fallback_preserves_duration()
     test_external_source_urls()
     print("SELFTEST OK: MAGMA, Pluto MX, Anime, Avatar y American Ninja Warrior.")
 
