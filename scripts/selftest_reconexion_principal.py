@@ -121,6 +121,32 @@ def test_ordenamiento_solicitado_de_entretenimiento_no_bloquea_la_lista() -> Non
 
 
 
+def test_guard_ignora_reordenamiento_de_pluto_verificado() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="5ddc503ac7ef120009b101a2" group-title="Documentales y Cultura",Pluto documental A',
+        "https://jmp2.uk/plu-5ddc503ac7ef120009b101a2.m3u8",
+        '#EXTINF:-1 tvg-id="animal" group-title="Documentales y Cultura",Animal Planet',
+        "https://example.test/animal.m3u8",
+        '#EXTINF:-1 tvg-id="discovery" group-title="Documentales y Cultura",Discovery Channel',
+        "https://example.test/discovery.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="animal" group-title="Documentales y Cultura",Animal Planet',
+        "https://example.test/animal.m3u8",
+        '#EXTINF:-1 tvg-id="discovery" group-title="Documentales y Cultura",Discovery Channel',
+        "https://example.test/discovery.m3u8",
+        '#EXTINF:-1 tvg-id="5ddc503ac7ef120009b101a2" group-title="Documentales y Cultura",Pluto documental A',
+        "https://jmp2.uk/plu-5ddc503ac7ef120009b101a2.m3u8",
+    ]
+    validar_orden_canales(
+        before,
+        after,
+        ids_pluto_omitidos={"5ddc503ac7ef120009b101a2"},
+    )
+
+
 def test_ajustes_referencia() -> None:
     source = [
         "#EXTM3U",
@@ -521,6 +547,7 @@ def test_external_source_urls() -> None:
 if __name__ == "__main__":
     main()
     test_ordenamiento_solicitado_de_entretenimiento_no_bloquea_la_lista()
+    test_guard_ignora_reordenamiento_de_pluto_verificado()
     test_ajustes_referencia()
     test_pluto_es_identity_lookup_fails_closed()
     test_pluto_es_identity_lookup_loads_catalog_ids()
