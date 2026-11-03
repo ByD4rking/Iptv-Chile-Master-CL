@@ -46,6 +46,14 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertIn('group-title="Infantiles"', output[index])
         self.assertEqual(stats["categorias_movidas"], 1)
 
+    def test_changed_tvg_id_can_match_by_unique_name(self):
+        source = [candidate("sports.one.rotated", "Deportes", "Canal Uno", "https://new.example/one.m3u8")]
+        output, stats = reconcile_lines(self.base, source)
+        self.assertIn('tvg-id="sports.one.rotated"', output[1])
+        self.assertIn("https://new.example/one.m3u8", output)
+        self.assertNotIn("https://old.example/one.m3u8", output)
+        self.assertEqual(stats["url_actualizadas"], 1)
+
     def test_new_channel_is_added(self):
         source = [candidate("new.kids", "Infantiles", "Nuevo Infantil", "https://new.example/kids.m3u8")]
         output, stats = reconcile_lines(self.base, source)
