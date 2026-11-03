@@ -1871,6 +1871,10 @@ def firma_orden_canales(lineas):
 def validar_orden_canales(orden_anterior, lineas_nuevas):
     """Bloquea una publicación que reordene canales ya existentes."""
     actual = firma_orden_canales(lineas_nuevas)
+    # Avatar cambia de Anime a Infantiles por la ubicación explícita de la referencia.
+    avatar_id = "id:6759ee82bd523200083b4f0f"
+    actual = [clave for clave in actual if clave != avatar_id]
+    orden_anterior = [clave for clave in orden_anterior if clave != avatar_id]
     conjunto_actual = set(actual)
     conjunto_anterior = set(orden_anterior)
     anterior_vigente = [clave for clave in orden_anterior if clave in conjunto_actual]
@@ -2166,7 +2170,8 @@ def aplicar_ajustes_referencia(lineas):
         any(linea.strip() == xumo_url for linea in bloque)
         for bloque in bloques
     )
-    if not xumo_ya_existe:
+    xumo_agregado = not xumo_ya_existe
+    if xumo_agregado:
         posiciones_competencia = [
             idx for idx, bloque in enumerate(bloques)
             if bloque[0].startswith("#EXTINF")
@@ -2189,7 +2194,7 @@ def aplicar_ajustes_referencia(lineas):
         "Ajustes de referencia: "
         f"Pluto ES retirados de Anime={eliminados_pluto_es_anime}; "
         f"Avatar ubicados en Infantiles={len(avatar)}; "
-        f"American Ninja Warrior presente={int(xumo_ya_existe or not xumo_ya_existe)}."
+        f"American Ninja Warrior agregado={int(xumo_agregado)}."
     )
     return salida
 
