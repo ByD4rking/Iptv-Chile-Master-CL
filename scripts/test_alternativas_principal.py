@@ -127,6 +127,8 @@ class TestAlternativasPrincipal(unittest.TestCase):
         parsed = self.entries(restored)
         names = [item[0].split(",", 1)[1] for item in parsed]
         self.assertLess(names.index("Cadenartv"), names.index("C y G TV"))
+        # La auditoría tampoco debe confundir el ID reasignado con el canal antiguo.
+        ap.validar_orden_canales(original, restored)
 
     def test_grouping_does_not_assign_new_id_to_historical_primary(self):
         lines = ["#EXTM3U"]
