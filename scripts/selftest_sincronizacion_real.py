@@ -8,10 +8,14 @@ nunca publica ni hace push.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
+import json
 import re
 import subprocess
 import sys
+import time
+from urllib.parse import parse_qs, urlparse
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -119,17 +123,39 @@ def source_channels(url: str) -> list[dict]:
     return parsed
 
 
+def stream_id(channel: dict) -> str:
+    url = channel.get("url", "") or ""
+    channel_id = ap.extraer_pluto_id(url)
+    if not channel_id:
+        extinf = channel.get("extinf", "")
+        match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+        channel_id = match.group(1).strip() if match else ""
+    return norm(channel_id)
+
+
 def channel_ids(channels: list[dict], *, anime_only: bool = False) -> set[str]:
     ids = set()
     for channel in channels:
         if anime_only and norm(channel.get("categoria", "")) != "anime":
             continue
-        extinf = channel.get("extinf", "")
-        match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
-        channel_id = match.group(1).strip() if match else ap.extraer_pluto_id(channel.get("url", ""))
+        channel_id = stream_id(channel)
         if channel_id:
-            ids.add(norm(channel_id))
+            ids.add(channel_id)
     return ids
+
+
+def jwt_expiry(url: str) -> int:
+    token = parse_qs(urlparse(url).query).get("jwt", [""])[0]
+    parts = token.split(".")
+    if len(parts) != 3:
+        raise RuntimeError(f"URL Pluto sin JWT válido: {url[:120]}")
+    payload = parts[1]
+    payload += "=" * (-len(payload) % 4)
+    data = json.loads(base64.urlsafe_b64decode(payload.encode("ascii")))
+    expiry = data.get("exp")
+    if not isinstance(expiry, (int, float)):
+        raise RuntimeError("El JWT de Pluto no contiene exp.")
+    return int(expiry)
 
 
 def protected_hashes() -> dict[str, str]:
@@ -175,6 +201,11 @@ def main(args: argparse.Namespace) -> None:
     # La principal usa Pluto MX externo sin JWT, no la playlist MX propia tokenizada.
     pluto_mx = source_channels(ap.FUENTE_PLUTO_ALTERNATIVAS)
 
+    if any("jwt=" not in (channel.get("url", "").lower()) for channel in pluto_latam + pluto_es):
+        raise AssertionError("Pluto LATAM/ES entregó una URL sin JWT.")
+    if any("jwt=" in (channel.get("url", "").lower()) for channel in pluto_mx):
+        raise AssertionError("Pluto MX externo no debe usar JWT.")
+
     es_anime_ids = channel_ids(pluto_es, anime_only=True)
     latam_mx_ids = channel_ids(pluto_latam) | channel_ids(pluto_mx)
     allowed_anime_names = {
@@ -200,7 +231,42 @@ def main(args: argparse.Namespace) -> None:
         result = {"mode": "full-production-orchestrator"}
     after = parse_entries(PRINCIPAL)
     after_playable = [item for item in after if item["url"]]
-    after_ids = {norm(item["id"]) for item in after_playable if item["id"]}
+    after_ids = {
+        stream_id({"id": item["id"], "extinf": item["extinf"], "url": item["url"]})
+        for item in after_playable
+        if stream_id({"id": item["id"], "extinf": item["extinf"], "url": item["url"]})
+    }
+    after_urls_by_id = defaultdict(set)
+    for item in after_playable:
+        channel_id = stream_id({"id": item["id"], "extinf": item["extinf"], "url": item["url"]})
+        if channel_id:
+            after_urls_by_id[channel_id].add(item["url"])
+
+    # Verificar que la maestra contiene el JWT recién generado en LATAM/ES
+    # y que queda margen amplio antes de su expiración.
+    expected_token_urls = defaultdict(set)
+    for source_name, channels in (("LATAM", pluto_latam), ("ES", pluto_es)):
+        for channel in channels:
+            if source_name == "ES" and (
+                norm(channel.get("categoria", "")) == "anime"
+                or channel_name_key(channel.get("nombre", "")).startswith("lospitufos")
+            ):
+                continue
+            url = channel.get("url", "")
+            channel_id = stream_id(channel)
+            if not channel_id or "jwt=" not in url.lower():
+                continue
+            expiry = jwt_expiry(url)
+            if expiry - int(time.time()) < 12 * 60 * 60:
+                raise AssertionError(f"JWT de Pluto {source_name} no fue renovado con suficiente anticipación.")
+            expected_token_urls[channel_id].add(url)
+    for channel_id, urls in expected_token_urls.items():
+        if channel_id in after_urls_by_id:
+            missing_urls = urls - after_urls_by_id[channel_id]
+            if missing_urls:
+                raise AssertionError(
+                    f"La maestra no contiene el JWT actual de Pluto para ID {channel_id}."
+                )
     after_nonpluto_all = [
         item for item in after_playable if not ap.es_url_pluto(item["url"])
     ]
