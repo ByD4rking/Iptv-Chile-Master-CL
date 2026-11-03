@@ -260,6 +260,24 @@ def test_iptvsv_reclasifica_urls_existentes_antes_de_validar_categoria() -> None
     assert audit["errores_categoria"] == 0, audit
 
 
+def test_validar_orden_ignora_pluto_movido_al_final_de_categoria() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Comedia",Comedy Central en Espanol',
+        "https://service-stitcher.clusters.pluto.tv/v1/stitcher/channel/abc/master.m3u8",
+        '#EXTINF:-1 group-title="Comedia",Distrito Comedia (1080p)',
+        "https://example.test/distrito/master.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Comedia",Distrito Comedia (1080p)',
+        "https://example.test/distrito/master.m3u8",
+        '#EXTINF:-1 group-title="Comedia",Comedy Central en Espanol',
+        "https://service-stitcher.clusters.pluto.tv/v1/stitcher/channel/abc/master.m3u8",
+    ]
+    validar_orden_canales(before, after)
+
+
 def test_restaurar_orden_de_duplicados_historicos_sin_tvg_id() -> None:
     before = [
         "#EXTM3U",
