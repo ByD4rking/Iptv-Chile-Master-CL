@@ -930,6 +930,23 @@ class AuditIdentityRegressionTests(unittest.TestCase):
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
+    def test_nested_option_suffixes_are_regrouped_with_sequential_labels(self):
+        lines = ["#EXTM3U"]
+        lines += entry("", "Infantiles", "Nick JR SD", "https://nick.example/one.m3u8")
+        lines += entry("", "Infantiles", "Nick JR SD [Opción 3]", "https://nick.example/three.m3u8")
+        lines += entry("", "Infantiles", "Nick JR SD (Opc.1) [Opción 2]", "https://nick.example/two.m3u8")
+
+        output = _group_and_label_alternatives(lines, {})
+        names = [
+            ap.extraer_nombre(line)
+            for line in output
+            if line.startswith("#EXTINF")
+        ]
+        self.assertEqual(
+            names,
+            ["Nick JR SD", "Nick JR SD [Opción 2]", "Nick JR SD [Opción 3]"],
+        )
+
     def test_babytv_parenthetical_opc_suffix_groups_with_base(self):
         lines = ["#EXTM3U"]
         lines += entry("", "Infantiles", "Baby TV", "https://a.example/babytv.m3u8")
