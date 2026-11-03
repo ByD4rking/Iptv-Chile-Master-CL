@@ -1262,14 +1262,14 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
     nombres_base_pluto = {
         (normalizar(b["categoria"]), normalizar(extraer_nombre(b["lineas"][0])))
         for b in pluto
-        if not re.search(r"\\(OPCIÓN\\s+\\d+\\)$", extraer_nombre(b["lineas"][0]), re.I)
+        if not re.search(r"\(OPCIÓN\s+\d+\)$", extraer_nombre(b["lineas"][0]), re.I)
     }
     for bloque in bloques:
         nombre = extraer_nombre(bloque["lineas"][0])
-        m_opcion = re.search(r"\\s*\\(OPCIÓN\\s+\\d+\\)$", nombre, re.I)
+        m_opcion = re.search(r"\s*\(OPCIÓN\s+\d+\)$", nombre, re.I)
         if not m_opcion or bloque in pluto:
             continue
-        nombre_base = re.sub(r"\\s*\\(OPCIÓN\\s+\\d+\\)$", "", nombre, flags=re.I).strip()
+        nombre_base = re.sub(r"\s*\(OPCIÓN\s+\d+\)$", "", nombre, flags=re.I).strip()
         coincide_base = (
             (bloque.get("id") and bloque["id"] in ids_base_pluto)
             or (normalizar(bloque["categoria"]), normalizar(nombre_base)) in nombres_base_pluto
@@ -2379,14 +2379,14 @@ def ordenar_bloques_magma_y_originales(lineas, session):
     ]
 
     def clave_alfabetica(bloque):
-        nombre = re.sub(r"\\s*\\[MAGMA\\]$", "", bloque["nombre"], flags=re.I).strip()
-        version = re.search(r"\\[V(\\d+)\\]", nombre, flags=re.I)
+        nombre = re.sub(r"\s*\[MAGMA\]$", "", bloque["nombre"], flags=re.I).strip()
+        version = re.search(r"\[V(\d+)\]", nombre, flags=re.I)
         if version:
             numero_variante = int(version.group(1))
             base = (nombre[:version.start()] + nombre[version.end():]).strip()
         else:
             opcion = re.search(
-                r"\\s*(?:\\((?:OPCIÓN|OPC)\\s*\\.?\\s*(\\d+)\\)|\\[(?:OPCIÓN|OPC)\\s*\\.?\\s*(\\d+)\\])$",
+                r"\s*(?:\((?:OPCIÓN|OPC)\s*\.?\s*(\d+)\)|\[(?:OPCIÓN|OPC)\s*\.?\s*(\d+)\])$",
                 nombre,
                 flags=re.I,
             )
