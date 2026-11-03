@@ -41,7 +41,7 @@ class TestAlternativasPrincipal(unittest.TestCase):
             playable.append((category.group(1) if category else "", display, url, extinf))
 
         kids = [item for item in playable if item[0].strip().lower() in {"infantiles", "infantil"}]
-        kid_names = [re.sub(r"\\s*\\[(?:opci[oó]n|opc\\.?|option)\\s*\\d+\\]$", "", x[1], flags=re.I).strip().lower() for x in kids]
+        kid_names = [re.sub(r"\s*\[(?:opci[oó]n|opc\.?|option)\s*\d+\]$", "", x[1], flags=re.I).strip().lower() for x in kids]
         self.assertEqual(kid_names[:3], ["popeye", "los pitufos", "heidi"])
 
         self.assertFalse(any("los pitufos" in x[1].lower() and (
@@ -52,7 +52,7 @@ class TestAlternativasPrincipal(unittest.TestCase):
         if delmi:
             self.assertTrue(any(x[1] == "Delmi TV 2" and x[0].strip().lower() == "anime" for x in delmi))
 
-        cyg = [(i, x) for i, x in enumerate(playable) if re.sub(r"\\s*\\[.*?\\]$", "", x[1], flags=re.I).strip().lower() == "cygtvcl"]
+        cyg = [(i, x) for i, x in enumerate(playable) if re.sub(r"\s*\[.*?\]$", "", x[1], flags=re.I).strip().lower() == "cygtvcl"]
         if len(cyg) >= 2:
             positions = [i for i, _ in cyg]
             self.assertEqual(positions, list(range(positions[0], positions[0] + len(positions))))
