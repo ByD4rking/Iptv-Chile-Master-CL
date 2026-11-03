@@ -67,11 +67,12 @@ def _identity(channel: dict, *, pluto: bool = False) -> str:
         channel_id = _valid_tvg_id(_attr(extinf, "tvg-id"))
     if channel_id:
         return "id:" + ap.normalizar(channel_id)
-    name = ap.normalizar(_attr(extinf, "tvg-name") or channel.get("nombre", ""))
+    name = _base_channel_name(_attr(extinf, "tvg-name") or channel.get("nombre", ""))
     return "name:" + name if name else ""
 
 
 def _base_channel_name(name: str) -> str:
+    name = re.sub(r"\\s*(?:\\[\\s*v2\\s*\\]|\\(\\s*v2\\s*\\)|v2)\\s*$", " 2", name or "", flags=re.I)
     name = re.sub(
         r"\s*(?:\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
         "",
@@ -149,6 +150,7 @@ def _canonical_channel_name(channel: dict) -> str:
         or _attr(channel.get("extinf", ""), "tvg-name")
     )
     value = _without_option_suffix(value)
+    value = re.sub(r"\\s*(?:\\[\\s*v2\\s*\\]|\\(\\s*v2\\s*\\)|v2)\\s*$", " 2", value, flags=re.I)
     value = re.sub(
         r"\s*(?:\[\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
         r"\(\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
