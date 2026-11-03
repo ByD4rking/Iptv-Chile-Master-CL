@@ -431,6 +431,10 @@ def main(args: argparse.Namespace) -> None:
     before_by_category = defaultdict(list)
     after_by_category = defaultdict(list)
     for item in before_kept:
+        # Las alternativas se auditan por identidad, cantidad y contigüidad;
+        # el orden histórico se compara solo entre canales principales.
+        if item["is_option"]:
+            continue
         category = norm(item["category"])
         key = identity_key(item, name_to_ids)
         if key not in before_by_category[category]:
