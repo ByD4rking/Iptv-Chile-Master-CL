@@ -9,6 +9,16 @@ on:
       - ".github/workflows/actualizar.yml"
   schedule:
     - cron: "0 */6 * * *"
+  # Pluto renueva los JWT de LATAM/ES cada hora. Ejecutar la maestra
+  # después de que termine esa generación evita copiar tokens antiguos
+  # por una carrera entre dos workflows que arrancan al mismo minuto.
+  workflow_run:
+    workflows:
+      - "Pluto TV - Actualizar listas regionales"
+    types:
+      - completed
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -23,7 +33,10 @@ concurrency:
 jobs:
   actualizar:
     # Este workflow publica en main; no ejecutar desde ramas de trabajo.
-    if: github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_run' || github.actor != 'github-actions[bot]') &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
