@@ -616,6 +616,10 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             if (
                 ap.normalizar(channel.get("categoria", "")) == "anime"
                 and _is_spanish_anime_label(channel.get("extinf", ""))
+                and (
+                    source_url == ap.FUENTES_PLUTO[1]
+                    or _is_pluto_es_url(channel.get("url", ""))
+                )
             ):
                 continue
             url = (channel.get("url") or "").strip()
@@ -704,7 +708,10 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         if (
             ap.normalizar(ap.extraer_categoria(block["extinf"])) == "anime"
             and (
-                _is_spanish_anime_label(block["extinf"])
+                (
+                    _is_spanish_anime_label(block["extinf"])
+                    and identity not in pluto_latam_mx_ids
+                )
                 or (
                     block.get("url")
                     and _is_pluto_url(block["url"])
