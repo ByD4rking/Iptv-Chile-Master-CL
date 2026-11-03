@@ -171,12 +171,14 @@ def protected_hashes() -> dict[str, str]:
 
 
 def identity_key(item: dict, other_ids: set[str], unique_names: set[str]) -> str:
+    # Un tvg-id estable prevalece sobre variaciones de presentación del nombre
+    # (p. ej. "C y G TV" frente a "C y G TV | CL").
+    channel_id = norm(item.get("id", ""))
+    if channel_id:
+        return "id:" + channel_id
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
-    if name_key:
-        return "name:" + name_key
-    channel_id = norm(item.get("id", ""))
-    return "id:" + channel_id if channel_id else "name:"
+    return "name:" + name_key if name_key else "name:"
 
 
 def main(args: argparse.Namespace) -> None:
