@@ -121,7 +121,7 @@ class PlaylistOrderTests(unittest.TestCase):
 
             third, preserved = preserve_previous_channels(playlist, [dict(x) for x in fresh], previous_state=second)
             self.assertEqual(preserved, 0)
-            self.assertEqual([x["id"] for x in third], ["stay"])
+            self.assertEqual([x["id"] for x in third], ["stay-0", "stay-1", "stay-2", "stay-3"])
 
     def test_partial_catalog_does_not_advance_absence_counter(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
