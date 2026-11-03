@@ -148,8 +148,10 @@ def test_pluto_es_identity_lookup_loads_catalog_ids() -> None:
     class FakeResponse:
         text = "\n".join([
             "#EXTM3U",
-            '#EXTINF:-1 tvg-id="aaaaaaaaaaaaaaaaaaaaaaaa" group-title="Anime",Anime ES',
+            '#EXTINF:-1 tvg-id="bbbbbbbbbbbbbbbbbbbbbbbb" group-title="Anime",Anime ES',
             "https://jmp2.uk/plu-bbbbbbbbbbbbbbbbbbbbbbbb.m3u8",
+            '#EXTINF:-1 tvg-id="cccccccccccccccccccccccc" group-title="Anime",Anime ES 2',
+            "https://example.test/anime-es-2.m3u8",
         ])
 
         def raise_for_status(self) -> None:
@@ -160,8 +162,8 @@ def test_pluto_es_identity_lookup_loads_catalog_ids() -> None:
             return FakeResponse()
 
     ids = cargar_ids_pluto_es_anime(FakeSession())
-    assert "aaaaaaaaaaaaaaaaaaaaaaaa" in ids
     assert "bbbbbbbbbbbbbbbbbbbbbbbb" in ids
+    assert "cccccccccccccccccccccccc" in ids
     assert "608035b8d8705f0007260287" in ids
 
 
