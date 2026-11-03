@@ -99,6 +99,10 @@ def main():
         },
     )
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
+    ids_pluto_orden = (
+        alimentador.obtener_ids_pluto_existentes(original_lines)
+        | alimentador.obtener_ids_pluto_existentes(ordered_lines)
+    )
     alimentador.validar_orden_canales(
         original_lines,
         ordered_lines,
@@ -106,6 +110,7 @@ def main():
             "Entretenimiento / Cine / Series",
             "Infantiles",
         },
+        ids_pluto_omitidos=ids_pluto_orden,
     )
 
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
