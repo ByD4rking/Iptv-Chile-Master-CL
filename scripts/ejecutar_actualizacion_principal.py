@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Orquesta la sincronización común antes y después del alimentador histórico."""
+"""Orquesta la sincronización común antes del alimentador histórico."""
 import alimentar_principal as alimentador
 from sincronizar_complementos import synchronize_once
 
 
 def _validator_no_bloqueante(lineas, canales, categorias):
-    # Los cambios de categoría y las categorías aún no mapeadas se resuelven
-    # en el reconciliador común. Los conflictos reales por identidad se
-    # contabilizan allí y nunca se fuerzan por una URL o nombre ambiguo.
+    # Una diferencia de categoría ya no debe abortar la actualización:
+    # el reconciliador común la mueve antes de ejecutar el alimentador.
     urls = {
         (channel.get("url") or "").strip()
         for channel in canales
@@ -22,18 +21,15 @@ def _validator_no_bloqueante(lineas, canales, categorias):
 
 
 def main():
-    print("\n[ORQUESTADOR] Sincronización de todas las fuentes antes del alimentador.")
-    before = synchronize_once()
-    print("[ORQUESTADOR] Pre-sincronización:", before)
+    print("\n[ORQUESTADOR] Sincronización incremental de todas las fuentes.")
+    result = synchronize_once()
+    print("[ORQUESTADOR] Resultado:", result)
 
-    # El validador anterior detenía toda la ejecución al encontrar una
+    # El validador anterior detenía toda la ejecución al detectar una
     # categoría distinta, justo el caso que ahora debe corregirse/moverse.
+    # Los conflictos ambiguos no se fuerzan: el reconciliador los omite.
     alimentador.validar_integridad_iptvsv = _validator_no_bloqueante
     alimentador.main()
-
-    print("\n[ORQUESTADOR] Reconciliación final de URL, categoría y altas.")
-    after = synchronize_once()
-    print("[ORQUESTADOR] Sincronización final:", after)
 
 
 if __name__ == "__main__":
