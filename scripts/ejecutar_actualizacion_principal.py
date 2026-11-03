@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
-"""Sincroniza fuentes nuevas antes de ejecutar el alimentador histórico.
+"""Ejecuta el alimentador histórico y luego la reconciliación incremental.
 
-La primera reconciliación crea categorías nuevas y mueve los canales por
-identidad. Después, el alimentador aplica sus validaciones y mantenimiento
-histórico usando ya las categorías reconciliadas. El workflow vuelve a
-reconciliar al final para dejar los cambios de fuentes en el resultado final.
+El alimentador histórico conserva su propia auditoría del orden original. Por
+eso corre primero sobre la maestra sin premodificaciones; después el
+sincronizador actualiza URLs, categorías y canales nuevos sin reordenar los
+bloques existentes. El workflow vuelve a reconciliar después de unificar CHILE.
 """
-from sincronizar_complementos import synchronize_once
 import alimentar_principal as alimentador
+from sincronizar_complementos import synchronize_once
 
 
 def main():
-    print("\n[ORQUESTADOR] Sincronización incremental previa.")
-    result = synchronize_once()
-    print("[ORQUESTADOR] Resultado previo:", result)
+    print("\n[ORQUESTADOR] Ejecutando alimentador histórico con su auditoría de orden.")
     alimentador.main()
+
+    print("\n[ORQUESTADOR] Reconciliando fuentes complementarias.")
+    result = synchronize_once()
+    print("[ORQUESTADOR] Resultado de sincronización:", result)
+    return result
 
 
 if __name__ == "__main__":
