@@ -2882,6 +2882,13 @@ def main():
 
             lineas, sincronizacion = sincronizar_enlaces_existentes(lineas, canales_destinados)
             urls_globales = mapa_urls_principal(lineas)
+            # Las fuentes previas del mismo ciclo aún pueden tener bloques
+            # pendientes de insertar; no perder sus URLs al recalcular el mapa.
+            urls_globales.update(
+                item["bloque"][-1].strip()
+                for item in bloques_nuevos
+                if item.get("bloque") and url_es_valida(item["bloque"][-1].strip())
+            )
             if any(sincronizacion.values()):
                 print(
                     "  -> sincronización de canales existentes: "
