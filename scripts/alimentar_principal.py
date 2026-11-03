@@ -2776,6 +2776,116 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
     return salida
 
 
+
+def agrupar_alternativas_por_identidad(lineas):
+    """Agrupa URLs del mismo canal en la misma categoría y conserva todas las opciones."""
+    bloques = []
+    prefijo = []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            else:
+                bloques[-1]["lineas"].append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        raw = list(lineas[inicio:j])
+        extinf = raw[0]
+        url = next((x.strip() for x in raw[1:] if url_es_valida(x.strip())), "")
+        display = extraer_nombre(extinf)
+        base = re.sub(
+            r"\\s*(?:\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|\\(\\s*(?:opci[oó]n|option)\\s*\\d+\\s*\\))\\s*$",
+            "",
+            display,
+            flags=re.I,
+        ).strip()
+        base = re.sub(
+            r"\\s*(?:\\[\\s*(?:magna|magma|pluto(?:\\s*tv)?(?:\\s*(?:latam|mx|es|españa))?)\\s*\\]|"
+            r"\\(\\s*(?:magna|magma|pluto(?:\\s*tv)?(?:\\s*(?:latam|mx|es|españa))?)\\s*\\))\\s*$",
+            "",
+            base,
+            flags=re.I,
+        ).strip()
+        base = re.sub(r"\\s+(?:hd|sd|fhd|uhd)$", "", base, flags=re.I).strip()
+        id_match = re.search(r'tvg-id="([^"]*)"', extinf, re.I)
+        tvg_name_match = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
+        logo_match = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+        bloques.append({
+            "lineas": raw,
+            "url": url,
+            "categoria": normalizar(extraer_categoria(extinf)),
+            "nombre": normalizar(base),
+            "display": base,
+            "id": id_match.group(1).strip() if id_match else "",
+            "tvg_name": tvg_name_match.group(1).strip() if tvg_name_match else "",
+            "logo": logo_match.group(1).strip() if logo_match else "",
+        })
+        i = j
+
+    grupos = defaultdict(list)
+    for indice, bloque in enumerate(bloques):
+        if bloque["url"] and bloque["nombre"] and bloque["categoria"]:
+            grupos[(bloque["categoria"], bloque["nombre"])].append(indice)
+
+    reemplazos = {}
+    omitidos = set()
+    for clave, indices in grupos.items():
+        if len(indices) < 2:
+            continue
+        ids = {bloques[idx]["id"] for idx in indices if bloques[idx]["id"]}
+        if len(ids) > 1:
+            continue
+        grupo = [bloques[idx] for idx in indices]
+        base = next((item["display"] for item in grupo if item["display"]), "")
+        canonical_id = next((item["id"] for item in grupo if item["id"]), "")
+        canonical_tvg = next((item["tvg_name"] for item in grupo if item["tvg_name"]), base)
+        canonical_logo = next((item["logo"] for item in grupo if item["logo"]), "")
+        normalizados = []
+        seen_urls = set()
+        for item in grupo:
+            if item["url"] in seen_urls:
+                continue
+            seen_urls.add(item["url"])
+            raw = list(item["lineas"])
+            extinf = raw[0]
+            def set_attr(texto, clave_attr, valor):
+                if not valor:
+                    return texto
+                patron = r'\\b' + re.escape(clave_attr) + r'="[^"]*"'
+                reemplazo = f'{clave_attr}="{valor}"'
+                if re.search(patron, texto, re.I):
+                    return re.sub(patron, lambda _: reemplazo, texto, count=1, flags=re.I)
+                coma = texto.find(",")
+                return texto[:coma].rstrip() + " " + reemplazo + texto[coma:] if coma >= 0 else texto
+            extinf = set_attr(extinf, "tvg-id", canonical_id)
+            extinf = set_attr(extinf, "tvg-name", canonical_tvg)
+            extinf = set_attr(extinf, "tvg-logo", canonical_logo)
+            raw[0] = re.sub(r",.*$", "," + (base if len(normalizados) == 0 else f"{base} [Opción {len(normalizados) + 1}]"), extinf)
+            normalizados.append(raw)
+        if len(normalizados) < 2:
+            continue
+        first = indices[0]
+        reemplazos[first] = normalizados
+        omitidos.update(indices[1:])
+
+    salida = list(prefijo)
+    for indice, bloque in enumerate(bloques):
+        if indice in omitidos:
+            continue
+        if indice in reemplazos:
+            for grupo_bloque in reemplazos[indice]:
+                salida.extend(grupo_bloque)
+        else:
+            salida.extend(bloque["lineas"])
+    return salida
+
+
+
 def ordenar_bloques_magma_y_originales(lineas, session):
     """
     Ordena exclusivamente Entretenimiento / Cine / Series en tres bloques:
@@ -3416,6 +3526,9 @@ def main(restaurar_faltantes=True, preservar_orden=False):
         )
     else:
         print("Orden protegido: no se reordena entretenimiento ni canales existentes.")
+
+    # Agrupar alternativas de la misma identidad/categoría después del orden MAGNA.
+    lineas = agrupar_alternativas_por_identidad(lineas)
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
