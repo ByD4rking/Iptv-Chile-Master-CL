@@ -337,9 +337,9 @@ def test_magma_and_original_entertainment_blocks_are_sorted() -> None:
         "Original Alpha",
         "Original Zulu",
         "Venevisión (Venezuela)",
+        "Venevisión (Venezuela)[Opc.2]",
         "Venevisión [V2](Venezuela)",
         "Venevisión [V3](Venezuela)",
-        "Venevisión (Venezuela)[Opc.2]",
     ], names
     assert audit == {"fijos": 5, "magma": 2, "originales": 8, "urls_magma": 2}
     assert "Delmi TV [V2]" in "\\n".join(result)
