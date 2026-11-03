@@ -1952,6 +1952,27 @@ def restaurar_no_pluto_existente(lineas, iniciales):
 
     categorias = categorias_de_lineas(lineas)
     restaurados = 0
+    nombres_originales = Counter(item["nombre"] for item in originales if item["nombre"])
+
+    def buscar_original_actual(candidato, destino, por_url, por_id, por_nombre):
+        categoria_normalizada = normalizar(destino)
+        if candidato["id"]:
+            coincidencias = por_id.get(candidato["id"], [])
+            encontrada = next(
+                (item for item in coincidencias if normalizar(item["categoria"]) == categoria_normalizada),
+                None,
+            )
+            if encontrada:
+                return encontrada
+        if candidato["nombre"] and nombres_originales[candidato["nombre"]] == 1:
+            coincidencias = por_nombre.get(candidato["nombre"], [])
+            if len(coincidencias) == 1 and normalizar(coincidencias[0]["categoria"]) == categoria_normalizada:
+                return coincidencias[0]
+        coincidencias = por_url.get(candidato["url"], [])
+        return next(
+            (item for item in coincidencias if normalizar(item["categoria"]) == categoria_normalizada),
+            None,
+        )
 
     for indice, original in enumerate(originales):
         url = original["url"]
@@ -2004,10 +2025,8 @@ def restaurar_no_pluto_existente(lineas, iniciales):
             for posterior in originales[indice + 1:]:
                 if normalizar(posterior["categoria"]) != categoria_normalizada:
                     continue
-                coincidencias = por_url.get(posterior["url"], [])
-                siguiente = next(
-                    (item for item in coincidencias if normalizar(item["categoria"]) == categoria_normalizada),
-                    None,
+                siguiente = buscar_original_actual(
+                    posterior, destino, por_url, por_id, por_nombre
                 )
                 if siguiente:
                     break
@@ -2019,10 +2038,8 @@ def restaurar_no_pluto_existente(lineas, iniciales):
                 for previo in reversed(originales[:indice]):
                     if normalizar(previo["categoria"]) != categoria_normalizada:
                         continue
-                    coincidencias = por_url.get(previo["url"], [])
-                    anterior = next(
-                        (item for item in reversed(coincidencias) if normalizar(item["categoria"]) == categoria_normalizada),
-                        None,
+                    anterior = buscar_original_actual(
+                        previo, destino, por_url, por_id, por_nombre
                     )
                     if anterior:
                         break
