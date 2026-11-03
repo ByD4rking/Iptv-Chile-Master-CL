@@ -2059,6 +2059,149 @@ def restaurar_no_pluto_existente(lineas, iniciales):
 
     return lineas, restaurados
 
+def restaurar_orden_original_por_categoria(lineas, lineas_originales):
+    """Restaura el orden histórico de categorías y canales sin deshacer movimientos.
+
+    - Los canales que siguen en su categoría conservan su orden original.
+    - Los canales movidos de categoría se colocan después de los originales de
+      la categoría destino, manteniendo entre ellos el orden global anterior.
+    - Los canales nuevos se agregan al final de su categoría.
+    - Las alternativas de un mismo canal mantienen su orden relativo actual.
+    """
+    def extraer_bloques(entrada):
+        prefijo = []
+        bloques = []
+        i = 0
+        while i < len(entrada):
+            if not entrada[i].startswith("#EXTINF"):
+                if not bloques:
+                    prefijo.append(entrada[i])
+                i += 1
+                continue
+            inicio = i
+            j = i + 1
+            while j < len(entrada) and not entrada[j].startswith("#EXTINF"):
+                j += 1
+            bloque = list(entrada[inicio:j])
+            extinf = bloque[0]
+            match_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+            channel_id = normalizar(match_id.group(1)) if match_id and match_id.group(1).strip() else ""
+            match_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
+            nombre = normalizar(match_name.group(1) if match_name else extraer_nombre(extinf))
+            url = next(
+                (
+                    linea.strip() for linea in bloque[1:]
+                    if url_es_valida(linea.strip())
+                ),
+                "",
+            )
+            bloques.append({
+                "lineas": bloque,
+                "categoria": normalizar(extraer_categoria(extinf)),
+                "id": channel_id,
+                "nombre": nombre,
+                "url": url,
+                "indice": len(bloques),
+            })
+            i = j
+        return prefijo, bloques
+
+    prefijo_original, originales = extraer_bloques(lineas_originales)
+    prefijo_actual, actuales = extraer_bloques(lineas)
+
+    if not originales or not actuales:
+        return list(lineas), {"categorias": 0, "bloques_reordenados": 0}
+
+    original_ids = {item["id"] for item in originales if item["id"]}
+    nombres_originales = Counter(item["nombre"] for item in originales if item["nombre"])
+    nombres_actuales = Counter(item["nombre"] for item in actuales if item["nombre"])
+    nombres_unicos = {
+        nombre for nombre, cantidad in nombres_originales.items()
+        if cantidad == 1 and nombres_actuales.get(nombre, 0) == 1
+    }
+    urls_originales = {item["url"] for item in originales if item["url"]}
+
+    posiciones_categoria = defaultdict(dict)
+    posiciones_globales = {}
+    categorias_originales = []
+    for indice, item in enumerate(originales):
+        categoria = item["categoria"]
+        if categoria and categoria not in categorias_originales:
+            categorias_originales.append(categoria)
+
+        claves = []
+        if item["id"]:
+            claves.append("id:" + item["id"])
+        if item["nombre"] in nombres_unicos:
+            claves.append("name:" + item["nombre"])
+        if not claves and item["url"] in urls_originales:
+            claves.append("url:" + item["url"])
+
+        for clave in claves:
+            posiciones_categoria[categoria].setdefault(clave, indice)
+            posiciones_globales.setdefault(clave, indice)
+
+    grupos = defaultdict(list)
+    orden_categorias_actual = []
+    for item in actuales:
+        categoria = item["categoria"]
+        if categoria not in grupos:
+            orden_categorias_actual.append(categoria)
+        grupos[categoria].append(item)
+
+    def clave_actual(item):
+        if item["id"] and item["id"] in original_ids:
+            return "id:" + item["id"]
+        if item["nombre"] in nombres_unicos:
+            return "name:" + item["nombre"]
+        if item["url"] in urls_originales:
+            return "url:" + item["url"]
+        if item["id"]:
+            return "id:" + item["id"]
+        return "name:" + item["nombre"] if item["nombre"] else ""
+
+    reordenados = 0
+    grupos_ordenados = {}
+    for categoria, bloques_categoria in grupos.items():
+        decorados = []
+        for posicion_actual, item in enumerate(bloques_categoria):
+            clave = clave_actual(item)
+            posicion_misma_categoria = posiciones_categoria.get(categoria, {}).get(clave)
+            posicion_global = posiciones_globales.get(clave)
+            if posicion_misma_categoria is not None:
+                prioridad = (0, posicion_misma_categoria, posicion_actual)
+            elif posicion_global is not None:
+                prioridad = (1, posicion_global, posicion_actual)
+            else:
+                prioridad = (2, posicion_actual, posicion_actual)
+            decorados.append((prioridad, item))
+        ordenados = [item for _, item in sorted(decorados, key=lambda par: par[0])]
+        reordenados += sum(
+            1 for antes, despues in zip(bloques_categoria, ordenados)
+            if antes is not despues
+        )
+        grupos_ordenados[categoria] = ordenados
+
+    orden_categorias = [
+        categoria for categoria in categorias_originales
+        if categoria in grupos_ordenados
+    ]
+    orden_categorias.extend(
+        categoria for categoria in orden_categorias_actual
+        if categoria not in set(orden_categorias)
+    )
+
+    salida = list(prefijo_actual)
+    for categoria in orden_categorias:
+        for item in grupos_ordenados.get(categoria, []):
+            salida.extend(item["lineas"])
+
+    return salida, {
+        "categorias": len(orden_categorias),
+        "bloques_reordenados": reordenados,
+    }
+
+
 def firma_orden_canales(lineas):
     """Orden de primera aparición por tvg-id o por grupo/nombre cuando falta."""
     orden = []
