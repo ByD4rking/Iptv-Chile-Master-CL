@@ -2739,9 +2739,17 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
             i = j
             continue
 
-        es_pluto_es = (
+        # "Español" en el título no basta para clasificar una entrada como
+        # Pluto ES: LATAM/MX también puede publicar audio o títulos en español.
+        # Exigir región ES para esos marcadores evita borrar la variante válida
+        # cuando comparte identidad con el catálogo español.
+        etiqueta_pluto_es = (
             "[pluto es]" in nombre_completo or "pluto es" in nombre_completo
-            or "espanol" in nombre_completo or "espana" in nombre_completo
+        )
+        etiqueta_espanola = "espanol" in nombre_completo or "espana" in nombre_completo
+        es_pluto_es = (
+            etiqueta_pluto_es
+            or (etiqueta_espanola and url_es)
             or bool(identidad and identidad in ids_pluto_es_anime and url_es)
         )
         if categoria == "anime" and es_pluto_es:
