@@ -265,5 +265,13 @@ class TestAlternativasPrincipal(unittest.TestCase):
         ap.validar_orden_canales(original, current, ids_pluto_omitidos=ids)
 
 
+    def test_spanish_is_part_of_channel_name_not_a_provider_suffix(self):
+        self.assertEqual(ap.normalizar_nombre_canal("DW Español"), "dwespanol")
+        self.assertNotEqual(
+            ap.normalizar_nombre_canal("DW Español"),
+            ap.normalizar_nombre_canal("DW"),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
