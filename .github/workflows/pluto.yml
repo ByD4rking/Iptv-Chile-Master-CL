@@ -185,7 +185,7 @@ jobs:
 
           git diff --name-only | while IFS= read -r file; do
             case "$file" in
-              pluto/output/playlists/pluto_*.m3u|pluto/output/regional/channels_*.json|pluto/output/health/streams.json)
+              pluto/output/playlists/pluto_*.m3u|pluto/output/regional|pluto/output/regional/channels_*.json|pluto/output/health/streams.json|reportes/pluto/REPORTE.md|reportes/fuentes/auditoria_pluto.json|reportes/fuentes/estado_pluto.json)
                 ;;
               "")
                 ;;
