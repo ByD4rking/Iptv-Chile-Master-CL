@@ -591,6 +591,13 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         "id:" + ap.normalizar(channel_id)
         for channel_id in ap.PLUTO_ES_ANIME_IDS_HISTORICOS
     }
+    pluto_es_anime_urls = {
+        candidate["url"].strip()
+        for candidate in candidates
+        if candidate.get("source") == ap.FUENTES_PLUTO[1]
+        and ap.normalizar(candidate.get("categoria", "")) == "anime"
+        and candidate.get("url")
+    }
     pluto_latam_mx_ids = set()
     for candidate in candidates:
         identity = candidate.get("identity") or _identity(
@@ -646,6 +653,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                     and (
                         identity in pluto_es_only_ids
                         or _is_pluto_es_url(block["url"])
+                        or block["url"].strip() in pluto_es_anime_urls
                     )
                 )
             )
