@@ -54,6 +54,19 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertNotIn("https://old.example/one.m3u8", output)
         self.assertEqual(stats["url_actualizadas"], 1)
 
+    def test_all_alternatives_move_with_the_channel_category(self):
+        base = ["#EXTM3U"] + entry("sports.one", "Deportes", "Canal Uno", "https://old.example/one.m3u8") + entry(
+            "sports.one", "General", "Canal Uno", "https://alt.example/one.m3u8"
+        ) + entry("kids.two", "Infantiles", "Canal Kids", "https://keep.example/kids.m3u8")
+        source = [candidate("sports.one", "Infantiles", "Canal Uno", "https://new.example/one.m3u8")]
+        output, stats = reconcile_lines(base, source)
+        matching = [line for line in output if line.startswith("#EXTINF") and 'tvg-id="sports.one"' in line]
+        self.assertEqual(len(matching), 2)
+        self.assertTrue(all('group-title="Infantiles"' in line for line in matching))
+        self.assertIn("https://new.example/one.m3u8", output)
+        self.assertIn("https://alt.example/one.m3u8", output)
+        self.assertEqual(stats["categorias_movidas"], 2)
+
     def test_new_channel_is_added(self):
         source = [candidate("new.kids", "Infantiles", "Nuevo Infantil", "https://new.example/kids.m3u8")]
         output, stats = reconcile_lines(self.base, source)
