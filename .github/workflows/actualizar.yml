@@ -861,6 +861,7 @@ jobs:
               | source_ids(raw + "pluto_mx.m3u")
               | source_ids("https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u")
           )
+          es_anime_ids.add("608035b8d8705f0007260287")
           es_only_ids = es_anime_ids - latam_mx_ids
 
           before = entries("/tmp/principal_antes.m3u")
@@ -889,6 +890,8 @@ jobs:
 
           def same_channel(after_item, before_item):
               if after_item["id"] and before_item["id"] and after_item["id"] == before_item["id"]:
+                  return True
+              if after_item["url"] and before_item["url"] and after_item["url"] == before_item["url"]:
                   return True
               return (
                   before_item["name"]
