@@ -285,6 +285,10 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                 stats["ambiguos"] += 1
                 continue
 
+        if match is not None and match in updated_indices:
+            stats["ambiguos"] += 1
+            continue
+
         owner_record = manifest.get(identity, {})
         owner_source = owner_record.get("source") if isinstance(owner_record, dict) else None
         selected = None
