@@ -302,9 +302,18 @@ def main(args: argparse.Namespace) -> None:
             if key in before_counts
         ]
         if actual_order != expected_order:
+            mismatch = next(
+                (
+                    index for index, (expected, actual) in enumerate(zip(expected_order, actual_order))
+                    if expected != actual
+                ),
+                min(len(expected_order), len(actual_order)),
+            )
             raise AssertionError(
-                f"Cambió el orden relativo dentro de {category}: "
-                f"antes={expected_order[:30]!r}; después={actual_order[:30]!r}"
+                f"Cambió el orden relativo dentro de {category} en índice {mismatch}: "
+                f"antes={expected_order[mismatch:mismatch + 8]!r}; "
+                f"después={actual_order[mismatch:mismatch + 8]!r}; "
+                f"longitudes={len(expected_order)}/{len(actual_order)}"
             )
 
     before_heidi = [item for item in before if item["url"] and ("heidi" in item["name"] or "heidi" in item["tvg_name"])]
