@@ -2,7 +2,7 @@ import unittest
 import re
 
 import alimentar_principal as ap
-from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _merge_extinf, _prioritize_infantiles, reconcile_lines
+from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, reconcile_lines
 
 
 def _attr_for_test(extinf, name):
@@ -800,6 +800,29 @@ class MergeMetadataRegressionTests(unittest.TestCase):
         self.assertEqual(_attr_for_test(merged, "tvg-id"), "")
         self.assertEqual(_attr_for_test(merged, "tvg-name"), "")
         self.assertEqual(_attr_for_test(merged, "tvg-logo"), "new.png")
+
+
+class RequestedChannelLabelTests(unittest.TestCase):
+
+    def test_delmi_v2_is_renamed_exactly_without_changing_url(self):
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 group-title="Anime",Delmi TV',
+            "https://delmi.example/v1.m3u8",
+            '#EXTINF:-1 group-title="Anime",Delmi TV [V2]',
+            "https://delmi.example/v2.m3u8",
+        ]
+        output = normalizar_nombres_solicitados(lines)
+        extinfs = [line for line in output if line.startswith("#EXTINF")]
+        urls = [line for line in output if line.startswith("https://")]
+        self.assertEqual(
+            [ap.extraer_nombre(line) for line in extinfs],
+            ["Delmi TV", "Delmi TV 2"],
+        )
+        self.assertEqual(
+            urls,
+            ["https://delmi.example/v1.m3u8", "https://delmi.example/v2.m3u8"],
+        )
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
