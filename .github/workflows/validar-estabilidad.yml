@@ -51,6 +51,9 @@ jobs:
       - name: Instalar dependencias del verificador M3U
         run: python -m pip install requests urllib3
 
+      - name: Regenerar la maestra en el runner para validar el resultado real (sin publicar)
+        run: python scripts/ejecutar_actualizacion_principal.py
+
       - name: Probar reintentos y backoff del verificador M3U
         run: python -m unittest discover -s scripts -p 'test_verificar_m3u_reintentos.py'
 
