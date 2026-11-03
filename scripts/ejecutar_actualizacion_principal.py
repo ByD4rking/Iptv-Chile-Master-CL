@@ -98,9 +98,13 @@ def main():
             "Infantiles",
         },
     )
-    # Las alternativas ya se agruparon antes de restaurar el orden. La
-    # restauración asigna el mismo rango histórico a sus variantes, por lo que
-    # no se vuelve a reagrupar aquí: hacerlo podía desplazar el bloque base.
+    # Reagrupar después de restaurar: el sincronizador ancla cada grupo en
+    # la posición del canal base, por lo que las opciones quedan contiguas sin
+    # desplazar el orden histórico de la categoría.
+    ordered_lines = _group_and_label_alternatives(
+        ordered_lines,
+        get_last_url_priority(),
+    )
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
     ids_pluto_orden = (
