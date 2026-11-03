@@ -2623,7 +2623,7 @@ def ordenar_bloques_magma_y_originales(lineas, session):
     return salida, auditoria
 
 
-def main(restaurar_faltantes=True):
+def main(restaurar_faltantes=True, preservar_orden=False):
     print("=" * 72)
     print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
     print("=" * 72)
@@ -2876,13 +2876,18 @@ def main(restaurar_faltantes=True):
         canales_pluto_fuentes_por_id,
     )
 
-    # 8) Consolidar físicamente SOLO Pluto. Esto elimina bloques Pluto
-    # intercalados entre categorías ajenas sin mover ningún bloque no-Pluto.
-    (
-        lineas,
-        pluto_movidos_fisicamente,
-        pluto_movidos_fisicamente_por_categoria,
-    ) = reubicar_bloques_pluto_sin_reordenar_principal(lineas)
+    # 8) Consolidar físicamente Pluto solo en el modo histórico. El orquestador
+    # incremental deja esta tarea al sincronizador final para no alterar el orden.
+    if not preservar_orden:
+        (
+            lineas,
+            pluto_movidos_fisicamente,
+            pluto_movidos_fisicamente_por_categoria,
+        ) = reubicar_bloques_pluto_sin_reordenar_principal(lineas)
+    else:
+        pluto_movidos_fisicamente = 0
+        pluto_movidos_fisicamente_por_categoria = {}
+        print("Orden protegido: la reubicación de bloques Pluto queda a cargo de la reconciliación final.")
 
     # 9) Limpieza de seguridad: nunca conservar EXTINF sin URL.
     lineas, extinf_huerfanos_eliminados = limpiar_extinf_huerfanos(lineas)
@@ -3108,27 +3113,33 @@ def main(restaurar_faltantes=True):
     # Aplicar las correcciones fijas de la referencia antes de publicar.
     lineas = aplicar_ajustes_referencia(lineas, ids_pluto_es_anime)
 
-    # Orden fijo de entretenimiento: bloque inicial, MAGMA alfabético y
-    # canales originales alfabéticos. Se valida la cobertura MAGMA antes de escribir.
-    lineas, orden_entretenimiento = ordenar_bloques_magma_y_originales(lineas, session)
-    print(
-        "Orden entretenimiento: "
-        f"{orden_entretenimiento['fijos']} fijos; "
-        f"{orden_entretenimiento['magma']} MAGMA; "
-        f"{orden_entretenimiento['originales']} originales."
-    )
+    # El orden alfabético histórico de entretenimiento solo se aplica en
+    # ejecución directa. El orquestador conserva el orden de la maestra.
+    if not preservar_orden:
+        lineas, orden_entretenimiento = ordenar_bloques_magma_y_originales(lineas, session)
+        print(
+            "Orden entretenimiento: "
+            f"{orden_entretenimiento['fijos']} fijos; "
+            f"{orden_entretenimiento['magma']} MAGMA; "
+            f"{orden_entretenimiento['originales']} originales."
+        )
+    else:
+        print("Orden protegido: no se reordena entretenimiento ni canales existentes.")
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
     # representación final, para que ninguna transformación posterior las
     # elimine. Pluto queda excluido por diseño.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
-    validar_orden_canales(
-        lineas_iniciales,
-        lineas,
-        categorias_reordenables={"Entretenimiento / Cine / Series"},
-        ids_pluto_omitidos=set(ids_pluto_fuentes) | set(pluto_ids_canonicos),
-    )
+    if preservar_orden:
+        print("La comprobación final de orden por categoría se ejecuta en selftest_sincronizacion_real.py.")
+    else:
+        validar_orden_canales(
+            lineas_iniciales,
+            lineas,
+            categorias_reordenables={"Entretenimiento / Cine / Series"},
+            ids_pluto_omitidos=set(ids_pluto_fuentes) | set(pluto_ids_canonicos),
+        )
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
 
     texto_final = "\n".join(lineas)
