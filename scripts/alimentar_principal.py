@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 import unicodedata
 import requests
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
@@ -335,19 +335,20 @@ def validar_integridad_iptvsv(lineas, canales, categorias):
                 f"{url} :: fuente='{categoria}' :: principal={sorted(actuales)} :: esperado='{destino}'"
             )
 
+    # Una diferencia de categoría no bloquea la actualización: es el cambio
+    # solicitado y se aplica inmediatamente mediante reclasificar_iptvsv_existente.
+    # Solo se bloquean categorías sin destino y URLs con categorías contradictorias.
     if errores:
-        muestra = errores[:20]
-        raise RuntimeError(
-            "IPTVSV BLOQUEADO: se detectaron canales existentes en una "
-            "categoría distinta de la fuente. "
-            + " | ".join(muestra)
+        print(
+            "IPTVSV: se detectaron categorías desactualizadas que se moverán "
+            f"según la fuente ({len(errores)} URLs)."
         )
 
     return {
         "urls_fuente": len(por_url),
         "categorias_faltantes": len(categorias_faltantes),
         "conflictos_fuente": len(conflictos_fuente),
-        "errores_categoria": len(errores),
+        "categorias_pendientes_mover": len(errores),
     }
 
 
@@ -2722,7 +2723,7 @@ def main():
                     "  -> IPTVSV integridad: "
                     f"{iptvsv_auditoria['urls_fuente']} URLs fuente, "
                     f"{iptvsv_auditoria['conflictos_fuente']} conflictos de URL, "
-                    f"{iptvsv_auditoria['errores_categoria']} categorías incorrectas."
+                    f"{iptvsv_auditoria['categorias_pendientes_mover']} categorías pendientes de mover."
                 )
                 lineas, iptvsv_reclasificados, iptvsv_conflictos = reclasificar_iptvsv_existente(
                     lineas,
