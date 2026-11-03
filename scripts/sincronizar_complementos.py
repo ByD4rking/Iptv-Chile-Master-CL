@@ -532,7 +532,8 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                     and _is_pluto_url(block["url"])
                     and identity in pluto_es_anime_ids
                     and (
-                        _is_pluto_es_url(block["url"])
+                        identity in pluto_es_only_ids
+                        or _is_pluto_es_url(block["url"])
                         or (
                             isinstance(manifest.get(identity), dict)
                             and manifest.get(identity, {}).get("source") == ap.FUENTES_PLUTO[1]
@@ -770,13 +771,18 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         if match is not None:
             canonical_name = _canonical_channel_name(first)
             canonical_related = main_by_canonical_name.get(canonical_name, [])
-            related_matches = (
-                list(main_by_id.get(identity, []))
-                if identity.startswith("id:") and main_by_id.get(identity)
-                else list(canonical_related) if canonical_related else [match]
-            )
+            canonical_categories = {
+                ap.normalizar(ap.extraer_categoria(blocks[index]["extinf"]))
+                for index in canonical_related
+            }
+            if canonical_related and len(canonical_categories) == 1:
+                related_matches = list(dict.fromkeys(
+                    list(main_by_id.get(identity, [])) + list(canonical_related)
+                ))
+            else:
+                related_matches = list(main_by_id.get(identity, [])) or [match]
             if match not in related_matches:
-                related_matches = [match]
+                related_matches.append(match)
             occupied_by = main_by_url.get(source_url)
             if occupied_by is not None and occupied_by not in related_matches:
                 stats["ambiguos"] += 1
