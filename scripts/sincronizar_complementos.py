@@ -42,12 +42,11 @@ def _identity(channel: dict, *, pluto: bool = False) -> str:
     return "name:" + name if name else ""
 
 
-def _base_channel_name(extinf: str) -> str:
-    name = _attr(extinf, "tvg-name") or ap.extraer_nombre(extinf)
+def _base_channel_name(name: str) -> str:
     name = re.sub(
         r"\s*(?:\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
         "",
-        name,
+        name or "",
         flags=re.I,
     )
     name = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", name, flags=re.I)
@@ -55,7 +54,12 @@ def _base_channel_name(extinf: str) -> str:
 
 
 def _is_los_pitufos(extinf: str) -> bool:
-    return _base_channel_name(extinf) == "los pitufos"
+    tvg_name = _attr(extinf, "tvg-name")
+    display_name = ap.extraer_nombre(extinf)
+    return (
+        _base_channel_name(tvg_name) == "los pitufos"
+        or _base_channel_name(display_name) == "los pitufos"
+    )
 
 
 def _set_attr(extinf: str, key: str, value: str) -> str:
