@@ -10,11 +10,6 @@ on:
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
-  pull_request:
-    paths:
-      - "scripts/**"
-      - ".github/workflows/actualizar.yml"
-      - "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
 permissions:
   contents: write
