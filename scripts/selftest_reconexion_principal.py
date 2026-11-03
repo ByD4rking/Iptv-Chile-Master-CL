@@ -857,6 +857,31 @@ def test_pluto_mx_tvg_id_keeps_extinf_duration() -> None:
     assert audit["agregadas"] == 1
 
 
+def test_restauracion_final_omite_categorias_limpiadas() -> None:
+    initial = [
+        '#EXTINF:-1 tvg-id="retro-1" group-title="Retro",Retro Plus TV Tres',
+        "https://retro.example/tres.m3u8",
+        '#EXTINF:-1 tvg-id="total-1" group-title="TOTAL",Canal heredado',
+        "https://old.example/total.m3u8",
+        '#EXTINF:-1 tvg-id="qatar-1" group-title="Qatar",Canal no autorizado',
+        "https://old.example/qatar.m3u8",
+    ]
+    current = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="base-1" group-title="Retro",Otro canal',
+        "https://retro.example/base.m3u8",
+    ]
+    restored, count = restaurar_no_pluto_existente(
+        current,
+        extraer_bloques_no_pluto_por_url(initial),
+    )
+    records = channel_records(restored)
+    assert count == 1, count
+    assert any(url == "https://retro.example/tres.m3u8" for _, url in records)
+    assert not any(url.endswith("/total.m3u8") for _, url in records)
+    assert not any(url.endswith("/qatar.m3u8") for _, url in records)
+
+
 def test_external_source_urls() -> None:
     assert FUENTE_MAGMA == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u"
     assert FUENTE_PLUTO_ALTERNATIVAS == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
@@ -878,6 +903,7 @@ if __name__ == "__main__":
     test_pluto_option_on_external_cdn_stays_adjacent()
     test_magma_and_original_entertainment_blocks_are_sorted()
     test_pluto_mx_tvg_id_keeps_extinf_duration()
+    test_restauracion_final_omite_categorias_limpiadas()
     test_external_source_urls()
     print("SELFTEST OK: MAGMA, Pluto MX, Anime, Avatar y American Ninja Warrior.")
 
