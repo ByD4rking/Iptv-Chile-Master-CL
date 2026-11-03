@@ -58,6 +58,7 @@ def parse_entries(path: Path) -> list[dict]:
             "name": base_name(display),
             "category": group_match.group(1).strip() if group_match else "",
             "url": url,
+            "extinf": line,
         })
     return entries
 
@@ -100,6 +101,8 @@ def same_channel(after: dict, before: dict, unique_names: set[str]) -> bool:
     if after["id"] and before["id"] and norm(after["id"]) == norm(before["id"]):
         return True
     if after["url"] and before["url"] and after["url"] == before["url"]:
+        return True
+    if after.get("extinf") and before.get("extinf") and after["extinf"] == before["extinf"]:
         return True
     return bool(
         before["name"]
