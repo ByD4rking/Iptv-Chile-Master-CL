@@ -92,6 +92,8 @@ def normalizar_nombre_canal(value):
         value,
         flags=re.I,
     )
+    if not re.match(r"^cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)$", value, re.I):
+        value = re.sub(r"\s*\(\s*opc\.?\s*\d+\s*\)\s*$", "", value, flags=re.I)
     value = re.sub(r"\s*\|\s*(?:cl|chile)\s*$", "", value, flags=re.I)
     value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value, flags=re.I)
     value = re.sub(
@@ -2151,12 +2153,12 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
         es_alternativa_original = (
             bool(re.search(
                 r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
-                r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))$",
+                r"\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
                 nombre_original,
                 re.I,
             ))
-            or bool(re.match(
-                r"^baby\s*tv\s*\(\s*opc\.?\s*\d+\s*\)$",
+            and not bool(re.match(
+                r"^cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)$",
                 nombre_original,
                 re.I,
             ))
@@ -2320,12 +2322,12 @@ def validar_orden_canales(
             if (
                 re.search(
                     r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
-                    r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))$",
+                    r"\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
                     nombre_raw,
                     re.I,
                 )
-                or re.match(
-                    r"^baby\s*tv\s*\(\s*opc\.?\s*\d+\s*\)$",
+                and not re.match(
+                    r"^cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)$",
                     nombre_raw,
                     re.I,
                 )
