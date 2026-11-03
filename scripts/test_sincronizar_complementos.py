@@ -17,9 +17,14 @@ def candidate(channel_id, category, name, url, source=None):
         f'#EXTINF:-1 tvg-id="{channel_id}" tvg-name="{name}" '
         f'group-title="{category}",{name}'
     )
+    url_id = ""
+    if source in FUENTES_PLUTO_COMPLETAS:
+        import re
+        match = re.search(r"/(?:channel/|plu-)([a-f0-9]{20,})(?:/|\\.m3u8)", url, re.I)
+        url_id = match.group(1) if match else ""
     identity = (
-        "id:" + ap.normalizar(channel_id)
-        if channel_id
+        "id:" + ap.normalizar(url_id or channel_id)
+        if (url_id or channel_id)
         else "name:" + ap.normalizar(name)
     )
     return {
@@ -350,7 +355,7 @@ class ComplementSyncTests(unittest.TestCase):
                 "Infantiles",
                 "Los Pitufos",
                 "https://new.example/pitufos.m3u8",
-                ap.FUENTES_PLUTO[2],
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
             )
         ]
         output, stats = reconcile_lines(base, source)
@@ -366,7 +371,7 @@ class ComplementSyncTests(unittest.TestCase):
         )
         source = [
             candidate("pokemon.id", "Infantiles", "Pokémon", "https://magma.example/pokemon.m3u8", ap.FUENTE_MAGMA),
-            candidate("pokemon.id", "Infantiles", "Pokémon", "https://mx.example/pokemon.m3u8", ap.FUENTES_PLUTO[2]),
+            candidate("pokemon.id", "Infantiles", "Pokémon", "https://mx.example/pokemon.m3u8", ap.FUENTE_PLUTO_ALTERNATIVAS),
             candidate("pokemon.id", "Infantiles", "Pokémon", "https://latam.example/pokemon.m3u8", ap.FUENTES_PLUTO[0]),
         ]
         source[2]["extinf"] = source[2]["extinf"].replace(
@@ -385,6 +390,112 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertIn(",Pokémon [Opción 2]", extinfs[1])
         self.assertIn(",Pokémon [Opción 3]", extinfs[2])
         self.assertTrue(all('tvg-logo="https://logos.example/pokemon.png"' in line for line in extinfs))
+        self.assertEqual(stats["alternativas_agregadas"], 2)
+
+    def test_pokemon_with_different_source_ids_is_one_three_option_group(self):
+        base = ["#EXTM3U"] + entry(
+            "pokemon.old", "Anime", "Pokémon", "https://old.example/pokemon.m3u8"
+        )
+        pluto_id = "6870072ca9d5c45c3e9466f1"
+        source = [
+            candidate(
+                pluto_id,
+                "Anime",
+                "Pokémon",
+                f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/{pluto_id}/master.m3u8?jwt=latam",
+                ap.FUENTES_PLUTO[0],
+            ),
+            candidate(
+                "PlutoTVPokemon.us@US",
+                "Anime",
+                "Pokémon",
+                f"https://jmp2.uk/plu-{pluto_id}.m3u8",
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
+            ),
+            candidate(
+                "",
+                "Anime",
+                "Pokémon",
+                "https://magma.example/pokemon.m3u8",
+                ap.FUENTE_MAGMA,
+            ),
+        ]
+        source[0]["extinf"] = source[0]["extinf"].replace(
+            'group-title="Anime"',
+            'tvg-logo="https://logos.example/pokemon.png" group-title="Anime"',
+        )
+        output, stats = reconcile_lines(base, source)
+        extinfs = [
+            line for line in output
+            if line.startswith("#EXTINF") and f'tvg-id="{pluto_id}"' in line
+        ]
+        urls = [output[output.index(line) + 1] for line in extinfs]
+        self.assertEqual(urls, [
+            f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/{pluto_id}/master.m3u8?jwt=latam",
+            f"https://jmp2.uk/plu-{pluto_id}.m3u8",
+            "https://magma.example/pokemon.m3u8",
+        ])
+        self.assertIn(",Pokémon", extinfs[0])
+        self.assertIn(",Pokémon [Opción 2]", extinfs[1])
+        self.assertIn(",Pokémon [Opción 3]", extinfs[2])
+        self.assertTrue(all("MAGNA" not in line and "Pluto" not in line for line in extinfs))
+        self.assertTrue(all('tvg-logo="https://logos.example/pokemon.png"' in line for line in extinfs))
+        self.assertEqual(stats["alternativas_agregadas"], 2)
+
+    def test_yugioh_espanol_is_removed_but_latam_mx_and_magna_stay_grouped(self):
+        base = ["#EXTM3U"] + (
+            entry(
+                "yugioh.es",
+                "Anime",
+                "Yu-Gi-Oh! Español",
+                "https://old.example/yugioh-es.m3u8",
+            )
+            + entry(
+                "yugioh.old",
+                "Anime",
+                "Yu-Gi-Oh",
+                "https://old.example/yugioh.m3u8",
+            )
+        )
+        pluto_id = "5fceaab478f2af00080ff51f"
+        source = [
+            candidate(
+                pluto_id,
+                "Anime",
+                "Yu-Gi-Oh",
+                f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/{pluto_id}/master.m3u8?jwt=latam",
+                ap.FUENTES_PLUTO[0],
+            ),
+            candidate(
+                "YuGiOh.us@SD",
+                "Anime",
+                "Yu-Gi-Oh",
+                f"https://jmp2.uk/plu-{pluto_id}.m3u8",
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
+            ),
+            candidate(
+                "",
+                "Anime",
+                "Yu-Gi-Oh!",
+                "https://magma.example/yugioh.m3u8",
+                ap.FUENTE_MAGMA,
+            ),
+        ]
+        output, stats = reconcile_lines(base, source)
+        self.assertFalse(any("Español" in line for line in output))
+        extinfs = [
+            line for line in output
+            if line.startswith("#EXTINF") and f'tvg-id="{pluto_id}"' in line
+        ]
+        urls = [output[output.index(line) + 1] for line in extinfs]
+        self.assertEqual(urls, [
+            f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/{pluto_id}/master.m3u8?jwt=latam",
+            f"https://jmp2.uk/plu-{pluto_id}.m3u8",
+            "https://magma.example/yugioh.m3u8",
+        ])
+        self.assertIn(",Yu-Gi-Oh", extinfs[0])
+        self.assertIn(",Yu-Gi-Oh [Opción 2]", extinfs[1])
+        self.assertIn(",Yu-Gi-Oh [Opción 3]", extinfs[2])
         self.assertEqual(stats["alternativas_agregadas"], 2)
 
     def test_infantiles_priority_order_is_popeye_pitufos_heidi(self):
@@ -445,7 +556,7 @@ class ComplementSyncTests(unittest.TestCase):
                 "Anime",
                 "Anime México",
                 "https://stitcher.pluto.tv/channel/mx-only/master.m3u8",
-                ap.FUENTES_PLUTO[2],
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
             ),
         ]
         manifest = {"id:shared.anime": {"source": ap.FUENTES_PLUTO[1]}}
