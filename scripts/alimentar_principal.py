@@ -1857,20 +1857,52 @@ def extraer_bloques_no_pluto_por_url(lineas):
 
 
 def _identidad_extinf_restauracion(extinf):
-    """Identidad estable para no restaurar una URL vieja si el canal ya fue actualizado."""
+    """Devuelve ID y nombre normalizados para reconciliar bloques existentes."""
     match_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
-    if match_id and match_id.group(1).strip():
-        return "id:" + normalizar(match_id.group(1))
-
+    channel_id = normalizar(match_id.group(1)) if match_id and match_id.group(1).strip() else ""
     match_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
     nombre = match_name.group(1) if match_name else extraer_nombre(extinf)
-    nombre = normalizar(nombre)
-    return "name:" + nombre if nombre else ""
+    return channel_id, normalizar(nombre)
 
 
-def _mapa_bloques_url_categoria(lineas):
-    """URL -> categoría y posiciones del bloque en la playlist actual."""
-    resultado = {}
+def _bloques_para_restauracion(lineas):
+    """Extrae todos los bloques no-Pluto en orden físico, sin deduplicar por URL."""
+    resultado = []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            bloque = list(lineas[inicio:j + 1])
+            url = lineas[j].strip()
+            if not es_url_pluto(url):
+                channel_id, nombre = _identidad_extinf_restauracion(bloque[0])
+                resultado.append({
+                    "bloque": bloque,
+                    "url": url,
+                    "categoria": extraer_categoria(bloque[0]),
+                    "id": channel_id,
+                    "nombre": nombre,
+                    "alternativa": bool(
+                        re.search(r"\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\)", bloque[0], re.I)
+                    ),
+                })
+            i = j + 1
+        else:
+            i = j
+    return resultado
+
+
+def _mapas_actuales_restauracion(lineas):
+    """Construye índices URL/ID/nombre con categoría y posición de cada bloque."""
+    por_url = defaultdict(list)
+    por_id = defaultdict(list)
+    por_nombre = defaultdict(list)
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
@@ -1882,130 +1914,131 @@ def _mapa_bloques_url_categoria(lineas):
             j += 1
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
             url = lineas[j].strip()
-            resultado[url] = {
-                "categoria": extraer_categoria(lineas[inicio]),
-                "inicio": inicio,
-                "fin": j + 1,
-            }
+            categoria = extraer_categoria(lineas[inicio])
+            channel_id, nombre = _identidad_extinf_restauracion(lineas[inicio])
+            item = {"categoria": categoria, "inicio": inicio, "fin": j + 1, "url": url}
+            por_url[url].append(item)
+            if channel_id:
+                por_id[channel_id].append(item)
+            if nombre:
+                por_nombre[nombre].append(item)
             i = j + 1
         else:
             i = j
-    return resultado
+    return por_url, por_id, por_nombre
 
 
 def restaurar_no_pluto_existente(lineas, iniciales):
     """
-    Restaura solo canales realmente desaparecidos, en su posición original.
+    Restaura bloques no-Pluto perdidos sin deduplicar alternativas por URL.
 
-    Si el mismo canal ya está presente con otra URL, no restaura el enlace
-    antiguo: eso sería deshacer una actualización válida. La identidad usa
-    tvg-id y, si falta, nombre solo cuando es inequívoco.
+    Usa la secuencia completa del archivo original para colocar cada bloque
+    antes del siguiente canal original que siga presente en la misma categoría.
+    Una URL primaria antigua no se resucita si el mismo canal ya tiene otra URL;
+    las alternativas explícitas [Opc.N] sí se conservan.
     """
-    orden_urls = list(iniciales.keys())
-    mapa_actual = _mapa_bloques_url_categoria(lineas)
-    ids_actuales = set()
-    nombres_actuales = Counter()
-    nombres_originales = Counter()
-
-    def extraer_id_nombre(extinf):
-        match_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
-        channel_id = normalizar(match_id.group(1)) if match_id and match_id.group(1).strip() else ""
-        match_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
-        nombre = match_name.group(1) if match_name else extraer_nombre(extinf)
-        return channel_id, normalizar(nombre)
-
-    for extinf in lineas:
-        if extinf.startswith("#EXTINF"):
-            channel_id, nombre = extraer_id_nombre(extinf)
-            if channel_id:
-                ids_actuales.add(channel_id)
-            if nombre:
-                nombres_actuales[nombre] += 1
-
-    for bloque in iniciales.values():
-        if bloque:
-            _, nombre = extraer_id_nombre(bloque[0])
-            if nombre:
-                nombres_originales[nombre] += 1
+    originales = _bloques_para_restauracion(iniciales) if isinstance(iniciales, list) else [
+        {
+            "bloque": list(bloque),
+            "url": bloque[-1].strip(),
+            "categoria": extraer_categoria(bloque[0]),
+            "id": _identidad_extinf_restauracion(bloque[0])[0],
+            "nombre": _identidad_extinf_restauracion(bloque[0])[1],
+            "alternativa": bool(re.search(r"\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\)", bloque[0], re.I)),
+        }
+        for bloque in iniciales.values()
+        if bloque and len(bloque) > 1 and url_es_valida(bloque[-1].strip())
+    ]
 
     categorias = categorias_de_lineas(lineas)
     restaurados = 0
 
-    for indice, (url, bloque) in enumerate(iniciales.items()):
-        if url in mapa_actual:
+    for indice, original in enumerate(originales):
+        url = original["url"]
+        por_url, por_id, por_nombre = _mapas_actuales_restauracion(lineas)
+        if url in por_url:
             continue
 
-        extinf = bloque[0]
-        channel_id, nombre = extraer_id_nombre(extinf)
-
-        # URL cambiada para el mismo canal: conservar la nueva, no resucitar la vieja.
-        if channel_id and channel_id in ids_actuales:
-            continue
-        if (
+        channel_id = original["id"]
+        nombre = original["nombre"]
+        id_matches = por_id.get(channel_id, []) if channel_id else []
+        name_matches = por_nombre.get(nombre, []) if nombre else []
+        nombre_inequivoco = bool(
             nombre
-            and nombres_originales[nombre] == 1
-            and nombres_actuales.get(nombre, 0) == 1
-        ):
-            continue
-
-        categoria = extraer_categoria(extinf)
-        destino = buscar_categoria_existente(categoria, categorias)
-        if not destino:
-            aliases = {
-                "chile": "CHILE TV",
-                "infantil": "INFANTILES",
-                "teen": "INFANTILES",
-                "noticias": "INFORMATIVOS",
-            }
-            destino = buscar_categoria_existente(
-                aliases.get(normalizar(categoria), categoria),
-                categorias,
-            )
-        if not destino:
-            continue
-
-        categoria_normalizada = normalizar(destino)
-        siguiente_url = next(
-            (
-                candidata
-                for candidata in orden_urls[indice + 1:]
-                if candidata in mapa_actual
-                and normalizar(mapa_actual[candidata]["categoria"]) == categoria_normalizada
-            ),
-            None,
+            and sum(1 for item in originales if item["nombre"] == nombre) == 1
+            and len(name_matches) == 1
         )
+        identidad_presente = bool(id_matches or nombre_inequivoco)
 
-        if siguiente_url:
-            posicion = mapa_actual[siguiente_url]["inicio"]
+        # Si el canal ya tiene una URL nueva, no resucitar la primaria antigua.
+        # Una alternativa explícita sí se recupera para no perder opciones válidas.
+        if identidad_presente and not original["alternativa"]:
+            continue
+
+        if id_matches:
+            destino = id_matches[0]["categoria"]
+            # Mantener alternativas juntas, detrás de las alternativas actuales.
+            posicion = max(item["fin"] for item in id_matches)
+        elif original["alternativa"] and name_matches and len({normalizar(x["categoria"]) for x in name_matches}) == 1:
+            destino = name_matches[0]["categoria"]
+            posicion = max(item["fin"] for item in name_matches)
         else:
-            anterior_url = next(
-                (
-                    candidata
-                    for candidata in reversed(orden_urls[:indice])
-                    if candidata in mapa_actual
-                    and normalizar(mapa_actual[candidata]["categoria"]) == categoria_normalizada
-                ),
-                None,
-            )
-            if anterior_url:
-                posicion = mapa_actual[anterior_url]["fin"]
-            else:
-                rango = encontrar_rango_categoria(lineas, destino)
-                if not rango:
-                    continue
-                posicion = rango[0]
+            categoria = original["categoria"]
+            destino = buscar_categoria_existente(categoria, categorias)
+            if not destino:
+                aliases = {
+                    "chile": "CHILE TV",
+                    "infantil": "INFANTILES",
+                    "teen": "INFANTILES",
+                    "noticias": "INFORMATIVOS",
+                }
+                destino = buscar_categoria_existente(
+                    aliases.get(normalizar(categoria), categoria),
+                    categorias,
+                )
+            if not destino:
+                continue
 
-        bloque_restaurado = list(bloque)
-        bloque_restaurado[0] = reemplazar_categoria(extinf, destino)
+            categoria_normalizada = normalizar(destino)
+            siguiente = None
+            for posterior in originales[indice + 1:]:
+                if normalizar(posterior["categoria"]) != categoria_normalizada:
+                    continue
+                coincidencias = por_url.get(posterior["url"], [])
+                siguiente = next(
+                    (item for item in coincidencias if normalizar(item["categoria"]) == categoria_normalizada),
+                    None,
+                )
+                if siguiente:
+                    break
+
+            if siguiente:
+                posicion = siguiente["inicio"]
+            else:
+                anterior = None
+                for previo in reversed(originales[:indice]):
+                    if normalizar(previo["categoria"]) != categoria_normalizada:
+                        continue
+                    coincidencias = por_url.get(previo["url"], [])
+                    anterior = next(
+                        (item for item in reversed(coincidencias) if normalizar(item["categoria"]) == categoria_normalizada),
+                        None,
+                    )
+                    if anterior:
+                        break
+                if anterior:
+                    posicion = anterior["fin"]
+                else:
+                    rango = encontrar_rango_categoria(lineas, destino)
+                    if not rango:
+                        continue
+                    posicion = rango[0]
+
+        bloque_restaurado = list(original["bloque"])
+        bloque_restaurado[0] = reemplazar_categoria(bloque_restaurado[0], destino)
         lineas[posicion:posicion] = bloque_restaurado
         restaurados += 1
-
-        # Actualizar mapas para que los siguientes bloques se inserten en orden.
-        mapa_actual = _mapa_bloques_url_categoria(lineas)
-        if channel_id:
-            ids_actuales.add(channel_id)
-        if nombre:
-            nombres_actuales[nombre] += 1
+        categorias = categorias_de_lineas(lineas)
 
     return lineas, restaurados
 
