@@ -2963,7 +2963,7 @@ def main(restaurar_faltantes=True, preservar_orden=False):
     if restaurar_faltantes:
         lineas, no_pluto_restaurados = restaurar_no_pluto_existente(
             lineas,
-            bloques_no_pluto_iniciales,
+            lineas_iniciales,
         )
         if no_pluto_restaurados:
             print(f"Autorreparación: {no_pluto_restaurados} canales no-Pluto restaurados.")
