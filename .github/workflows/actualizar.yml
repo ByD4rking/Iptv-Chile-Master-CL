@@ -131,8 +131,31 @@ jobs:
               if m and m.group(1).strip():
                   return "id:" + m.group(1).strip().casefold()
               n=re.search(r'tvg-name="([^"]+)"', ext, re.I)
-              if not n:
-                  n=re.search(r',([^,]*)
+              name=(n.group(1) if n else ext.rsplit(",", 1)[-1]).strip().casefold()
+              name=" ".join(name.split())
+              return "name:" + name if name else ""
+
+          before_by_url={}
+          before_identity=set()
+          for ext,url in b:
+              m=re.search(r'group-title="([^"]*)"', ext)
+              before_by_url.setdefault(url, m.group(1).strip().lower() if m else "")
+              key=identity(ext)
+              if key:
+                  before_identity.add(key)
+          after_identity={identity(ext) for ext,_ in a if identity(ext)}
+
+          lost_non_pluto=[]
+          for ext,url in b:
+              if "pluto" in url.lower() or url in a_set:
+                  continue
+              if before_by_url.get(url,"") in allowed_cleanup:
+                  continue
+              key=identity(ext)
+              # Una URL cambiada sigue siendo el mismo canal si conserva su identidad.
+              if key and key in after_identity:
+                  continue
+              lost_non_pluto.append(url)
           if lost_non_pluto:
               raise SystemExit("REGRESION: se perdieron URLs no-Pluto existentes fuera de limpiezas autorizadas: "+str(sorted(lost_non_pluto)[:20]))
 
