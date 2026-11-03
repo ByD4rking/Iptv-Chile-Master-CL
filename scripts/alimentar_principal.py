@@ -87,7 +87,7 @@ def normalizar_nombre_canal(value):
         flags=re.I,
     )
     value = re.sub(r"\s*\|\s*(?:cl|chile)\s*$", "", value, flags=re.I)
-    value = re.sub(r"\bv2$", "2", value, flags=re.I)
+    value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value, flags=re.I)
     return re.sub(r"[^a-z0-9]+", "", value)
 TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
 
