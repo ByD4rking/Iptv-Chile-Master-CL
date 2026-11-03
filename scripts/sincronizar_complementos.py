@@ -140,6 +140,13 @@ def _canonical_channel_name(channel: dict) -> str:
     return re.sub(r"[^a-z0-9]+", "", ap.normalizar(value))
 
 
+def _canonical_category(value: str) -> str:
+    category = ap.normalizar(value or "")
+    if category in {"infantil", "infantiles"}:
+        return "infantiles"
+    return category
+
+
 def _is_spanish_anime_label(extinf: str) -> bool:
     value = ap.normalizar(_attr(extinf, "tvg-name") + " " + ap.extraer_nombre(extinf))
     return bool(re.search(r"\b(?:espanol|espana|pluto\s*es)\b", value))
@@ -206,7 +213,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             "nombre": ap.extraer_nombre(block["extinf"]),
             "url": block["url"],
         })
-        category_key = ap.normalizar(ap.extraer_categoria(block["extinf"]))
+        category_key = _canonical_category(ap.extraer_categoria(block["extinf"]))
         group_key = (category_key, canonical_name)
         group = grouped.get(group_key, [])
         if not canonical_name or len(group) < 2:
@@ -699,13 +706,13 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
     for canonical_name, parts in by_canonical_name.items():
         main_matches = main_by_canonical_name.get(canonical_name, [])
         main_categories = {
-            ap.normalizar(ap.extraer_categoria(blocks[index]["extinf"]))
+            _canonical_category(ap.extraer_categoria(blocks[index]["extinf"]))
             for index in main_matches
         }
         if len(parts) < 2 or len(main_categories) > 1:
             continue
         combined = [item for _, group in parts for item in group]
-        destinations = {ap.normalizar(item.get("destination", "")) for item in combined}
+        destinations = {_canonical_category(item.get("destination", "")) for item in combined}
         if len(destinations) > 1:
             continue
         combined.sort(key=lambda item: _source_priority(item.get("source", "")))
@@ -771,7 +778,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             canonical_name = _canonical_channel_name(first)
             canonical_matches = main_by_canonical_name.get(canonical_name, [])
             canonical_categories = {
-                ap.normalizar(ap.extraer_categoria(blocks[index]["extinf"]))
+                _canonical_category(ap.extraer_categoria(blocks[index]["extinf"]))
                 for index in canonical_matches
             }
             if canonical_matches and len(canonical_categories) == 1:
@@ -842,7 +849,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             canonical_name = _canonical_channel_name(first)
             canonical_related = main_by_canonical_name.get(canonical_name, [])
             canonical_categories = {
-                ap.normalizar(ap.extraer_categoria(blocks[index]["extinf"]))
+                _canonical_category(ap.extraer_categoria(blocks[index]["extinf"]))
                 for index in canonical_related
             }
             if canonical_related and len(canonical_categories) == 1:
