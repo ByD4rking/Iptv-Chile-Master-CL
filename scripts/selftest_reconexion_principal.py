@@ -260,6 +260,35 @@ def test_iptvsv_reclasifica_urls_existentes_antes_de_validar_categoria() -> None
     assert audit["errores_categoria"] == 0, audit
 
 
+def test_restaurar_orden_de_duplicados_historicos_sin_tvg_id() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Documentales y Cultura",Animal Planet HD [Opc.2]',
+        "https://example.test/animal-hd-1.m3u8",
+        '#EXTINF:-1 group-title="Documentales y Cultura",Animal Planet HD [Opc.2]',
+        "https://example.test/animal-hd-2.m3u8",
+        '#EXTINF:-1 group-title="Documentales y Cultura",Animal Planet SD [Opc.3]',
+        "https://example.test/animal-sd.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Documentales y Cultura",Animal Planet SD [Opc.3]',
+        "https://example.test/animal-sd.m3u8",
+        '#EXTINF:-1 group-title="Documentales y Cultura",Animal Planet HD [Opc.2]',
+        "https://example.test/animal-hd-1.m3u8",
+        '#EXTINF:-1 group-title="Documentales y Cultura",Animal Planet HD [Opc.2]',
+        "https://example.test/animal-hd-2.m3u8",
+    ]
+    restored = restaurar_orden_original_por_categoria(after, before)
+    names = [line.split(",", 1)[-1] for line in restored if line.startswith("#EXTINF")]
+    assert names == [
+        "Animal Planet HD [Opc.2]",
+        "Animal Planet HD [Opc.2]",
+        "Animal Planet SD [Opc.3]",
+    ], names
+    validar_orden_canales(before, restored)
+
+
 def test_restaurar_orden_con_tvg_id_agregado_o_eliminado() -> None:
     before = [
         "#EXTM3U",
