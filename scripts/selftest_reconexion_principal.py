@@ -57,7 +57,7 @@ def main() -> None:
     text = "\n".join(result)
 
     assert text.count("#EXTVLCOPT:network-caching=5000") == 2
-    assert "#EXTVLCOPT:network-caching=1500" not in text
+    assert text.count("#EXTVLCOPT:network-caching=1500") == 1  # solo se conserva en Pluto
     assert text.count("#EXTVLCOPT:http-reconnect=true") == 2
     assert reconnects_added == 1
     assert result[result.index("#EXTINF:-1 tvg-id=\"pluto-a\""):].count(
