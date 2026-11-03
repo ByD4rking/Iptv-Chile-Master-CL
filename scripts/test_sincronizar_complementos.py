@@ -2,7 +2,7 @@ import unittest
 import re
 
 import alimentar_principal as ap
-from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _identity, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, reconcile_lines
+from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _identity, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, quitar_los_pitufos_es, reconcile_lines
 
 
 def _attr_for_test(extinf, name):
@@ -841,6 +841,20 @@ class PlaceholderIdRegressionTests(unittest.TestCase):
         }
         self.assertEqual(_identity(first), "name:delmi tv")
         self.assertEqual(_identity(second), "name:delmi tv 2")
+
+
+class PlutoEsFinalFilterTests(unittest.TestCase):
+
+    def test_final_pitufos_filter_removes_only_es_variant(self):
+        lines = ["#EXTM3U"] + (
+            entry("pitufos.es", "Infantiles", "Los Pitufos [Pluto ES]", "https://kids.example/pitufos-es.m3u8")
+            + entry("pitufos.latam", "Infantiles", "Los Pitufos", "https://kids.example/pitufos-latam.m3u8")
+        )
+        output = quitar_los_pitufos_es(lines)
+        names = [line.split(",", 1)[1] for line in output if line.startswith("#EXTINF")]
+        urls = [line for line in output if line.startswith("https://")]
+        self.assertEqual(names, ["Los Pitufos"])
+        self.assertEqual(urls, ["https://kids.example/pitufos-latam.m3u8"])
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
