@@ -53,8 +53,14 @@ jobs:
       - name: Ejecutar pruebas unitarias de sincronización
         run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
 
+      - name: Guardar maestra original para comparar pérdidas y orden
+        run: cp IPTV-CHILE-MAESTRA_CORREGIDO.m3u /tmp/principal_before.m3u
+
       - name: Ejecutar reconciliación completa y auditoría de la M3U (sin publicar)
         run: python scripts/ejecutar_actualizacion_principal.py
+
+      - name: Auditar tokens, alternativas, categorías y orden de la maestra generada
+        run: python scripts/selftest_sincronizacion_real.py --audit-only --before /tmp/principal_before.m3u
 
       - name: Guardar M3U resultante para auditoría (sin publicar)
         if: always()
