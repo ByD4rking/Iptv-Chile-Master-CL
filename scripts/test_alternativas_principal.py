@@ -103,6 +103,18 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(parsed[1][0].split(",", 1)[1], "Cartoonito HD [Opc.4]")
         self.assertEqual(parsed[1][-1], "https://four.example/cartoonito.m3u8")
 
+    def test_grouping_does_not_assign_new_id_to_historical_primary(self):
+        lines = ["#EXTM3U"]
+        lines += block("", "CHILE TV", "Canal A", "https://a.example/canal-a.m3u8")
+        lines += block("1626", "CHILE TV", "Canal A", "https://b.example/canal-a.m3u8")
+        output = ap.agrupar_alternativas_por_identidad(lines)
+        parsed = self.entries(output)
+        self.assertEqual(len(parsed), 2)
+        self.assertNotIn("tvg-id=", parsed[0][0])
+        self.assertIn('tvg-id="1626"', parsed[1][0])
+        self.assertIn("[Opción 2]", parsed[1][0])
+        ap.validar_orden_canales(lines, output)
+
     def test_cartoonito_option_four_is_kept_and_rejoined(self):
         lines = ["#EXTM3U"]
         lines += block("cartoonito.id", "Infantiles", "Cartoonito HD", "https://a.example/cartoonito.m3u8")
