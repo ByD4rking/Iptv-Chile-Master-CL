@@ -896,6 +896,24 @@ class AuditIdentityRegressionTests(unittest.TestCase):
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
+    def test_babytv_parenthetical_opc_suffix_groups_with_base(self):
+        lines = ["#EXTM3U"]
+        lines += entry("", "Infantiles", "Baby TV", "https://a.example/babytv.m3u8")
+        lines += entry("", "Infantiles", "Baby TV [Opción 2]", "https://b.example/babytv.m3u8")
+        lines += entry("", "Infantiles", "Baby TV(Opc.2)", "https://c.example/babytv.m3u8")
+
+        output = sc._group_and_label_alternatives(lines, {})
+        names = [
+            ap.extraer_nombre(line)
+            for line in output
+            if line.startswith("#EXTINF")
+        ]
+
+        self.assertEqual(
+            names,
+            ["Baby TV", "Baby TV [Opción 2]", "Baby TV [Opción 3]"],
+        )
+
     def test_distinct_cartoonito_opc_variants_are_not_collapsed(self):
         lines = [
             "#EXTM3U",
