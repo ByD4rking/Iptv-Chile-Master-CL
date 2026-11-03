@@ -2380,7 +2380,7 @@ def ordenar_bloques_magma_y_originales(lineas, session):
 
     def clave_alfabetica(bloque):
         nombre = re.sub(r"\\s*\\[MAGMA\\]$", "", bloque["nombre"], flags=re.I).strip()
-        version = re.search(r"\\s*\\[V(\\d+)\\]", nombre, flags=re.I)
+        version = re.search(r"\\[V(\\d+)\\]", nombre, flags=re.I)
         if version:
             numero_variante = int(version.group(1))
             base = (nombre[:version.start()] + nombre[version.end():]).strip()
