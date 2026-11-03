@@ -60,12 +60,155 @@ def _base_channel_name(name: str) -> str:
 
 
 def _is_los_pitufos(extinf: str) -> bool:
+    """Identifica el canal sin confundirlo con su variante española."""
     tvg_name = _attr(extinf, "tvg-name")
     display_name = ap.extraer_nombre(extinf)
     return (
         _base_channel_name(tvg_name) == "los pitufos"
         or _base_channel_name(display_name) == "los pitufos"
     )
+
+
+def _is_los_pitufos_es(extinf: str) -> bool:
+    """Solo identifica la variante española no funcional que se pidió retirar."""
+    for value in (_attr(extinf, "tvg-name"), ap.extraer_nombre(extinf)):
+        normalized = ap.normalizar(value)
+        if normalized.startswith("los pitufos ") and normalized.split()[-1] in {"es", "espana"}:
+            return True
+        if normalized in {"los pitufos pluto es", "los pitufos pluto espana"}:
+            return True
+    return False
+
+
+def _source_priority(source: str) -> int:
+    """Prioridad de alternativas acordada: LATAM, MX, MAGNA y luego el resto."""
+    if source == ap.FUENTES_PLUTO[0]:
+        return 0
+    if source in {ap.FUENTES_PLUTO[2], ap.FUENTE_PLUTO_ALTERNATIVAS}:
+        return 1
+    if source == ap.FUENTE_MAGMA:
+        return 2
+    if source == ap.FUENTES_PLUTO[1]:
+        return 3
+    if source == ap.FUENTE_IPTVSV:
+        return 4
+    return 5
+
+
+def _set_display_name(extinf: str, display_name: str) -> str:
+    head, comma, _ = extinf.partition(",")
+    return head + comma + display_name if comma else extinf
+
+
+def _without_option_suffix(value: str) -> str:
+    return re.sub(r"\\s*\\[\\s*opci[oó]n\\s*\\d+\\s*\\]\\s*$", "", value or "", flags=re.I).strip()
+
+
+def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]) -> list[str]:
+    """Agrupa por tvg-id, comparte metadatos y numera opciones sin tocar tvg-name."""
+    prefix, blocks, trailing = _read_blocks(lines)
+    grouped: dict[str, list[dict]] = defaultdict(list)
+    for block in blocks:
+        if not block.get("url"):
+            continue
+        identity = _identity(
+            {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
+            pluto=ap.es_url_pluto(block["url"]),
+        )
+        if identity.startswith("id:"):
+            grouped[identity].append(block)
+
+    ordered: list[dict] = []
+    emitted: set[str] = set()
+    for block in blocks:
+        if not block.get("url"):
+            ordered.append(block)
+            continue
+        identity = _identity(
+            {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
+            pluto=ap.es_url_pluto(block["url"]),
+        )
+        group = grouped.get(identity, [])
+        if not identity.startswith("id:") or len(group) < 2:
+            extinf = _set_display_name(block["extinf"], _without_option_suffix(ap.extraer_nombre(block["extinf"])))
+            block["extinf"] = extinf
+            block["raw"] = [extinf] + block["extras"] + [block["url"]]
+            ordered.append(block)
+            continue
+        if identity in emitted:
+            continue
+        emitted.add(identity)
+
+        # URL principal primero según la prioridad de fuente conocida; los
+        # bloques históricos sin procedencia conocida conservan su orden detrás.
+        unique: list[dict] = []
+        seen_urls: set[str] = set()
+        for item in sorted(
+            group,
+            key=lambda value: url_priority.get(value["url"], 10),
+        ):
+            if item["url"] not in seen_urls:
+                seen_urls.add(item["url"])
+                unique.append(item)
+        if not unique:
+            continue
+
+        primary = unique[0]
+        primary_extinf = primary["extinf"]
+        base_display = _without_option_suffix(ap.extraer_nombre(primary_extinf))
+        base_tvg_name = _attr(primary_extinf, "tvg-name")
+        channel_id = _attr(primary_extinf, "tvg-id")
+        category = ap.extraer_categoria(primary_extinf)
+        logo = _attr(primary_extinf, "tvg-logo") or _attr(primary_extinf, "logo")
+        for option_index, item in enumerate(unique, start=1):
+            extinf = item["extinf"]
+            if channel_id:
+                extinf = _set_attr(extinf, "tvg-id", channel_id)
+            if base_tvg_name:
+                extinf = _set_attr(extinf, "tvg-name", base_tvg_name)
+            if category:
+                extinf = _set_attr(extinf, "group-title", category)
+            if logo:
+                extinf = _set_attr(extinf, "tvg-logo", logo)
+            label = base_display if option_index == 1 else f"{base_display} [Opción {option_index}]"
+            extinf = _set_display_name(extinf, label)
+            item["extinf"] = extinf
+            item["raw"] = [extinf] + item["extras"] + [item["url"]]
+            ordered.append(item)
+
+    output = list(prefix)
+    for block in ordered:
+        output.extend(block.get("raw") or ([block["extinf"]] + block["extras"] + ([block["url"]] if block.get("url") else [])))
+    output.extend(trailing)
+    return output
+
+
+def _prioritize_infantiles(lines: list[str]) -> list[str]:
+    """Deja Popeye, Los Pitufos y Heidi al inicio de Infantiles, en ese orden."""
+    prefix, blocks, trailing = _read_blocks(lines)
+    targets = ("popeye", "los pitufos", "heidi")
+    selected: dict[str, list[dict]] = {name: [] for name in targets}
+    for block in blocks:
+        if ap.normalizar(ap.extraer_categoria(block["extinf"])) not in {"infantiles", "infantil"}:
+            continue
+        name = ap.normalizar(_without_option_suffix(ap.extraer_nombre(block["extinf"])))
+        for target in targets:
+            if name == target or name.startswith(target + " "):
+                selected[target].append(block)
+                break
+
+    moving_ids = {id(block) for group in selected.values() for block in group}
+    if not moving_ids:
+        return lines
+    remaining = [block for block in blocks if id(block) not in moving_ids]
+    first_kids = next((i for i, block in enumerate(remaining) if ap.normalizar(ap.extraer_categoria(block["extinf"])) in {"infantiles", "infantil"}), len(remaining))
+    ordered_targets = [block for target in targets for block in selected[target]]
+    blocks = remaining[:first_kids] + ordered_targets + remaining[first_kids:]
+    output = list(prefix)
+    for block in blocks:
+        output.extend(block.get("raw") or ([block["extinf"]] + block["extras"] + ([block["url"]] if block.get("url") else [])))
+    output.extend(trailing)
+    return output
 
 
 def _set_attr(extinf: str, key: str, value: str) -> str:
@@ -223,7 +366,6 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
     candidates: list[dict] = []
     stats = {"fuentes_ok": 0, "fuentes_error": 0, "canales_fuente": 0, "sin_categoria": 0}
     for source_url in ordered:
-        seen_source_identity: set[str] = set()
         try:
             response = session.get(source_url, timeout=TIMEOUT)
             response.raise_for_status()
@@ -240,7 +382,7 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             continue
 
         for channel in parsed:
-            if _is_los_pitufos(channel.get("extinf", "")):
+            if _is_los_pitufos_es(channel.get("extinf", "")):
                 continue
             url = (channel.get("url") or "").strip()
             if not ap.url_es_valida(url):
@@ -249,10 +391,6 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             candidate["source"] = source_url
             candidate["is_pluto"] = source_url in FUENTES_PLUTO_COMPLETAS
             identity = _identity(candidate, pluto=candidate["is_pluto"])
-            if identity.startswith("id:") and identity in seen_source_identity:
-                continue
-            if identity.startswith("id:"):
-                seen_source_identity.add(identity)
             candidate["identity"] = identity
             candidates.append(candidate)
             stats["canales_fuente"] += 1
@@ -295,18 +433,8 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             pluto_latam_mx_ids.add(identity)
     pluto_es_only_ids = pluto_es_anime_ids - pluto_latam_mx_ids
 
-    # La única baja manual autorizada es Los Pitufos. Se eliminan también
-    # sus alternativas con el mismo tvg-id, sin tocar otros infantiles.
-    pitufos_ids = set()
-    for block in blocks:
-        if _is_los_pitufos(block["extinf"]):
-            identity = _identity(
-                {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
-                pluto=ap.es_url_pluto(block.get("url", "")),
-            )
-            if identity:
-                pitufos_ids.add(identity)
-
+    # Retirar únicamente la variante española no funcional; la versión
+    # normal de Los Pitufos debe permanecer en Infantiles.
     filtered_blocks = []
     pitufos_removed = 0
     pluto_es_anime_removed = 0
@@ -316,7 +444,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
             pluto=ap.es_url_pluto(block.get("url", "")),
         )
-        if _is_los_pitufos(block["extinf"]) or (identity and identity in pitufos_ids):
+        if _is_los_pitufos_es(block["extinf"]):
             pitufos_removed += 1
             manifest.pop(identity, None)
             continue
@@ -344,7 +472,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
     pitufos_by_source = Counter()
     for candidate in candidates:
         source_label = _source_label(candidate.get("source", ""))
-        if _is_los_pitufos(candidate.get("extinf", "")):
+        if _is_los_pitufos_es(candidate.get("extinf", "")):
             pitufos_by_source[source_label] += 1
             continue
         destination = _destination(
@@ -387,6 +515,9 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         )
         if identity:
             candidate_groups[identity].append(item)
+
+    for identity, group in candidate_groups.items():
+        group.sort(key=lambda item: (_source_priority(item.get("source", "")), item.get("url", "")))
 
     candidate_name_counts = Counter()
     for group in candidate_groups.values():
@@ -539,6 +670,29 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                 block["extinf"] = merged
                 block["raw"] = [merged] + block["extras"] + [block["url"]]
             updated_indices.update(related_matches)
+
+            # Incorporar cada URL alternativa válida del mismo canal. No se
+            # incrusta el nombre de la fuente: la numeración se aplica después
+            # sobre el conjunto completo de opciones.
+            existing_related_urls = {blocks[idx]["url"] for idx in related_matches}
+            for alternative in group:
+                alternative_url = alternative["url"].strip()
+                if not alternative_url or alternative_url in existing_related_urls or alternative_url in reserved_urls:
+                    continue
+                alternative_extinf = _merge_extinf(
+                    blocks[primary_match]["extinf"],
+                    alternative.get("extinf", ""),
+                    selected["destination"],
+                )
+                additions_by_category[ap.normalizar(selected["destination"])].append({
+                    "extinf": alternative_extinf,
+                    "extras": list(alternative.get("extras", [])),
+                    "url": alternative_url,
+                    "raw": [alternative_extinf] + list(alternative.get("extras", [])) + [alternative_url],
+                })
+                existing_related_urls.add(alternative_url)
+                reserved_urls.add(alternative_url)
+                stats["alternativas_agregadas"] = stats.get("alternativas_agregadas", 0) + 1
             continue
 
         if source_url in reserved_urls:
@@ -557,9 +711,28 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         })
         stats["canales_nuevos"] += 1
 
-    # No reagrupar ni ordenar los bloques existentes: la secuencia original
-    # de la principal se conserva exactamente. Las altas se anexan al final;
-    # el reproductor las clasifica por group-title, incluidas las carpetas nuevas.
+        # Un canal nuevo puede llegar desde varias fuentes o con varias URLs.
+        # Añadimos todas las alternativas sin repetir la URL principal.
+        for alternative in group:
+            alternative_url = alternative["url"].strip()
+            if not alternative_url or alternative_url == source_url or alternative_url in reserved_urls:
+                continue
+            alternative_extinf = _merge_extinf(
+                extinf,
+                alternative.get("extinf", ""),
+                selected["destination"],
+            )
+            additions_by_category[ap.normalizar(selected["destination"])].append({
+                "extinf": alternative_extinf,
+                "extras": list(alternative.get("extras", [])),
+                "url": alternative_url,
+                "raw": [alternative_extinf] + list(alternative.get("extras", [])) + [alternative_url],
+            })
+            reserved_urls.add(alternative_url)
+            stats["alternativas_agregadas"] = stats.get("alternativas_agregadas", 0) + 1
+
+    # Se conserva el orden relativo histórico, pero las alternativas de cada
+    # canal se reúnen y numeran consecutivamente como pidió el usuario.
     output = list(prefix)
     for block in blocks:
         output.extend(
@@ -573,6 +746,13 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                 or ([block["extinf"]] + block["extras"] + ([block["url"]] if block.get("url") else []))
             )
     output.extend(trailing)
+    url_priority = {
+        item["url"].strip(): _source_priority(item.get("source", ""))
+        for item in candidates
+        if item.get("url")
+    }
+    output = _group_and_label_alternatives(output, url_priority)
+    output = _prioritize_infantiles(output)
     return output, stats
 
 
