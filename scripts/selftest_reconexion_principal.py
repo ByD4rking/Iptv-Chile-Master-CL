@@ -233,7 +233,7 @@ def test_identidad_tvg_id_no_hereda_orden_por_nombre_compartido() -> None:
     ]
     restored = restaurar_orden_original_por_categoria(after, before)
     ids = [
-        re.search(r'tvg-id="([^"]+)"', line).group(1)
+        line.split('tvg-id="', 1)[1].split('"', 1)[0]
         for line in restored if line.startswith("#EXTINF")
     ]
     assert ids == ["116", "117", "120", "495"], ids
