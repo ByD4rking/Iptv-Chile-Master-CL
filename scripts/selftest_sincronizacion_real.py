@@ -48,7 +48,7 @@ def base_name(value: str) -> str:
         value or "",
         flags=re.I,
     )
-    value = re.sub(r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es)|espanol|españa|spanish|hd|sd|fhd|uhd)$", "", value, flags=re.I)
+    value = re.sub(r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es)|hd|sd|fhd|uhd)$", "", value, flags=re.I)
     return norm(value)
 
 
