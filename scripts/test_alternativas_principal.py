@@ -89,6 +89,20 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertFalse(any("Los Pitufos [Pluto ES]" in item[0] for item in parsed))
         self.assertTrue(any('group-title="Anime"' in item[0] and item[0].endswith(",Delmi TV 2") for item in parsed))
 
+    def test_restored_option_is_inserted_after_complete_m3u_block(self):
+        primary = block("cartoonito.id", "Infantiles", "Cartoonito HD", "https://a.example/cartoonito.m3u8")
+        option = block("cartoonito.id", "Infantiles", "Cartoonito HD [Opc.4]", "https://four.example/cartoonito.m3u8")
+        output, restored = ap.restaurar_no_pluto_existente(
+            ["#EXTM3U"] + primary,
+            {"https://four.example/cartoonito.m3u8": option},
+        )
+        self.assertEqual(restored, 1)
+        parsed = self.entries(output)
+        self.assertEqual(len(parsed), 2)
+        self.assertEqual(parsed[0][-1], "https://a.example/cartoonito.m3u8")
+        self.assertEqual(parsed[1][0].split(",", 1)[1], "Cartoonito HD [Opc.4]")
+        self.assertEqual(parsed[1][-1], "https://four.example/cartoonito.m3u8")
+
     def test_cartoonito_option_four_is_kept_and_rejoined(self):
         lines = ["#EXTM3U"]
         lines += block("cartoonito.id", "Infantiles", "Cartoonito HD", "https://a.example/cartoonito.m3u8")
