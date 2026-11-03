@@ -86,23 +86,30 @@ class PlaylistOrderTests(unittest.TestCase):
     def test_missing_channel_is_removed_after_three_complete_catalogs(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
             playlist = Path(temporary_directory) / "pluto_cl.m3u"
-            playlist.write_text(
-                "#EXTM3U\n"
-                '#EXTINF:-1 tvg-id="old" tvg-name="Anterior",Anterior\n'
-                "https://example.test/old/master.m3u8\n"
-                '#EXTINF:-1 tvg-id="stay" tvg-name="Permanece",Permanece\n'
-                "https://example.test/stay/master.m3u8\n",
-                encoding="utf-8",
-            )
-            fresh = [{
-                "id": "stay",
-                "name": "Permanece",
-                "stream": "https://example.test/stay/master.m3u8",
+            old_channels = [{
+                "id": "old",
+                "name": "Anterior",
+                "stream": "https://example.test/old/master.m3u8",
+                "consecutive_absences": 0,
             }]
-            state = [
-                {"id": "old", "name": "Anterior", "stream": "https://example.test/old/master.m3u8", "consecutive_absences": 0},
-                {"id": "stay", "name": "Permanece", "stream": "https://example.test/stay/master.m3u8", "consecutive_absences": 0},
-            ]
+            fresh = []
+            for index in range(4):
+                channel = {
+                    "id": f"stay-{index}",
+                    "name": f"Permanece {index}",
+                    "stream": f"https://example.test/stay-{index}/master.m3u8",
+                    "consecutive_absences": 0,
+                }
+                old_channels.append(dict(channel))
+                fresh.append(dict(channel))
+            playlist_lines = ["#EXTM3U"]
+            for channel in old_channels:
+                playlist_lines.extend([
+                    f'#EXTINF:-1 tvg-id="{channel["id"]}" tvg-name="{channel["name"]}",{channel["name"]}',
+                    channel["stream"],
+                ])
+            playlist.write_text("\n".join(playlist_lines) + "\n", encoding="utf-8")
+            state = old_channels
 
             first, preserved = preserve_previous_channels(playlist, [dict(x) for x in fresh], previous_state=state)
             self.assertEqual(preserved, 1)
