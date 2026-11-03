@@ -35,6 +35,27 @@ def candidate(channel_id, category, name, url, source=None):
 
 
 class RestorationOrderTests(unittest.TestCase):
+    def test_iptvsv_category_change_is_reclassified_instead_of_blocked(self):
+        url = "http://45.5.118.152:8000/play/chichi.m3u8"
+        current = ["#EXTM3U"] + entry(
+            "chichi.id", "TV Chichicasteca", "Canal Chichicasteca", url
+        )
+        source = [{
+            "url": url,
+            "categoria": "TV Chichicasteca",
+            "nombre": "Canal Chichicasteca",
+        }]
+        categories = ap.categorias_de_lineas(current)
+        audit = ap.validar_integridad_iptvsv(current, source, categories)
+        self.assertEqual(audit["categorias_pendientes_mover"], 1)
+
+        moved, count, conflicts = ap.reclasificar_iptvsv_existente(
+            current, source, categories
+        )
+        self.assertEqual(count, 1)
+        self.assertEqual(conflicts, 0)
+        self.assertTrue(any('group-title="Guatemala"' in line for line in moved))
+
     def test_do_not_restore_old_url_when_same_tvg_id_has_new_url(self):
         original = entry("music.id", "Música", "MTV Classic", "https://old.example/mtv.m3u8")
         current = ["#EXTM3U"] + entry("music.id", "Música", "MTV Classic", "https://new.example/mtv.m3u8")
