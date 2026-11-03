@@ -542,6 +542,88 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertIn(",Yu-Gi-Oh [Opción 3]", extinfs[2])
         self.assertEqual(stats["alternativas_agregadas"], 2)
 
+    def test_pluto_kids_are_moved_to_infantiles_and_es_pitufos_is_removed(self):
+        base = ["#EXTM3U"] + (
+            entry(
+                "pitufos.es",
+                "Infantiles",
+                "Los Pitufos",
+                "https://stitcher.pluto.tv/channel/pitufos-es/master.m3u8?country=ES&marketingRegion=ES",
+            )
+            + entry("heidi.old", "Infantiles", "Heidi", "https://old.example/heidi.m3u8")
+            + entry("kids.other", "Infantiles", "Otro infantil", "https://kids.example/other.m3u8")
+        )
+        popeye_id = "677d93afe650a700081e5f18"
+        pitufos_id = "68a3a97fd8f7693ae3f8575f"
+        heidi_id = "68779a09c691b3f0964127c6"
+        source = [
+            candidate(
+                popeye_id,
+                "Retro",
+                "Popeye",
+                f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/{popeye_id}/master.m3u8?jwt=latam",
+                ap.FUENTES_PLUTO[0],
+            ),
+            candidate(
+                "",
+                "",
+                "Popeye",
+                f"https://jmp2.uk/plu-{popeye_id}.m3u8",
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
+            ),
+            candidate(
+                pitufos_id,
+                "Retro",
+                "Los Pitufos",
+                f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/{pitufos_id}/master.m3u8?jwt=latam",
+                ap.FUENTES_PLUTO[0],
+            ),
+            candidate(
+                "",
+                "",
+                "Los Pitufos",
+                f"https://jmp2.uk/plu-{pitufos_id}.m3u8",
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
+            ),
+            candidate(
+                "",
+                "Infantiles",
+                "Los Pitufos",
+                "https://magma.example/pitufos.m3u8",
+                ap.FUENTE_MAGMA,
+            ),
+            candidate(
+                "68d27949793c71d988ca624c",
+                "Infantil",
+                "Los Pitufos",
+                "https://stitcher.pluto.tv/channel/pitufos-es/master.m3u8?country=ES&marketingRegion=ES",
+                ap.FUENTES_PLUTO[1],
+            ),
+            candidate(
+                heidi_id,
+                "Infantil",
+                "Heidi",
+                f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/{heidi_id}/master.m3u8?jwt=es",
+                ap.FUENTES_PLUTO[1],
+            ),
+        ]
+        output, _ = reconcile_lines(base, source)
+        self.assertFalse(any("pitufos-es" in line and "country=ES" in line for line in output))
+        self.assertIn(f"https://jmp2.uk/plu-{pitufos_id}.m3u8", output)
+        self.assertIn("https://magma.example/pitufos.m3u8", output)
+        self.assertIn(f"https://jmp2.uk/plu-{popeye_id}.m3u8", output)
+        infant_names = [
+            ap.extraer_nombre(line)
+            for line in output
+            if line.startswith("#EXTINF") and ap.normalizar(ap.extraer_categoria(line)) in {"infantil", "infantiles"}
+        ]
+        unique_names = []
+        for name in infant_names:
+            base_name = re.sub(r"\\s*\\[Opción \\d+\\]$", "", name)
+            if base_name not in unique_names:
+                unique_names.append(base_name)
+        self.assertEqual(unique_names[:3], ["Popeye", "Los Pitufos", "Heidi"])
+
     def test_infantiles_priority_order_is_popeye_pitufos_heidi(self):
         base = ["#EXTM3U"] + (
             entry("kids.heidi", "Infantiles", "Heidi", "https://kids.example/heidi.m3u8")
