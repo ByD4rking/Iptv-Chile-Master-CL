@@ -188,6 +188,26 @@ def test_restaurar_orden_original_y_anexar_canales_nuevos() -> None:
     validar_orden_canales(before, restored)
 
 
+def test_canales_reclasificados_se_anexan_al_final_de_la_categoria_destino() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="moved" group-title="OTROS",Canal reclasificado',
+        "https://example.test/moved.m3u8",
+        '#EXTINF:-1 tvg-id="existing" group-title="Chile TV",Canal existente',
+        "https://example.test/existing.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="moved" group-title="Chile TV",Canal reclasificado',
+        "https://example.test/moved.m3u8",
+        '#EXTINF:-1 tvg-id="existing" group-title="Chile TV",Canal existente',
+        "https://example.test/existing.m3u8",
+    ]
+    restored = restaurar_orden_original_por_categoria(after, before)
+    names = [line.split(",", 1)[-1] for line in restored if line.startswith("#EXTINF")]
+    assert names == ["Canal existente", "Canal reclasificado"], names
+
+
 def test_ajustes_referencia() -> None:
     source = [
         "#EXTM3U",
