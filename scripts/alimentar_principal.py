@@ -3457,20 +3457,8 @@ def main():
     # verificar el catálogo, se aborta antes de escribir la lista principal.
     ids_pluto_es_anime = cargar_ids_pluto_es_anime(session)
 
-    # Aplicar las correcciones fijas de la referencia antes de publicar.
-    lineas = aplicar_ajustes_referencia(lineas, ids_pluto_es_anime)
-
-    # Orden fijo de entretenimiento: bloque inicial, MAGMA alfabético y
-    # canales originales alfabéticos. Se valida la cobertura MAGMA antes de escribir.
-    lineas, orden_entretenimiento = ordenar_bloques_magma_y_originales(lineas, session)
-    lineas = agrupar_alternativas_por_identidad(lineas)
-    print(
-        "Orden entretenimiento: "
-        f"{orden_entretenimiento['fijos']} fijos; "
-        f"{orden_entretenimiento['magma']} MAGMA; "
-        f"{orden_entretenimiento['originales']} originales."
-    )
-    total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
+    # Las reglas de referencia y el orden MAGNA se aplican después de restaurar
+    # los canales existentes, para que ninguna reconciliación posterior los deshaga.
 
     # Restaurar al FINAL de todas las limpiezas y ajustes. Antes se hacía
     # demasiado pronto: las correcciones de referencia y otras normalizaciones
@@ -3496,6 +3484,21 @@ def main():
         categorias_reordenables={"Entretenimiento / Cine / Series"},
         ids_pluto=ids_pluto_orden_protegidos,
     )
+
+    # Aplicar al FINAL las reglas solicitadas: la restauración histórica puede
+    # volver a colocar canales infantiles en su categoría/posición anterior.
+    lineas = aplicar_ajustes_referencia(lineas, ids_pluto_es_anime)
+
+    # Fijar el bloque MAGNA y reagrupar alternativas después de toda restauración.
+    lineas, orden_entretenimiento = ordenar_bloques_magma_y_originales(lineas, session)
+    lineas = agrupar_alternativas_por_identidad(lineas)
+    print(
+        "Orden entretenimiento: "
+        f"{orden_entretenimiento['fijos']} fijos; "
+        f"{orden_entretenimiento['magma']} MAGMA; "
+        f"{orden_entretenimiento['originales']} originales."
+    )
+    total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
     # ÚLTIMA barrera Pluto: las correcciones posteriores pueden retirar una
     # entrada ya reparada. Restaurar después de TODAS las transformaciones.
@@ -3593,7 +3596,7 @@ def main():
     validar_orden_canales(
         lineas_iniciales,
         lineas,
-        categorias_reordenables={"Entretenimiento / Cine / Series"},
+        categorias_reordenables={"Entretenimiento / Cine / Series", "Infantiles"},
         ids_pluto_omitidos=ids_pluto_orden_protegidos,
     )
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
