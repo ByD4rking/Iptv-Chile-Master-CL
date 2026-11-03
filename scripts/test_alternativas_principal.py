@@ -288,6 +288,21 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(tvg_names[0], tvg_names[1])
         self.assertEqual(parsed[1][0].split(",", 1)[1], "Solo TV [Opción 2]")
 
+    def test_grouping_unifies_logo_and_tvg_logo_across_alternatives(self):
+        lines = ["#EXTM3U"]
+        lines += [
+            '#EXTINF:-1 group-title="Infantiles" tvg-name="Discovery Kids" tvg-logo="https://logo.example/canonical.png",Discovery Kids',
+            "https://a.example/discovery-1.m3u8",
+            '#EXTINF:-1 logo="https://logo.example/old.png" group-title="Infantiles" tvg-name="Discovery Kids" tvg-logo="https://logo.example/canonical.png",Discovery Kids',
+            "https://a.example/discovery-2.m3u8",
+        ]
+        output = ap.agrupar_alternativas_por_identidad(lines)
+        parsed = self.entries(output)
+        self.assertEqual(len(parsed), 2)
+        for item in parsed:
+            self.assertIn('tvg-logo="https://logo.example/canonical.png"', item[0])
+            self.assertIn('logo="https://logo.example/canonical.png"', item[0])
+
 
 if __name__ == "__main__":
     unittest.main()
