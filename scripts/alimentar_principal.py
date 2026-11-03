@@ -1933,6 +1933,258 @@ def aplicar_reconexion_por_canal(lineas):
     return salida, agregados
 
 
+
+
+def integrar_pluto_mx(lineas, session):
+    """Integra Pluto MX como alternativas sin borrar ni reordenar canales existentes."""
+    try:
+        respuesta_mx = session.get(FUENTE_PLUTO_ALTERNATIVAS, timeout=30)
+        respuesta_mx.raise_for_status()
+        canales_mx = parsear_m3u(respuesta_mx.text)
+        respuesta_latam = session.get(FUENTE_PLUTO_CANONICA, timeout=30)
+        respuesta_latam.raise_for_status()
+        canales_latam = parsear_m3u(respuesta_latam.text)
+    except Exception as exc:
+        print(f"  -> AVISO: no se pudo integrar Pluto MX externo: {exc}")
+        return lineas, {"fuente_ok": False, "agregadas": 0, "bases_nuevas": 0, "sin_coincidencia": 0}
+
+    def canal_id(canal):
+        cid = extraer_pluto_id(canal.get("url", ""))
+        if not cid:
+            match = re.search(r'tvg-id="([a-f0-9]{20,})"', canal.get("extinf", ""), re.I)
+            cid = match.group(1).lower() if match else ""
+        return cid
+
+    prefijo = []
+    bloques = []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        raw = lineas[inicio:j]
+        extinf = raw[0]
+        url = next((x.strip() for x in raw[1:] if url_es_valida(x.strip())), "")
+        bloques.append({
+            "lineas": raw,
+            "extinf": extinf,
+            "url": url,
+            "categoria": extraer_categoria(extinf),
+            "nombre": extraer_nombre(extinf),
+            "id": canal_id({"extinf": extinf, "url": url}),
+            "after": [],
+        })
+        i = j
+
+    urls = {b["url"] for b in bloques if b["url"]}
+    categorias = categorias_de_lineas(lineas)
+    latam_por_id = {canal_id(c): c for c in canales_latam if canal_id(c)}
+    agregadas = 0
+    sin_coincidencia = 0
+    bases_nuevas = 0
+
+    def agregar_base(canal, destino):
+        nonlocal bases_nuevas
+        destino_existente = buscar_categoria_existente(destino, categorias)
+        if not destino_existente:
+            return None
+        extinf = reemplazar_categoria(canal.get("extinf", ""), destino_existente)
+        cid = canal_id(canal)
+        if cid:
+            if re.search(r'tvg-id="[^"]*"', extinf, re.I):
+                extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
+            else:
+                extinf = extinf.replace("#EXTINF:", f'#EXTINF:-1 tvg-id="{cid}"', 1)
+        bloque = [extinf]
+        bloque.extend(canal.get("extras", []))
+        bloque.append(canal.get("url", "").strip())
+        nuevo = {
+            "lineas": bloque,
+            "extinf": extinf,
+            "url": canal.get("url", "").strip(),
+            "categoria": destino_existente,
+            "nombre": extraer_nombre(extinf),
+            "id": cid,
+            "after": [],
+        }
+        indices = [
+            idx for idx, b in enumerate(bloques)
+            if normalizar(b["categoria"]) == normalizar(destino_existente)
+        ]
+        if not indices:
+            return None
+        bloques.insert(indices[-1] + 1, nuevo)
+        urls.add(nuevo["url"])
+        bases_nuevas += 1
+        return nuevo
+
+    def agregar_alternativa(base, canal, numero):
+        nonlocal agregadas
+        cid = canal_id(canal)
+        nombre_base = re.sub(
+            r"\s*(?:\[\s*opc(?:ión)?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
+            "",
+            base["nombre"],
+            flags=re.I,
+        ).strip()
+        extinf = re.sub(r",(.*)$", f",{nombre_base} (OPCIÓN {numero})", base["extinf"], count=1)
+        if cid:
+            if re.search(r'tvg-id="[^"]*"', extinf, re.I):
+                extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
+            else:
+                extinf = extinf.replace("#EXTINF:", f'#EXTINF:-1 tvg-id="{cid}"', 1)
+        bloque = [extinf]
+        bloque.extend(canal.get("extras", []))
+        bloque.append(canal.get("url", "").strip())
+        base["after"].append(bloque)
+        urls.add(canal.get("url", "").strip())
+        agregadas += 1
+
+    for canal in canales_mx:
+        url = (canal.get("url") or "").strip()
+        if not url or url in urls:
+            continue
+        cid = canal_id(canal)
+        nombre = normalizar(canal.get("nombre", ""))
+        base = next((b for b in bloques if cid and b["id"] == cid), None)
+
+        if base is None and cid and cid in latam_por_id:
+            canonico = latam_por_id[cid]
+            categoria = canonico.get("categoria", "")
+            if normalizar(categoria) == "documentales":
+                categoria = "Documentales y Cultura"
+            base = agregar_base(canonico, categoria)
+
+        if base is None and "cazador de homicidas" in nombre:
+            base = next((b for b in bloques if normalizar(b["nombre"]) == "cazador de homicidas"), None)
+        if base is None and "claro sports" in nombre:
+            base = next((b for b in bloques if "claro sports" in normalizar(b["nombre"])), None)
+
+        if base is not None:
+            existentes = sum(1 for b in bloques if cid and b["id"] == cid)
+            numero = max(2, existentes + len(base["after"]) + 1)
+            agregar_alternativa(base, canal, numero)
+            continue
+
+        if "mi obsesion favorita" in nombre:
+            destino = "Estilo De Vida"
+        elif "cazador de homicidas" in nombre:
+            destino = "Investigación"
+        elif "claro sports" in nombre:
+            destino = "Deportes"
+        else:
+            sin_coincidencia += 1
+            continue
+
+        nuevo = agregar_base(canal, destino)
+        if nuevo is None:
+            sin_coincidencia += 1
+            continue
+        if "mi obsesion favorita" not in nombre:
+            nuevo["nombre"] = nuevo["nombre"] + " (OPCIÓN 2)"
+            nuevo["lineas"][0] = re.sub(r",(.*)$", f",{nuevo['nombre']}", nuevo["extinf"], count=1)
+            nuevo["extinf"] = nuevo["lineas"][0]
+        agregadas += 1
+
+    salida = list(prefijo)
+    for bloque in bloques:
+        salida.extend(bloque["lineas"])
+        for alternativa in bloque["after"]:
+            salida.extend(alternativa)
+    return salida, {
+        "fuente_ok": True,
+        "agregadas": agregadas,
+        "bases_nuevas": bases_nuevas,
+        "sin_coincidencia": sin_coincidencia,
+    }
+
+
+def aplicar_ajustes_referencia(lineas):
+    """Retira Pluto ES solo de Anime, ubica Avatar y añade American Ninja Warrior."""
+    prefijo = []
+    bloques = []
+    avatar = []
+    eliminados_pluto_es_anime = 0
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        bloque = lineas[inicio:j]
+        categoria = normalizar(extraer_categoria(bloque[0]))
+        nombre = extraer_nombre(bloque[0])
+        if categoria == "anime" and "[pluto es]" in normalizar(nombre):
+            eliminados_pluto_es_anime += 1
+            i = j
+            continue
+        if categoria == "anime" and normalizar(nombre).startswith("avatar: la leyenda de aang"):
+            bloque[0] = reemplazar_categoria(bloque[0], "Infantiles")
+            avatar.append(bloque)
+        else:
+            bloques.append(bloque)
+        i = j
+
+    if avatar:
+        posicion = next((
+            idx for idx, bloque in enumerate(bloques)
+            if bloque[0].startswith("#EXTINF")
+            and normalizar(extraer_categoria(bloque[0])) == "infantiles"
+            and "baby shark" in normalizar(extraer_nombre(bloque[0]))
+        ), None)
+        if posicion is None:
+            posiciones = [
+                idx for idx, bloque in enumerate(bloques)
+                if bloque[0].startswith("#EXTINF")
+                and normalizar(extraer_categoria(bloque[0])) == "infantiles"
+            ]
+            if not posiciones:
+                raise RuntimeError("No existe Infantiles para ubicar Avatar.")
+            posicion = posiciones[-1] + 1
+        bloques[posicion:posicion] = avatar
+
+    xumo_url = "https://d4whmvwm0rdvi.cloudfront.net/10007/99951318/hls/master.m3u8?ads.xumo_channelId=99951318&ads.asnw=169843&ads.afid=405342864&ads.sfid=19647852&ads.csid=xumo_web_NBCUAmericanNinjaWarrior_ssai_cro&ads._fw_is_lat=0&ads._fw_us_privacy=&ads._fw_coppa=0&ads._fw_did=a5090924-15b1-4b7f-b6cd-2f06e2ba51e1&ads._fw_vcid2=512116:a5090924-15b1-4b7f-b6cd-2f06e2ba51e1&ads._fw_app_bundle=web.xumo.com&ads._fw_app_store_url=&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=GitHubAction&ads._fw_device_model=PythonScript&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0.0&ads.appName=XumoPlay&ads.xumo_contentId=4063&ads.xumo_contentName=NBCUAmericanNinjaWarrior&ads.xumo_providerId=4063&ads.xumo_providerName=NBCUAmericanNinjaWarrior&ads.channelId=99951318"
+    xumo_logo = "https://raw.githubusercontent.com/RoqueDJ/iptv-svg/main/1792421696158.png"
+    xumo_presente = any(any(linea.strip() == xumo_url for linea in bloque) for bloque in bloques)
+    xumo_agregado = 0
+    if not xumo_presente:
+        posiciones = [
+            idx for idx, bloque in enumerate(bloques)
+            if bloque[0].startswith("#EXTINF")
+            and normalizar(extraer_categoria(bloque[0])) == "competencia"
+        ]
+        if not posiciones:
+            raise RuntimeError("No existe Competencia para agregar American Ninja Warrior.")
+        nuevo = [
+            f'#EXTINF:-1 tvg-logo="{xumo_logo}" group-title="Competencia",American Ninja Warrior',
+            "#EXTVLCOPT:http-reconnect=true",
+            "#EXTVLCOPT:network-caching=5000",
+            xumo_url,
+        ]
+        bloques.insert(posiciones[-1] + 1, nuevo)
+        xumo_agregado = 1
+
+    salida = list(prefijo)
+    for bloque in bloques:
+        salida.extend(bloque)
+    print(
+        f"Ajustes referencia: Pluto ES Anime retirados={eliminados_pluto_es_anime}; "
+        f"Avatar movidos={len(avatar)}; American Ninja Warrior agregado={xumo_agregado}."
+    )
+    return salida
+
+
 def main():
     print("=" * 72)
     print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
@@ -2402,6 +2654,19 @@ def main():
             "VALIDACION FINAL DE BLOQUES FALLIDA: categorías físicas repetidas: "
             + ", ".join(sorted(repetidas_post))
         )
+
+    # Integrar Pluto MX externo después de las limpiezas para conservar alternativas.
+    lineas, pluto_mx_auditoria = integrar_pluto_mx(lineas, session)
+    print(
+        "Pluto MX externo: "
+        f"{pluto_mx_auditoria['agregadas']} agregadas; "
+        f"{pluto_mx_auditoria['bases_nuevas']} bases nuevas; "
+        f"{pluto_mx_auditoria['sin_coincidencia']} sin coincidencia."
+    )
+
+    # Aplicar las correcciones fijas de la referencia antes de publicar.
+    lineas = aplicar_ajustes_referencia(lineas)
+    total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
     # representación final, para que ninguna transformación posterior las
