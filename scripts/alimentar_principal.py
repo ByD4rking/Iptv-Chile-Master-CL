@@ -2898,7 +2898,7 @@ def agrupar_alternativas_por_identidad(lineas):
             def set_attr(texto, key, value):
                 if not value:
                     return texto
-                pattern = r'\b' + re.escape(key) + r'="[^"]*"'
+                pattern = r'(?<![\w-])' + re.escape(key) + r'="[^"]*"'
                 replacement = f'{key}="{value}"'
                 if re.search(pattern, texto, re.I):
                     return re.sub(pattern, lambda _: replacement, texto, count=1, flags=re.I)
