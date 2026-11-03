@@ -293,10 +293,12 @@ class ComplementSyncTests(unittest.TestCase):
                 ap.FUENTES_PLUTO[2],
             ),
         ]
-        output, stats = reconcile_lines(base, source)
+        manifest = {"id:shared.anime": {"source": ap.FUENTES_PLUTO[1]}}
+        output, stats = reconcile_lines(base, source, manifest)
         self.assertFalse(any('tvg-id="es.only"' in line for line in output))
         self.assertTrue(any('tvg-id="shared.anime"' in line for line in output))
         self.assertTrue(any('tvg-id="mx.only"' in line for line in output))
+        self.assertEqual(manifest["id:shared.anime"]["source"], ap.FUENTES_PLUTO[0])
         self.assertEqual(stats["pluto_es_anime_eliminados"], 1)
 
     def test_existing_channel_order_is_preserved_and_new_channels_append(self):
