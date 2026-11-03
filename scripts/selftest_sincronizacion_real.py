@@ -172,21 +172,22 @@ def protected_hashes() -> dict[str, str]:
     }
 
 
-def identity_key(item: dict, other_ids: set[str], unique_names: set[str]) -> str:
-    # Si una fuente añade o quita tvg-id, conserva la identidad por nombre
-    # cuando ese nombre aparece en ambas versiones y no hay IDs en ambos lados.
+def identity_key(item: dict, name_to_ids: dict[str, set[str]]) -> str:
+    # Un canal puede tener una entrada sin ID y otra con ID válido. Si el nombre
+    # tiene un único ID asociado en ambas versiones, ambas entradas representan
+    # la misma identidad lógica y no deben contarse como una pérdida.
     channel_id = norm(item.get("id", ""))
     valid_id = channel_id if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"} else ""
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
-    if name_key and name_key in unique_names:
+    mapped_ids = name_to_ids.get(name_key, set()) if name_key else set()
+    if len(mapped_ids) == 1:
+        return "id:" + next(iter(mapped_ids))
+    if len(mapped_ids) > 1 and name_key:
         return "name:" + name_key
-    if valid_id and valid_id in other_ids:
-        return "id:" + valid_id
     if valid_id:
         return "id:" + valid_id
     return "name:" + name_key if name_key else "name:"
-
 
 def main(args: argparse.Namespace) -> None:
     if not PRINCIPAL.is_file() or PRINCIPAL.stat().st_size == 0:
@@ -411,31 +412,28 @@ def main(args: argparse.Namespace) -> None:
 
     before_ids_by_name = ids_by_name(before_kept)
     after_ids_by_name = ids_by_name(after_nonpluto_all)
-    unique_names = {
-        name for name in set(before_ids_by_name) | set(after_ids_by_name)
-        if name in before_ids_by_name and name in after_ids_by_name
-        and (not before_ids_by_name[name] or not after_ids_by_name[name])
-    }
-    before_ids = {valid_id(item) for item in before_kept if valid_id(item)}
-    after_ids_nonpluto = {valid_id(item) for item in after_nonpluto_all if valid_id(item)}
+    name_to_ids = defaultdict(set)
+    for mapping in (before_ids_by_name, after_ids_by_name):
+        for name, ids in mapping.items():
+            name_to_ids[name].update(ids)
 
     before_by_category = defaultdict(list)
     after_by_category = defaultdict(list)
     for item in before_kept:
         category = norm(item["category"])
-        key = identity_key(item, after_ids_nonpluto, unique_names)
+        key = identity_key(item, name_to_ids)
         if key not in before_by_category[category]:
             before_by_category[category].append(key)
     for item in after_nonpluto:
         category = norm(item["category"])
-        key = identity_key(item, before_ids, unique_names)
+        key = identity_key(item, name_to_ids)
         # Las URLs alternativas del mismo tvg-id forman un solo canal lógico
         # para comparar orden; no deben contarse como canales nuevos.
         if key not in after_by_category[category]:
             after_by_category[category].append(key)
 
     global_after_counts = Counter(
-        identity_key(item, before_ids, unique_names)
+        identity_key(item, name_to_ids)
         for item in after_playable
     )
     for category, before_keys in before_by_category.items():
