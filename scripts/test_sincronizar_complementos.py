@@ -2,7 +2,7 @@ import unittest
 import re
 
 import alimentar_principal as ap
-from selftest_sincronizacion_real import identity_key
+from selftest_sincronizacion_real import channel_name_key, identity_key
 from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _identity, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, quitar_los_pitufos_es, reconcile_lines
 
 
@@ -917,6 +917,12 @@ class AuditIdentityRegressionTests(unittest.TestCase):
             identity_key(after, name_to_ids),
         )
         self.assertEqual(identity_key(before, name_to_ids), "id:123")
+
+    def test_v2_base_and_nested_option_share_the_same_audit_identity(self):
+        self.assertEqual(
+            channel_name_key("Las Estrellas HD (Nacional)[V2]"),
+            channel_name_key("Las Estrellas HD (Nacional)[V2] [Opción 2]"),
+        )
 
     def test_identity_audit_matches_channel_when_source_adds_tvg_id(self):
         before = {"id": "", "tvg_name": "C y G TV", "name": "C y G TV | CL"}
