@@ -19,6 +19,7 @@ import unicodedata
 from pathlib import Path
 
 import requests
+from playlist_sources import load_sources
 
 
 # ============================================================
@@ -37,80 +38,8 @@ SALIDA = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
 # FUENTES EXTERNAS
 # ============================================================
 
-FUENTES = [
-
-    # --------------------------------------------------------
-    # IPTV-ORG
-    # --------------------------------------------------------
-
-
-    "https://iptv-org.github.io/iptv/index.m3u",
-   
-
-    # --------------------------------------------------------
-    # OTRAS FUENTES
-    # --------------------------------------------------------
-
-    "https://dearbulut.github.io/iptv/playlists/best.m3u",
-    "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
-    "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
-    "https://iptv-org.github.io/iptv/countries/us.m3u",
-    "https://iptv-org.github.io/iptv/index.country.m3u",
-    "https://dearbulut.github.io/iptv/playlists/online.m3u",
-    "https://raw.githubusercontent.com/freecasthub/public-iptv/main/playlist.m3u",
-    "https://iptv-org.github.io/iptv/regions/amer.m3u",
-    "https://iptv-org.github.io/iptv/languages/spa.m3u",
-    "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
-    "https://iptv-org.github.io/iptv/index.category.m3u",
-    "https://iptv-org.github.io/iptv/categories/sports.m3u",
-    "https://iptv-org.github.io/iptv/categories/series.m3u",
-
-    # --------------------------------------------------------
-    # M3U.CL
-    # --------------------------------------------------------
-
-    "https://m3u.cl/lista/XXX.m3u",
-    "https://m3u.cl/lista/religiosos.m3u",
-    "https://m3u.cl/lista/musica.m3u",
-    "https://m3u.cl/lista/LATAM.m3u",
-    "https://m3u.cl/lista/VE.m3u",
-    "https://m3u.cl/lista/DO.m3u",
-    "https://m3u.cl/lista/PE.m3u",
-    "https://m3u.cl/lista/PY.m3u",
-    "https://m3u.cl/lista/MX.m3u",
-    "https://m3u.cl/lista/ES.m3u",
-    "https://m3u.cl/lista/EC.m3u",
-    "https://m3u.cl/lista/CR.m3u",
-    "https://m3u.cl/lista/CO.m3u",
-    "https://m3u.cl/lista/CL.m3u",
-    "https://m3u.cl/lista/BR.m3u",
-    "https://m3u.cl/lista/BO.m3u",
-    "https://m3u.cl/lista/AR.m3u",
-
-    # --------------------------------------------------------
-    # TOTAL / TOP
-    # --------------------------------------------------------
-
-    "https://m3u.cl/lista/total.m3u",
-    "https://m3u.cl/lista/top.m3u",
-
-    # --------------------------------------------------------
-    # PLUTO TV — SOLO LAS FUENTES ACTIVAS DEL PROYECTO
-    #
-    # LATAM es la fuente prioritaria y ES/MX solo complementan.
-    # Las listas regionales eliminadas NO se vuelven a consultar.
-    # --------------------------------------------------------
-
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_all.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
-]
+# URLs administradas desde config/playlist_sources.json; agregar o cambiar allí.
+FUENTES = load_sources("god")
 
 
 # ============================================================
