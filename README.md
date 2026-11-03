@@ -113,11 +113,11 @@ Puedes utilizar **una sola, varias o las siete** según lo que necesites. No es 
 
 La organización conjunta que utiliza el proyecto es únicamente una **regla interna de integración y mantenimiento** para evitar duplicados y aprovechar primero el contenido de LATAM cuando está disponible.
 
-**Prioridad interna de integración:**
+**Prioridad de integración en la lista principal:**
 
-**LATAM → España → México**
+**LATAM → España → México → Chile → Argentina → Brasil → Estados Unidos**
 
-Esto significa que, cuando un mismo canal aparece en varias regiones, el proyecto prioriza la versión LATAM y utiliza España o México cuando aportan contenido que no está disponible en una región anterior.
+Las siete regiones complementan la lista principal. Cuando un mismo canal aparece en varias fuentes, el sistema conserva la fuente propietaria registrada para ese canal; para canales nuevos sin historial, utiliza este orden como prioridad inicial.
 
 > **Importante:** esta prioridad no limita al usuario. Cada playlist Pluto puede utilizarse por separado y directamente mediante su URL RAW.
 
@@ -257,7 +257,7 @@ https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/outp
 - **Quieres ampliar la cobertura:** puedes cargar varias o todas las listas en un reproductor que admita múltiples playlists.
 - **Quieres evitar administrar varias listas:** puedes utilizar la lista principal o GOD del proyecto cuando corresponda.
 
-> Pluto TV se mantiene como un bloque separado de la lista principal y de la GOD. Las siete playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual.
+> Las siete playlists regionales conservan su identidad y pueden utilizarse libremente de forma individual. Sus catálogos también alimentan la lista principal mediante el proceso común de sincronización incremental.
 
 ---
 
@@ -374,7 +374,11 @@ El repositorio utiliza procesos automatizados para mantener y revisar las playli
 
 Entre las tareas de mantenimiento se incluyen:
 
-- 🔄 Actualización de fuentes.
+- 🔄 Actualización de todas las fuentes complementarias en cada ciclo.
+- ➕ Incorporación de canales nuevos desde IPTVSV, MAGNA, M3U.CL y las siete regiones Pluto.
+- 🔗 Actualización de URL y metadatos por identidad estable del canal.
+- ↔️ Reclasificación y movimiento de canales cuando cambia su categoría de origen.
+- 🧾 Manifiesto persistente de fuente propietaria para evitar que una lista sobrescriba los aportes de otra.
 - 🧹 Detección y eliminación de URLs duplicadas cuando corresponde.
 - 🗂️ Organización de categorías.
 - 🔎 Auditorías de integridad.
@@ -383,7 +387,7 @@ Entre las tareas de mantenimiento se incluyen:
 - 🪐 Actualización de las playlists Pluto TV.
 - ✅ Verificaciones antes de publicar cambios.
 
-La automatización busca **actualizar sin destruir la estructura existente**: los cambios deben ser controlados y las categorías establecidas no deben reorganizarse arbitrariamente.
+La automatización busca **actualizar sin destruir la estructura existente**. Cada fuente agrega canales nuevos, actualiza URL y metadatos de los canales que le pertenecen y mueve los existentes cuando cambia su categoría. La ausencia temporal de un canal en una fuente no lo elimina de la maestra. Las coincidencias ambiguas se dejan intactas para evitar reemplazar una señal equivocada.
 
 ---
 
