@@ -173,13 +173,18 @@ def protected_hashes() -> dict[str, str]:
 
 
 def identity_key(item: dict, other_ids: set[str], unique_names: set[str]) -> str:
-    # Un tvg-id estable prevalece sobre variaciones de presentación del nombre
-    # (p. ej. "C y G TV" frente a "C y G TV | CL").
+    # Si una fuente añade o quita tvg-id, conserva la identidad por nombre
+    # cuando ese nombre aparece en ambas versiones y no hay IDs en ambos lados.
     channel_id = norm(item.get("id", ""))
-    if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"}:
-        return "id:" + channel_id
+    valid_id = channel_id if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"} else ""
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
+    if valid_id and valid_id in other_ids:
+        return "id:" + valid_id
+    if name_key and name_key in unique_names:
+        return "name:" + name_key
+    if valid_id:
+        return "id:" + valid_id
     return "name:" + name_key if name_key else "name:"
 
 
@@ -387,20 +392,29 @@ def main(args: argparse.Namespace) -> None:
             and "pluto" in item["url"].lower()
         )
     ]
-    before_name_counts = Counter(
-        item["tvg_name"] or item["name"] for item in before_kept
-        if item["tvg_name"] or item["name"]
-    )
-    after_name_counts = Counter(
-        item["tvg_name"] or item["name"] for item in after_nonpluto_all
-        if item["tvg_name"] or item["name"]
-    )
+    def valid_id(item):
+        value = norm(item.get("id", ""))
+        return value if value and value not in {"-1", "0", "none", "null", "na", "n/a", "undefined"} else ""
+
+    def ids_by_name(items):
+        result = defaultdict(set)
+        for item in items:
+            name = channel_name_key(item.get("tvg_name") or item.get("name") or "")
+            if name:
+                channel_id = valid_id(item)
+                if channel_id:
+                    result[name].add(channel_id)
+        return result
+
+    before_ids_by_name = ids_by_name(before_kept)
+    after_ids_by_name = ids_by_name(after_nonpluto_all)
     unique_names = {
-        name for name, count in before_name_counts.items()
-        if count == 1 and after_name_counts.get(name, 0) == 1
+        name for name in set(before_ids_by_name) | set(after_ids_by_name)
+        if name in before_ids_by_name and name in after_ids_by_name
+        and (not before_ids_by_name[name] or not after_ids_by_name[name])
     }
-    before_ids = {norm(item["id"]) for item in before_kept if item["id"]}
-    after_ids_nonpluto = {norm(item["id"]) for item in after_nonpluto_all if item["id"]}
+    before_ids = {valid_id(item) for item in before_kept if valid_id(item)}
+    after_ids_nonpluto = {valid_id(item) for item in after_nonpluto_all if valid_id(item)}
 
     before_by_category = defaultdict(list)
     after_by_category = defaultdict(list)
