@@ -2301,15 +2301,21 @@ def validar_orden_canales(
                 continue
 
             categoria = normalizar(extraer_categoria(extinf))
-            nombre = normalizar_nombre_canal(extraer_nombre(extinf))
+            nombre_raw = extraer_nombre(extinf)
+            nombre = normalizar_nombre_canal(nombre_raw)
             # Avatar cambia deliberadamente desde Anime a Infantiles; hay dos variantes.
             if nombre.startswith("avatar: la leyenda de aang"):
                 index = j + 1 if url else index + 1
                 continue
-            # Las entradas [Opc.N] son enlaces alternativos del mismo canal;
-            # su posición puede variar al renovar fuentes sin alterar el orden
-            # de los canales principales de la categoría.
-            if re.search(r"\[opc(?:ion)?\.?\s*\d+\]$", nombre, re.I):
+            # Detectar la marca de opción sobre el nombre original: la clave
+            # normalizada ya elimina [Opc.N], por lo que comprobarla después
+            # hacía que la primera alternativa se tomara como canal principal.
+            if re.search(
+                r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
+                r"\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
+                nombre_raw,
+                re.I,
+            ):
                 index = j + 1 if url else index + 1
                 continue
             match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
