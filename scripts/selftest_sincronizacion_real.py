@@ -294,6 +294,13 @@ def main(args: argparse.Namespace) -> None:
         raise AssertionError("No quedó Los Pitufos de LATAM/MX/MAGNA en Infantiles.")
     if any(item["is_es_anime"] for item in after):
         raise AssertionError("Quedó un canal Pluto ES o Español en Anime.")
+    pluto_es_anime_urls = {
+        channel.get("url", "")
+        for channel in pluto_es
+        if norm(channel.get("categoria", "")) == "anime"
+    }
+    if any(item["url"] in pluto_es_anime_urls for item in after_playable):
+        raise AssertionError("La principal conserva una URL exacta de Pluto ES dentro de Anime.")
 
     if any(
         norm(item["category"]) in {"tv chichicasteca", "los chichastecas"}
