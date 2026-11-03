@@ -28,12 +28,12 @@ def norm(value: str) -> str:
 
 def base_name(value: str) -> str:
     value = re.sub(
-        r"\\s*(?:\\[\\s*opc(?:ion)?\\.?\\s*\\d+\\s*\\]|\\(\\s*opci[oó]n\\s*\\d+\\s*\\))\\s*$",
+        r"\s*(?:\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
         "",
         value or "",
         flags=re.I,
     )
-    value = re.sub(r"\\s+(?:hd|sd|fhd|uhd)$", "", value, flags=re.I)
+    value = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", value, flags=re.I)
     return norm(value)
 
 
