@@ -314,7 +314,7 @@ def main(args: argparse.Namespace) -> None:
 
     global_after_counts = Counter(
         identity_key(item, before_ids, unique_names)
-        for item in after_nonpluto_all
+        for item in after_playable
     )
     for category, before_keys in before_by_category.items():
         after_keys = after_by_category.get(category, [])
