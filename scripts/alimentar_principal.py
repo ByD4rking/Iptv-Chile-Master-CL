@@ -2274,6 +2274,11 @@ def validar_orden_canales(
         for channel_id in set(old_by_id) & set(new_by_id):
             if len(old_by_id[channel_id]) == 1 and len(new_by_id[channel_id]) == 1:
                 oi, ni = old_by_id[channel_id][0], new_by_id[channel_id][0]
+                # Un tvg-id puede ser reasignado a otro canal. La identidad
+                # exacta exige que también coincida el nombre normalizado;
+                # si no coincide, la entrada nueva no hereda el orden anterior.
+                if old_items[oi]["name"] != new_items[ni]["name"]:
+                    continue
                 pairs.append((oi, ni))
                 used_old.add(oi)
                 used_new.add(ni)
