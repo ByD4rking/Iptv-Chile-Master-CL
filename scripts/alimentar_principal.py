@@ -2107,6 +2107,12 @@ def validar_orden_canales(
             if nombre.startswith("avatar: la leyenda de aang"):
                 index = j + 1 if url else index + 1
                 continue
+            # Las entradas [Opc.N] son enlaces alternativos del mismo canal;
+            # su posición puede variar al renovar fuentes sin alterar el orden
+            # de los canales principales de la categoría.
+            if re.search(r"\[opc(?:ion)?\.?\s*\d+\]$", nombre, re.I):
+                index = j + 1 if url else index + 1
+                continue
             match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
             channel_id = normalizar(match.group(1)) if match and match.group(1).strip() else ""
             if (
