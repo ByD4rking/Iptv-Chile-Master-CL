@@ -141,11 +141,11 @@ def _without_option_suffix(value: str) -> str:
     value = (value or "").strip()
     # Cartoonito HD (Opc.3/Opc.4) identifica señales distintas, no opciones
     # numeradas de un mismo canal. No se debe normalizar ni colapsar.
-    if re.match(r"^cartoonito\\s+hd\\s*\\(\\s*opc\\.?\\s*\\d+\\s*\\)$", value, re.I):
+    if re.match(r"^cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)$", value, re.I):
         return value
     suffix = re.compile(
-        r"\\s*(?:\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|"
-        r"\\(\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\))$",
+        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+        r"\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))$",
         re.I,
     )
     # Algunas fuentes anidan marcas: "Canal (Opc.1) [Opción 2]".
