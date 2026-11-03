@@ -411,8 +411,8 @@ def synchronize_once() -> dict:
         manifest = {}
 
     updated, changes = reconcile_lines(original, candidates, manifest)
-    text = "\\n".join(updated).rstrip("\\n") + "\\n"
-    if not text.startswith("#EXTM3U\\n") or not any(line.startswith("#EXTINF:") for line in updated):
+    text = "\n".join(updated).rstrip("\n") + "\n"
+    if not text.startswith("#EXTM3U\n") or not any(line.startswith("#EXTINF:") for line in updated):
         raise RuntimeError("La sincronización produjo una M3U inválida; se conserva el archivo original.")
 
     manifest_text = json.dumps(
@@ -420,15 +420,15 @@ def synchronize_once() -> dict:
         ensure_ascii=False,
         indent=2,
         sort_keys=True,
-    ) + "\\n"
+    ) + "\n"
     temp_playlist = PRINCIPAL.with_name(PRINCIPAL.name + ".sync.tmp")
     temp_manifest = MANIFEST.with_name(MANIFEST.name + ".sync.tmp")
     try:
-        temp_playlist.write_text(text, encoding="utf-8", newline="\\n")
-        temp_manifest.write_text(manifest_text, encoding="utf-8", newline="\\n")
+        temp_playlist.write_text(text, encoding="utf-8", newline="\n")
+        temp_manifest.write_text(manifest_text, encoding="utf-8", newline="\n")
 
         staged = temp_playlist.read_text(encoding="utf-8")
-        if not staged.startswith("#EXTM3U\\n") or not any(
+        if not staged.startswith("#EXTM3U\n") or not any(
             line.startswith("#EXTINF:") for line in staged.splitlines()
         ):
             raise RuntimeError("Validación temporal de M3U fallida.")
