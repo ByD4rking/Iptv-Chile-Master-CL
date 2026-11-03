@@ -47,6 +47,30 @@ def candidate(channel_id, category, name, url, source=None):
 
 
 class OriginalPlaylistOrderTests(unittest.TestCase):
+    def test_colombia_suffix_preserves_caracol_historical_position(self):
+        original = ["#EXTM3U"] + (
+            entry("", "Colombia", "Caracol | CO", "https://old.example/caracol.m3u8")
+            + entry("", "Colombia", "CNC Bugavisión", "https://old.example/cnc.m3u8")
+        )
+        current = ["#EXTM3U"] + (
+            entry("123", "Colombia", "Caracol", "https://new.example/caracol.m3u8")
+            + entry("", "Colombia", "CNC Bugavisión", "https://old.example/cnc.m3u8")
+        )
+        self.assertEqual(
+            ap.normalizar_nombre_canal("Caracol | CO"),
+            ap.normalizar_nombre_canal("Caracol"),
+        )
+        output = ap.restaurar_orden_original_por_categoria(
+            current[::-1] if False else ["#EXTM3U"] + current[3:] + current[1:3],
+            original,
+        )
+        names = [
+            ap.extraer_nombre(line)
+            for line in output
+            if line.startswith("#EXTINF")
+        ]
+        self.assertEqual(names, ["Caracol", "CNC Bugavisión"])
+
     def test_restore_channel_order_within_each_category_and_append_new_channels(self):
         original = ["#EXTM3U"] + (
             entry("cat1.a", "Categoría A", "Canal A", "https://a.example/a.m3u8")
