@@ -8,7 +8,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from alimentar_principal import (
     identidades_pluto,
-    ids_pluto_faltantes,
+    calcular_ids_pluto_faltantes,
 )
 
 
@@ -28,7 +28,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         required = {"id:epg.alias"}
         aliases = {"id:epg.alias": identidades_pluto(source_extinf, url)}
         final_aliases = identidades_pluto(final_extinf, url)
-        self.assertEqual(ids_pluto_faltantes(required, aliases, final_aliases), set())
+        self.assertEqual(calcular_calcular_ids_pluto_faltantes(required, aliases, final_aliases), set())
 
     def test_real_missing_channel_is_still_rejected(self):
         source_extinf = '#EXTINF:-1 tvg-id="epg.alias",Canal'
