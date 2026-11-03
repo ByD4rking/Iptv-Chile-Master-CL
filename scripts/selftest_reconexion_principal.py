@@ -229,6 +229,40 @@ def test_extinf_category_fallback_preserves_duration() -> None:
     assert updated == '#EXTINF:-1 group-title="Estilo De Vida" tvg-id="demo",Canal demo'
     assert "-1 group-title=" in updated and 'Vida"-1' not in updated
 
+def test_pluto_mx_fails_closed() -> None:
+    class FailingSession:
+        def get(self, url: str, timeout: int):
+            raise OSError("fuente temporalmente no disponible")
+
+    original = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="canal-a" group-title="Anime",Canal A',
+        "https://example.test/canal-a.m3u8",
+    ]
+    try:
+        integrar_pluto_mx(original, FailingSession())
+    except RuntimeError as exc:
+        assert "se cancela la actualización" in str(exc)
+    else:
+        raise AssertionError("Pluto MX fallido no canceló la actualización")
+
+
+def test_pluto_option_on_external_cdn_stays_adjacent() -> None:
+    channel_id = "bbbbbbbbbbbbbbbbbbbbbbbb"
+    source = [
+        "#EXTM3U",
+        f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Anime",Canal Pluto',
+        f"https://service-stitcher.clusters.pluto.tv/v2/channel/{channel_id}/master.m3u8",
+        f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Anime",Canal Pluto (OPCIÓN 2)',
+        "https://cdn.example.test/pluto-option.m3u8",
+    ]
+    result, _, _ = reubicar_bloques_pluto_sin_reordenar_principal(source)
+    names = [line for line in result if line.startswith("#EXTINF")]
+    base_index = next(i for i, line in enumerate(names) if line.endswith(",Canal Pluto"))
+    option_index = next(i for i, line in enumerate(names) if line.endswith(",Canal Pluto (OPCIÓN 2)"))
+    assert option_index == base_index + 1, names
+
+
 def test_external_source_urls() -> None:
     assert FUENTE_MAGMA == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u"
     assert FUENTE_PLUTO_ALTERNATIVAS == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
@@ -240,6 +274,8 @@ if __name__ == "__main__":
     test_pluto_mx_importer()
     test_pluto_options_remain_adjacent()
     test_extinf_category_fallback_preserves_duration()
+    test_pluto_mx_fails_closed()
+    test_pluto_option_on_external_cdn_stays_adjacent()
     test_external_source_urls()
     print("SELFTEST OK: MAGMA, Pluto MX, Anime, Avatar y American Ninja Warrior.")
 
