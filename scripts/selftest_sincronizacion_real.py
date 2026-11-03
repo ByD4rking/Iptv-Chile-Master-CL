@@ -145,15 +145,12 @@ def protected_hashes() -> dict[str, str]:
 
 
 def identity_key(item: dict, other_ids: set[str], unique_names: set[str]) -> str:
-    channel_id = norm(item.get("id", ""))
     name = item.get("tvg_name") or item.get("name") or ""
-    if channel_id and channel_id in other_ids:
-        return "id:" + channel_id
-    if name and name in unique_names:
-        return "name:" + name
-    if channel_id:
-        return "id:" + channel_id
-    return "name:" + name
+    name_key = channel_name_key(name)
+    if name_key:
+        return "name:" + name_key
+    channel_id = norm(item.get("id", ""))
+    return "id:" + channel_id if channel_id else "name:"
 
 
 def main(args: argparse.Namespace) -> None:
@@ -398,7 +395,7 @@ def main(args: argparse.Namespace) -> None:
                 raise AssertionError(f"La URL principal tiene etiqueta de opción: {key}")
             if option_index > 1 and (not item["is_option"] or item["option_number"] != option_index):
                 raise AssertionError(f"Numeración incorrecta de alternativas para {key}")
-            if re.search(r"\\bMAGNA\\b|\\bPluto\\s+(?:LATAM|MX|ES)\\b", item["display_raw"], re.I):
+            if re.search(r"\bMAGNA\b|\bPluto\s+(?:LATAM|MX|ES)\b", item["display_raw"], re.I):
                 raise AssertionError(f"El nombre muestra el proveedor en {key}: {item['display_raw']}")
 
     before_heidi = [item for item in before if item["url"] and ("heidi" in item["name"] or "heidi" in item["tvg_name"])]
