@@ -86,7 +86,7 @@ def fetch_url(url: str) -> bytes:
             if not data.lstrip(b"\xef\xbb\xbf \r\n").startswith(b"#EXTM3U"):
                 raise ValueError("respuesta no contiene cabecera #EXTM3U")
             return data
-        except (HTTPError, URLError, TimeoutError, OSError, ValueError) as exc:
+        except Exception as exc:
             last_error = exc
             if attempt + 1 < RETRIES:
                 time.sleep(1.5 * (2 ** attempt))
@@ -177,9 +177,10 @@ def diff_source(name: str, old: dict | None, new: dict) -> dict:
             changed_group.append({"key": key, "before_fingerprint": before[2], "after_fingerprint": after[2]})
     url_changed = old.get("url") != new.get("url")
     content_changed = old.get("sha256") != new.get("sha256")
+    order_changed = list(old_channels) != list(new_channels)
     return {
         "source": name,
-        "status": "changed" if (url_changed or added or removed or changed_name or changed_url or changed_group) else "unchanged",
+        "status": "changed" if (url_changed or added or removed or changed_name or changed_url or changed_group or order_changed) else "unchanged",
         "source_url_changed": url_changed,
         "old_source_url": old.get("url"),
         "new_source_url": new.get("url"),
@@ -189,6 +190,7 @@ def diff_source(name: str, old: dict | None, new: dict) -> dict:
         "changed_stream_urls": len(changed_url),
         "changed_categories": len(changed_group),
         "content_hash_changed": content_changed,
+        "channel_order_changed": order_changed,
         "samples": {
             "added": added[:30],
             "removed": removed[:30],
@@ -244,6 +246,14 @@ def audit(scope: str) -> dict:
     if jobs and not results:
         raise RuntimeError(f"Ninguna fuente de {scope} pudo auditarse; no se permite continuar a generar listas.")
 
+    configured_names = {job[0] for job in jobs}
+    configured_url_changes = [
+        {"source": job[0], "before": previous_sources[job[0]].get("url"), "after": job[1]}
+        for job in jobs
+        if job[0] in previous_sources and previous_sources[job[0]].get("url") != job[1]
+    ]
+    removed_sources = sorted(set(previous_sources) - configured_names)
+
     changes = []
     for name, item, readonly in sorted(results):
         old = previous_sources.get(name)
@@ -272,7 +282,9 @@ def audit(scope: str) -> dict:
         "total_added_channels": sum(item.get("added_channels", 0) for item in changes),
         "total_removed_channels": sum(item.get("removed_channels", 0) for item in changes),
         "total_changed_stream_urls": sum(item.get("changed_stream_urls", 0) for item in changes),
-        "total_source_url_changes": sum(1 for item in changes if item.get("source_url_changed")),
+        "total_source_url_changes": len(configured_url_changes),
+        "configured_source_url_changes": configured_url_changes,
+        "removed_sources": removed_sources,
         "errors": errors,
         "changes": changes,
         "god_read_only": scope == "principal",
