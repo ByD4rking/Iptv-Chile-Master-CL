@@ -1907,6 +1907,16 @@ def restaurar_no_pluto_existente(lineas, iniciales):
                 continue
 
         categoria_original = extraer_categoria(extinf)
+        categoria_normalizada = normalizar(categoria_original)
+        # Estas categorías se eliminan mediante reglas explícitas del proyecto;
+        # la protección de no-regresión no debe resucitarlas.
+        if (
+            not categoria_normalizada
+            or categoria_normalizada in {"total", "otros", "telemundo noticias", "sky sports"}
+            or categoria_normalizada in CATEGORIAS_PAIS_NO_AUTORIZADAS
+        ):
+            continue
+
         destino = buscar_categoria_existente(categoria_original, categorias)
 
         # Si la carpeta histórica ya no existe, conservar el canal en su
@@ -3083,21 +3093,6 @@ def main():
                 duplicados_finales += 1
             vistos.add(u)
 
-    # 13) Protección de no-regresión: ningún canal no-Pluto que ya existía
-    # puede desaparecer por una limpieza interna accidental.
-    lineas, no_pluto_restaurados = restaurar_no_pluto_existente(
-        lineas,
-        bloques_no_pluto_iniciales,
-    )
-    if no_pluto_restaurados:
-        print(f"Autorreparación: {no_pluto_restaurados} canales no-Pluto restaurados.")
-
-    # 14) Última barrera: deduplicación exacta después de cualquier autorreparación.
-    # Así una restauración nunca puede volver a introducir una URL duplicada.
-    lineas, duplicados_post_restauracion, _ = limpiar_duplicados_globales_y_carpetas_especiales(lineas)
-    if duplicados_post_restauracion:
-        print(f"Deduplicación final tras autorreparación: {duplicados_post_restauracion} duplicados eliminados.")
-
     # Consolidar de nuevo las categorías después de la autorreparación.
     # Esto evita que un canal restaurado genere un bloque físico separado.
     lineas, cambios_orden_post_restauracion = ordenar_y_normalizar_carpetas(lineas)
@@ -3284,6 +3279,17 @@ def main():
         f"{orden_entretenimiento['originales']} originales."
     )
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
+
+    # Restaurar al FINAL de todas las limpiezas y ajustes. Antes se hacía
+    # demasiado pronto: las correcciones de referencia y otras normalizaciones
+    # posteriores podían volver a retirar los canales recién recuperados.
+    # Las categorías eliminadas explícitamente se excluyen dentro del restaurador.
+    lineas, no_pluto_restaurados = restaurar_no_pluto_existente(
+        lineas,
+        bloques_no_pluto_iniciales,
+    )
+    if no_pluto_restaurados:
+        print(f"Autorreparación final: {no_pluto_restaurados} canales no-Pluto restaurados.")
 
     # Restaurar primero el orden de los canales que ya estaban publicados.
     # Los nuevos se anexan; las carpetas especiales y Pluto conservan sus reglas.
