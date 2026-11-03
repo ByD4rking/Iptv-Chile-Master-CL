@@ -244,11 +244,18 @@ def main(args: argparse.Namespace) -> None:
             after_urls_by_id[channel_id].add(item["url"])
 
     # Pluto MX externo es una URL estable jmp2, no un JWT propio.
-    mx_source_urls = {channel.get("url", "") for channel in pluto_mx if channel.get("url")}
+    mx_source_channels = [channel for channel in pluto_mx if channel.get("url")]
+    mx_source_urls = {channel["url"] for channel in mx_source_channels}
     missing_mx_urls = mx_source_urls - after_urls
     if missing_mx_urls:
+        missing_names = sorted({
+            channel.get("nombre", channel["url"])
+            for channel in mx_source_channels
+            if channel["url"] in missing_mx_urls
+        })
         raise AssertionError(
-            f"La maestra perdió {len(missing_mx_urls)} URLs de Pluto MX externo."
+            f"La maestra perdió {len(missing_mx_urls)} URLs de Pluto MX externo. "
+            f"Ejemplos: {', '.join(missing_names[:8])}"
         )
 
     # Verificar que la maestra contiene el JWT recién generado en LATAM/ES
