@@ -113,6 +113,8 @@ Puedes utilizar **una sola, varias o las siete** según lo que necesites. No es 
 
 La lista principal integra **Pluto TV LATAM y Pluto TV España** desde nuestras playlists propias, ambas con URLs JWT renovables, y **Pluto TV México** desde la lista externa `PlutoTV.MX.m3u`, que utiliza enlaces `jmp2.uk` sin JWT. La playlist propia `pluto_mx.m3u` (generada con JWT) se mantiene independiente y no se copia a la principal. Las otras cuatro regiones (Argentina, Brasil, Chile y Estados Unidos) también permanecen independientes.
 
+Los JWT de LATAM y España tienen una vigencia aproximada de 24 horas. El cliente usa un margen interno de renovación de **12 horas** y el workflow Pluto se programa cada hora. Cuando Pluto termina correctamente, el workflow principal vuelve a sincronizar la maestra; además, la actualización programada de la maestra queda como respaldo.
+
 **Prioridad para agrupar alternativas en la lista principal:**
 
 **Pluto LATAM → Pluto MX externo → MAGNA → otras fuentes**
