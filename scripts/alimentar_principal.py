@@ -458,6 +458,20 @@ def determinar_destino_magma(categoria, nombre, categorias):
     return determinar_destino(categoria, nombre, None, categorias)
 
 
+def canal_excluido_pluto_es(fuente, canal):
+    """Excluye solo Anime y Los Pitufos desde la fuente regional Pluto ES."""
+    if "pluto_es.m3u" not in (fuente or "").lower():
+        return False
+    categoria = normalizar(canal.get("categoria", ""))
+    extinf = canal.get("extinf", "")
+    tvg_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
+    nombre = normalizar(
+        (tvg_name.group(1) if tvg_name else "") + " " +
+        (canal.get("nombre") or extraer_nombre(extinf))
+    )
+    return categoria == "anime" or "los pitufos" in nombre
+
+
 def determinar_destino_pluto(categoria, nombre, categorias):
     """
     Decide dónde va un canal Pluto respetando primero la carpeta declarada
@@ -3242,11 +3256,9 @@ def main():
             sin_categoria = 0
 
             for canal in canales:
-                # La referencia excluye Pluto España únicamente dentro de Anime.
-                if (
-                    "pluto_es.m3u" in fuente.lower()
-                    and normalizar(canal.get("categoria", "")) == "anime"
-                ):
+                # Pluto ES no debe reinsertar Anime ni la variante regional
+                # no funcional de Los Pitufos, ni siquiera en la reparación final.
+                if canal_excluido_pluto_es(fuente, canal):
                     continue
 
                 destino = determinar_destino_pluto(
