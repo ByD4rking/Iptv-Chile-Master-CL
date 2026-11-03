@@ -168,7 +168,7 @@ jobs:
       - name: Verificar que el generador no tocó archivos ajenos
         run: |
           set -euo pipefail
-          git status --porcelain | while IFS= read -r line; do
+          git status --porcelain=v1 -uall | while IFS= read -r line; do
             file="${line:3}"
             file="${file%/}"
             case "$file" in
