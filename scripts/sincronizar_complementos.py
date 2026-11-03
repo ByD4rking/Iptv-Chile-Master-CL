@@ -138,17 +138,24 @@ def _set_display_name(extinf: str, display_name: str) -> str:
 
 
 def _without_option_suffix(value: str) -> str:
-    value = value or ""
-    # Cartoonito HD (Opc.3/Opc.4) son señales distintas y no se deben colapsar.
-    if re.match(r"^\s*cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)\s*$", value, re.I):
-        return value.strip()
-    return re.sub(
-        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
-        r"\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))\s*$",
-        "",
-        value,
-        flags=re.I,
-    ).strip()
+    value = (value or "").strip()
+    # Cartoonito HD (Opc.3/Opc.4) identifica señales distintas, no opciones
+    # numeradas de un mismo canal. No se debe normalizar ni colapsar.
+    if re.match(r"^cartoonito\\s+hd\\s*\\(\\s*opc\\.?\\s*\\d+\\s*\\)$", value, re.I):
+        return value
+    suffix = re.compile(
+        r"\\s*(?:\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|"
+        r"\\(\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\))$",
+        re.I,
+    )
+    # Algunas fuentes anidan marcas: "Canal (Opc.1) [Opción 2]".
+    # Retirar todas las marcas finales para que el canal caiga en un único
+    # grupo y la numeración se regenere de forma consecutiva.
+    previous = None
+    while value and value != previous:
+        previous = value
+        value = suffix.sub("", value).strip()
+    return value
 
 
 def _canonical_channel_name(channel: dict) -> str:
