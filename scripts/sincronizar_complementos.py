@@ -45,12 +45,12 @@ def _identity(channel: dict, *, pluto: bool = False) -> str:
 def _base_channel_name(extinf: str) -> str:
     name = _attr(extinf, "tvg-name") or ap.extraer_nombre(extinf)
     name = re.sub(
-        r"\\s*(?:\\[\\s*opc(?:ion)?\\.?\\s*\\d+\\s*\\]|\\(\\s*opci[oó]n\\s*\\d+\\s*\\))\\s*$",
+        r"\s*(?:\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
         "",
         name,
         flags=re.I,
     )
-    name = re.sub(r"\\s+(?:hd|sd|fhd|uhd)$", "", name, flags=re.I)
+    name = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", name, flags=re.I)
     return ap.normalizar(name)
 
 
