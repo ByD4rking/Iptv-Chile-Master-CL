@@ -54,7 +54,7 @@ def main() -> None:
 
     before_order = ["id:canal-a", "id:canal-b", "id:pluto-a"]
     result, reconnects_added = aplicar_reconexion_por_canal(source)
-    validar_orden_canales(before_order, result)
+    validar_orden_canales(source, result)
     assert channel_records(source) == channel_records(result), (
         "la reconexión alteró nombres, URLs o secuencia de canales"
     )
@@ -74,7 +74,7 @@ def main() -> None:
     assert result.count("https://example.test/canal-b.m3u8") == 1
 
     try:
-        validar_orden_canales(before_order, [
+        validar_orden_canales(source, [
             '#EXTINF:-1 tvg-id="canal-b",Canal B',
             "https://example.test/canal-b.m3u8",
             '#EXTINF:-1 tvg-id="canal-a",Canal A',
@@ -104,31 +104,21 @@ def test_ordenamiento_solicitado_de_entretenimiento_no_bloquea_la_lista() -> Non
     ]
     after = [
         "#EXTM3U",
-        '#EXTINF:-1 tvg-id="ent-b" group-title="Entretenimiento / Cine / Series",Canal B',
-        "https://example.test/b.m3u8",
-        '#EXTINF:-1 tvg-id="ent-a" group-title="Entretenimiento / Cine / Series",Canal A',
-        "https://example.test/a.m3u8",
         '#EXTINF:-1 tvg-id="sports-a" group-title="Deportes",Canal Deportes A',
         "https://example.test/sports-a.m3u8",
         '#EXTINF:-1 tvg-id="sports-b" group-title="Deportes",Canal Deportes B',
         "https://example.test/sports-b.m3u8",
+        '#EXTINF:-1 tvg-id="ent-b" group-title="Entretenimiento / Cine / Series",Canal B',
+        "https://example.test/b.m3u8",
+        '#EXTINF:-1 tvg-id="ent-a" group-title="Entretenimiento / Cine / Series",Canal A',
+        "https://example.test/a.m3u8",
     ]
-    before_order = firma_orden_canales(before)
-    entertainment_keys = set(firma_orden_canales([
-        line for line in before
-        if line.startswith("#EXTINF")
-        and 'group-title="Entretenimiento / Cine / Series"' in line
-    ]))
-    entertainment_keys.update(firma_orden_canales([
-        line for line in after
-        if line.startswith("#EXTINF")
-        and 'group-title="Entretenimiento / Cine / Series"' in line
-    ]))
     validar_orden_canales(
-        before_order,
+        before,
         after,
-        claves_reordenables=entertainment_keys,
+        categorias_reordenables={"Entretenimiento / Cine / Series"},
     )
+
 
 
 def test_ajustes_referencia() -> None:
@@ -151,7 +141,6 @@ def test_ajustes_referencia() -> None:
         '#EXTINF:-1 tvg-id="wipeout" group-title="Competencia",Wipe Out',
         "https://example.test/wipeout.m3u8",
     ]
-    before_order = firma_orden_canales(source)
     result = aplicar_ajustes_referencia(source)
     result_text = "\n".join(result)
     assert "Canal Anime [Pluto ES]" not in result_text
@@ -166,7 +155,7 @@ def test_ajustes_referencia() -> None:
     assert 'group-title="Competencia",American Ninja Warrior' in result_text
     assert "https://d4whmvwm0rdvi.cloudfront.net/10007/99951318/hls/master.m3u8?ads.xumo_channelId=99951318" in result_text
     assert "https://raw.githubusercontent.com/RoqueDJ/iptv-svg/main/1792421696158.png" in result_text
-    validar_orden_canales(before_order, result)
+    validar_orden_canales(source, result)
     again = aplicar_ajustes_referencia(result)
     assert "\n".join(again).count("American Ninja Warrior") == 1
     assert sum(1 for x in again if x.startswith("#EXTINF") and "Avatar: La Leyenda de Aang" in x) == 1
