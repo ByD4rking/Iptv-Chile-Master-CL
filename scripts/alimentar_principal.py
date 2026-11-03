@@ -3093,8 +3093,8 @@ def main():
                 duplicados_finales += 1
             vistos.add(u)
 
-    # Consolidar de nuevo las categorías después de la autorreparación.
-    # Esto evita que un canal restaurado genere un bloque físico separado.
+    # Consolidar de nuevo las categorías después de los ajustes previos.
+    # La restauración de canales no-Pluto se ejecuta más abajo, al final.
     lineas, cambios_orden_post_restauracion = ordenar_y_normalizar_carpetas(lineas)
     if cambios_orden_post_restauracion:
         print("Orden final tras autorreparación aplicado.")
