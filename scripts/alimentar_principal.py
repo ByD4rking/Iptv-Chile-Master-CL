@@ -1967,14 +1967,15 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
         return lineas
 
     def identidades(extinf):
-        keys = []
+        # Si existe tvg-id, es la identidad primaria y exclusiva.
+        # Usar también el nombre mezcla canales distintos que comparten
+        # etiqueta (por ejemplo, variantes regionales) y puede asignar a un
+        # canal nuevo el rango de otro canal ya publicado.
         match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         if match and match.group(1).strip():
-            keys.append("id:" + normalizar(match.group(1)))
+            return ["id:" + normalizar(match.group(1))]
         nombre = normalizar(extraer_nombre(extinf))
-        if nombre:
-            keys.append("name:" + nombre)
-        return keys
+        return ["name:" + nombre] if nombre else []
 
     def categoria_canonica(categoria):
         key = normalizar(categoria)
@@ -2715,6 +2716,18 @@ def main():
             r.raise_for_status()
             canales = parsear_m3u(r.text)
             if fuente_es_iptvsv := es_fuente_iptvsv(fuente):
+                # Primero sincronizar group-title de las URLs que ya existen.
+                # Validar antes de esta reconciliación bloqueaba toda la fuente
+                # precisamente cuando IPTV-SV traía una categoría actualizada.
+                lineas, iptvsv_reclasificados, iptvsv_conflictos = reclasificar_iptvsv_existente(
+                    lineas,
+                    canales,
+                    categorias,
+                )
+                if iptvsv_reclasificados:
+                    print(f"  -> IPTVSV URLs existentes reclasificadas: {iptvsv_reclasificados}")
+                if iptvsv_conflictos:
+                    print(f"  -> IPTVSV conflictos de categoría por URL: {iptvsv_conflictos}")
                 iptvsv_auditoria = validar_integridad_iptvsv(
                     lineas,
                     canales,
@@ -2726,15 +2739,6 @@ def main():
                     f"{iptvsv_auditoria['conflictos_fuente']} conflictos de URL, "
                     f"{iptvsv_auditoria['errores_categoria']} categorías incorrectas."
                 )
-                lineas, iptvsv_reclasificados, iptvsv_conflictos = reclasificar_iptvsv_existente(
-                    lineas,
-                    canales,
-                    categorias,
-                )
-                if iptvsv_reclasificados:
-                    print(f"  -> IPTVSV URLs existentes reclasificadas: {iptvsv_reclasificados}")
-                if iptvsv_conflictos:
-                    print(f"  -> IPTVSV conflictos de categoría por URL: {iptvsv_conflictos}")
             pais_fuente = next(
                 (pais for clave, pais in PAIS_POR_FUENTE.items()
                  if clave.lower() in fuente.lower()),
