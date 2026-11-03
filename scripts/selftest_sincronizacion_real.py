@@ -50,8 +50,9 @@ def parse_entries(path: Path) -> list[dict]:
         for next_index in range(index + 1, len(lines)):
             if lines[next_index].startswith("#EXTINF:"):
                 break
-            if lines[next_index].strip().startswith(("http://", "https://")):
-                url = lines[next_index].strip()
+            candidate_url = lines[next_index].strip()
+            if candidate_url and not candidate_url.startswith("#"):
+                url = candidate_url
                 break
         entries.append({
             "id": (id_match.group(1).strip() if id_match else ""),
