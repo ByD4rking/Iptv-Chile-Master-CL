@@ -408,6 +408,14 @@ def main(args: argparse.Namespace) -> None:
         for item in after_playable
     )
     for category, before_keys in before_by_category.items():
+        # Estos dos bloques tienen reordenamiento intencional y validaciones
+        # específicas: MAGMA se consolida en Entretenimiento y los tres
+        # prioritarios se ponen al inicio de Infantiles.
+        if category in {
+            norm("Entretenimiento / Cine / Series"),
+            norm("Infantiles"),
+        }:
+            continue
         after_keys = after_by_category.get(category, [])
         before_counts = Counter(before_keys)
         after_counts = Counter(after_keys)
