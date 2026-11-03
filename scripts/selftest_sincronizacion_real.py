@@ -40,13 +40,13 @@ def base_name(value: str) -> str:
         flags=re.I,
     )
     value = re.sub(
-        r"\s*(?:\[\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
-        r"\(\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
+        r"\s*(?:\[\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
+        r"\(\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
         "",
         value or "",
         flags=re.I,
     )
-    value = re.sub(r"\s+(?:magna|pluto\s*(?:latam|mx|es)|espanol|españa|spanish|hd|sd|fhd|uhd)$", "", value, flags=re.I)
+    value = re.sub(r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es)|espanol|españa|spanish|hd|sd|fhd|uhd)$", "", value, flags=re.I)
     return norm(value)
 
 
@@ -471,7 +471,7 @@ def main(args: argparse.Namespace) -> None:
                 raise AssertionError(f"La URL principal tiene etiqueta de opción: {key}")
             if option_index > 1 and (not item["is_option"] or item["option_number"] != option_index):
                 raise AssertionError(f"Numeración incorrecta de alternativas para {key}")
-            if re.search(r"\bMAGNA\b|\bPluto\s+(?:LATAM|MX|ES)\b", item["display_raw"] + " " + item["tvg_name"], re.I):
+            if re.search(r"\bMAGNA\b|\bMAGMA\b|\bPluto\s+(?:LATAM|MX|ES)\b", item["display_raw"] + " " + item["tvg_name"], re.I):
                 raise AssertionError(f"El nombre muestra el proveedor en {key}: {item['display_raw']}")
 
     before_heidi = [item for item in before if item["url"] and ("heidi" in item["name"] or "heidi" in item["tvg_name"])]
