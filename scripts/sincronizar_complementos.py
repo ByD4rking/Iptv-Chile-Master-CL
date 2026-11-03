@@ -76,17 +76,26 @@ def _set_attr(extinf: str, key: str, value: str) -> str:
 
 
 def _merge_extinf(current: str, source: str, destination: str) -> str:
-    """Actualiza metadatos conocidos sin borrar atributos que la fuente omita."""
+    """Actualiza categoría/logos sin renombrar canales ni romper alternativas.
+
+    El tvg-id solo se rota cuando el bloque existente ya tenía uno. Si no
+    tenía ID, se mantiene el nombre actual como identidad de respaldo; así no
+    se fusionan opciones distintas que comparten un nombre visible.
+    """
     result = current
-    for key in ("tvg-id", "tvg-name", "tvg-logo", "tvg-language", "tvg-country", "tvg-chno"):
+    current_id = _attr(current, "tvg-id")
+    source_id = _attr(source, "tvg-id")
+    if current_id and source_id:
+        result = _set_attr(result, "tvg-id", source_id)
+
+    for key in ("tvg-logo", "logo", "tvg-language", "tvg-country", "tvg-chno"):
         value = _attr(source, key)
         if value:
             result = _set_attr(result, key, value)
-    result = _set_attr(result, "group-title", destination)
-    source_name = ap.extraer_nombre(source)
-    if source_name:
-        result = result.split(",", 1)[0] + "," + source_name
-    return result
+
+    # El nombre visible y tvg-name del canal existente se conservan. Los
+    # canales nuevos sí reciben íntegros los metadatos de la fuente.
+    return _set_attr(result, "group-title", destination)
 
 
 def _read_blocks(lines: list[str]) -> tuple[list[str], list[dict], list[str]]:
