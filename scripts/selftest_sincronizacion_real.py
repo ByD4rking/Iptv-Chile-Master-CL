@@ -312,6 +312,14 @@ def main(args: argparse.Namespace) -> None:
         raise AssertionError("No quedó Los Pitufos de LATAM/MX/MAGNA en Infantiles.")
     if any(item["is_es_anime"] for item in after):
         raise AssertionError("Quedó un canal Pluto ES o Español en Anime.")
+
+    anime_names = {
+        channel_name_key(item["display_raw"])
+        for item in after
+        if norm(item["category"]) == "anime"
+    }
+    if "delmitv" not in anime_names or "delmitv2" not in anime_names:
+        raise AssertionError("Falta Delmi TV o Delmi TV 2 en Anime.")
     pluto_es_anime_urls = {
         channel.get("url", "")
         for channel in pluto_es
@@ -520,7 +528,7 @@ def main(args: argparse.Namespace) -> None:
     print("SELFTEST SINCRONIZACIÓN REAL: OK")
     print(f"Canales iniciales: {len(before)}")
     print(f"Canales finales: {len(after)}")
-    print(f"Canales IPTVSV: {len(iptvsv)}; MAGNA: {len(magma)}")
+    print(f"Canales IPTVSV: {len(iptvsv)}; MAGMA: {len(magma)}")
     print(f"Canales TV Chichicasteca clasificados en Guatemala: {len(source_urls)}")
     print(f"Canales Pluto LATAM/ES/MX externo: {len(pluto_latam)}/{len(pluto_es)}/{len(pluto_mx)}")
     print(f"Canales Anime LATAM/MX integrados: {len(allowed_anime_names)}")
