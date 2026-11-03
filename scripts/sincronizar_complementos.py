@@ -242,21 +242,22 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
     # Excluir Pluto España de Anime, pero mantener el mismo ID si también
     # está disponible en Pluto LATAM o México.
     pluto_es_anime_ids = set()
-    pluto_latam_mx_anime_ids = set()
+    pluto_latam_mx_ids = set()
     for candidate in candidates:
-        if ap.normalizar(candidate.get("categoria", "")) != "anime":
-            continue
         identity = candidate.get("identity") or _identity(
             candidate, pluto=candidate.get("is_pluto", False)
         )
         if not identity.startswith("id:"):
             continue
         source = candidate.get("source", "")
-        if source == ap.FUENTES_PLUTO[1]:
+        category = ap.normalizar(candidate.get("categoria", ""))
+        if source == ap.FUENTES_PLUTO[1] and category == "anime":
             pluto_es_anime_ids.add(identity)
         elif source in {ap.FUENTES_PLUTO[0], ap.FUENTES_PLUTO[2], ap.FUENTE_PLUTO_ALTERNATIVAS}:
-            pluto_latam_mx_anime_ids.add(identity)
-    pluto_es_only_ids = pluto_es_anime_ids - pluto_latam_mx_anime_ids
+            # Si el mismo ID existe en MX/LATAM, se conserva esa versión aunque
+            # la categoría regional sea distinta de Anime.
+            pluto_latam_mx_ids.add(identity)
+    pluto_es_only_ids = pluto_es_anime_ids - pluto_latam_mx_ids
 
     # La única baja manual autorizada es Los Pitufos. Se eliminan también
     # sus alternativas con el mismo tvg-id, sin tocar otros infantiles.
@@ -406,9 +407,14 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         selected = None
         if owner_source:
             selected = next((item for item in group if item.get("source") == owner_source), None)
-            # La fuente propietaria no entregó este canal en esta ejecución:
-            # se conserva la entrada existente y no se permite que otra fuente
-            # la secuestre ni cambie su URL.
+            # Excepción explícita: si la fuente propietaria es Pluto ES y su
+            # variante está en Anime, LATAM/MX pueden sustituirla. España no
+            # alimenta Anime; las versiones LATAM/MX sí.
+            if selected is None and identity in pluto_es_anime_ids and group:
+                selected = group[0]
+                manifest[identity] = {"source": selected["source"]}
+            # En cualquier otra ausencia temporal se conserva la entrada y
+            # no se permite que otra fuente se apropie del canal.
             if selected is None:
                 continue
         elif match is not None:
