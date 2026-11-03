@@ -142,8 +142,9 @@ def snapshot_entry(raw: bytes, label: str, url: str) -> dict:
     if not parsed:
         raise ValueError("M3U sin canales válidos")
     # Never persist signed HLS URLs or query tokens in audit snapshots/reports.
+    fingerprint = lambda value: compact_hash(str(value).encode("utf-8"))[:16]
     channels = {
-        key: [entry[0], compact_hash(entry[1].encode("utf-8")), entry[2]]
+        key: [fingerprint(entry[0]), fingerprint(entry[1]), fingerprint(entry[2])]
         for key, entry in parsed.items()
     }
     return {
@@ -169,11 +170,11 @@ def diff_source(name: str, old: dict | None, new: dict) -> dict:
         before = old_channels[key]
         after = new_channels[key]
         if before[0] != after[0]:
-            changed_name.append({"key": key, "before": before[0], "after": after[0]})
+            changed_name.append({"key": key, "before_fingerprint": before[0], "after_fingerprint": after[0]})
         if before[1] != after[1]:
-            changed_url.append({"key": key, "name": after[0] or before[0], "before": before[1], "after": after[1]})
+            changed_url.append({"key": key, "before_fingerprint": before[1], "after_fingerprint": after[1]})
         if before[2] != after[2]:
-            changed_group.append({"key": key, "before": before[2], "after": after[2]})
+            changed_group.append({"key": key, "before_fingerprint": before[2], "after_fingerprint": after[2]})
     url_changed = old.get("url") != new.get("url")
     content_changed = old.get("sha256") != new.get("sha256")
     return {
