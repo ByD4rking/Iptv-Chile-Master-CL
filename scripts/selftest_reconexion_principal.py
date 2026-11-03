@@ -290,6 +290,14 @@ def test_magma_and_original_entertainment_blocks_are_sorted() -> None:
         "https://magma.example/zulu.m3u8",
         '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Original Zulu',
         "https://original.example/zulu.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Venevisión [V3](Venezuela)',
+        "https://original.example/venevision-v3.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Venevisión (Venezuela)[Opc.2]',
+        "https://original.example/venevision-opc2.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Venevisión [V2](Venezuela)',
+        "https://original.example/venevision-v2.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Venevisión (Venezuela)',
+        "https://original.example/venevision.m3u8",
         '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Chespirito TV',
         "https://original.example/chespirito.m3u8",
         '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Alpha [MAGMA]',
@@ -328,8 +336,12 @@ def test_magma_and_original_entertainment_blocks_are_sorted() -> None:
         "Canal original extra",
         "Original Alpha",
         "Original Zulu",
+        "Venevisión (Venezuela)",
+        "Venevisión [V2](Venezuela)",
+        "Venevisión [V3](Venezuela)",
+        "Venevisión (Venezuela)[Opc.2]",
     ], names
-    assert audit == {"fijos": 5, "magma": 2, "originales": 4, "urls_magma": 2}
+    assert audit == {"fijos": 5, "magma": 2, "originales": 8, "urls_magma": 2}
     assert "Delmi TV [V2]" in "\\n".join(result)
 
 
