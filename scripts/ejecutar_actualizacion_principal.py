@@ -1,21 +1,43 @@
 #!/usr/bin/env python3
-"""Ejecuta el alimentador histórico y luego la reconciliación incremental.
+"""Ejecuta una actualización integral de la playlist principal."""
+from pathlib import Path
+import subprocess
+import sys
 
-El alimentador histórico conserva su propia auditoría del orden original. Por
-eso corre primero sobre la maestra sin premodificaciones; después el
-sincronizador actualiza URLs, categorías y canales nuevos sin reordenar los
-bloques existentes. El workflow vuelve a reconciliar después de unificar CHILE.
-"""
 import alimentar_principal as alimentador
 from sincronizar_complementos import synchronize_once
 
+ROOT = Path(__file__).resolve().parents[1]
+PRINCIPAL = ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+
 
 def main():
-    print("\n[ORQUESTADOR] Ejecutando alimentador histórico con su auditoría de orden.")
+    original_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
+
+    print("\n[ORQUESTADOR] Alimentador histórico, sin reordenar la maestra.")
     alimentador.main(restaurar_faltantes=True, preservar_orden=True)
 
-    print("\n[ORQUESTADOR] Reconciliando fuentes complementarias.")
+    print("\n[ORQUESTADOR] Unificando categorías CHILE.")
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "unificar_chile.py")],
+        cwd=ROOT,
+        check=True,
+    )
+
+    print("\n[ORQUESTADOR] Sincronizando fuentes complementarias.")
     result = synchronize_once()
+
+    print("\n[ORQUESTADOR] Restaurando el orden original por categoría.")
+    current_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
+    ordered_lines, order_stats = alimentador.restaurar_orden_original_por_categoria(
+        current_lines,
+        original_lines,
+    )
+    temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
+    temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
+    temporary.replace(PRINCIPAL)
+
+    print("[ORQUESTADOR] Orden protegido:", order_stats)
     print("[ORQUESTADOR] Resultado de sincronización:", result)
     return result
 
