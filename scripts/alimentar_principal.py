@@ -2811,6 +2811,7 @@ def agrupar_alternativas_por_identidad(lineas):
             base,
             flags=re.I,
         ).strip()
+        display_base = base
         base = re.sub(r"\\s+(?:hd|sd|fhd|uhd)$", "", base, flags=re.I).strip()
         id_match = re.search(r'tvg-id="([^"]*)"', extinf, re.I)
         tvg_name_match = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
@@ -2820,7 +2821,7 @@ def agrupar_alternativas_por_identidad(lineas):
             "url": url,
             "categoria": normalizar(extraer_categoria(extinf)),
             "nombre": normalizar(base),
-            "display": base,
+            "display": display_base,
             "id": id_match.group(1).strip() if id_match else "",
             "tvg_name": tvg_name_match.group(1).strip() if tvg_name_match else "",
             "logo": logo_match.group(1).strip() if logo_match else "",
@@ -3535,6 +3536,65 @@ def main(restaurar_faltantes=True, preservar_orden=False):
     # representación final, para que ninguna transformación posterior las
     # elimine. Pluto queda excluido por diseño.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+
+    # Última barrera Pluto: comprobar cobertura después de todas las transformaciones.
+    ids_pluto_post = set()
+    for i_post, extinf_post in enumerate(lineas):
+        if not extinf_post.startswith("#EXTINF"):
+            continue
+        j_post = i_post + 1
+        while j_post < len(lineas) and lineas[j_post].startswith("#"):
+            j_post += 1
+        if j_post < len(lineas) and url_es_valida(lineas[j_post].strip()):
+            identity_post = identidad_pluto(extinf_post, lineas[j_post].strip())
+            if identity_post:
+                ids_pluto_post.add(identity_post)
+
+    faltantes_pluto_finales = ids_pluto_fuentes - ids_pluto_post
+    if faltantes_pluto_finales:
+        por_categoria_pluto = defaultdict(list)
+        for identidad in sorted(faltantes_pluto_finales):
+            candidatos = canales_pluto_fuentes_por_id.get(identidad, [])
+            canal_fuente = next((c for c in candidatos if (c.get("url") or "").strip()), None)
+            if not canal_fuente:
+                raise RuntimeError(f"PLUTO BLOQUEADO: falta bloque fuente para {identidad}.")
+            destino = determinar_destino_pluto(
+                canal_fuente.get("categoria", ""),
+                canal_fuente.get("nombre", ""),
+                categorias_de_lineas(lineas),
+            )
+            if not destino:
+                raise RuntimeError(f"PLUTO BLOQUEADO: no hay categoría válida para {identidad}.")
+            por_categoria_pluto[normalizar(destino)].append(construir_bloque(canal_fuente, destino))
+
+        posiciones_categoria = {}
+        i_pos = 0
+        while i_pos < len(lineas):
+            if not lineas[i_pos].startswith("#EXTINF"):
+                i_pos += 1
+                continue
+            j_pos = i_pos + 1
+            while j_pos < len(lineas) and lineas[j_pos].startswith("#") and not lineas[j_pos].startswith("#EXTINF"):
+                j_pos += 1
+            if j_pos < len(lineas) and url_es_valida(lineas[j_pos].strip()):
+                posiciones_categoria[normalizar(extraer_categoria(lineas[i_pos]))] = j_pos + 1
+                i_pos = j_pos + 1
+            else:
+                i_pos = j_pos
+
+        inserciones_pluto = []
+        for categoria, bloques in por_categoria_pluto.items():
+            posicion = posiciones_categoria.get(categoria)
+            if posicion is None:
+                raise RuntimeError(f"PLUTO BLOQUEADO: no se encontró el cierre de {categoria!r}.")
+            contenido = []
+            for bloque in bloques:
+                contenido.extend(bloque)
+            inserciones_pluto.append((posicion, contenido))
+        for posicion, contenido in sorted(inserciones_pluto, reverse=True):
+            lineas[posicion:posicion] = contenido
+        print(f"Autorreparación Pluto final: {len(faltantes_pluto_finales)} identidades restauradas.")
+
     if preservar_orden:
         print("La comprobación final de orden por categoría se ejecuta en selftest_sincronizacion_real.py.")
     else:
