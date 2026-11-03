@@ -139,13 +139,12 @@ def _set_display_name(extinf: str, display_name: str) -> str:
 
 def _without_option_suffix(value: str) -> str:
     value = value or ""
-    # Baby TV usa el sufijo histórico (Opc.2) para una alternativa real;
-    # Cartoonito HD (Opc.3/Opc.4), en cambio, son señales distintas y no se
-    # deben colapsar.
-    if re.match(r"^\s*baby\s*tv\s*\(\s*opc\.?\s*\d+\s*\)\s*$", value, re.I):
-        return re.sub(r"\s*\(\s*opc\.?\s*\d+\s*\)\s*$", "", value, flags=re.I).strip()
+    # Cartoonito HD (Opc.3/Opc.4) son señales distintas y no se deben colapsar.
+    if re.match(r"^\s*cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)\s*$", value, re.I):
+        return value.strip()
     return re.sub(
-        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
+        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+        r"\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))\s*$",
         "",
         value,
         flags=re.I,
@@ -236,7 +235,7 @@ def _clean_channel_display(value: str) -> str:
 
 def _clean_channel_display_preserving_option(value: str) -> str:
     option = re.search(
-        r"\s*(\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
+        r"\s*(\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))\s*$",
         value or "",
         flags=re.I,
     )
