@@ -12,7 +12,7 @@ from sincronizar_complementos import synchronize_once
 
 def main():
     print("\n[ORQUESTADOR] Ejecutando alimentador histórico con su auditoría de orden.")
-    alimentador.main(restaurar_faltantes=False, preservar_orden=True)
+    alimentador.main(restaurar_faltantes=True, preservar_orden=True)
 
     print("\n[ORQUESTADOR] Reconciliando fuentes complementarias.")
     result = synchronize_once()
