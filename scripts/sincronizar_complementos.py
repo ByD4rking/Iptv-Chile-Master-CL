@@ -73,7 +73,7 @@ def _is_los_pitufos_es(extinf: str) -> bool:
     """Solo identifica la variante española no funcional que se pidió retirar."""
     for value in (_attr(extinf, "tvg-name"), ap.extraer_nombre(extinf)):
         normalized = ap.normalizar(value)
-        if normalized.startswith("los pitufos ") and normalized.split()[-1] in {"es", "espana"}:
+        if normalized.startswith("los pitufos ") and normalized.split()[-1].strip("()[]{}.,") in {"es", "espana"}:
             return True
         if normalized in {"los pitufos pluto es", "los pitufos pluto espana"}:
             return True
