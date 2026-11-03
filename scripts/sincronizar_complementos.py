@@ -389,46 +389,31 @@ def _set_attr(extinf: str, key: str, value: str) -> str:
 
 
 def _merge_extinf(current: str, source: str, destination: str) -> str:
-    """Actualiza categoría/logos sin renombrar canales ni romper alternativas.
-
-    El tvg-id solo se rota cuando el bloque existente ya tenía uno. Si no
-    tenía ID, se mantiene el nombre actual como identidad de respaldo; así no
-    se fusionan opciones distintas que comparten un nombre visible.
-    """
+    """Actualiza categoría/logos sin sobrescribir la identidad ya existente."""
     result = current
+    existing_id = _attr(current, "tvg-id")
     source_id = _attr(source, "tvg-id")
-    if source_id:
+    if existing_id and source_id:
         result = _set_attr(result, "tvg-id", source_id)
+
+    # En un bloque existente, el nombre visible y tvg-name son datos
+    # protegidos. Algunas fuentes reutilizan el tvg-name de Opc.3 para la URL
+    # que en la maestra está identificada como Opc.4; no deben renombrarla.
+    existing_tvg_name = _attr(current, "tvg-name")
     source_name = _attr(source, "tvg-name")
-    if source_name:
+    if not existing_tvg_name and not ap.extraer_nombre(current) and source_name:
         result = _set_attr(result, "tvg-name", _clean_channel_display(source_name))
+
+    existing_display = ap.extraer_nombre(current)
     source_display = ap.extraer_nombre(source)
-    if source_display:
-        existing_display = ap.extraer_nombre(current)
-        existing_option = re.search(
-            r"\s*(\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
-            r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
-            existing_display or "",
-            flags=re.I,
-        )
-        source_has_option = re.search(
-            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
-            r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
-            source_display,
-            flags=re.I,
-        )
-        display_name = _clean_channel_display(source_display)
-        if existing_option and not source_has_option:
-            display_name = f"{display_name} {existing_option.group(1)}".strip()
-        result = _set_display_name(result, display_name)
+    if not existing_display and source_display:
+        result = _set_display_name(result, _clean_channel_display(source_display))
 
     for key in ("tvg-logo", "logo", "tvg-language", "tvg-country", "tvg-chno"):
         value = _attr(source, key)
         if value:
-            result = _set_attr(result, key, value)
+            result = _set_attr(result, key)
 
-    # El nombre visible y tvg-name del canal existente se conservan. Los
-    # canales nuevos sí reciben íntegros los metadatos de la fuente.
     return _set_attr(result, "group-title", destination)
 
 
