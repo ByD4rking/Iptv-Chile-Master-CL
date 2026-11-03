@@ -28,6 +28,12 @@ TIMEOUT = 30
 # JWT permanece independiente y no se copia a la maestra.
 FUENTES_PLUTO_COMPLETAS = [ap.FUENTES_PLUTO[0], ap.FUENTES_PLUTO[1], ap.FUENTE_PLUTO_ALTERNATIVAS]
 
+LAST_URL_PRIORITY: dict[str, int] = {}
+
+
+def get_last_url_priority() -> dict[str, int]:
+    return dict(LAST_URL_PRIORITY)
+
 
 def _attr(text: str, name: str) -> str:
     match = re.search(r'\b' + re.escape(name) + r'="([^"]*)"', text or "", re.I)
@@ -987,6 +993,12 @@ def synchronize_once() -> dict:
     session = requests.Session()
     session.headers.update({"User-Agent": "IPTV-Chile-Master/1.1 (+source-sync)"})
     candidates, source_stats = collect_candidates(session)
+    global LAST_URL_PRIORITY
+    LAST_URL_PRIORITY = {
+        candidate["url"]: _source_priority(candidate.get("source", ""))
+        for candidate in candidates
+        if candidate.get("url")
+    }
 
     original_bytes = PRINCIPAL.read_bytes()
     original = original_bytes.decode("utf-8-sig", errors="replace").splitlines()
