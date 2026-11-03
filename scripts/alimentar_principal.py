@@ -2864,7 +2864,7 @@ def agrupar_alternativas_por_identidad(lineas):
         bloques.append({
             "lineas": raw, "url": url,
             "categoria": normalizar(extraer_categoria(extinf)),
-            "nombre": normalizar(canonical_base), "display": display_base,
+            "nombre": normalizar_nombre_canal(canonical_base), "display": display_base,
             "id": id_match.group(1).strip() if id_match else "",
             "tvg_name": tvg_name_match.group(1).strip() if tvg_name_match else "",
             "logo": logo_match.group(1).strip() if logo_match else "",
