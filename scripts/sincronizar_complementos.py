@@ -474,6 +474,26 @@ def _read_blocks(lines: list[str]) -> tuple[list[str], list[dict], list[str]]:
     return prefix, blocks, trailing
 
 
+def quitar_los_pitufos_es(lines: list[str]) -> list[str]:
+    """Retira solo los bloques explícitamente identificados como Los Pitufos ES."""
+    result: list[str] = []
+    index = 0
+    while index < len(lines):
+        if not lines[index].startswith("#EXTINF:"):
+            result.append(lines[index])
+            index += 1
+            continue
+        start = index
+        cursor = index + 1
+        while cursor < len(lines) and lines[cursor].startswith("#") and not lines[cursor].startswith("#EXTINF:"):
+            cursor += 1
+        end = cursor + 1 if cursor < len(lines) and ap.url_es_valida(lines[cursor].strip()) else cursor
+        if not _is_los_pitufos_es(lines[start]):
+            result.extend(lines[start:end])
+        index = end
+    return result
+
+
 def _source_label(source: str) -> str:
     known = {
         ap.FUENTE_IPTVSV: "IPTVSV",
