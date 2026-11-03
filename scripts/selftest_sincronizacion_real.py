@@ -179,10 +179,10 @@ def identity_key(item: dict, other_ids: set[str], unique_names: set[str]) -> str
     valid_id = channel_id if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"} else ""
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
-    if valid_id and valid_id in other_ids:
-        return "id:" + valid_id
     if name_key and name_key in unique_names:
         return "name:" + name_key
+    if valid_id and valid_id in other_ids:
+        return "id:" + valid_id
     if valid_id:
         return "id:" + valid_id
     return "name:" + name_key if name_key else "name:"
