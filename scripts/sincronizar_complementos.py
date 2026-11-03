@@ -298,7 +298,22 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             block["raw"] = [extinf] + block["extras"] + [block["url"]]
             ordered.append(block)
             continue
-        if group_key in emitted:
+        # Anclar el grupo en la posición histórica del canal principal,
+        # no en la primera alternativa que aparezca antes en la M3U.
+        # Así las opciones quedan contiguas sin adelantar el canal base.
+        anchor = next(
+            (
+                item for item in group
+                if not re.search(
+                    r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
+                    r"\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
+                    ap.extraer_nombre(item["extinf"]),
+                    re.I,
+                )
+            ),
+            group[0],
+        )
+        if block is not anchor or group_key in emitted:
             continue
         emitted.add(group_key)
 
