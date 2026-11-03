@@ -3383,15 +3383,50 @@ def main():
         ))
 
     if pluto_reinsertados_finales:
-        lineas = insertar_bloques(lineas, pluto_reinsertados_finales)
+        # Insertar después del ÚLTIMO bloque completo de cada categoría.
+        # encontrar_rango_categoria devuelve índices EXTINF; insertar justo
+        # después de ese índice partiría el bloque anterior y corrompería la M3U.
+        posiciones_por_categoria = {}
+        i_pos = 0
+        while i_pos < len(lineas):
+            if not lineas[i_pos].startswith("#EXTINF"):
+                i_pos += 1
+                continue
+            j_pos = i_pos + 1
+            while j_pos < len(lineas) and lineas[j_pos].startswith("#") and not lineas[j_pos].startswith("#EXTINF"):
+                j_pos += 1
+            if j_pos < len(lineas) and url_es_valida(lineas[j_pos].strip()):
+                clave_categoria = normalizar(extraer_categoria(lineas[i_pos]))
+                posiciones_por_categoria[clave_categoria] = j_pos + 1
+                i_pos = j_pos + 1
+            else:
+                i_pos = j_pos
+
+        agrupados_pluto = defaultdict(list)
+        for item in pluto_reinsertados_finales:
+            agrupados_pluto.setdefault(normalizar(item["categoria"]), []).append(item["bloque"])
+
+        inserciones = []
+        for clave_categoria, bloques_categoria in agrupados_pluto.items():
+            posicion = posiciones_por_categoria.get(clave_categoria)
+            if posicion is None:
+                raise RuntimeError(
+                    f"PLUTO BLOQUEADO: no se encontró el cierre de la categoría {clave_categoria!r}."
+                )
+            bloque_conjunto = []
+            for bloque in bloques_categoria:
+                bloque_conjunto.extend(bloque)
+            inserciones.append((posicion, bloque_conjunto))
+
+        for posicion, contenido_insertar in sorted(inserciones, reverse=True):
+            lineas[posicion:posicion] = contenido_insertar
+
         print(
             "Autorreparación Pluto final: "
             f"{len(pluto_reinsertados_finales)} canales reinsertados tras la última normalización."
         )
 
-    # Aplicar directivas solo después de completar la restauración final.
-    # representación final, para que ninguna transformación posterior las
-    # elimine. Pluto queda excluido por diseño.
+    # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
     validar_orden_canales(
         lineas_iniciales,
