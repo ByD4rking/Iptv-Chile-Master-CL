@@ -191,7 +191,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
         )
         group = grouped.get(identity, [])
         if not identity.startswith("id:") or len(group) < 2:
-            extinf = _set_display_name(block["extinf"], _without_option_suffix(ap.extraer_nombre(block["extinf"])))
+            extinf = _set_display_name(block["extinf"], _clean_channel_display(ap.extraer_nombre(block["extinf"])))
             block["extinf"] = extinf
             block["raw"] = [extinf] + block["extras"] + [block["url"]]
             ordered.append(block)
@@ -216,8 +216,8 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
 
         primary = unique[0]
         primary_extinf = primary["extinf"]
-        base_display = _without_option_suffix(ap.extraer_nombre(primary_extinf))
-        base_tvg_name = _attr(primary_extinf, "tvg-name")
+        base_display = _clean_channel_display(ap.extraer_nombre(primary_extinf))
+        base_tvg_name = _clean_channel_display(_attr(primary_extinf, "tvg-name"))
         channel_id = _attr(primary_extinf, "tvg-id")
         category = ap.extraer_categoria(primary_extinf)
         logo = next((_attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo") for item in unique if _attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo")), "")
