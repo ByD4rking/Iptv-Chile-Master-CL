@@ -364,6 +364,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
                 extinf = _set_attr(extinf, "group-title", category)
             if logo:
                 extinf = _set_attr(extinf, "tvg-logo", logo)
+                extinf = _set_attr(extinf, "logo", logo)
             label = base_display if option_index == 1 else f"{base_display} [Opción {option_index}]"
             extinf = _set_display_name(extinf, label)
             item["extinf"] = extinf
@@ -408,7 +409,7 @@ def _prioritize_infantiles(lines: list[str]) -> list[str]:
 def _set_attr(extinf: str, key: str, value: str) -> str:
     if not value:
         return extinf
-    pattern = r'\b' + re.escape(key) + r'="[^"]*"'
+    pattern = r'(?<![\w-])' + re.escape(key) + r'="[^"]*"'
     replacement = f'{key}="{value}"'
     if re.search(pattern, extinf, re.I):
         return re.sub(pattern, lambda _: replacement, extinf, count=1, flags=re.I)
