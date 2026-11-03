@@ -114,6 +114,22 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(parsed[1][0].split(",", 1)[1], "Cartoonito HD [Opc.4]")
         self.assertEqual(parsed[1][-1], "https://four.example/cartoonito.m3u8")
 
+    def test_restore_does_not_reuse_position_of_same_id_for_another_channel(self):
+        # La fuente histórica reutiliza tvg-id=1626 en dos nombres distintos.
+        # La posición del primer ID no debe arrastrar C y G TV por delante
+        # de Cadenartv cuando se reconstruye el orden de CHILE TV.
+        original = ["#EXTM3U"]
+        original += block("1626", "CHILE TV", "Canal ajeno", "https://a.example/ajeno.m3u8")
+        original += block("cadena.id", "CHILE TV", "Cadenartv", "https://b.example/cadenartv.m3u8")
+        original += block("1626", "CHILE TV", "C y G TV", "https://c.example/cygtv.m3u8")
+        current = ["#EXTM3U"]
+        current += block("1626", "CHILE TV", "C y G TV", "https://c.example/cygtv.m3u8")
+        current += block("cadena.id", "CHILE TV", "Cadenartv", "https://b.example/cadenartv.m3u8")
+        restored = ap.restaurar_orden_original_por_categoria(current, original)
+        parsed = self.entries(restored)
+        names = [item[0].split(",", 1)[1] for item in parsed]
+        self.assertLess(names.index("Cadenartv"), names.index("C y G TV"))
+
     def test_grouping_does_not_assign_new_id_to_historical_primary(self):
         lines = ["#EXTM3U"]
         lines += block("", "CHILE TV", "Canal A", "https://a.example/canal-a.m3u8")
