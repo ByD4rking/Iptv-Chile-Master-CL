@@ -170,7 +170,7 @@ def test_restaurar_orden_original_y_anexar_canales_nuevos() -> None:
         '#EXTINF:-1 tvg-id="nick-3" group-title="Infantiles",Nickelodeon HD (OPCIÓN 3)',
         "https://example.test/nick-3.m3u8",
         '#EXTINF:-1 tvg-id="nick-es" group-title="Infantiles",Nickelodeon en Español',
-        "https://example.test/nick-es.m3u8",
+        "https://cdn.example/new-nick-es.m3u8",
     ]
     restored = restaurar_orden_original_por_categoria(after, before)
     names = [line.split(",", 1)[-1] for line in restored if line.startswith("#EXTINF")]
