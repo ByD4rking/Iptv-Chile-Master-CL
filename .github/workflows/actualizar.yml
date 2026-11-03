@@ -839,34 +839,45 @@ jobs:
               raise SystemExit("ERROR: Los Pitufos sigue en la principal.")
           before_kept = [item for item in before if item["name"] != "los pitufos"]
 
-          before_ids = Counter(item["id"] for item in before_kept if item["id"])
           before_names = Counter(item["name"] for item in before_kept if item["name"])
-          after_ids = Counter(item["id"] for item in after if item["id"])
           after_names = Counter(item["name"] for item in after if item["name"])
           unique_before_names = {name for name, count in before_names.items() if count == 1}
           unique_after_names = {name for name, count in after_names.items() if count == 1}
 
-          remaining_ids = before_ids.copy()
-          remaining_names = Counter({name: 1 for name in unique_before_names})
-          retained_order = []
-          for item in after:
-              channel_id = item["id"]
-              name = item["name"]
-              if channel_id and remaining_ids[channel_id] > 0:
-                  retained_order.append("id:" + channel_id)
-                  remaining_ids[channel_id] -= 1
-              elif name in unique_before_names and name in unique_after_names and remaining_names[name] > 0:
-                  retained_order.append("name:" + name)
-                  remaining_names[name] -= 1
+          def same_channel(after_item, before_item):
+              if after_item["id"] and before_item["id"] and after_item["id"] == before_item["id"]:
+                  return True
+              return (
+                  before_item["name"]
+                  and before_item["name"] == after_item["name"]
+                  and before_item["name"] in unique_before_names
+                  and before_item["name"] in unique_after_names
+              )
 
-          expected_order = []
-          for item in before_kept:
-              if item["id"]:
-                  expected_order.append("id:" + item["id"])
-              elif item["name"] in unique_before_names:
-                  expected_order.append("name:" + item["name"])
-          if retained_order != expected_order:
-              raise SystemExit("ERROR: cambió el orden relativo de los canales que ya existían en la principal.")
+          retained_order = []
+          next_old = 0
+          for item in after:
+              if next_old >= len(before_kept):
+                  break
+              if same_channel(item, before_kept[next_old]):
+                  old = before_kept[next_old]
+                  retained_order.append("id:" + old["id"] if old["id"] else "name:" + old["name"])
+                  next_old += 1
+                  continue
+              later = next(
+                  (index for index in range(next_old + 1, len(before_kept))
+                   if same_channel(item, before_kept[index])),
+                  None,
+              )
+              if later is not None:
+                  raise SystemExit("ERROR: cambió el orden relativo de los canales que ya existían en la principal.")
+
+          expected_order = [
+              "id:" + item["id"] if item["id"] else "name:" + item["name"]
+              for item in before_kept
+          ]
+          if next_old != len(before_kept) or retained_order != expected_order:
+              raise SystemExit("ERROR: faltan canales existentes o cambió su orden relativo en la principal.")
 
           forbidden = {"tv chichicasteca", "los chichastecas"}
           if any(norm(item["category"]) in forbidden for item in after):
