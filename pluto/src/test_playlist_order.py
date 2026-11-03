@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from generate_multiregion import preserve_previous_order, validate_playlist_content
+from generate_multiregion import preserve_previous_channels, preserve_previous_order, validate_playlist_content
 
 
 class PlaylistOrderTests(unittest.TestCase):
@@ -81,6 +82,58 @@ class PlaylistOrderTests(unittest.TestCase):
             ]
             ordered = preserve_previous_order(playlist, fresh)
             self.assertEqual([channel["id"] for channel in ordered], ["channel-b", "channel-a", "channel-new"])
+
+    def test_missing_channel_is_removed_after_three_complete_catalogs(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            playlist = Path(temporary_directory) / "pluto_cl.m3u"
+            playlist.write_text(
+                "#EXTM3U\n"
+                '#EXTINF:-1 tvg-id="old" tvg-name="Anterior",Anterior\n'
+                "https://example.test/old/master.m3u8\n"
+                '#EXTINF:-1 tvg-id="stay" tvg-name="Permanece",Permanece\n'
+                "https://example.test/stay/master.m3u8\n",
+                encoding="utf-8",
+            )
+            fresh = [{
+                "id": "stay",
+                "name": "Permanece",
+                "stream": "https://example.test/stay/master.m3u8",
+            }]
+            state = [
+                {"id": "old", "name": "Anterior", "stream": "https://example.test/old/master.m3u8", "consecutive_absences": 0},
+                {"id": "stay", "name": "Permanece", "stream": "https://example.test/stay/master.m3u8", "consecutive_absences": 0},
+            ]
+
+            first, preserved = preserve_previous_channels(playlist, [dict(x) for x in fresh], previous_state=state)
+            self.assertEqual(preserved, 1)
+            self.assertEqual(next(x for x in first if x["id"] == "old")["consecutive_absences"], 1)
+
+            second, preserved = preserve_previous_channels(playlist, [dict(x) for x in fresh], previous_state=first)
+            self.assertEqual(preserved, 1)
+            self.assertEqual(next(x for x in second if x["id"] == "old")["consecutive_absences"], 2)
+
+            third, preserved = preserve_previous_channels(playlist, [dict(x) for x in fresh], previous_state=second)
+            self.assertEqual(preserved, 0)
+            self.assertEqual([x["id"] for x in third], ["stay"])
+
+    def test_partial_catalog_does_not_advance_absence_counter(self):
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            playlist = Path(temporary_directory) / "pluto_cl.m3u"
+            entries = []
+            for index in range(10):
+                entries.extend([
+                    f'#EXTINF:-1 tvg-id="id-{index}" tvg-name="Canal {index}",Canal {index}',
+                    f"https://example.test/{index}/master.m3u8",
+                ])
+            playlist.write_text("#EXTM3U\n" + "\n".join(entries) + "\n", encoding="utf-8")
+            state = [
+                {"id": f"id-{index}", "name": f"Canal {index}", "stream": f"https://example.test/{index}/master.m3u8", "consecutive_absences": 2}
+                for index in range(10)
+            ]
+            fresh = [{"id": "id-0", "name": "Canal 0", "stream": "https://example.test/0/master.m3u8"}]
+            result, preserved = preserve_previous_channels(playlist, fresh, previous_state=state)
+            self.assertEqual(preserved, 9)
+            self.assertEqual(next(x for x in result if x["id"] == "id-1")["consecutive_absences"], 2)
 
     def test_rotated_id_keeps_its_slot_when_name_is_unique(self):
         with tempfile.TemporaryDirectory() as temporary_directory:
