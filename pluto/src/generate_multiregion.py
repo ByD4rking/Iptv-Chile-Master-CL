@@ -24,7 +24,10 @@ MIN_PREVIOUS_RATIO = 0.50
 REQUIRE_NONEMPTY_PREVIOUS = True
 # Probe every published region, including the separately generated LATAM list.
 HEALTH_REGIONS = ("ar", "br", "cl", "es", "mx", "us", "latam")
-# Preservation is catalog protection: transient omissions never delete channels.
+# A channel is removed only after repeated omissions from complete API catalogs.
+# This avoids permanent retention while protecting against one-off API omissions.
+ABSENCE_CONFIRMATION_RUNS = 3
+ABSENCE_MIN_COVERAGE_RATIO = 0.80
 # Preserved entries get a freshly signed Pluto HLS URL before publication.
 PRESERVE_RETRY_COUNT = 2
 
@@ -390,40 +393,86 @@ def refresh_preserved_streams(region: Region, channels: list[dict]) -> list[dict
     return channels
 
 
-def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[dict], int]:
-    """Keep every previously published channel absent from the fresh API response.
+def previous_channel_state(path: Path) -> list[dict]:
+    """Read persisted per-channel state from the matching regional JSON snapshot."""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    return data if isinstance(data, list) else []
 
-    Fresh Pluto data wins when the same channel ID exists. Missing old IDs are
-    retained with their previous stream/metadata so an upstream temporary
-    omission cannot delete a channel from the repository automatically.
+
+def preserve_previous_channels(
+    path: Path,
+    channels: list[dict],
+    *,
+    previous_state: list[dict] | None = None,
+) -> tuple[list[dict], int]:
+    """Keep transiently omitted channels, then remove confirmed disappearances.
+
+    An API response is considered complete only when it still contains at least
+    80% of the previous catalog. A missing channel must be absent from three
+    consecutive complete responses before it is removed. Failed fetches never
+    call this function, so they cannot increment the absence counter.
     """
     previous = previous_entries(path)
     if not previous:
+        for channel in channels:
+            channel["consecutive_absences"] = 0
         return channels, 0
+
+    previous_state = previous_state or []
+    state_by_id = {
+        str(item.get("id") or "").strip(): item
+        for item in previous_state
+        if str(item.get("id") or "").strip()
+    }
+    response_complete = len(channels) >= max(
+        1,
+        int(len(previous) * ABSENCE_MIN_COVERAGE_RATIO),
+    )
 
     current_ids = {str(ch.get("id") or "").strip() for ch in channels}
     current_streams = {str(ch.get("stream") or "").strip() for ch in channels}
     current_names: dict[str, int] = {}
-    for ch in channels:
-        name = normalize_channel_name(ch.get("name"))
+    for channel in channels:
+        channel["consecutive_absences"] = 0
+        channel.pop("preserved_previous", None)
+        name = normalize_channel_name(channel.get("name"))
         if name:
             current_names[name] = current_names.get(name, 0) + 1
 
     preserved = 0
+    removed = 0
 
     for old in previous:
-        old_id = old["id"]
-        old_stream = old["stream"]
+        old_id = str(old.get("id") or "").strip()
+        old_stream = str(old.get("stream") or "").strip()
         old_name = normalize_channel_name(old.get("name"))
 
-        # Fresh Pluto data wins. If Pluto rotates an ID but the channel name is
-        # uniquely unchanged, treat it as the same channel instead of creating
-        # a stale duplicate from the old catalog.
+        # A current ID, URL, or unique unchanged name proves that this channel
+        # is still represented, including when Pluto rotates its ID.
         if old_id in current_ids or old_stream in current_streams:
             continue
         if old_name and current_names.get(old_name, 0) == 1:
             continue
 
+        old_state = state_by_id.get(old_id, {})
+        consecutive = int(old_state.get("consecutive_absences") or 0)
+        if response_complete:
+            consecutive += 1
+
+        if consecutive >= ABSENCE_CONFIRMATION_RUNS:
+            removed += 1
+            continue
+
+        # Preserve its metadata only during the confirmation window. The
+        # stream is refreshed below; an expired JWT is never republished.
+        old.update({
+            key: value for key, value in old_state.items()
+            if key not in {"id", "name", "stream"}
+        })
+        old["consecutive_absences"] = consecutive
         old["preserved_previous"] = True
         channels.append(old)
         current_ids.add(old_id)
@@ -432,6 +481,16 @@ def preserve_previous_channels(path: Path, channels: list[dict]) -> tuple[list[d
             current_names[old_name] = current_names.get(old_name, 0) + 1
         preserved += 1
 
+    if removed:
+        print(
+            f"[{path.stem.upper()}] Desapariciones confirmadas: {removed} "
+            f"canales ausentes en {ABSENCE_CONFIRMATION_RUNS} catálogos completos."
+        )
+    if not response_complete:
+        print(
+            f"[{path.stem.upper()}] Catálogo parcial ({len(current_ids)} frente a "
+            f"{len(previous)} anteriores): no se incrementan contadores de ausencia."
+        )
     return channels, preserved
 
 
@@ -582,7 +641,12 @@ def write_if_safe(region: Region, channels: list[dict]) -> tuple[Path, int, bool
     data_path = REGIONAL_DATA_DIR / f"channels_{region.code}.json"
 
     old_count = previous_count(playlist_path)
-    channels, preserved = preserve_previous_channels(playlist_path, channels)
+    prior_channel_state = previous_channel_state(data_path)
+    channels, preserved = preserve_previous_channels(
+        playlist_path,
+        channels,
+        previous_state=prior_channel_state,
+    )
     if preserved:
         print(f"[{region.code.upper()}] Conservados del catálogo anterior: {preserved} canales")
 
@@ -747,30 +811,8 @@ def build_latam(fresh_regions: dict[str, list[dict]]) -> Path:
         for channel in merged_channels
         if normalize_channel_name(channel.get("name"))
     }
-    preserved = 0
-    for old in previous:
-        old_id = str(old.get("id") or "").strip()
-        old_stream = str(old.get("stream") or "").strip()
-        old_name = normalize_channel_name(old.get("name"))
-        if old_id in seen_ids or old_stream in seen_streams:
-            continue
-        if old_name and old_name in seen_names:
-            continue
-        if not channel_to_m3u(old, REGIONS["mx"]):
-            continue
-        merged_channels.append(old)
-        if old_id:
-            seen_ids.add(old_id)
-        if old_stream:
-            seen_streams.add(old_stream)
-        if old_name:
-            seen_names.add(old_name)
-        seen.add(old_id or old_stream)
-        preserved += 1
-
-    if preserved:
-        print(f"[LATAM] Conservados del catálogo anterior: {preserved} canales")
-
+    # Las regiones ya conservan omisiones transitorias durante tres ciclos.
+    # LATAM no vuelve a reinsertar indefinidamente canales ausentes de MX, CL y AR.
     new_count = len(merged_channels)
     if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):
         print(
