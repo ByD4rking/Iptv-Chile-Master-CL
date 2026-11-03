@@ -273,5 +273,20 @@ class TestAlternativasPrincipal(unittest.TestCase):
         )
 
 
+    def test_grouping_unifies_spacing_and_symbol_variants_of_same_channel(self):
+        lines = ["#EXTM3U"]
+        lines += block("", "CHILE TV", "Solo TV", "https://a.example/solo-tv.m3u8")
+        lines += block("", "CHILE TV", "SoloTV ✪", "https://b.example/solotv.m3u8")
+        output = ap.agrupar_alternativas_por_identidad(lines)
+        parsed = self.entries(output)
+        self.assertEqual(len(parsed), 2)
+        tvg_names = [
+            re.search(r'tvg-name="([^"]*)"', item[0], re.I).group(1)
+            for item in parsed
+        ]
+        self.assertEqual(tvg_names[0], tvg_names[1])
+        self.assertEqual(parsed[1][0].split(",", 1)[1], "Solo TV [Opción 2]")
+
+
 if __name__ == "__main__":
     unittest.main()
