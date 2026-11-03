@@ -1985,7 +1985,13 @@ def restaurar_no_pluto_existente(lineas, iniciales):
             lineas.extend(insertar)
             categorias.add(normalizar(categoria))
             continue
+        # rango[1] apunta al último EXTINF, no al final del bloque.
+        # Avanzar hasta la URL para no insertar metadatos entre EXTINF y stream.
         posicion = rango[1] + 1
+        while posicion < len(lineas) and lineas[posicion].startswith("#") and not lineas[posicion].startswith("#EXTINF"):
+            posicion += 1
+        if posicion < len(lineas) and url_es_valida(lineas[posicion].strip()):
+            posicion += 1
         lineas[posicion:posicion] = insertar
 
     return lineas, restaurados
