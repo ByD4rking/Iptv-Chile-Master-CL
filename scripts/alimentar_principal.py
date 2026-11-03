@@ -1949,7 +1949,7 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                     "categoria": normalizar(extraer_categoria(extinf)),
                     "url": contenido[j].strip(),
                     "lineas": contenido[inicio:j + 1],
-                            "orden_actual": len(bloques),
+                    "orden_actual": len(bloques),
                     "tvg_id": (
                         re.search(r'tvg-id="([^"]+)"', extinf, re.I).group(1).strip().lower()
                         if re.search(r'tvg-id="([^"]+)"', extinf, re.I)
