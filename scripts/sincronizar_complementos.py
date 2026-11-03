@@ -23,7 +23,10 @@ TIMEOUT = 30
 
 # Solo LATAM, España y México alimentan la principal. Las demás regiones
 # Pluto siguen disponibles como playlists independientes.
-FUENTES_PLUTO_COMPLETAS = list(ap.FUENTES_PLUTO) + [ap.FUENTE_PLUTO_ALTERNATIVAS]
+# LATAM y España son nuestras listas tokenizadas. México entra desde la lista
+# externa PlutoTV.MX, con enlaces jmp2.uk sin JWT. La playlist MX propia con
+# JWT permanece independiente y no se copia a la maestra.
+FUENTES_PLUTO_COMPLETAS = [ap.FUENTES_PLUTO[0], ap.FUENTES_PLUTO[1], ap.FUENTE_PLUTO_ALTERNATIVAS]
 
 
 def _attr(text: str, name: str) -> str:
@@ -31,11 +34,23 @@ def _attr(text: str, name: str) -> str:
     return match.group(1).strip() if match else ""
 
 
+def _is_pluto_url(url: str) -> bool:
+    return ap.es_url_pluto(url or "") or bool(
+        re.search(r"jmp2\.uk/plu-[a-f0-9]{20,}\.m3u8", url or "", re.I)
+    )
+
+
 def _identity(channel: dict, *, pluto: bool = False) -> str:
     extinf = channel.get("extinf", "")
-    channel_id = _attr(extinf, "tvg-id")
-    if not channel_id and pluto:
-        channel_id = ap.extraer_pluto_id(channel.get("url", ""))
+    url = channel.get("url", "") or ""
+    channel_id = ""
+    if pluto:
+        channel_id = ap.extraer_pluto_id(url)
+        if not channel_id:
+            match = re.search(r"/plu-([a-f0-9]{20,})\.m3u8", url, re.I)
+            channel_id = match.group(1) if match else ""
+    if not channel_id:
+        channel_id = _attr(extinf, "tvg-id")
     if channel_id:
         return "id:" + ap.normalizar(channel_id)
     name = ap.normalizar(_attr(extinf, "tvg-name") or channel.get("nombre", ""))
@@ -84,7 +99,7 @@ def _source_priority(source: str) -> int:
     """Prioridad de alternativas acordada: LATAM, MX, MAGNA y luego el resto."""
     if source == ap.FUENTES_PLUTO[0]:
         return 0
-    if source in {ap.FUENTES_PLUTO[2], ap.FUENTE_PLUTO_ALTERNATIVAS}:
+    if source == ap.FUENTE_PLUTO_ALTERNATIVAS:
         return 1
     if source == ap.FUENTE_MAGMA:
         return 2
@@ -104,6 +119,27 @@ def _without_option_suffix(value: str) -> str:
     return re.sub(r"\s*\[\s*opci[oó]n\s*\d+\s*\]\s*$", "", value or "", flags=re.I).strip()
 
 
+def _canonical_channel_name(channel: dict) -> str:
+    value = _attr(channel.get("extinf", ""), "tvg-name") or channel.get("nombre", "")
+    if not value:
+        value = ap.extraer_nombre(channel.get("extinf", ""))
+    value = _without_option_suffix(value)
+    value = re.sub(
+        r"\s*(?:\[\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
+        r"\(\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
+        "",
+        value,
+        flags=re.I,
+    )
+    value = re.sub(r"\s+(?:espanol|españa|spanish|hd|sd|fhd|uhd)$", "", value, flags=re.I)
+    return re.sub(r"[^a-z0-9]+", "", ap.normalizar(value))
+
+
+def _is_spanish_anime_label(extinf: str) -> bool:
+    value = ap.normalizar(_attr(extinf, "tvg-name") + " " + ap.extraer_nombre(extinf))
+    return bool(re.search(r"\b(?:espanol|espana|pluto\s*es)\b", value))
+
+
 def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]) -> list[str]:
     """Agrupa por tvg-id, comparte metadatos y numera opciones sin tocar tvg-name."""
     prefix, blocks, trailing = _read_blocks(lines)
@@ -113,7 +149,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             continue
         identity = _identity(
             {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
-            pluto=ap.es_url_pluto(block["url"]),
+            pluto=_is_pluto_url(block["url"]),
         )
         if identity.startswith("id:"):
             grouped[identity].append(block)
@@ -232,10 +268,15 @@ def _merge_extinf(current: str, source: str, destination: str) -> str:
     se fusionan opciones distintas que comparten un nombre visible.
     """
     result = current
-    current_id = _attr(current, "tvg-id")
     source_id = _attr(source, "tvg-id")
-    if current_id and source_id:
+    if source_id:
         result = _set_attr(result, "tvg-id", source_id)
+    source_name = _attr(source, "tvg-name")
+    if source_name:
+        result = _set_attr(result, "tvg-name", source_name)
+    source_display = ap.extraer_nombre(source)
+    if source_display:
+        result = _set_display_name(result, _without_option_suffix(source_display))
 
     for key in ("tvg-logo", "logo", "tvg-language", "tvg-country", "tvg-chno"):
         value = _attr(source, key)
@@ -287,8 +328,8 @@ def _source_label(source: str) -> str:
         ap.FUENTE_MAGMA: "MAGNA",
         ap.FUENTES_PLUTO[0]: "Pluto LATAM",
         ap.FUENTES_PLUTO[1]: "Pluto ES",
-        ap.FUENTES_PLUTO[2]: "Pluto MX",
-        ap.FUENTE_PLUTO_ALTERNATIVAS: "Pluto MX alternativo",
+        ap.FUENTES_PLUTO[2]: "Pluto MX JWT interno",
+        ap.FUENTE_PLUTO_ALTERNATIVAS: "Pluto MX",
     }
     if source in known:
         return known[source]
@@ -427,7 +468,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         category = ap.normalizar(candidate.get("categoria", ""))
         if source == ap.FUENTES_PLUTO[1] and category == "anime":
             pluto_es_anime_ids.add(identity)
-        elif source in {ap.FUENTES_PLUTO[0], ap.FUENTES_PLUTO[2], ap.FUENTE_PLUTO_ALTERNATIVAS}:
+        elif source in {ap.FUENTES_PLUTO[0], ap.FUENTE_PLUTO_ALTERNATIVAS}:
             # Si el mismo ID existe en MX/LATAM, se conserva esa versión aunque
             # la categoría regional sea distinta de Anime.
             pluto_latam_mx_ids.add(identity)
@@ -442,13 +483,28 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
     for block in blocks:
         identity = _identity(
             {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
-            pluto=ap.es_url_pluto(block.get("url", "")),
+            pluto=_is_pluto_url(block.get("url", "")),
         )
         if _is_los_pitufos_es(block["extinf"]):
             pitufos_removed += 1
             manifest.pop(identity, None)
             continue
-        if block.get("url") and ap.es_url_pluto(block["url"]) and identity in pluto_es_only_ids:
+        if (
+            ap.normalizar(ap.extraer_categoria(block["extinf"])) == "anime"
+            and (
+                _is_spanish_anime_label(block["extinf"])
+                or (
+                    block.get("url")
+                    and _is_pluto_url(block["url"])
+                    and identity in pluto_es_only_ids
+                    and (
+                        "country=es" in block["url"].lower()
+                        or "marketingregion=es" in block["url"].lower()
+                        or manifest.get(identity, {}).get("source") == ap.FUENTES_PLUTO[1]
+                    )
+                )
+            )
+        ):
             pluto_es_anime_removed += 1
             manifest.pop(identity, None)
             continue
@@ -492,6 +548,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
 
     main_by_id: dict[str, list[int]] = defaultdict(list)
     main_by_name: dict[str, list[int]] = defaultdict(list)
+    main_by_canonical_name: dict[str, list[int]] = defaultdict(list)
     main_by_url: dict[str, int] = {}
     for index, block in enumerate(blocks):
         if not block.get("url"):
@@ -500,13 +557,19 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             "extinf": block["extinf"],
             "nombre": ap.extraer_nombre(block["extinf"]),
             "url": block["url"],
-        }, pluto=ap.es_url_pluto(block["url"]))
+        }, pluto=_is_pluto_url(block["url"]))
         if identity.startswith("id:"):
             main_by_id[identity].append(index)
         main_by_url.setdefault(block["url"], index)
         name = ap.normalizar(_attr(block["extinf"], "tvg-name") or ap.extraer_nombre(block["extinf"]))
         if name:
             main_by_name[name].append(index)
+        canonical_name = _canonical_channel_name({
+            "extinf": block["extinf"],
+            "nombre": ap.extraer_nombre(block["extinf"]),
+        })
+        if canonical_name:
+            main_by_canonical_name[canonical_name].append(index)
 
     candidate_groups: dict[str, list[dict]] = defaultdict(list)
     for item in valid_candidates:
@@ -518,6 +581,30 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
 
     for identity, group in candidate_groups.items():
         group.sort(key=lambda item: _source_priority(item.get("source", "")))
+
+    # Varias fuentes pueden asignar tvg-id distintos al mismo canal. Si el
+    # nombre normalizado y la categoría son únicos, se reúnen como opciones.
+    by_canonical_name: dict[str, list[tuple[str, list[dict]]]] = defaultdict(list)
+    for identity, group in candidate_groups.items():
+        canonical_name = _canonical_channel_name(group[0])
+        if canonical_name:
+            by_canonical_name[canonical_name].append((identity, group))
+    for canonical_name, parts in by_canonical_name.items():
+        if len(parts) < 2 or len(main_by_canonical_name.get(canonical_name, [])) > 1:
+            continue
+        combined = [item for _, group in parts for item in group]
+        destinations = {ap.normalizar(item.get("destination", "")) for item in combined}
+        if len(destinations) > 1:
+            continue
+        combined.sort(key=lambda item: _source_priority(item.get("source", "")))
+        primary_identity = _identity(combined[0], pluto=combined[0].get("is_pluto", False))
+        if not primary_identity:
+            primary_identity = "name:" + canonical_name
+        for item in combined:
+            item["identity"] = primary_identity
+        for old_identity, _ in parts:
+            candidate_groups.pop(old_identity, None)
+        candidate_groups[primary_identity] = combined
 
     candidate_name_counts = Counter()
     for group in candidate_groups.values():
@@ -568,6 +655,14 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             ]
             if exact_matches:
                 match = exact_matches[0]
+        if match is None:
+            canonical_name = _canonical_channel_name(first)
+            canonical_matches = main_by_canonical_name.get(canonical_name, [])
+            if len(canonical_matches) == 1:
+                match = canonical_matches[0]
+            elif len(canonical_matches) > 1:
+                stats["ambiguos"] += 1
+                continue
         if match is None and source_name:
             if candidate_name_counts[source_name] == 1 and main_name_counts[source_name] == 1:
                 match = main_by_name[source_name][0]
