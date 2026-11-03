@@ -79,7 +79,7 @@ jobs:
       - name: Auditar resultado real sin publicar
         run: |
           python - <<'PY'
-          import hashlib, json, re
+          import hashlib, json, re, requests
           from collections import Counter
           from pathlib import Path
 
@@ -824,20 +824,59 @@ jobs:
 
 
 , "", base, flags=re.I)
+                  url = ""
+                  for next_index in range(index + 1, len(lines)):
+                      if lines[next_index].startswith("#"):
+                          continue
+                      url = lines[next_index].strip()
+                      break
                   result.append({
                       "id": (match_id.group(1).strip() if match_id else ""),
                       "name": norm(base),
                       "category": (match_group.group(1).strip() if match_group else ""),
+                      "url": url,
                   })
               return result
+
+          def source_ids(url, anime_only=False):
+              response = requests.get(url, timeout=45)
+              response.raise_for_status()
+              text = response.text
+              found = set()
+              current_is_anime = False
+              for line in text.splitlines():
+                  if not line.startswith("#EXTINF:"):
+                      continue
+                  group = re.search(r'group-title="([^"]*)"', line, re.I)
+                  current_is_anime = bool(group and norm(group.group(1)) == "anime")
+                  match_id = re.search(r'tvg-id="([^"]+)"', line, re.I)
+                  if match_id and (not anime_only or current_is_anime):
+                      found.add(match_id.group(1).strip().lower())
+              return found
+
+          raw = "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/"
+          es_anime_ids = source_ids(raw + "pluto_es.m3u", anime_only=True)
+          latam_mx_ids = source_ids(raw + "pluto_latam.m3u") | source_ids(raw + "pluto_mx.m3u")
+          es_only_ids = es_anime_ids - latam_mx_ids
 
           before = entries("/tmp/principal_antes.m3u")
           after = entries("IPTV-CHILE-MAESTRA_CORREGIDO.m3u")
 
-          # La única baja autorizada es Los Pitufos.
+          # Las únicas bajas explícitas: Los Pitufos y Pluto ES Anime
+          # cuando ese ID no existe también en LATAM/MX.
           if any(item["name"] == "los pitufos" for item in after):
               raise SystemExit("ERROR: Los Pitufos sigue en la principal.")
-          before_kept = [item for item in before if item["name"] != "los pitufos"]
+          if any(item["id"].lower() in es_only_ids and norm(item["category"]) == "anime" and "pluto" in item["url"].lower() for item in after):
+              raise SystemExit("ERROR: quedó un canal exclusivo de Pluto ES en Anime.")
+          before_kept = [
+              item for item in before
+              if item["name"] != "los pitufos"
+              and not (
+                  item["id"].lower() in es_only_ids
+                  and norm(item["category"]) == "anime"
+                  and "pluto" in item["url"].lower()
+              )
+          ]
 
           before_names = Counter(item["name"] for item in before_kept if item["name"])
           after_names = Counter(item["name"] for item in after if item["name"])
