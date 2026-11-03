@@ -159,16 +159,15 @@ def _canonical_channel_name(channel: dict) -> str:
 
 
 def normalizar_nombres_solicitados(lines: list[str]) -> list[str]:
-    """Normaliza alias solicitados sin duplicar ni alterar las URLs."""
+    """Normaliza Delmi TV V2 y lo ubica en Anime sin duplicar ni alterar su URL."""
     result = list(lines)
     for index, line in enumerate(result):
         if not line.startswith("#EXTINF:"):
             continue
-        if ap.normalizar(ap.extraer_categoria(line)) != "anime":
-            continue
         name_key = re.sub(r"[^a-z0-9]+", "", ap.normalizar(ap.extraer_nombre(line)))
         if name_key in {"delmitvv2", "delmitv2"}:
-            result[index] = _set_display_name(line, "Delmi TV 2")
+            line = _set_display_name(line, "Delmi TV 2")
+            result[index] = _set_attr(line, "group-title", "Anime")
     return result
 
 
