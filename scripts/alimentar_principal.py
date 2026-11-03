@@ -1284,6 +1284,10 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
     por_categoria = defaultdict(list)
     primera_original = {}
     for b in pluto_principales:
+        clave = normalizar(b["categoria"])
+        por_categoria[clave].append(b)
+        primera_original.setdefault(clave, b["original"])
+
     # Posición de inserción: después del último bloque NO-Pluto de la
     # categoría. Si la categoría solo contiene Pluto, se conserva la
     # posición aproximada del primer Pluto que había en ella.
