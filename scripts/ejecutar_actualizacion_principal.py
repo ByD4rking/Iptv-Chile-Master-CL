@@ -105,6 +105,7 @@ def main():
         ordered_lines,
         get_last_url_priority(),
     )
+    ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
     ids_pluto_orden = (
         alimentador.obtener_ids_pluto_existentes(original_lines)
@@ -116,6 +117,7 @@ def main():
         categorias_reordenables={
             "Entretenimiento / Cine / Series",
             "Infantiles",
+            "Anime",
         },
         ids_pluto_omitidos=ids_pluto_orden,
     )
