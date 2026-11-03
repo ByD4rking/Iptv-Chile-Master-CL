@@ -3629,8 +3629,13 @@ def main():
             f"{len(pluto_reinsertados_finales)} canales reinsertados tras la última normalización."
         )
 
-    # Restaurar por última vez el orden histórico después de todas las reparaciones.
-    # Solo se exceptúan las categorías con reordenamiento explícito solicitado.
+    # Consolidar alternativas ANTES de la restauración definitiva.
+    # El agrupador conserva la primera aparición del bloque y podía adelantar
+    # una identidad reasignada después de haber restaurado el orden histórico.
+    lineas = agrupar_alternativas_por_identidad(lineas)
+
+    # La última operación estructural debe ser restaurar el orden histórico:
+    # así ninguna consolidación posterior puede mover un canal existente.
     lineas = restaurar_orden_original_por_categoria(
         lineas,
         lineas_iniciales,
@@ -3640,9 +3645,6 @@ def main():
         },
         ids_pluto=ids_pluto_orden_protegidos,
     )
-    # La restauración puede separar opciones del mismo canal: reagrupar sin
-    # alterar el orden de los canales principales.
-    lineas = agrupar_alternativas_por_identidad(lineas)
 
     # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
