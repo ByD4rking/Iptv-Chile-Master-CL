@@ -206,8 +206,8 @@ class ComplementSyncTests(unittest.TestCase):
         # de Anime y la variante española de Pitufos. Las pruebas específicas
         # de esas reglas están debajo; aquí solo se comprueba la prioridad final.
         base = ["#EXTM3U"] + (
-            entry("popeye.id", "Retro", "Popeye", "https://kids.example/popeye.m3u8")
-            + entry("pitufos.id", "Retro", "Los Pitufos", "https://kids.example/pitufos.m3u8")
+            entry("popeye.id", "Infantiles", "Popeye", "https://kids.example/popeye.m3u8")
+            + entry("pitufos.id", "Infantiles", "Los Pitufos", "https://kids.example/pitufos.m3u8")
             + entry("heidi.id", "Infantiles", "Heidi", "https://kids.example/heidi.m3u8")
             + entry("other.id", "Infantiles", "Otro infantil", "https://kids.example/other.m3u8")
         )
