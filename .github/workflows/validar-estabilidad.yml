@@ -9,6 +9,7 @@ on:
       - "IPTV-CHILE-GENERADOR/**"
       - "pluto/src/**"
       - "scripts/**"
+      - "config/**"
       - "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
       - "IPTV-CHILE-MAESTRA_GOD.m3u"
   pull_request:
@@ -53,6 +54,9 @@ jobs:
 
       - name: Probar reintentos y backoff del verificador M3U
         run: python -m unittest discover -s scripts -p 'test_verificar_m3u_reintentos.py'
+
+      - name: Verificar registro editable de fuentes de todas las listas
+        run: python -m unittest discover -s scripts -p 'test_playlist_sources.py'
 
       - name: Verificar orden y reconexión de la lista general
         run: python scripts/selftest_reconexion_principal.py
