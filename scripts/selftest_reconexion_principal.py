@@ -19,6 +19,7 @@ from alimentar_principal import (
     reemplazar_categoria,
     ordenar_bloques_magma_y_originales,
     obtener_ids_pluto_existentes,
+    restaurar_orden_original_por_categoria,
 )
 
 
@@ -148,6 +149,38 @@ def test_guard_ignora_reordenamiento_de_pluto_verificado() -> None:
     ignored = obtener_ids_pluto_existentes(before)
     assert ignored == {"5ddc503ac7ef120009b101a2", "63a084934734f30007457b2c"}
     validar_orden_canales(before, after, ids_pluto_omitidos=ignored)
+
+
+def test_restaurar_orden_original_y_anexar_canales_nuevos() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="nick-es" group-title="Infantiles",Nickelodeon en Español',
+        "https://example.test/nick-es.m3u8",
+        '#EXTINF:-1 tvg-id="nick-1" group-title="Infantiles",Nickelodeon HD (OPCIÓN 1)',
+        "https://example.test/nick-1.m3u8",
+        '#EXTINF:-1 tvg-id="nick-2" group-title="Infantiles",Nickelodeon HD (OPCIÓN 2)',
+        "https://example.test/nick-2.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="nick-1" group-title="Infantiles",Nickelodeon HD (OPCIÓN 1)',
+        "https://example.test/nick-1.m3u8",
+        '#EXTINF:-1 tvg-id="nick-2" group-title="Infantiles",Nickelodeon HD (OPCIÓN 2)',
+        "https://example.test/nick-2.m3u8",
+        '#EXTINF:-1 tvg-id="nick-3" group-title="Infantiles",Nickelodeon HD (OPCIÓN 3)',
+        "https://example.test/nick-3.m3u8",
+        '#EXTINF:-1 tvg-id="nick-es" group-title="Infantiles",Nickelodeon en Español',
+        "https://cdn.example/new-nick-es.m3u8",
+    ]
+    restored = restaurar_orden_original_por_categoria(after, before)
+    names = [line.split(",", 1)[-1] for line in restored if line.startswith("#EXTINF")]
+    assert names == [
+        "Nickelodeon en Español",
+        "Nickelodeon HD (OPCIÓN 1)",
+        "Nickelodeon HD (OPCIÓN 2)",
+        "Nickelodeon HD (OPCIÓN 3)",
+    ], names
+    validar_orden_canales(before, restored)
 
 
 def test_ajustes_referencia() -> None:
