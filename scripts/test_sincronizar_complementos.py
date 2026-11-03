@@ -61,7 +61,7 @@ class OriginalPlaylistOrderTests(unittest.TestCase):
             ap.normalizar_nombre_canal("Caracol"),
         )
         output = ap.restaurar_orden_original_por_categoria(
-            current[::-1] if False else ["#EXTM3U"] + current[3:] + current[1:3],
+            ["#EXTM3U"] + current[3:] + current[1:3],
             original,
         )
         names = [
