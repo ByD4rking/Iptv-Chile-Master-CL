@@ -2148,12 +2148,19 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
         channel_id, nombre = identidad(extinf)
         identidad_anterior.append((categoria_original, channel_id, nombre, index))
         nombre_original = extraer_nombre(extinf)
-        es_alternativa_original = bool(re.search(
-            r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
-            r"\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
-            nombre_original,
-            re.I,
-        ))
+        es_alternativa_original = (
+            bool(re.search(
+                r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
+                r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))$",
+                nombre_original,
+                re.I,
+            ))
+            or bool(re.match(
+                r"^baby\s*tv\s*\(\s*opc\.?\s*\d+\s*\)$",
+                nombre_original,
+                re.I,
+            ))
+        )
         # El orden histórico se ancla al canal principal, no a la primera
         # alternativa. Si una [Opc.1] precede al canal base, usarla como rango
         # desplaza todo el grupo y rompe el orden de la categoría.
@@ -2310,11 +2317,18 @@ def validar_orden_canales(
             # Detectar la marca de opción sobre el nombre original: la clave
             # normalizada ya elimina [Opc.N], por lo que comprobarla después
             # hacía que la primera alternativa se tomara como canal principal.
-            if re.search(
-                r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
-                r"\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
-                nombre_raw,
-                re.I,
+            if (
+                re.search(
+                    r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
+                    r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))$",
+                    nombre_raw,
+                    re.I,
+                )
+                or re.match(
+                    r"^baby\s*tv\s*\(\s*opc\.?\s*\d+\s*\)$",
+                    nombre_raw,
+                    re.I,
+                )
             ):
                 index = j + 1 if url else index + 1
                 continue
