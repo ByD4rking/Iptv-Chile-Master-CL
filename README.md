@@ -368,6 +368,26 @@ Para problemas de compatibilidad de vídeo, puedes probar:
 
 ---
 
+## 🔎 Auditoría automática de cambios en fuentes y canales
+
+Los tres flujos ejecutan `scripts/auditar_fuentes.py` al iniciar su trabajo:
+
+- **Principal + GOD:** comprueba las fuentes configuradas de ambas listas. GOD se consulta exclusivamente en modo de solo lectura.
+- **Generador:** comprueba sus fuentes independientes y registra canales nuevos, retirados o con cambios de endpoint.
+- **Pluto:** compara las siete playlists regionales antes y después de regenerarlas desde la API.
+
+Cada ámbito conserva su último inventario y publica un informe JSON en `reportes/fuentes/`:
+`auditoria_principal.json`, `auditoria_generador.json` y `auditoria_pluto.json`.
+Los informes cuentan cambios de URL de origen, canales añadidos/retirados, nombres,
+categorías y URLs de reproducción. Los endpoints de reproducción se guardan como
+huellas SHA-256 truncadas; no se almacenan URLs HLS firmadas ni tokens en el historial.
+
+Las fuentes M3U con fallos transitorios conservan su última huella válida; si
+ninguna fuente M3U del ámbito responde, el flujo se detiene antes de publicar
+una lista vacía o incompleta. Pluto compara sus archivos regionales antes y
+después de consultar su API. Los generadores existentes aplican los cambios a
+sus playlists, respetando las reglas de catálogo y la protección de GOD.
+
 ## 🧰 Registro editable de fuentes
 
 Las fuentes M3U de **Principal** y **GOD** se administran desde

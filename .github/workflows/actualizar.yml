@@ -39,6 +39,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Auditar cambios de canales y URLs de Principal y GOD (solo lectura)
+        run: python scripts/auditar_fuentes.py --scope principal
+
       - name: Instalar dependencias
         run: |
           python -m pip install --upgrade pip
@@ -58,7 +61,11 @@ jobs:
             scripts/generar_reporte.py \
             scripts/health_principal.py \
             scripts/selftest_health_principal.py \
-            scripts/selftest_reconexion_principal.py
+            scripts/selftest_reconexion_principal.py \
+            scripts/auditar_fuentes.py
+
+      - name: Probar detector de cambios de fuentes
+        run: python -m unittest scripts.test_auditar_fuentes
 
       - name: Blindaje canónico de GOD
         run: |
@@ -275,7 +282,7 @@ jobs:
 
           while IFS= read -r file; do
             case "$file" in
-              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|reportes/principal/REPORTE.md|scripts/aprendizaje.json|scripts/health/principal_health.json)
+              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|reportes/principal/REPORTE.md|reportes/fuentes/auditoria_principal.json|reportes/fuentes/estado_principal.json|scripts/aprendizaje.json|scripts/health/principal_health.json)
                 ;;
               "")
                 ;;
@@ -297,7 +304,9 @@ jobs:
             IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
             reportes/principal/REPORTE.md \
             scripts/aprendizaje.json \
-            scripts/health/principal_health.json
+            scripts/health/principal_health.json \
+            reportes/fuentes/auditoria_principal.json \
+            reportes/fuentes/estado_principal.json
 
           if git diff --cached --quiet; then
             echo "No hay cambios nuevos."
@@ -323,14 +332,14 @@ jobs:
               solo_secundarios=true
               for archivo in $conflictos; do
                 case "$archivo" in
-                  reportes/principal/REPORTE.md|scripts/aprendizaje.json) ;;
+                  reportes/principal/REPORTE.md|reportes/fuentes/auditoria_principal.json|reportes/fuentes/estado_principal.json|scripts/aprendizaje.json) ;;
                   *) solo_secundarios=false ;;
                 esac
               done
 
               if [ "$solo_secundarios" = true ] && [ -n "$conflictos" ]; then
-                git checkout --theirs -- reportes/principal/REPORTE.md scripts/aprendizaje.json
-                git add reportes/principal/REPORTE.md scripts/aprendizaje.json
+                git checkout --theirs -- reportes/principal/REPORTE.md reportes/fuentes/auditoria_principal.json reportes/fuentes/estado_principal.json scripts/aprendizaje.json
+                git add reportes/principal/REPORTE.md reportes/fuentes/auditoria_principal.json reportes/fuentes/estado_principal.json scripts/aprendizaje.json
                 GIT_EDITOR=true git rebase --continue
                 if git push origin main; then
                   exit 0
