@@ -34,6 +34,12 @@ def base_name(value: str) -> str:
         value or "",
         flags=re.I,
     )
+    value = re.sub(
+        r"\s*(?:\[\s*pluto(?:\s*tv)?\s*(?:es|españa)\s*\]|\(\s*pluto(?:\s*tv)?\s*(?:es|españa)\s*\))\s*$",
+        "",
+        value or "",
+        flags=re.I,
+    )
     value = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", value, flags=re.I)
     return norm(value)
 
