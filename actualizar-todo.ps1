@@ -27,8 +27,8 @@ if (!(Test-Path $PYTHON)) {
     exit 1
 }
 
-if (!(Test-Path "$BASE\scripts\actualizar_principal.py")) {
-    Write-Host "ERROR: No existe scripts\actualizar_principal.py"
+if (!(Test-Path "$BASE\scripts\ejecutar_actualizacion_principal.py")) {
+    Write-Host "ERROR: No existe scripts\ejecutar_actualizacion_principal.py"
     Read-Host "Pulsa ENTER para cerrar"
     exit 1
 }
@@ -46,11 +46,11 @@ if (!(Test-Path "$BASE\scripts\mega_lista.py")) {
 Write-Host "[1/3] Actualizando lista principal..."
 Write-Host ""
 
-& $PYTHON "$BASE\scripts\actualizar_principal.py"
+& $PYTHON "$BASE\scripts\ejecutar_actualizacion_principal.py"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "ERROR: actualizar_principal.py fallo."
+    Write-Host "ERROR: ejecutar_actualizacion_principal.py fallo."
     Read-Host "Pulsa ENTER para cerrar"
     exit 1
 }
