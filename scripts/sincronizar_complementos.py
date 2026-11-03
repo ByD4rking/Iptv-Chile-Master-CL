@@ -412,7 +412,7 @@ def _merge_extinf(current: str, source: str, destination: str) -> str:
     for key in ("tvg-logo", "logo", "tvg-language", "tvg-country", "tvg-chno"):
         value = _attr(source, key)
         if value:
-            result = _set_attr(result, key)
+            result = _set_attr(result, key, value)
 
     return _set_attr(result, "group-title", destination)
 
