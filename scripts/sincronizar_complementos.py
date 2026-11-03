@@ -139,7 +139,7 @@ def _set_display_name(extinf: str, display_name: str) -> str:
 
 def _without_option_suffix(value: str) -> str:
     return re.sub(
-        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))\s*$",
+        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
         "",
         value or "",
         flags=re.I,
