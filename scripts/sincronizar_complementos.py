@@ -148,7 +148,7 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             response = session.get(source_url, timeout=TIMEOUT)
             response.raise_for_status()
             body = response.text or ""
-            if not body.lstrip().startswith("#EXTM3U"):
+            if not body.lstrip("\\ufeff \\r\\n\\t").startswith("#EXTM3U"):
                 raise ValueError("respuesta sin cabecera #EXTM3U")
             parsed = ap.parsear_m3u(body)
             if not parsed:
@@ -205,6 +205,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str]
 
     main_by_id: dict[str, list[int]] = defaultdict(list)
     main_by_name: dict[str, list[int]] = defaultdict(list)
+    main_by_url: dict[str, int] = {}
     for index, block in enumerate(blocks):
         if not block.get("url"):
             continue
@@ -215,6 +216,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str]
         }, pluto=ap.es_url_pluto(block["url"]))
         if identity.startswith("id:"):
             main_by_id[identity].append(index)
+        main_by_url.setdefault(block["url"], index)
         name = ap.normalizar(_attr(block["extinf"], "tvg-name") or ap.extraer_nombre(block["extinf"]))
         if name:
             main_by_name[name].append(index)
@@ -238,18 +240,27 @@ def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str]
     }
     updated_indices: set[int] = set()
     added_identities: set[str] = set()
+    processed_identities: set[str] = set()
+    reserved_urls = set(main_by_url)
     additions_by_category: dict[str, list[dict]] = defaultdict(list)
 
     for candidate in valid_candidates:
         identity = candidate.get("identity") or _identity(
             candidate, pluto=candidate.get("is_pluto", False)
         )
+        if identity and identity in processed_identities:
+            continue
+        if identity:
+            processed_identities.add(identity)
         source_name = ap.normalizar(_attr(candidate.get("extinf", ""), "tvg-name") or candidate.get("nombre", ""))
         match = None
         if identity.startswith("id:"):
             matches = main_by_id.get(identity, [])
             if matches:
                 match = next((idx for idx in matches if idx not in updated_indices), matches[0])
+        source_url = candidate["url"].strip()
+        if match is None:
+            match = main_by_url.get(source_url)
         if match is None and source_name:
             if candidate_name_counts[source_name] == 1 and main_name_counts[source_name] == 1:
                 match = main_by_name[source_name][0]
@@ -259,12 +270,19 @@ def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str]
         if match is not None:
             block = blocks[match]
             old_url = block["url"]
-            new_url = candidate["url"].strip()
+            new_url = source_url
             destination = candidate["destination"]
+            occupied_by = main_by_url.get(new_url)
+            if occupied_by is not None and occupied_by != match:
+                stats["ambiguos"] += 1
+                continue
             old_category = ap.extraer_categoria(block["extinf"])
             merged = _merge_extinf(block["extinf"], candidate.get("extinf", ""), destination)
             if old_url != new_url:
                 block["url"] = new_url
+                main_by_url.pop(old_url, None)
+                main_by_url[new_url] = match
+                reserved_urls.add(new_url)
                 stats["url_actualizadas"] += 1
             if ap.normalizar(old_category) != ap.normalizar(destination):
                 stats["categorias_movidas"] += 1
@@ -275,10 +293,13 @@ def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str]
             updated_indices.add(match)
             continue
 
+        if source_url in reserved_urls:
+            continue
         if identity and identity in added_identities:
             continue
         if identity:
             added_identities.add(identity)
+        reserved_urls.add(source_url)
         extinf = _merge_extinf(candidate.get("extinf", ""), candidate.get("extinf", ""), candidate["destination"])
         additions_by_category[ap.normalizar(candidate["destination"])].append({
             "extinf": extinf,
