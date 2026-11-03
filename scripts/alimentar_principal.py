@@ -2948,6 +2948,52 @@ def agrupar_alternativas_por_identidad(lineas):
 
 
 
+def ordenar_anime_alfabeticamente(lineas):
+    """Ordena Anime por nombre canónico y mantiene sus opciones consecutivas."""
+    prefijo, bloques = [], []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            elif bloques:
+                bloques[-1]["lineas"].append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        raw = list(lineas[inicio:j])
+        nombre = extraer_nombre(raw[0])
+        match = re.search(
+            r"\s*(?:\[\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\]|"
+            r"\(\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\))$",
+            nombre,
+            re.I,
+        )
+        opcion = int(match.group(1) or match.group(2)) if match else 1
+        base = nombre[:match.start()].strip() if match else nombre
+        bloques.append({
+            "lineas": raw,
+            "anime": normalizar(extraer_categoria(raw[0])) == "anime",
+            "clave": (normalizar_nombre_canal(base), opcion, normalizar(nombre)),
+            "orden": len(bloques),
+        })
+        i = j
+
+    anime = sorted(
+        (bloque for bloque in bloques if bloque["anime"]),
+        key=lambda bloque: (*bloque["clave"], bloque["orden"]),
+    )
+    siguiente = iter(anime)
+    salida = list(prefijo)
+    for bloque in bloques:
+        elegido = next(siguiente) if bloque["anime"] else bloque
+        salida.extend(elegido["lineas"])
+    return salida
+
+
 def ordenar_bloques_magma_y_originales(lineas, session):
     """
     Ordena exclusivamente Entretenimiento / Cine / Series en tres bloques:
