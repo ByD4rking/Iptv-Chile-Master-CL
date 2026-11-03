@@ -22,6 +22,7 @@ from alimentar_principal import (
     restaurar_orden_original_por_categoria,
     reclasificar_iptvsv_existente,
     validar_integridad_iptvsv,
+    sincronizar_enlaces_existentes,
 )
 
 
@@ -330,6 +331,59 @@ def test_restaurar_orden_con_tvg_id_agregado_o_eliminado() -> None:
     names = [line.split(",", 1)[-1] for line in restored if line.startswith("#EXTINF")]
     assert names == ["Canal A", "Canal B", "Canal C"], names
     validar_orden_canales(before, restored)
+
+
+def test_sincronizar_url_y_nombre_por_tvg_id() -> None:
+    lineas = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="channel-a" tvg-name="Nombre viejo" group-title="Documentales y Cultura",Nombre viejo [Opc.2]',
+        "https://old.example/channel-a.m3u8",
+    ]
+    canal = {
+        "extinf": '#EXTINF:-1 tvg-id="channel-a" tvg-name="Nombre nuevo" group-title="Documentales y Cultura",Nombre nuevo',
+        "nombre": "Nombre nuevo",
+        "categoria": "Documentales y Cultura",
+        "url": "https://new.example/channel-a.m3u8",
+    }
+    updated, stats = sincronizar_enlaces_existentes(lineas, [(canal, "Documentales y Cultura")])
+    assert updated[-1] == "https://new.example/channel-a.m3u8", updated
+    assert updated[1].endswith(",Nombre nuevo [Opc.2]"), updated[1]
+    assert stats["urls_actualizadas"] == 1, stats
+    assert stats["nombres_actualizados"] == 1, stats
+
+
+def test_sincronizar_url_por_nombre_solo_si_es_unico_y_sin_ids() -> None:
+    lineas = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Deportes",Canal A',
+        "https://old.example/canal-a.m3u8",
+    ]
+    canal = {
+        "extinf": '#EXTINF:-1 group-title="Deportes",Canal A',
+        "nombre": "Canal A",
+        "categoria": "Deportes",
+        "url": "https://new.example/canal-a.m3u8",
+    }
+    updated, stats = sincronizar_enlaces_existentes(lineas, [(canal, "Deportes")])
+    assert updated[-1] == "https://new.example/canal-a.m3u8", updated
+    assert stats["urls_actualizadas"] == 1, stats
+
+
+def test_sincronizar_no_fusiona_ids_distintos_con_mismo_nombre() -> None:
+    lineas = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="old-id" group-title="Comedia",Comedy Central',
+        "https://old.example/comedy.m3u8",
+    ]
+    canal = {
+        "extinf": '#EXTINF:-1 tvg-id="new-id" group-title="Comedia",Comedy Central',
+        "nombre": "Comedy Central",
+        "categoria": "Comedia",
+        "url": "https://new.example/comedy.m3u8",
+    }
+    updated, stats = sincronizar_enlaces_existentes(lineas, [(canal, "Comedia")])
+    assert updated[-1] == "https://old.example/comedy.m3u8", updated
+    assert stats["urls_actualizadas"] == 0, stats
 
 
 def test_ajustes_referencia() -> None:

@@ -3,6 +3,7 @@ import re
 import unicodedata
 import requests
 from collections import defaultdict
+from sincronizar_canales import sincronizar_enlaces_existentes as _sincronizar_enlaces_existentes
 
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
@@ -1161,6 +1162,18 @@ def agregar_bloque(canal, destino, urls_globales, bloques):
     })
     urls_globales.add(url)
     return True
+
+def sincronizar_enlaces_existentes(lineas, canales_destinados):
+    return _sincronizar_enlaces_existentes(
+        lineas,
+        canales_destinados,
+        normalizar=normalizar,
+        extraer_nombre=extraer_nombre,
+        extraer_categoria=extraer_categoria,
+        reemplazar_categoria=reemplazar_categoria,
+        url_es_valida=url_es_valida,
+    )
+
 
 def insertar_bloques(lineas, bloques):
     if not bloques:
@@ -2832,6 +2845,7 @@ def main():
             )
             nuevos = 0
             omitidos_regla_especial = 0
+            canales_destinados = []
             for canal in canales:
                 if fuente_es_iptvsv:
                     destino = determinar_destino_iptvsv(
@@ -2856,9 +2870,6 @@ def main():
                         categorias,
                     )
 
-                # Nunca crear TOTAL/OTROS. Si una fuente antigua los
-                # declara, intentar clasificar por nombre; si no hay destino
-                # seguro, se omite para no contaminar la principal.
                 if not destino and normalizar(canal.get("categoria", "")) in {"total", "otros"}:
                     destino = destino_especial_total_otros(
                         canal.get("nombre", ""),
@@ -2867,7 +2878,26 @@ def main():
                     )
                 if not destino or normalizar(destino) in {"total", "otros"}:
                     continue
+                canales_destinados.append((canal, destino))
 
+            lineas, sincronizacion = sincronizar_enlaces_existentes(lineas, canales_destinados)
+            urls_globales = mapa_urls_principal(lineas)
+            # Las fuentes previas del mismo ciclo aún pueden tener bloques
+            # pendientes de insertar; no perder sus URLs al recalcular el mapa.
+            urls_globales.update(
+                item["bloque"][-1].strip()
+                for item in bloques_nuevos
+                if item.get("bloque") and url_es_valida(item["bloque"][-1].strip())
+            )
+            if any(sincronizacion.values()):
+                print(
+                    "  -> sincronización de canales existentes: "
+                    f"{sincronizacion['urls_actualizadas']} URLs, "
+                    f"{sincronizacion['nombres_actualizados']} nombres, "
+                    f"{sincronizacion['categorias_actualizadas']} categorías."
+                )
+
+            for canal, destino in canales_destinados:
                 if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
                     agregados_normales += 1
                     nuevos += 1
