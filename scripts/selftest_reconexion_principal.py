@@ -146,7 +146,7 @@ def test_pluto_es_identity_lookup_fails_closed() -> None:
 
 def test_pluto_es_identity_lookup_loads_catalog_ids() -> None:
     class FakeResponse:
-        text = "\\n".join([
+        text = "\n".join([
             "#EXTM3U",
             '#EXTINF:-1 tvg-id="aaaaaaaaaaaaaaaaaaaaaaaa" group-title="Anime",Anime ES',
             "https://jmp2.uk/plu-bbbbbbbbbbbbbbbbbbbbbbbb.m3u8",
