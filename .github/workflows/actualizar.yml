@@ -114,30 +114,53 @@ jobs:
           b_urls={u for _,u in b}; a_urls=[u for _,u in a]
           a_set=set(a_urls)
 
-          # Una URL no-Pluto existente no puede desaparecer, salvo limpiezas
-          # explícitas ya definidas por el proyecto (TOTAL/OTROS, categorías
-          # Telemundo/Sky mal clasificadas y países no autorizados).
           allowed_cleanup = {
               "total", "otros", "telemundo noticias", "sky sports",
               "qatar", "palestina", "corea del norte", "corea del sur",
               "israel", "alemania", "francia", "iran", "rusia",
               "guinea ecuatorial", "estados unidos",
           }
-          before_by_url={}
-          for ext,url in b:
-              m=re.search(r'group-title="([^"]*)"', ext)
-              before_by_url.setdefault(url, m.group(1).strip().lower() if m else "")
 
+          def identity(extinf):
+              channel_id=re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+              if channel_id and channel_id.group(1).strip():
+                  return ("id", channel_id.group(1).strip().casefold())
+              name=extinf.split(",", 1)[-1].strip().casefold()
+              category=re.search(r'group-title="([^"]*)"', extinf, re.I)
+              group=category.group(1).strip().casefold() if category else ""
+              return ("name", group, re.sub(r"\s+", " ", name))
+
+          def missing_channel_entries(old_entries, new_entries):
+              new_identities={identity(ext) for ext, _ in new_entries}
+              return [
+                  (ext, url) for ext, url in old_entries
+                  if identity(ext) not in new_identities
+              ]
+
+          def is_pluto_url(url):
+              value=url.casefold()
+              return "pluto" in value or "jmp2.uk/plu-" in value
+
+          # La sustitución de URL es válida si la identidad del canal permanece.
+          # Solo se considera regresión que desaparezca el canal completo.
           lost_non_pluto=[]
-          for url in b_urls:
-              if "pluto" in url.lower() or url in a_set:
+          for ext, url in missing_channel_entries(b, a):
+              if is_pluto_url(url) or url in a_set:
                   continue
-              if before_by_url.get(url,"") in allowed_cleanup:
+              category=re.search(r'group-title="([^"]*)"', ext, re.I)
+              group=category.group(1).strip().casefold() if category else ""
+              if group in allowed_cleanup:
                   continue
               lost_non_pluto.append(url)
 
           if lost_non_pluto:
-              raise SystemExit("REGRESION: se perdieron URLs no-Pluto existentes fuera de limpiezas autorizadas: "+str(sorted(lost_non_pluto)[:20]))
+              raise SystemExit("REGRESION: desaparecieron canales no-Pluto existentes (no solo cambió su URL): "+str(sorted(set(lost_non_pluto))[:20]))
+
+          # Prueba interna: el cambio de URL conserva el canal; la desaparición completa se rechaza.
+          synthetic_before=[('#EXTINF:-1 tvg-id="id-a" group-title="Deportes",Canal A', "https://old.example/a.m3u8")]
+          synthetic_after=[('#EXTINF:-1 tvg-id="id-a" group-title="Deportes",Canal A', "https://new.example/a.m3u8")]
+          assert not missing_channel_entries(synthetic_before, synthetic_after)
+          assert missing_channel_entries(synthetic_before, []) == synthetic_before
 
           # Una URL de acceso solo puede aparecer una vez.
           dup=sorted(u for u in set(a_urls) if a_urls.count(u)>1)
