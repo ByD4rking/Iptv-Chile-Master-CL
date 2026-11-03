@@ -2002,10 +2002,20 @@ def integrar_pluto_mx(lineas, session):
     try:
         respuesta_mx = session.get(FUENTE_PLUTO_ALTERNATIVAS, timeout=30)
         respuesta_mx.raise_for_status()
-        canales_mx = parsear_m3u(respuesta_mx.text)
+        contenido_mx = respuesta_mx.text or ""
+        if not contenido_mx.lstrip().startswith("#EXTM3U"):
+            raise ValueError("Pluto MX no devolvió una cabecera M3U válida")
+        canales_mx = parsear_m3u(contenido_mx)
+        if not canales_mx:
+            raise ValueError("Pluto MX devolvió una lista vacía, sin canales")
         respuesta_latam = session.get(FUENTE_PLUTO_CANONICA, timeout=30)
         respuesta_latam.raise_for_status()
-        canales_latam = parsear_m3u(respuesta_latam.text)
+        contenido_latam = respuesta_latam.text or ""
+        if not contenido_latam.lstrip().startswith("#EXTM3U"):
+            raise ValueError("Pluto LATAM no devolvió una cabecera M3U válida")
+        canales_latam = parsear_m3u(contenido_latam)
+        if not canales_latam:
+            raise ValueError("Pluto LATAM devolvió una lista vacía, sin canales")
     except Exception as exc:
         # No escribir una M3U sin alternativas MX verificadas.
         # La deduplicación anterior puede haber retirado opciones previas;
@@ -2212,6 +2222,7 @@ def cargar_ids_pluto_es_anime(session):
             raise ValueError("el catálogo Pluto ES no contiene canales de Anime verificables")
 
         ids_obtenidos_fuente = set()
+        canales_sin_identidad = []
         for canal_es in canales_anime:
             identidad_es = extraer_pluto_id(canal_es.get("url", ""))
             if not identidad_es:
@@ -2223,9 +2234,16 @@ def cargar_ids_pluto_es_anime(session):
                 identidad_es = m_es.group(1).lower() if m_es else ""
             if identidad_es:
                 ids_obtenidos_fuente.add(identidad_es)
+            else:
+                canales_sin_identidad.append(canal_es.get("nombre") or extraer_nombre(canal_es.get("extinf", "")))
 
-        if not ids_obtenidos_fuente:
-            raise ValueError("el catálogo Pluto ES no aportó identidades de Anime")
+        if canales_sin_identidad:
+            muestra = ", ".join(canales_sin_identidad[:5])
+            raise ValueError(
+                f"el catálogo Pluto ES contiene canales Anime sin identidad verificable: {muestra}"
+            )
+        if len(ids_obtenidos_fuente) != len(canales_anime):
+            raise ValueError("no se pudo obtener una identidad única para cada canal Anime de Pluto ES")
         ids_pluto_es_anime.update(ids_obtenidos_fuente)
     except Exception as exc:
         raise RuntimeError(
