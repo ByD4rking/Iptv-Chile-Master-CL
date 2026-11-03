@@ -1998,7 +1998,17 @@ def integrar_pluto_mx(lineas, session):
         destino_existente = buscar_categoria_existente(destino, categorias)
         if not destino_existente:
             return None
-        extinf = reemplazar_categoria(canal.get("extinf", ""), destino_existente)
+        extinf = canal.get("extinf", "")
+        if re.search(r'group-title="[^"]*"', extinf, re.I):
+            extinf = re.sub(
+                r'group-title="[^"]*"',
+                f'group-title="{destino_existente}"',
+                extinf,
+                count=1,
+                flags=re.I,
+            )
+        else:
+            extinf = extinf.replace(",", f' group-title="{destino_existente}",', 1)
         cid = canal_id(canal)
         if cid:
             if re.search(r'tvg-id="[^"]*"', extinf, re.I):
