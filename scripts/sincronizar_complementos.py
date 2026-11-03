@@ -21,19 +21,9 @@ PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 MANIFEST = BASE / "scripts" / "sync_sources.json"
 TIMEOUT = 30
 
-# Todas las regiones Pluto son complementarias de la principal. LATAM tiene
-# prioridad cuando el mismo ID aparece en más de una región.
-FUENTES_PLUTO_COMPLETAS = [
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
-    # Feed adicional de alternativas Pluto MX ya utilizado por el alimentador.
-    ap.FUENTE_PLUTO_ALTERNATIVAS,
-]
+# Solo LATAM, España y México alimentan la principal. Las demás regiones
+# Pluto siguen disponibles como playlists independientes.
+FUENTES_PLUTO_COMPLETAS = list(ap.FUENTES_PLUTO) + [ap.FUENTE_PLUTO_ALTERNATIVAS]
 
 
 def _attr(text: str, name: str) -> str:
@@ -50,6 +40,22 @@ def _identity(channel: dict, *, pluto: bool = False) -> str:
         return "id:" + ap.normalizar(channel_id)
     name = ap.normalizar(_attr(extinf, "tvg-name") or channel.get("nombre", ""))
     return "name:" + name if name else ""
+
+
+def _base_channel_name(extinf: str) -> str:
+    name = _attr(extinf, "tvg-name") or ap.extraer_nombre(extinf)
+    name = re.sub(
+        r"\\s*(?:\\[\\s*opc(?:ion)?\\.?\\s*\\d+\\s*\\]|\\(\\s*opci[oó]n\\s*\\d+\\s*\\))\\s*$",
+        "",
+        name,
+        flags=re.I,
+    )
+    name = re.sub(r"\\s+(?:hd|sd|fhd|uhd)$", "", name, flags=re.I)
+    return ap.normalizar(name)
+
+
+def _is_los_pitufos(extinf: str) -> bool:
+    return _base_channel_name(extinf) == "los pitufos"
 
 
 def _set_attr(extinf: str, key: str, value: str) -> str:
@@ -116,18 +122,56 @@ def _read_blocks(lines: list[str]) -> tuple[list[str], list[dict], list[str]]:
 def _destination(source_url: str, channel: dict, categories: list[str]) -> str | None:
     category = (channel.get("categoria") or "").strip()
     name = channel.get("nombre", "")
+    category_norm = ap.normalizar(category)
     if not category:
         return None
+
     if source_url == ap.FUENTE_IPTVSV:
-        if ap.es_categoria_pais_generica_iptvsv(category):
-            return None
-        return ap.determinar_destino_iptvsv(category, name, categories)
+        # TV Chichicasteca pertenece a Chichicastenango, Guatemala; no es
+        # contenido salvadoreño aunque llegue desde la fuente IPTV-SV.
+        if category_norm in {"tv chichicasteca", "los chichastecas"}:
+            return "Guatemala"
+        country_destinations = {
+            "el salvador": "El Salvador",
+            "el salvador - tcs": "El Salvador",
+            "el salvador local": "El Salvador",
+            "guatemala": "Guatemala",
+            "honduras": "Honduras",
+            "costa rica": "Costa Rica",
+            "mexico": "México",
+            "colombia": "Colombia",
+            "ecuador": "Ecuador",
+            "peru": "Perú",
+            "chile": "CHILE TV",
+            "argentina": "Argentina",
+            "paraguay": "Paraguay",
+            "republica dominicana": "República Dominicana",
+            "venezuela": "Venezuela",
+            "bolivia": "Bolivia",
+            "espana": "España",
+            "brasil": "Brasil",
+            "panama": "Panamá",
+            "nicaragua": "Nicaragua",
+            "cuba": "Cuba",
+            "puerto rico": "Puerto Rico",
+            "uruguay": "Uruguay",
+        }
+        if category_norm in country_destinations:
+            return country_destinations[category_norm]
+        return ap.determinar_destino_iptvsv(category, name, categories) or category
+
     if source_url == ap.FUENTE_MAGMA:
-        return ap.determinar_destino_magma(category, name, categories)
+        return ap.determinar_destino_magma(category, name, categories) or category
+
     if source_url in FUENTES_PLUTO_COMPLETAS:
-        if source_url.endswith("pluto_es.m3u") and ap.normalizar(category) == "anime":
+        if source_url.lower().endswith("pluto_es.m3u") and category_norm == "anime":
             return None
-        return ap.determinar_destino_pluto(category, name, categories)
+        destination = ap.determinar_destino_pluto(category, name, categories)
+        if destination:
+            return destination
+        # Las carpetas nuevas de Pluto se crean usando el group-title de origen.
+        return None if category_norm in {"pluto tv", "total", "otros"} else category
+
     pais = next(
         (country for suffix, country in ap.PAIS_POR_FUENTE.items() if suffix.lower() in source_url.lower()),
         None,
@@ -163,6 +207,8 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             continue
 
         for channel in parsed:
+            if _is_los_pitufos(channel.get("extinf", "")):
+                continue
             url = (channel.get("url") or "").strip()
             if not ap.url_es_valida(url):
                 continue
@@ -192,21 +238,84 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
     if manifest is None:
         manifest = {}
     prefix, blocks, trailing = _read_blocks(lines)
+
+    # Excluir Pluto España de Anime, pero mantener el mismo ID si también
+    # está disponible en Pluto LATAM o México.
+    pluto_es_anime_ids = set()
+    pluto_latam_mx_anime_ids = set()
+    for candidate in candidates:
+        if ap.normalizar(candidate.get("categoria", "")) != "anime":
+            continue
+        identity = candidate.get("identity") or _identity(
+            candidate, pluto=candidate.get("is_pluto", False)
+        )
+        if not identity.startswith("id:"):
+            continue
+        source = candidate.get("source", "")
+        if source == ap.FUENTES_PLUTO[1]:
+            pluto_es_anime_ids.add(identity)
+        elif source in {ap.FUENTES_PLUTO[0], ap.FUENTES_PLUTO[2], ap.FUENTE_PLUTO_ALTERNATIVAS}:
+            pluto_latam_mx_anime_ids.add(identity)
+    pluto_es_only_ids = pluto_es_anime_ids - pluto_latam_mx_anime_ids
+
+    # La única baja manual autorizada es Los Pitufos. Se eliminan también
+    # sus alternativas con el mismo tvg-id, sin tocar otros infantiles.
+    pitufos_ids = set()
+    for block in blocks:
+        if _is_los_pitufos(block["extinf"]):
+            identity = _identity(
+                {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
+                pluto=ap.es_url_pluto(block.get("url", "")),
+            )
+            if identity:
+                pitufos_ids.add(identity)
+
+    filtered_blocks = []
+    pitufos_removed = 0
+    pluto_es_anime_removed = 0
+    chichicasteca_moved = 0
+    for block in blocks:
+        identity = _identity(
+            {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
+            pluto=ap.es_url_pluto(block.get("url", "")),
+        )
+        if _is_los_pitufos(block["extinf"]) or (identity and identity in pitufos_ids):
+            pitufos_removed += 1
+            manifest.pop(identity, None)
+            continue
+        if block.get("url") and ap.es_url_pluto(block["url"]) and identity in pluto_es_only_ids:
+            pluto_es_anime_removed += 1
+            manifest.pop(identity, None)
+            continue
+        if ap.normalizar(ap.extraer_categoria(block["extinf"])) in {"tv chichicasteca", "los chichastecas"}:
+            moved_extinf = _set_attr(block["extinf"], "group-title", "Guatemala")
+            if moved_extinf != block["extinf"]:
+                chichicasteca_moved += 1
+                block["extinf"] = moved_extinf
+                if block.get("raw"):
+                    block["raw"][0] = moved_extinf
+        filtered_blocks.append(block)
+    blocks = filtered_blocks
+
     categories = ap.categorias_de_lineas(lines)
     category_lookup = {ap.normalizar(value): value for value in categories}
 
     # Recalcular destinos con el catálogo real de categorías de la maestra.
     valid_candidates = []
     for candidate in candidates:
+        if _is_los_pitufos(candidate.get("extinf", "")):
+            continue
         destination = _destination(
             candidate.get("source", ""),
             candidate,
             categories,
         )
-        if not destination or ap.normalizar(destination) not in category_lookup:
+        if not destination:
             continue
         item = dict(candidate)
-        item["destination"] = category_lookup[ap.normalizar(destination)]
+        # Reutiliza el nombre canónico existente; si no existe, crea la
+        # categoría al añadir el primer canal con ese group-title.
+        item["destination"] = category_lookup.get(ap.normalizar(destination), destination)
         valid_candidates.append(item)
 
     main_by_id: dict[str, list[int]] = defaultdict(list)
@@ -250,11 +359,14 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
     stats = {
         "canales_nuevos": 0,
         "url_actualizadas": 0,
-        "categorias_movidas": 0,
+        "categorias_movidas": chichicasteca_moved,
         "metadatos_actualizados": 0,
         "ambiguos": 0,
         "sin_categoria": len(candidates) - len(valid_candidates),
         "fuentes_propietarias": 0,
+        "los_pitufos_eliminados": pitufos_removed,
+        "pluto_es_anime_eliminados": pluto_es_anime_removed,
+        "canales_chichicasteca_a_guatemala": chichicasteca_moved,
     }
     updated_indices: set[int] = set()
     reserved_urls = set(main_by_url)
@@ -393,26 +505,21 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         })
         stats["canales_nuevos"] += 1
 
-    # Reagrupar físicamente por categoría: los canales movidos quedan dentro
-    # de su sección. Se conserva el orden de categorías y el orden interno.
-    grouped: dict[str, list[dict]] = {}
-    category_order: list[str] = []
-    for block in blocks:
-        category = ap.normalizar(ap.extraer_categoria(block["extinf"]))
-        if category not in grouped:
-            grouped[category] = []
-            category_order.append(category)
-        grouped[category].append(block)
-
-    for category, new_blocks in additions_by_category.items():
-        if category not in grouped:
-            continue
-        grouped[category].extend(new_blocks)
-
+    # No reagrupar ni ordenar los bloques existentes: la secuencia original
+    # de la principal se conserva exactamente. Las altas se anexan al final;
+    # el reproductor las clasifica por group-title, incluidas las carpetas nuevas.
     output = list(prefix)
-    for category in category_order:
-        for block in grouped[category]:
-            output.extend(block.get("raw") or ([block["extinf"]] + block["extras"] + ([block["url"]] if block.get("url") else [])))
+    for block in blocks:
+        output.extend(
+            block.get("raw")
+            or ([block["extinf"]] + block["extras"] + ([block["url"]] if block.get("url") else []))
+        )
+    for new_blocks in additions_by_category.values():
+        for block in new_blocks:
+            output.extend(
+                block.get("raw")
+                or ([block["extinf"]] + block["extras"] + ([block["url"]] if block.get("url") else []))
+            )
     output.extend(trailing)
     return output, stats
 
