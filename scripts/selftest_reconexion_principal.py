@@ -23,6 +23,8 @@ from alimentar_principal import (
     reclasificar_iptvsv_existente,
     validar_integridad_iptvsv,
     sincronizar_enlaces_existentes,
+    extraer_bloques_no_pluto_por_url,
+    restaurar_no_pluto_existente,
 )
 
 
@@ -349,6 +351,65 @@ def test_restaurar_orden_con_tvg_id_agregado_o_eliminado() -> None:
     names = [line.split(",", 1)[-1] for line in restored if line.startswith("#EXTINF")]
     assert names == ["Canal A", "Canal B", "Canal C"], names
     validar_orden_canales(before, restored)
+
+
+def test_restaurar_no_reintroduce_url_antigua_si_id_sigue_presente() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="channel-a" group-title="Deportes",Canal A',
+        "https://old.example/channel-a.m3u8",
+    ]
+    current = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="channel-a" group-title="Deportes",Canal A',
+        "https://new.example/channel-a.m3u8",
+    ]
+    restored, count = restaurar_no_pluto_existente(
+        current,
+        extraer_bloques_no_pluto_por_url(before),
+    )
+    assert count == 0, count
+    assert "https://old.example/channel-a.m3u8" not in restored
+    assert "https://new.example/channel-a.m3u8" in restored
+
+
+def test_restaurar_no_pluto_reactiva_categoria_historica_si_desaparecio() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="FOX Sports",FOX Sports Sur',
+        "https://old.example/fox.m3u8",
+    ]
+    current = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Deportes",Canal A',
+        "https://example.test/a.m3u8",
+    ]
+    restored, count = restaurar_no_pluto_existente(
+        current,
+        extraer_bloques_no_pluto_por_url(before),
+    )
+    assert count == 1, count
+    assert "https://old.example/fox.m3u8" in restored
+    assert any(line.startswith('#EXTINF:-1 group-title="FOX Sports"') for line in restored)
+
+
+def test_restaurar_no_pluto_no_fusiona_ids_distintos_por_nombre() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="old-id" group-title="Comedia",Comedy Central',
+        "https://old.example/comedy.m3u8",
+    ]
+    current = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="new-id" group-title="Comedia",Comedy Central',
+        "https://new.example/comedy.m3u8",
+    ]
+    restored, count = restaurar_no_pluto_existente(
+        current,
+        extraer_bloques_no_pluto_por_url(before),
+    )
+    assert count == 1, count
+    assert "https://old.example/comedy.m3u8" in restored
 
 
 def test_sincronizar_url_y_nombre_por_tvg_id() -> None:
