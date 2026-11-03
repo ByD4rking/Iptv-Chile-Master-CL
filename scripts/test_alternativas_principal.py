@@ -114,14 +114,12 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(parsed[1][0].split(",", 1)[1], "Cartoonito HD [Opc.4]")
         self.assertEqual(parsed[1][-1], "https://four.example/cartoonito.m3u8")
 
-    def test_restore_does_not_reuse_position_of_same_id_for_another_channel(self):
-        # La fuente histórica reutiliza tvg-id=1626 en dos nombres distintos.
-        # La posición del primer ID no debe arrastrar C y G TV por delante
-        # de Cadenartv cuando se reconstruye el orden de CHILE TV.
+    def test_restore_does_not_reuse_position_of_reassigned_single_id(self):
+        # Incluso una única aparición histórica del ID puede pertenecer a otro
+        # nombre. C y G TV no debe heredar la posición de Canal ajeno.
         original = ["#EXTM3U"]
         original += block("1626", "CHILE TV", "Canal ajeno", "https://a.example/ajeno.m3u8")
         original += block("cadena.id", "CHILE TV", "Cadenartv", "https://b.example/cadenartv.m3u8")
-        original += block("1626", "CHILE TV", "C y G TV", "https://c.example/cygtv.m3u8")
         current = ["#EXTM3U"]
         current += block("1626", "CHILE TV", "C y G TV", "https://c.example/cygtv.m3u8")
         current += block("cadena.id", "CHILE TV", "Cadenartv", "https://b.example/cadenartv.m3u8")
