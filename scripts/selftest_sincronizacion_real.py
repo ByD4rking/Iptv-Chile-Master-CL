@@ -103,29 +103,16 @@ def protected_hashes() -> dict[str, str]:
     }
 
 
-def same_channel(
-    after: dict,
-    before: dict,
-    unique_names: set[str],
-    unique_tvg_names: set[str],
-) -> bool:
-    if after["id"] and before["id"] and norm(after["id"]) == norm(before["id"]):
-        return True
-    if after["url"] and before["url"] and after["url"] == before["url"]:
-        return True
-    if after.get("extinf") and before.get("extinf") and after["extinf"] == before["extinf"]:
-        return True
-    if (
-        before["tvg_name"]
-        and before["tvg_name"] == after["tvg_name"]
-        and before["tvg_name"] in unique_tvg_names
-    ):
-        return True
-    return bool(
-        before["name"]
-        and before["name"] == after["name"]
-        and before["name"] in unique_names
-    )
+def identity_key(item: dict, before_ids: set[str], after_ids: set[str], unique_names: set[str]) -> str:
+    channel_id = norm(item.get("id", ""))
+    name = item.get("tvg_name") or item.get("name") or ""
+    if channel_id and (channel_id in before_ids or channel_id in after_ids):
+        return "id:" + channel_id
+    if name and name in unique_names:
+        return "name:" + name
+    if channel_id:
+        return "id:" + channel_id
+    return "name:" + name
 
 
 def main() -> None:
@@ -213,40 +200,45 @@ def main() -> None:
             and "pluto" in item["url"].lower()
         )
     ]
-    before_name_counts = Counter(item["name"] for item in before_kept if item["name"])
-    after_name_counts = Counter(item["name"] for item in after if item["name"])
+    before_name_counts = Counter(
+        item["tvg_name"] or item["name"] for item in before_kept
+        if item["tvg_name"] or item["name"]
+    )
+    after_name_counts = Counter(
+        item["tvg_name"] or item["name"] for item in after
+        if item["tvg_name"] or item["name"]
+    )
     unique_names = {
         name for name, count in before_name_counts.items()
         if count == 1 and after_name_counts.get(name, 0) == 1
     }
-    before_tvg_counts = Counter(item["tvg_name"] for item in before_kept if item["tvg_name"])
-    after_tvg_counts = Counter(item["tvg_name"] for item in after if item["tvg_name"])
-    unique_tvg_names = {
-        name for name, count in before_tvg_counts.items()
-        if count == 1 and after_tvg_counts.get(name, 0) == 1
-    }
+    before_ids = {norm(item["id"]) for item in before_kept if item["id"]}
+    after_ids = {norm(item["id"]) for item in after if item["id"]}
 
-    cursor = 0
-    for old in before_kept:
-        match_index = next(
-            (
-                index for index in range(cursor, len(after))
-                if same_channel(after[index], old, unique_names, unique_tvg_names)
-            ),
-            None,
-        )
-        if match_index is None:
-            similar = [
-                item for item in after
-                if (old["id"] and norm(item["id"]) == norm(old["id"]))
-                or (old["name"] and item["name"] == old["name"])
-                or (old["tvg_name"] and item["tvg_name"] == old["tvg_name"])
-            ][:5]
+    before_keys = [
+        identity_key(item, before_ids, after_ids, unique_names)
+        for item in before_kept
+    ]
+    after_keys = [
+        identity_key(item, before_ids, after_ids, unique_names)
+        for item in after
+    ]
+    before_counts = Counter(before_keys)
+    after_counts = Counter(after_keys)
+    for key, count in before_counts.items():
+        if after_counts.get(key, 0) < count:
             raise AssertionError(
-                f"Se perdió un canal existente o una alternativa: antes={old!r}; "
-                f"similares_despues={similar!r}; resumen={result!r}"
+                f"Se perdió una alternativa existente: {key}; "
+                f"antes={count}, después={after_counts.get(key, 0)}; resumen={result!r}"
             )
-        cursor = match_index + 1
+
+    before_order = list(dict.fromkeys(before_keys))
+    after_order = [key for key in dict.fromkeys(after_keys) if key in before_counts]
+    if after_order != before_order:
+        raise AssertionError(
+            f"Cambió el orden relativo de los canales/categorías existentes: "
+            f"antes={before_order[:30]!r}; después={after_order[:30]!r}"
+        )
 
     before_heidi = [item for item in before if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
     after_heidi = [item for item in after if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
