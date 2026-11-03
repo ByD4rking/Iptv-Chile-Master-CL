@@ -60,6 +60,7 @@ def main():
         ordered_lines,
         session,
     )
+    alimentador.validar_orden_canales(ordered_lines)
 
     print("\n[ORQUESTADOR] Agrupando alternativas y priorizando Infantiles.")
     ordered_lines = _group_and_label_alternatives(
