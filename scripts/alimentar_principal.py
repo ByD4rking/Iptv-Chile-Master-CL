@@ -790,7 +790,7 @@ def identidades_pluto(extinf, url):
     return identidades
 
 
-def ids_pluto_faltantes(ids_requeridos, aliases_fuente, aliases_finales):
+def calcular_ids_pluto_faltantes(ids_requeridos, aliases_fuente, aliases_finales):
     """Exige que cada ID fuente sobreviva por al menos uno de sus alias."""
     return {
         identidad
@@ -3371,15 +3371,15 @@ def main():
                 identidades_pluto(linea_post, lineas[j_post].strip())
             )
 
-    ids_pluto_faltantes = ids_pluto_faltantes(
+    ids_pluto_ausentes = calcular_ids_pluto_faltantes(
         ids_pluto_fuentes,
         aliases_pluto_fuentes,
         aliases_pluto_finales_actualizados,
     )
-    if ids_pluto_faltantes:
+    if ids_pluto_ausentes:
         raise RuntimeError(
             "VALIDACION PLUTO FALLIDA: faltan "
-            f"{len(ids_pluto_faltantes)} IDs de las fuentes propias "
+            f"{len(ids_pluto_ausentes)} IDs de las fuentes propias "
             "después del autorreparo."
         )
 
