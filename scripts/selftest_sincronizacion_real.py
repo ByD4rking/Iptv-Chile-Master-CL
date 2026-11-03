@@ -85,11 +85,14 @@ def parse_entries(path: Path) -> list[dict]:
         category = group_match.group(1).strip() if group_match else ""
         full_name = norm(tvg_name_raw + " " + display_raw)
         is_pitufos = channel_name_key(tvg_name_raw).startswith("lospitufos") or channel_name_key(display_raw).startswith("lospitufos")
-        is_pitufos_es = is_pitufos and (
-            is_es_region_url(url) or bool(re.search(r"\b(?:es|espanol|espana)\b", full_name))
-        )
+        # La etiqueta España/Español no convierte por sí sola una señal en
+        # Pluto ES. Conservar señales españolas de otros proveedores; excluir
+        # únicamente streams regionales Pluto ES o etiquetas explícitas Pluto ES.
+        is_pluto_es_stream = "pluto" in url.lower() and is_es_region_url(url)
+        explicit_pluto_es = bool(re.search(r"\bpluto\s*es\b", full_name))
+        is_pitufos_es = is_pitufos and (is_pluto_es_stream or explicit_pluto_es)
         is_es_anime = norm(category) == "anime" and (
-            is_es_region_url(url) or bool(re.search(r"\b(?:espanol|espana|pluto\s*es)\b", full_name))
+            is_pluto_es_stream or explicit_pluto_es
         )
         option_match = re.search(
             r"(?:\[\s*(?:opci[oó]n|opc\.?|option)\s*(\d+)\s*\]|\(\s*(?:opci[oó]n|option)\s*(\d+)\s*\))$",
