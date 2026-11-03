@@ -387,6 +387,9 @@ def main(args: argparse.Namespace) -> None:
         ids = {item["id"] for item in group}
         if len(ids) > 1:
             raise AssertionError(f"Alternativas con tvg-id diferentes para {key}: {ids}")
+        tvg_names = {item["tvg_name"] for item in group if item["tvg_name"]}
+        if len(tvg_names) > 1:
+            raise AssertionError(f"Alternativas con tvg-name diferentes para {key}: {tvg_names}")
         logos = {item["logo"] for item in group if item["logo"]}
         if len(logos) > 1:
             raise AssertionError(f"Alternativas con logos diferentes para {key}: {logos}")
@@ -395,7 +398,7 @@ def main(args: argparse.Namespace) -> None:
                 raise AssertionError(f"La URL principal tiene etiqueta de opción: {key}")
             if option_index > 1 and (not item["is_option"] or item["option_number"] != option_index):
                 raise AssertionError(f"Numeración incorrecta de alternativas para {key}")
-            if re.search(r"\bMAGNA\b|\bPluto\s+(?:LATAM|MX|ES)\b", item["display_raw"], re.I):
+            if re.search(r"\bMAGNA\b|\bPluto\s+(?:LATAM|MX|ES)\b", item["display_raw"] + " " + item["tvg_name"], re.I):
                 raise AssertionError(f"El nombre muestra el proveedor en {key}: {item['display_raw']}")
 
     before_heidi = [item for item in before if item["url"] and ("heidi" in item["name"] or "heidi" in item["tvg_name"])]
