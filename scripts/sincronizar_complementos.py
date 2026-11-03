@@ -140,6 +140,15 @@ def _is_spanish_anime_label(extinf: str) -> bool:
     return bool(re.search(r"\b(?:espanol|espana|pluto\s*es)\b", value))
 
 
+def _is_pluto_es_url(url: str) -> bool:
+    value = (url or "").lower()
+    return any(marker in value for marker in (
+        "country=es",
+        "marketingregion=es",
+        "preferredlanguage=es-es",
+    ))
+
+
 def _clean_channel_display(value: str) -> str:
     value = _without_option_suffix(value)
     value = re.sub(
@@ -521,11 +530,13 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                 or (
                     block.get("url")
                     and _is_pluto_url(block["url"])
-                    and identity in pluto_es_only_ids
+                    and identity in pluto_es_anime_ids
                     and (
-                        "country=es" in block["url"].lower()
-                        or "marketingregion=es" in block["url"].lower()
-                        or manifest.get(identity, {}).get("source") == ap.FUENTES_PLUTO[1]
+                        _is_pluto_es_url(block["url"])
+                        or (
+                            isinstance(manifest.get(identity), dict)
+                            and manifest.get(identity, {}).get("source") == ap.FUENTES_PLUTO[1]
+                        )
                     )
                 )
             )
@@ -615,7 +626,12 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         if canonical_name:
             by_canonical_name[canonical_name].append((identity, group))
     for canonical_name, parts in by_canonical_name.items():
-        if len(parts) < 2 or len(main_by_canonical_name.get(canonical_name, [])) > 1:
+        main_matches = main_by_canonical_name.get(canonical_name, [])
+        main_categories = {
+            ap.normalizar(ap.extraer_categoria(blocks[index]["extinf"]))
+            for index in main_matches
+        }
+        if len(parts) < 2 or len(main_categories) > 1:
             continue
         combined = [item for _, group in parts for item in group]
         destinations = {ap.normalizar(item.get("destination", "")) for item in combined}
@@ -683,9 +699,13 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         if match is None:
             canonical_name = _canonical_channel_name(first)
             canonical_matches = main_by_canonical_name.get(canonical_name, [])
-            if len(canonical_matches) == 1:
+            canonical_categories = {
+                ap.normalizar(ap.extraer_categoria(blocks[index]["extinf"]))
+                for index in canonical_matches
+            }
+            if canonical_matches and len(canonical_categories) == 1:
                 match = canonical_matches[0]
-            elif len(canonical_matches) > 1:
+            elif canonical_matches:
                 stats["ambiguos"] += 1
                 continue
         if match is None and source_name:
@@ -748,10 +768,12 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         source_url = selected["url"].strip()
 
         if match is not None:
+            canonical_name = _canonical_channel_name(first)
+            canonical_related = main_by_canonical_name.get(canonical_name, [])
             related_matches = (
                 list(main_by_id.get(identity, []))
                 if identity.startswith("id:") and main_by_id.get(identity)
-                else [match]
+                else list(canonical_related) if canonical_related else [match]
             )
             if match not in related_matches:
                 related_matches = [match]
