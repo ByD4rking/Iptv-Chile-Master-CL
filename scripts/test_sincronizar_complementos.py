@@ -760,7 +760,9 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertTrue(any('tvg-id="shared.anime"' in line for line in output))
         self.assertTrue(any('tvg-id="mx.only"' in line for line in output))
         self.assertEqual(manifest["id:shared.anime"]["source"], ap.FUENTES_PLUTO[0])
-        self.assertEqual(stats["pluto_es_anime_eliminados"], 1)
+        self.assertIn("https://stitcher.pluto.tv/channel/shared-latam/master.m3u8", output)
+        self.assertNotIn("https://stitcher.pluto.tv/channel/shared-es/master.m3u8", output)
+        self.assertEqual(stats["pluto_es_anime_eliminados"], 2)
 
     def test_existing_channel_order_is_preserved_and_new_channels_append(self):
         base = (
