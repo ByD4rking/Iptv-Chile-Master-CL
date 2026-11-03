@@ -401,6 +401,9 @@ def main(args: argparse.Namespace) -> None:
         for item in items:
             name = channel_name_key(item.get("tvg_name") or item.get("name") or "")
             if name:
+                # Registra también nombres sin ID: un origen puede añadirlo
+                # durante la sincronización y la identidad debe seguir estable.
+                result[name]
                 channel_id = valid_id(item)
                 if channel_id:
                     result[name].add(channel_id)
