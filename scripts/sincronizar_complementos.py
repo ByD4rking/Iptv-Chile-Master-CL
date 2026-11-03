@@ -140,6 +140,31 @@ def _is_spanish_anime_label(extinf: str) -> bool:
     return bool(re.search(r"\b(?:espanol|espana|pluto\s*es)\b", value))
 
 
+def _clean_channel_display(value: str) -> str:
+    value = _without_option_suffix(value)
+    value = re.sub(
+        r"\s*(?:\[\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
+        r"\(\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
+        "",
+        value,
+        flags=re.I,
+    )
+    value = re.sub(r"\s+(?:magna|pluto\s*(?:latam|mx|es)|espanol|españa)$", "", value, flags=re.I)
+    return value.strip()
+
+
+def _merge_alternative_extinf(primary: str, alternative: str, destination: str) -> str:
+    result = _merge_extinf(primary, alternative, destination)
+    for key in ("tvg-id", "tvg-name"):
+        value = _attr(primary, key)
+        if value:
+            result = _set_attr(result, key, value)
+    display = _clean_channel_display(ap.extraer_nombre(primary))
+    if display:
+        result = _set_display_name(result, display)
+    return result
+
+
 def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]) -> list[str]:
     """Agrupa por tvg-id, comparte metadatos y numera opciones sin tocar tvg-name."""
     prefix, blocks, trailing = _read_blocks(lines)
@@ -273,10 +298,10 @@ def _merge_extinf(current: str, source: str, destination: str) -> str:
         result = _set_attr(result, "tvg-id", source_id)
     source_name = _attr(source, "tvg-name")
     if source_name:
-        result = _set_attr(result, "tvg-name", source_name)
+        result = _set_attr(result, "tvg-name", _clean_channel_display(source_name))
     source_display = ap.extraer_nombre(source)
     if source_display:
-        result = _set_display_name(result, _without_option_suffix(source_display))
+        result = _set_display_name(result, _clean_channel_display(source_display))
 
     for key in ("tvg-logo", "logo", "tvg-language", "tvg-country", "tvg-chno"):
         value = _attr(source, key)
@@ -774,7 +799,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                 alternative_url = alternative["url"].strip()
                 if not alternative_url or alternative_url in existing_related_urls or alternative_url in reserved_urls:
                     continue
-                alternative_extinf = _merge_extinf(
+                alternative_extinf = _merge_alternative_extinf(
                     blocks[primary_match]["extinf"],
                     alternative.get("extinf", ""),
                     selected["destination"],
@@ -812,7 +837,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             alternative_url = alternative["url"].strip()
             if not alternative_url or alternative_url == source_url or alternative_url in reserved_urls:
                 continue
-            alternative_extinf = _merge_extinf(
+            alternative_extinf = _merge_alternative_extinf(
                 extinf,
                 alternative.get("extinf", ""),
                 selected["destination"],
