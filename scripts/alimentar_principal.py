@@ -2140,6 +2140,7 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
     # nunca heredan el orden por compartir una etiqueta.
     orden_por_categoria_id = defaultdict(list)
     orden_por_categoria_nombre = defaultdict(list)
+    orden_por_categoria_url = defaultdict(list)
     identidad_anterior = []
     for index, item in enumerate(anteriores):
         extinf = item["lineas"][0]
@@ -2150,6 +2151,9 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
             orden_por_categoria_id[(categoria_original, channel_id)].append(index)
         if nombre:
             orden_por_categoria_nombre[(categoria_original, nombre)].append(index)
+        url_original = (item.get("url") or "").strip()
+        if url_original:
+            orden_por_categoria_url[(categoria_original, url_original)].append(index)
 
     grupos = {}
     orden_grupos = []
@@ -2210,6 +2214,16 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                         # Si el nombre es único, permite conservar orden aunque
                         # la fuente haya cambiado el tvg-id.
                         ranks = candidates
+                # Cuando hay homónimos/variantes sin ID (p. ej. Golden HD/SD),
+                # la URL exacta es una identidad inequívoca y conserva el orden
+                # histórico sin confundir canales que comparten nombre base.
+                if not ranks and bloque.get("url"):
+                    url_candidates = orden_por_categoria_url.get(
+                        (categoria_actual, bloque["url"].strip()),
+                        [],
+                    )
+                    if len(url_candidates) == 1:
+                        ranks = url_candidates
                 bloque["orden_original"] = min(ranks) if ranks else None
             existentes = [b for b in normales if b["orden_original"] is not None]
             nuevos = [b for b in normales if b["orden_original"] is None]
