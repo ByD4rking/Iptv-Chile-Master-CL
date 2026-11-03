@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -88,6 +90,29 @@ def main() -> None:
         raise AssertionError("el resguardo aceptó un cambio de orden")
 
     print("SELFTEST base OK: buffer VLC, reconexión y orden/URLs preservados.")
+
+    # En PR se valida el sincronizador nuevo con fuentes reales sobre el
+    # checkout temporal de Actions. Nunca se publica ni se hace push.
+    if os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+        subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "discover",
+                "-s",
+                str(ROOT / "scripts"),
+                "-p",
+                "test_sincronizar_complementos.py",
+            ],
+            cwd=ROOT,
+            check=True,
+        )
+        subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "selftest_sincronizacion_real.py")],
+            cwd=ROOT,
+            check=True,
+        )
 
 
 def test_ordenamiento_solicitado_de_entretenimiento_no_bloquea_la_lista() -> None:
