@@ -138,9 +138,14 @@ def local_pluto_sources() -> list[dict]:
 
 def snapshot_entry(raw: bytes, label: str, url: str) -> dict:
     text = raw.decode("utf-8-sig", errors="replace")
-    channels = parse_m3u(text)
-    if not channels:
+    parsed = parse_m3u(text)
+    if not parsed:
         raise ValueError("M3U sin canales válidos")
+    # Never persist signed HLS URLs or query tokens in audit snapshots/reports.
+    channels = {
+        key: [entry[0], compact_hash(entry[1].encode("utf-8")), entry[2]]
+        for key, entry in parsed.items()
+    }
     return {
         "url": url,
         "sha256": compact_hash(raw),
