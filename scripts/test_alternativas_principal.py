@@ -328,6 +328,26 @@ class TestAlternativasPrincipal(unittest.TestCase):
             ap.normalizar_nombre_canal("Cartoonito HD (Opc.4)"),
         )
 
+    def test_regroup_after_final_order_restore_keeps_naruto_alternatives_adjacent(self):
+        naruto_id = "5ee92e72fb286e0007285fec"
+        original = ["#EXTM3U"]
+        original += block("", "Anime", "Naruto", "https://a.example/naruto-old.m3u8")
+        original += block("", "Anime", "Naruto Peliculas", "https://a.example/naruto-movies.m3u8")
+        original += block(naruto_id, "Anime", "Naruto", "https://a.example/naruto-pluto-old.m3u8")
+        current = ["#EXTM3U"]
+        current += block(naruto_id, "Anime", "Naruto [Opción 3]", "https://a.example/naruto-alt.m3u8")
+        current += block("", "Anime", "Naruto Peliculas", "https://a.example/naruto-movies.m3u8")
+        current += block(naruto_id, "Anime", "Naruto", "https://a.example/naruto-pluto.m3u8")
+        restored = ap.restaurar_orden_original_por_categoria(current, original)
+        regrouped = sc._group_and_label_alternatives(restored, {})
+        parsed = self.entries(regrouped)
+        positions = [
+            i for i, item in enumerate(parsed)
+            if item[0].split(",", 1)[1].startswith("Naruto")
+            and "Peliculas" not in item[0].split(",", 1)[1]
+        ]
+        self.assertEqual(positions, list(range(positions[0], positions[0] + len(positions))))
+
 
 if __name__ == "__main__":
     unittest.main()
