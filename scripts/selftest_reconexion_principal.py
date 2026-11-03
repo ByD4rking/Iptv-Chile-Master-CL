@@ -75,11 +75,11 @@ def main() -> None:
 
     try:
         validar_orden_canales(source, [
-            '#EXTINF:-1 tvg-id="canal-b",Canal B',
+            '#EXTINF:-1 tvg-id="canal-b" group-title="Chile",Canal B',
             "https://example.test/canal-b.m3u8",
-            '#EXTINF:-1 tvg-id="canal-a",Canal A',
+            '#EXTINF:-1 tvg-id="canal-a" group-title="Chile",Canal A',
             "https://example.test/canal-a.m3u8",
-            '#EXTINF:-1 tvg-id="pluto-a",Pluto A',
+            '#EXTINF:-1 tvg-id="pluto-a" group-title="Pluto",Pluto A',
             "https://service-stitcher.clusters.pluto.tv/v2/channel/pluto-a/master.m3u8",
         ])
     except RuntimeError:
