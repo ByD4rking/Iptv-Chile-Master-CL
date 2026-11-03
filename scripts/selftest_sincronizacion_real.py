@@ -99,6 +99,8 @@ def protected_hashes() -> dict[str, str]:
 def same_channel(after: dict, before: dict, unique_names: set[str]) -> bool:
     if after["id"] and before["id"] and norm(after["id"]) == norm(before["id"]):
         return True
+    if after["url"] and before["url"] and after["url"] == before["url"]:
+        return True
     return bool(
         before["name"]
         and before["name"] == after["name"]
