@@ -33,6 +33,8 @@ def main():
         current_lines,
         original_lines,
     )
+    # Elimina espacios finales de líneas M3U sin alterar nombres, metadatos ni URLs.
+    ordered_lines = [line.rstrip() for line in ordered_lines]
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
     temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
     temporary.replace(PRINCIPAL)
