@@ -10,6 +10,7 @@ import alimentar_principal as alimentador
 from sincronizar_complementos import (
     _group_and_label_alternatives,
     _prioritize_infantiles,
+    normalizar_nombres_solicitados,
     get_last_url_priority,
     synchronize_once,
 )
@@ -34,14 +35,20 @@ def main():
         check=True,
     )
 
-    print("\n[ORQUESTADOR] Sincronizando todas las fuentes complementarias.")
-    result = synchronize_once()
-
+    # Restaurar el orden antes de la reconciliación. Hacerlo después
+    # reintroduciría canales que la sincronización debe retirar (p. ej. Los Pitufos ES).
     current_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
     ordered_lines = alimentador.restaurar_orden_original_por_categoria(
         current_lines,
         original_lines,
     )
+    temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
+    temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
+    temporary.replace(PRINCIPAL)
+
+    print("\n[ORQUESTADOR] Sincronizando todas las fuentes complementarias.")
+    result = synchronize_once()
+    ordered_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
     ordered_lines = [line.rstrip() for line in ordered_lines]
 
     session = requests.Session()
@@ -68,6 +75,7 @@ def main():
         get_last_url_priority(),
     )
     ordered_lines = _prioritize_infantiles(ordered_lines)
+    ordered_lines = normalizar_nombres_solicitados(ordered_lines)
 
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
     temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
