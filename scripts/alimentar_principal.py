@@ -2749,7 +2749,7 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
             continue
 
         nombre_sin_opcion = re.sub(
-            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))\s*$",
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
             "",
             nombre,
             flags=re.I,
