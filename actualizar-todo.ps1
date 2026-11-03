@@ -55,6 +55,17 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
+Write-Host ""
+Write-Host "[1b/3] Reconciliando nuevamente todas las fuentes complementarias..."
+& $PYTHON "$BASE\\scripts\\sincronizar_complementos.py"
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host ""
+    Write-Host "ERROR: sincronizar_complementos.py fallo."
+    Read-Host "Pulsa ENTER para cerrar"
+    exit 1
+}
+
 # ============================================================
 # 2. GENERAR LISTA GOD
 # ============================================================
