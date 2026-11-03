@@ -4,8 +4,16 @@ from pathlib import Path
 import subprocess
 import sys
 
+import requests
+
 import alimentar_principal as alimentador
-from sincronizar_complementos import synchronize_once
+from sincronizar_complementos import (
+    _group_and_label_alternatives,
+    _prioritize_infantiles,
+    _source_priority,
+    collect_candidates,
+    synchronize_once,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 PRINCIPAL = ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
@@ -35,6 +43,22 @@ def main():
     )
     # Elimina espacios finales de líneas M3U sin alterar nombres, metadatos ni URLs.
     ordered_lines = [line.rstrip() for line in ordered_lines]
+
+    print("\n[ORQUESTADOR] Aplicando reglas finales de Anime, Infantil y alternativas.")
+    ids_pluto_es_anime = alimentador.cargar_ids_pluto_es_anime(requests.Session())
+    ordered_lines = alimentador.aplicar_ajustes_referencia(ordered_lines, ids_pluto_es_anime)
+
+    # La restauración histórica puede separar alternativas; volver a agrupar
+    # usando la prioridad real de las fuentes y dejar Infantil en el orden pedido.
+    candidates, _ = collect_candidates()
+    url_priority = {
+        candidate["url"]: _source_priority(candidate.get("source", ""))
+        for candidate in candidates
+        if candidate.get("url")
+    }
+    ordered_lines = _group_and_label_alternatives(ordered_lines, url_priority)
+    ordered_lines = _prioritize_infantiles(ordered_lines)
+
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
     temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
     temporary.replace(PRINCIPAL)
