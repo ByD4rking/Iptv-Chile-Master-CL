@@ -835,6 +835,7 @@ jobs:
                       "name": norm(base),
                       "category": (match_group.group(1).strip() if match_group else ""),
                       "url": url,
+                      "extinf": line,
                   })
               return result
 
@@ -892,6 +893,8 @@ jobs:
               if after_item["id"] and before_item["id"] and after_item["id"] == before_item["id"]:
                   return True
               if after_item["url"] and before_item["url"] and after_item["url"] == before_item["url"]:
+                  return True
+              if after_item.get("extinf") and before_item.get("extinf") and after_item["extinf"] == before_item["extinf"]:
                   return True
               return (
                   before_item["name"]
