@@ -210,7 +210,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             "nombre": ap.extraer_nombre(block["extinf"]),
             "url": block["url"],
         })
-        category = ap.normalizar(ap.extraer_categoria(block["extinf"]))
+        category = _canonical_category(ap.extraer_categoria(block["extinf"]))
         if canonical_name:
             grouped[(category, canonical_name)].append(block)
 
