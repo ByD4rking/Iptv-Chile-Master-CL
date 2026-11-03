@@ -238,5 +238,19 @@ class TestAlternativasPrincipal(unittest.TestCase):
         ap.validar_orden_canales(original, restored)
 
 
+    def test_restore_matches_historical_magma_suffix(self):
+        original = ["#EXTM3U"]
+        original += block("", "Anime", "Doraemon", "https://a.example/doraemon.m3u8")
+        original += block("", "Anime", "Dragon Ball [MAGMA]", "https://a.example/dragonball-magma.m3u8")
+        current = ["#EXTM3U"]
+        current += block("", "Anime", "Dragon Ball", "https://a.example/dragonball-magma.m3u8")
+        current += block("", "Anime", "Doraemon", "https://a.example/doraemon.m3u8")
+        restored = ap.restaurar_orden_original_por_categoria(current, original)
+        parsed = self.entries(restored)
+        names = [item[0].split(",", 1)[1] for item in parsed]
+        self.assertLess(names.index("Doraemon"), names.index("Dragon Ball"))
+        ap.validar_orden_canales(original, restored)
+
+
 if __name__ == "__main__":
     unittest.main()
