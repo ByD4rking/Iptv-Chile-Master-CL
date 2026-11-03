@@ -7,6 +7,8 @@ la URL anterior haya cambiado.
 """
 from __future__ import annotations
 
+import json
+import os
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -141,9 +143,8 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
 
     candidates: list[dict] = []
     stats = {"fuentes_ok": 0, "fuentes_error": 0, "canales_fuente": 0, "sin_categoria": 0}
-    seen_identity: set[str] = set()
-
     for source_url in ordered:
+        seen_source_identity: set[str] = set()
         try:
             response = session.get(source_url, timeout=TIMEOUT)
             response.raise_for_status()
@@ -170,10 +171,10 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             candidate["destination_hint"] = destination
             candidate["is_pluto"] = source_url in FUENTES_PLUTO_COMPLETAS
             identity = _identity(candidate, pluto=candidate["is_pluto"])
-            if identity and identity in seen_identity:
+            if identity and identity in seen_source_identity:
                 continue
             if identity:
-                seen_identity.add(identity)
+                seen_source_identity.add(identity)
             candidate["identity"] = identity
             candidates.append(candidate)
             stats["canales_fuente"] += 1
@@ -183,8 +184,14 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
     return candidates, stats
 
 
-def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str], dict]:
-    """Agrega, actualiza URL/metadatos y reclasifica por identidad estable."""
+def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | None = None) -> tuple[list[str], dict]:
+    """Agrega, actualiza URL/metadatos y reclasifica por identidad estable.
+
+    El manifiesto conserva qué fuente es propietaria de cada canal. Así MAGNA
+    puede actualizar sus canales aunque otra lista también publique el mismo ID.
+    """
+    if manifest is None:
+        manifest = {}
     prefix, blocks, trailing = _read_blocks(lines)
     categories = ap.categorias_de_lineas(lines)
     category_lookup = {ap.normalizar(value): value for value in categories}
@@ -221,15 +228,17 @@ def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str]
         if name:
             main_by_name[name].append(index)
 
-    candidate_name_counts = Counter(
-        ap.normalizar(_attr(item.get("extinf", ""), "tvg-name") or item.get("nombre", ""))
-        for item in valid_candidates
-        if ap.normalizar(_attr(item.get("extinf", ""), "tvg-name") or item.get("nombre", ""))
-    )
+    candidate_groups: dict[str, list[dict]] = defaultdict(list)
+    for item in valid_candidates:
+        identity = item.get("identity") or _identity(
+            item, pluto=item.get("is_pluto", False)
+        )
+        if identity:
+            candidate_groups[identity].append(item)
+
     main_name_counts = Counter({
         name: len(indexes) for name, indexes in main_by_name.items()
     })
-
     stats = {
         "canales_nuevos": 0,
         "url_actualizadas": 0,
@@ -237,47 +246,91 @@ def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str]
         "metadatos_actualizados": 0,
         "ambiguos": 0,
         "sin_categoria": len(candidates) - len(valid_candidates),
+        "fuentes_propietarias": 0,
     }
     updated_indices: set[int] = set()
-    added_identities: set[str] = set()
-    processed_identities: set[str] = set()
     reserved_urls = set(main_by_url)
     additions_by_category: dict[str, list[dict]] = defaultdict(list)
 
-    for candidate in valid_candidates:
-        identity = candidate.get("identity") or _identity(
-            candidate, pluto=candidate.get("is_pluto", False)
+    for identity, group in candidate_groups.items():
+        first = group[0]
+        source_name = ap.normalizar(
+            _attr(first.get("extinf", ""), "tvg-name") or first.get("nombre", "")
         )
-        if identity and identity in processed_identities:
-            continue
-        if identity:
-            processed_identities.add(identity)
-        source_name = ap.normalizar(_attr(candidate.get("extinf", ""), "tvg-name") or candidate.get("nombre", ""))
         match = None
         if identity.startswith("id:"):
             matches = main_by_id.get(identity, [])
             if matches:
                 match = next((idx for idx in matches if idx not in updated_indices), matches[0])
-        source_url = candidate["url"].strip()
         if match is None:
-            match = main_by_url.get(source_url)
-        if match is None and source_name:
-            if candidate_name_counts[source_name] == 1 and main_name_counts[source_name] == 1:
+            exact_matches = [
+                main_by_url[item["url"].strip()]
+                for item in group
+                if item["url"].strip() in main_by_url
+            ]
+            if exact_matches:
+                match = exact_matches[0]
+        if match is None and identity.startswith("name:"):
+            if len(group) == 1 and source_name and main_name_counts[source_name] == 1:
                 match = main_by_name[source_name][0]
-            elif candidate_name_counts[source_name] > 1 or main_name_counts[source_name] > 1:
+            elif len(group) > 1 or (source_name and main_name_counts[source_name] > 1):
                 stats["ambiguos"] += 1
+                continue
+
+        owner_record = manifest.get(identity, {})
+        owner_source = owner_record.get("source") if isinstance(owner_record, dict) else None
+        selected = None
+        if owner_source:
+            selected = next((item for item in group if item.get("source") == owner_source), None)
+            # La fuente propietaria no entregó este canal en esta ejecución:
+            # se conserva la entrada existente y no se permite que otra fuente
+            # la secuestre ni cambie su URL.
+            if selected is None:
+                continue
+        elif match is not None:
+            old_url = blocks[match]["url"]
+            exact = [item for item in group if item["url"].strip() == old_url]
+            if len(exact) == 1:
+                selected = exact[0]
+            else:
+                old_category = ap.normalizar(ap.extraer_categoria(blocks[match]["extinf"]))
+                same_category = [
+                    item for item in group
+                    if ap.normalizar(item["destination"]) == old_category
+                ]
+                if len(same_category) == 1:
+                    selected = same_category[0]
+                elif len(group) == 1:
+                    selected = group[0]
+                elif identity.startswith("id:"):
+                    selected = group[0]
+                else:
+                    stats["ambiguos"] += 1
+                    continue
+            manifest[identity] = {"source": selected["source"]}
+        else:
+            if identity.startswith("name:") and len(group) > 1:
+                stats["ambiguos"] += 1
+                continue
+            selected = group[0]
+            manifest[identity] = {"source": selected["source"]}
+
+        if selected is None:
+            continue
+        stats["fuentes_propietarias"] += 1
+        source_url = selected["url"].strip()
 
         if match is not None:
             block = blocks[match]
             old_url = block["url"]
             new_url = source_url
-            destination = candidate["destination"]
+            destination = selected["destination"]
             occupied_by = main_by_url.get(new_url)
             if occupied_by is not None and occupied_by != match:
                 stats["ambiguos"] += 1
                 continue
             old_category = ap.extraer_categoria(block["extinf"])
-            merged = _merge_extinf(block["extinf"], candidate.get("extinf", ""), destination)
+            merged = _merge_extinf(block["extinf"], selected.get("extinf", ""), destination)
             if old_url != new_url:
                 block["url"] = new_url
                 main_by_url.pop(old_url, None)
@@ -295,17 +348,17 @@ def reconcile_lines(lines: list[str], candidates: list[dict]) -> tuple[list[str]
 
         if source_url in reserved_urls:
             continue
-        if identity and identity in added_identities:
-            continue
-        if identity:
-            added_identities.add(identity)
         reserved_urls.add(source_url)
-        extinf = _merge_extinf(candidate.get("extinf", ""), candidate.get("extinf", ""), candidate["destination"])
-        additions_by_category[ap.normalizar(candidate["destination"])].append({
+        extinf = _merge_extinf(
+            selected.get("extinf", ""),
+            selected.get("extinf", ""),
+            selected["destination"],
+        )
+        additions_by_category[ap.normalizar(selected["destination"])].append({
             "extinf": extinf,
-            "extras": list(candidate.get("extras", [])),
-            "url": candidate["url"].strip(),
-            "raw": [extinf] + list(candidate.get("extras", [])) + [candidate["url"].strip()],
+            "extras": list(selected.get("extras", [])),
+            "url": source_url,
+            "raw": [extinf] + list(selected.get("extras", [])) + [source_url],
         })
         stats["canales_nuevos"] += 1
 
