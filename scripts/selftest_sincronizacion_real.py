@@ -237,10 +237,19 @@ def main(args: argparse.Namespace) -> None:
         if stream_id({"id": item["id"], "extinf": item["extinf"], "url": item["url"]})
     }
     after_urls_by_id = defaultdict(set)
+    after_urls = {item["url"] for item in after_playable}
     for item in after_playable:
         channel_id = stream_id({"id": item["id"], "extinf": item["extinf"], "url": item["url"]})
         if channel_id:
             after_urls_by_id[channel_id].add(item["url"])
+
+    # Pluto MX externo es una URL estable jmp2, no un JWT propio.
+    mx_source_urls = {channel.get("url", "") for channel in pluto_mx if channel.get("url")}
+    missing_mx_urls = mx_source_urls - after_urls
+    if missing_mx_urls:
+        raise AssertionError(
+            f"La maestra perdió {len(missing_mx_urls)} URLs de Pluto MX externo."
+        )
 
     # Verificar que la maestra contiene el JWT recién generado en LATAM/ES
     # y que queda margen amplio antes de su expiración.
