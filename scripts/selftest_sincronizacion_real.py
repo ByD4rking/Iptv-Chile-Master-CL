@@ -10,6 +10,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import re
+import subprocess
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -161,6 +163,18 @@ def main(args: argparse.Namespace) -> None:
     if args.audit_only:
         result = {"mode": "audit-only"}
     else:
+        # Ejecuta el mismo flujo de producción: sincronización previa,
+        # alimentador histórico, unificación CHILE y reconciliación final.
+        subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "ejecutar_actualizacion_principal.py")],
+            cwd=ROOT,
+            check=True,
+        )
+        subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "unificar_chile.py")],
+            cwd=ROOT,
+            check=True,
+        )
         result = synchronize_once()
     after = parse_entries(PRINCIPAL)
     after_ids = {norm(item["id"]) for item in after if item["id"]}
