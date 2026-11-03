@@ -9,6 +9,16 @@ on:
       - ".github/workflows/actualizar.yml"
   schedule:
     - cron: "0 */6 * * *"
+  # Pluto renueva los JWT de LATAM/ES cada hora. Ejecutar la maestra
+  # después de que termine esa generación evita copiar tokens antiguos
+  # por una carrera entre dos workflows que arrancan al mismo minuto.
+  workflow_run:
+    workflows:
+      - "Pluto TV - Actualizar listas regionales"
+    types:
+      - completed
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -23,7 +33,10 @@ concurrency:
 jobs:
   actualizar:
     # Este workflow publica en main; no ejecutar desde ramas de trabajo.
-    if: github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_run' || github.actor != 'github-actions[bot]') &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -52,12 +65,19 @@ jobs:
         run: |
           python -m py_compile \
             scripts/alimentar_principal.py \
+            scripts/sincronizar_complementos.py \
+            scripts/ejecutar_actualizacion_principal.py \
+            scripts/test_sincronizar_complementos.py \
+            scripts/selftest_sincronizacion_real.py \
             scripts/unificar_chile.py \
             scripts/mega_lista.py \
             scripts/generar_reporte.py \
             scripts/health_principal.py \
             scripts/selftest_health_principal.py \
             scripts/selftest_reconexion_principal.py
+
+      - name: Pruebas unitarias de sincronización complementaria
+        run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
 
       - name: Blindaje canónico de GOD
         run: |
@@ -73,81 +93,13 @@ jobs:
           find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/pluto_before.sha256
           grep '^#EXTINF' IPTV-CHILE-MAESTRA_CORREGIDO.m3u | sed -n 's/.*$//p' >/dev/null
 
-      - name: Actualizar lista principal
+      - name: Actualizar lista principal y sincronizar fuentes
         run: |
-          python scripts/alimentar_principal.py
+          python scripts/ejecutar_actualizacion_principal.py
 
-      - name: Unificar categoría CHILE
+      - name: Auditoría integral de la lista principal
         run: |
-          python scripts/unificar_chile.py
-
-      - name: Auditoría de no regresión
-        run: |
-          python - <<'PY'
-          import re
-          from pathlib import Path
-
-          before = Path("/tmp/principal_before.m3u").read_text(encoding="utf-8-sig")
-          after = Path("IPTV-CHILE-MAESTRA_CORREGIDO.m3u").read_text(encoding="utf-8-sig")
-
-          def entries(text):
-              out=[]
-              lines=text.splitlines()
-              for i,line in enumerate(lines):
-                  if line.startswith("#EXTINF:"):
-                      j=i+1
-                      while j < len(lines) and lines[j].startswith("#"):
-                          j += 1
-                      if j < len(lines) and lines[j].startswith(("http://","https://")):
-                          out.append((line, lines[j].strip()))
-              return out
-
-          b=entries(before); a=entries(after)
-          b_urls={u for _,u in b}; a_urls=[u for _,u in a]
-          a_set=set(a_urls)
-
-          # Una URL no-Pluto existente no puede desaparecer, salvo limpiezas
-          # explícitas ya definidas por el proyecto (TOTAL/OTROS, categorías
-          # Telemundo/Sky mal clasificadas y países no autorizados).
-          allowed_cleanup = {
-              "total", "otros", "telemundo noticias", "sky sports",
-              "qatar", "palestina", "corea del norte", "corea del sur",
-              "israel", "alemania", "francia", "iran", "rusia",
-              "guinea ecuatorial", "estados unidos",
-          }
-          before_by_url={}
-          for ext,url in b:
-              m=re.search(r'group-title="([^"]*)"', ext)
-              before_by_url.setdefault(url, m.group(1).strip().lower() if m else "")
-
-          lost_non_pluto=[]
-          for url in b_urls:
-              if "pluto" in url.lower() or url in a_set:
-                  continue
-              if before_by_url.get(url,"") in allowed_cleanup:
-                  continue
-              lost_non_pluto.append(url)
-
-          if lost_non_pluto:
-              raise SystemExit("REGRESION: se perdieron URLs no-Pluto existentes fuera de limpiezas autorizadas: "+str(sorted(lost_non_pluto)[:20]))
-
-          # Una URL de acceso solo puede aparecer una vez.
-          dup=sorted(u for u in set(a_urls) if a_urls.count(u)>1)
-          if dup:
-              raise SystemExit("REGRESION: URLs duplicadas en principal: "+str(dup[:20]))
-
-          # No se pueden recrear carpetas prohibidas.
-          cats=[re.search(r'group-title="([^"]*)"',line) for line,_ in a]
-          cats={m.group(1).strip().lower() for m in cats if m}
-          forbidden={"pluto tv","total","otros"}
-          bad=sorted(c for c in cats if c in forbidden)
-          if bad:
-              raise SystemExit("REGRESION: carpetas prohibidas: "+str(bad))
-
-          print(f"Principal antes: {len(b)} | después: {len(a)}")
-          print(f"URLs no-Pluto preservadas: {len(b_urls)-len(lost_non_pluto)}")
-          print("OK: no-regresión, sin duplicados URL y sin carpetas prohibidas.")
-          PY
+          python scripts/selftest_sincronizacion_real.py --audit-only --before /tmp/principal_before.m3u
 
       - name: Validar aprendizaje
         run: |
@@ -274,7 +226,7 @@ jobs:
 
           while IFS= read -r file; do
             case "$file" in
-              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|reportes/principal/REPORTE.md|scripts/aprendizaje.json|scripts/health/principal_health.json)
+              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|reportes/principal/REPORTE.md|scripts/aprendizaje.json|scripts/health/principal_health.json|scripts/sync_sources.json)
                 ;;
               "")
                 ;;
@@ -296,7 +248,8 @@ jobs:
             IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
             reportes/principal/REPORTE.md \
             scripts/aprendizaje.json \
-            scripts/health/principal_health.json
+            scripts/health/principal_health.json \
+            scripts/sync_sources.json
 
           if git diff --cached --quiet; then
             echo "No hay cambios nuevos."

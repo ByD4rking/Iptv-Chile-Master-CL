@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 import unicodedata
 import requests
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
@@ -47,18 +47,21 @@ FUENTES = [
 # PLUTO: SOLO NUESTRAS LISTAS
 # Las URLs antiguas de Pluto se sustituyen por las listas propias al actualizar la principal.
 # ============================================================
-# Estas son las listas Pluto que alimentan la PRINCIPAL.
-# US y ALL NO se agregan aquí: pertenecen a la lista GOD.
+# Playlists regionales propias; la lista MX generada se mantiene independiente.
 FUENTES_PLUTO = [
     # LATAM es la fuente maestra y SIEMPRE tiene prioridad.
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
-    # Solo se permiten como complementos España y México.
+    # España también es propia y tokenizada; se excluye de Anime.
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+    # La playlist MX propia usa JWT y permanece separada de la principal.
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
 ]
 
-# Catálogo adicional SOLO para reemplazar enlaces Pluto de terceros.
-# Estas fuentes no se agregan como canales a la principal.
+# Solo LATAM y ES, ambas tokenizadas, son fuentes propias de la principal.
+# México entra por FUENTE_PLUTO_ALTERNATIVAS (jmp2.uk, sin JWT).
+FUENTES_PLUTO_PRINCIPAL = [FUENTES_PLUTO[0], FUENTES_PLUTO[1]]
+
+# Catálogo canónico para reemplazar enlaces Pluto antiguos: no usar MX JWT.
 FUENTE_PLUTO_CANONICA = FUENTES_PLUTO[0]
 
 PLUTO_CATEGORIAS_CANONICAS = {"retro", "zona paranormal", "competencia"}
@@ -69,12 +72,12 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO
+FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO_PRINCIPAL
 
 # Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
 # eliminan de la principal antes de incorporar nuestras listas.
 # No se consultan ni reintroducen listas Pluto regionales antiguas.
-# La principal solo usa LATAM + ES + MX.
+# La principal usa LATAM + ES tokenizados y Pluto MX externo sin JWT.
 FUENTES_PLUTO_ANTIGUAS = []
 
 PAIS_POR_FUENTE = {
@@ -219,9 +222,10 @@ def es_categoria_pais_generica_iptvsv(categoria):
 
 
 def determinar_destino_iptvsv(categoria, nombre, categorias):
-    """IPTV-SV respeta la carpeta declarada, con solo alias canónicos explícitos.
+    """Respeta la carpeta de IPTV-SV y normaliza solo alias documentados.
 
-    No reclasifica por nombre, no usa reglas temáticas y no crea carpetas.
+    Las categorías nuevas se devuelven como destino para que la sincronización
+    incremental pueda crear el group-title sin descartar canales.
     """
     categoria = (categoria or "").strip()
     if not categoria:
@@ -233,6 +237,8 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
         "el salvador": "EL Salvador",
         "el salvador - tcs": "EL Salvador",
         "el salvador local": "EL Salvador",
+        "tv chichicasteca": "Guatemala",
+        "los chichastecas": "Guatemala",
         "documentales": "Documentales y Cultura",
         "infantil": "Infantiles",
         "teen": "Infantiles",
@@ -244,14 +250,12 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
     }
     categoria_busqueda = aliases.get(c_norm, categoria)
 
-    # La carpeta especial solo se acepta si YA existe.
     if c_norm == "tv mas importantes de cada pais":
         return buscar_categoria_existente(
             "TV MÁS IMPORTANTES DE CADA PAÍS", categorias
-        )
+        ) or "TV MÁS IMPORTANTES DE CADA PAÍS"
 
-    # Coincidencia con una carpeta existente. Nunca inventar una nueva.
-    return buscar_categoria_existente(categoria_busqueda, categorias)
+    return buscar_categoria_existente(categoria_busqueda, categorias) or categoria_busqueda
 
 def validar_integridad_iptvsv(lineas, canales, categorias):
     """Barrera bloqueante para impedir que IPTVSV vuelva a perder categorías.
@@ -334,19 +338,20 @@ def validar_integridad_iptvsv(lineas, canales, categorias):
                 f"{url} :: fuente='{categoria}' :: principal={sorted(actuales)} :: esperado='{destino}'"
             )
 
+    # Una diferencia de categoría no bloquea la actualización: es el cambio
+    # solicitado y se aplica inmediatamente mediante reclasificar_iptvsv_existente.
+    # Solo se bloquean categorías sin destino y URLs con categorías contradictorias.
     if errores:
-        muestra = errores[:20]
-        raise RuntimeError(
-            "IPTVSV BLOQUEADO: se detectaron canales existentes en una "
-            "categoría distinta de la fuente. "
-            + " | ".join(muestra)
+        print(
+            "IPTVSV: se detectaron categorías desactualizadas que se moverán "
+            f"según la fuente ({len(errores)} URLs)."
         )
 
     return {
         "urls_fuente": len(por_url),
         "categorias_faltantes": len(categorias_faltantes),
         "conflictos_fuente": len(conflictos_fuente),
-        "errores_categoria": len(errores),
+        "categorias_pendientes_mover": len(errores),
     }
 
 
@@ -599,7 +604,7 @@ def reclasificar_pluto_existente(lineas, session):
     # complementan, pero nunca deben sobrescribir una categoría ya declarada
     # por LATAM. Brasil se corrige después con su regla específica.
     fuentes_pluto_ordenadas = sorted(
-        FUENTES_PLUTO,
+        FUENTES_PLUTO_PRINCIPAL,
         key=lambda f: (
             0 if f.lower().endswith("pluto_latam.m3u") else 1,
             0 if f.lower().endswith("pluto.m3u") else 1,
@@ -850,8 +855,8 @@ def cargar_catalogo_pluto_propio(session):
                     cid = m_id.group(1).strip().lower()
                 nombre = normalizar(canal.get("nombre", ""))
                 if cid:
-                    # LATAM aparece primero en FUENTES_PLUTO y por tanto
-                    # gana frente a ES/MX cuando comparten el mismo canal.
+                    # LATAM aparece primero en FUENTES_PLUTO_PRINCIPAL y por tanto
+                    # gana frente a ES cuando comparten el mismo canal.
                     por_id.setdefault(cid, canal)
                     por_region[region].setdefault(cid, canal)
                 if nombre:
@@ -884,6 +889,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
     eliminados_sin_reemplazo = 0
     ya_propios = 0
     no_pluto = 0
+    mx_externos_conservados = 0
 
     i = 0
     while i < len(lineas):
@@ -909,6 +915,14 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         url = lineas[j].strip()
         bloque.append(url)
         j += 1
+
+        # jmp2.uk es la alternativa Pluto MX sin JWT: debe permanecer tal
+        # cual y nunca reemplazarse por una URL JWT de LATAM/ES.
+        if "jmp2.uk/plu-" in url.lower():
+            salida.extend(bloque)
+            mx_externos_conservados += 1
+            i = j
+            continue
 
         if not es_url_pluto(url):
             salida.extend(bloque)
@@ -957,6 +971,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         "eliminados_sin_reemplazo": eliminados_sin_reemplazo,
         "ya_propios": ya_propios,
         "no_pluto": no_pluto,
+        "mx_externos_conservados": mx_externos_conservados,
         "errores_catalogo": errores_catalogo,
     }
 
@@ -1854,58 +1869,350 @@ def extraer_bloques_no_pluto_por_url(lineas):
     return resultado
 
 
+def _identidad_extinf_restauracion(extinf):
+    """Devuelve ID y nombre normalizados para reconciliar bloques existentes."""
+    match_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+    channel_id = normalizar(match_id.group(1)) if match_id and match_id.group(1).strip() else ""
+    match_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
+    nombre = match_name.group(1) if match_name else extraer_nombre(extinf)
+    return channel_id, normalizar(nombre)
+
+
+def _bloques_para_restauracion(lineas):
+    """Extrae todos los bloques no-Pluto en orden físico, sin deduplicar por URL."""
+    resultado = []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            bloque = list(lineas[inicio:j + 1])
+            url = lineas[j].strip()
+            if not es_url_pluto(url):
+                channel_id, nombre = _identidad_extinf_restauracion(bloque[0])
+                resultado.append({
+                    "bloque": bloque,
+                    "url": url,
+                    "categoria": extraer_categoria(bloque[0]),
+                    "id": channel_id,
+                    "nombre": nombre,
+                    "alternativa": bool(
+                        re.search(r"\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\)", bloque[0], re.I)
+                    ),
+                })
+            i = j + 1
+        else:
+            i = j
+    return resultado
+
+
+def _mapas_actuales_restauracion(lineas):
+    """Construye índices URL/ID/nombre con categoría y posición de cada bloque."""
+    por_url = defaultdict(list)
+    por_id = defaultdict(list)
+    por_nombre = defaultdict(list)
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            url = lineas[j].strip()
+            categoria = extraer_categoria(lineas[inicio])
+            channel_id, nombre = _identidad_extinf_restauracion(lineas[inicio])
+            item = {"categoria": categoria, "inicio": inicio, "fin": j + 1, "url": url}
+            por_url[url].append(item)
+            if channel_id:
+                por_id[channel_id].append(item)
+            if nombre:
+                por_nombre[nombre].append(item)
+            i = j + 1
+        else:
+            i = j
+    return por_url, por_id, por_nombre
+
+
 def restaurar_no_pluto_existente(lineas, iniciales):
     """
-    Restaura URLs no-Pluto que ya existían antes de la actualización.
-    Las fuentes solo pueden sumar canales; no pueden hacer desaparecer
-    una señal existente por una limpieza accidental.
+    Restaura bloques no-Pluto perdidos sin deduplicar alternativas por URL.
+
+    Usa la secuencia completa del archivo original para colocar cada bloque
+    antes del siguiente canal original que siga presente en la misma categoría.
+    Una URL primaria antigua no se resucita si el mismo canal ya tiene otra URL;
+    las alternativas explícitas [Opc.N] sí se conservan.
     """
-    actuales = mapa_urls_principal(lineas)
+    originales = _bloques_para_restauracion(iniciales) if isinstance(iniciales, list) else [
+        {
+            "bloque": list(bloque),
+            "url": bloque[-1].strip(),
+            "categoria": extraer_categoria(bloque[0]),
+            "id": _identidad_extinf_restauracion(bloque[0])[0],
+            "nombre": _identidad_extinf_restauracion(bloque[0])[1],
+            "alternativa": bool(re.search(r"\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\)", bloque[0], re.I)),
+        }
+        for bloque in iniciales.values()
+        if bloque and len(bloque) > 1 and url_es_valida(bloque[-1].strip())
+    ]
+
     categorias = categorias_de_lineas(lineas)
-    bloques_por_categoria = defaultdict(list)
     restaurados = 0
+    nombres_originales = Counter(item["nombre"] for item in originales if item["nombre"])
 
-    for url, bloque in iniciales.items():
-        if url in actuales:
-            continue
-        extinf = bloque[0]
-        categoria = extraer_categoria(extinf)
-        destino = buscar_categoria_existente(categoria, categorias)
-
-        # Si la categoría fue normalizada, reutilizar su carpeta canónica.
-        if not destino:
-            aliases = {
-                "chile": "CHILE TV",
-                "infantil": "INFANTILES",
-                "teen": "INFANTILES",
-                "noticias": "INFORMATIVOS",
-            }
-            destino = buscar_categoria_existente(
-                aliases.get(normalizar(categoria), categoria),
-                categorias,
+    def buscar_original_actual(candidato, destino, por_url, por_id, por_nombre):
+        categoria_normalizada = normalizar(destino)
+        if candidato["id"]:
+            coincidencias = por_id.get(candidato["id"], [])
+            encontrada = next(
+                (item for item in coincidencias if normalizar(item["categoria"]) == categoria_normalizada),
+                None,
             )
+            if encontrada:
+                return encontrada
+        if candidato["nombre"] and nombres_originales[candidato["nombre"]] == 1:
+            coincidencias = por_nombre.get(candidato["nombre"], [])
+            if len(coincidencias) == 1 and normalizar(coincidencias[0]["categoria"]) == categoria_normalizada:
+                return coincidencias[0]
+        coincidencias = por_url.get(candidato["url"], [])
+        return next(
+            (item for item in coincidencias if normalizar(item["categoria"]) == categoria_normalizada),
+            None,
+        )
 
-        if not destino:
-            # No crear carpetas nuevas durante la autorreparación.
+    for indice, original in enumerate(originales):
+        url = original["url"]
+        por_url, por_id, por_nombre = _mapas_actuales_restauracion(lineas)
+        if url in por_url:
             continue
 
-        bloque_restaurado = list(bloque)
-        bloque_restaurado[0] = reemplazar_categoria(extinf, destino)
-        bloques_por_categoria[destino].append(bloque_restaurado)
-        actuales.add(url)
+        channel_id = original["id"]
+        nombre = original["nombre"]
+        id_matches = por_id.get(channel_id, []) if channel_id else []
+        name_matches = por_nombre.get(nombre, []) if nombre else []
+        nombre_inequivoco = bool(
+            nombre
+            and sum(1 for item in originales if item["nombre"] == nombre) == 1
+            and len(name_matches) == 1
+        )
+        identidad_presente = bool(id_matches or nombre_inequivoco)
+
+        # Si el canal ya tiene una URL nueva, no resucitar la primaria antigua.
+        # Una alternativa explícita sí se recupera para no perder opciones válidas.
+        if identidad_presente and not original["alternativa"]:
+            continue
+
+        if id_matches:
+            destino = id_matches[0]["categoria"]
+            # Mantener alternativas juntas, detrás de las alternativas actuales.
+            posicion = max(item["fin"] for item in id_matches)
+        elif original["alternativa"] and name_matches and len({normalizar(x["categoria"]) for x in name_matches}) == 1:
+            destino = name_matches[0]["categoria"]
+            posicion = max(item["fin"] for item in name_matches)
+        else:
+            categoria = original["categoria"]
+            destino = buscar_categoria_existente(categoria, categorias)
+            if not destino:
+                aliases = {
+                    "chile": "CHILE TV",
+                    "infantil": "INFANTILES",
+                    "teen": "INFANTILES",
+                    "noticias": "INFORMATIVOS",
+                }
+                destino = buscar_categoria_existente(
+                    aliases.get(normalizar(categoria), categoria),
+                    categorias,
+                )
+            if not destino:
+                continue
+
+            categoria_normalizada = normalizar(destino)
+            siguiente = None
+            for posterior in originales[indice + 1:]:
+                if normalizar(posterior["categoria"]) != categoria_normalizada:
+                    continue
+                siguiente = buscar_original_actual(
+                    posterior, destino, por_url, por_id, por_nombre
+                )
+                if siguiente:
+                    break
+
+            if siguiente:
+                posicion = siguiente["inicio"]
+            else:
+                anterior = None
+                for previo in reversed(originales[:indice]):
+                    if normalizar(previo["categoria"]) != categoria_normalizada:
+                        continue
+                    anterior = buscar_original_actual(
+                        previo, destino, por_url, por_id, por_nombre
+                    )
+                    if anterior:
+                        break
+                if anterior:
+                    posicion = anterior["fin"]
+                else:
+                    rango = encontrar_rango_categoria(lineas, destino)
+                    if not rango:
+                        continue
+                    posicion = rango[0]
+
+        bloque_restaurado = list(original["bloque"])
+        bloque_restaurado[0] = reemplazar_categoria(bloque_restaurado[0], destino)
+        lineas[posicion:posicion] = bloque_restaurado
         restaurados += 1
-
-    for categoria, bloques in bloques_por_categoria.items():
-        rango = encontrar_rango_categoria(lineas, categoria)
-        if not rango:
-            continue
-        posicion = rango[1] + 1
-        insertar = []
-        for bloque in bloques:
-            insertar.extend(bloque)
-        lineas[posicion:posicion] = insertar
+        categorias = categorias_de_lineas(lineas)
 
     return lineas, restaurados
+
+def restaurar_orden_original_por_categoria(lineas, lineas_originales):
+    """Restaura el orden histórico de categorías y canales sin deshacer movimientos.
+
+    - Los canales que siguen en su categoría conservan su orden original.
+    - Los canales movidos de categoría se colocan después de los originales de
+      la categoría destino, manteniendo entre ellos el orden global anterior.
+    - Los canales nuevos se agregan al final de su categoría.
+    - Las alternativas de un mismo canal mantienen su orden relativo actual.
+    """
+    def extraer_bloques(entrada):
+        prefijo = []
+        bloques = []
+        i = 0
+        while i < len(entrada):
+            if not entrada[i].startswith("#EXTINF"):
+                if not bloques:
+                    prefijo.append(entrada[i])
+                i += 1
+                continue
+            inicio = i
+            j = i + 1
+            while j < len(entrada) and not entrada[j].startswith("#EXTINF"):
+                j += 1
+            bloque = list(entrada[inicio:j])
+            extinf = bloque[0]
+            match_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+            channel_id = normalizar(match_id.group(1)) if match_id and match_id.group(1).strip() else ""
+            match_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
+            nombre = normalizar(match_name.group(1) if match_name else extraer_nombre(extinf))
+            url = next(
+                (
+                    linea.strip() for linea in bloque[1:]
+                    if url_es_valida(linea.strip())
+                ),
+                "",
+            )
+            bloques.append({
+                "lineas": bloque,
+                "categoria": normalizar(extraer_categoria(extinf)),
+                "id": channel_id,
+                "nombre": nombre,
+                "url": url,
+                "indice": len(bloques),
+            })
+            i = j
+        return prefijo, bloques
+
+    prefijo_original, originales = extraer_bloques(lineas_originales)
+    prefijo_actual, actuales = extraer_bloques(lineas)
+
+    if not originales or not actuales:
+        return list(lineas), {"categorias": 0, "bloques_reordenados": 0}
+
+    original_ids = {item["id"] for item in originales if item["id"]}
+    nombres_originales = Counter(item["nombre"] for item in originales if item["nombre"])
+    nombres_actuales = Counter(item["nombre"] for item in actuales if item["nombre"])
+    nombres_unicos = {
+        nombre for nombre, cantidad in nombres_originales.items()
+        if cantidad == 1 and nombres_actuales.get(nombre, 0) == 1
+    }
+    urls_originales = {item["url"] for item in originales if item["url"]}
+
+    posiciones_categoria = defaultdict(dict)
+    posiciones_globales = {}
+    categorias_originales = []
+    for indice, item in enumerate(originales):
+        categoria = item["categoria"]
+        if categoria and categoria not in categorias_originales:
+            categorias_originales.append(categoria)
+
+        claves = []
+        if item["id"]:
+            claves.append("id:" + item["id"])
+        if item["nombre"] in nombres_unicos:
+            claves.append("name:" + item["nombre"])
+        if not claves and item["url"] in urls_originales:
+            claves.append("url:" + item["url"])
+
+        for clave in claves:
+            posiciones_categoria[categoria].setdefault(clave, indice)
+            posiciones_globales.setdefault(clave, indice)
+
+    grupos = defaultdict(list)
+    orden_categorias_actual = []
+    for item in actuales:
+        categoria = item["categoria"]
+        if categoria not in grupos:
+            orden_categorias_actual.append(categoria)
+        grupos[categoria].append(item)
+
+    def clave_actual(item):
+        if item["id"] and item["id"] in original_ids:
+            return "id:" + item["id"]
+        if item["nombre"] in nombres_unicos:
+            return "name:" + item["nombre"]
+        if item["url"] in urls_originales:
+            return "url:" + item["url"]
+        if item["id"]:
+            return "id:" + item["id"]
+        return "name:" + item["nombre"] if item["nombre"] else ""
+
+    reordenados = 0
+    grupos_ordenados = {}
+    for categoria, bloques_categoria in grupos.items():
+        decorados = []
+        for posicion_actual, item in enumerate(bloques_categoria):
+            clave = clave_actual(item)
+            posicion_misma_categoria = posiciones_categoria.get(categoria, {}).get(clave)
+            posicion_global = posiciones_globales.get(clave)
+            if posicion_misma_categoria is not None:
+                prioridad = (0, posicion_misma_categoria, posicion_actual)
+            elif posicion_global is not None:
+                prioridad = (1, posicion_global, posicion_actual)
+            else:
+                prioridad = (2, posicion_actual, posicion_actual)
+            decorados.append((prioridad, item))
+        ordenados = [item for _, item in sorted(decorados, key=lambda par: par[0])]
+        reordenados += sum(
+            1 for antes, despues in zip(bloques_categoria, ordenados)
+            if antes is not despues
+        )
+        grupos_ordenados[categoria] = ordenados
+
+    orden_categorias = [
+        categoria for categoria in categorias_originales
+        if categoria in grupos_ordenados
+    ]
+    orden_categorias.extend(
+        categoria for categoria in orden_categorias_actual
+        if categoria not in set(orden_categorias)
+    )
+
+    salida = list(prefijo_actual)
+    for categoria in orden_categorias:
+        for item in grupos_ordenados.get(categoria, []):
+            salida.extend(item["lineas"])
+
+    return salida, {
+        "categorias": len(orden_categorias),
+        "bloques_reordenados": reordenados,
+    }
 
 
 def firma_orden_canales(lineas):
@@ -2168,12 +2475,12 @@ def integrar_pluto_mx(lineas, session):
         nonlocal agregadas
         cid = canal_id(canal)
         nombre_base = re.sub(
-            r"\s*(?:\[\s*opc(?:ión)?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
             "",
             base["nombre"],
             flags=re.I,
         ).strip()
-        extinf = re.sub(r",(.*)$", f",{nombre_base} (OPCIÓN {numero})", base["extinf"], count=1)
+        extinf = re.sub(r",(.*)$", f",{nombre_base} [Opción {numero}]", base["extinf"], count=1)
         if cid:
             if re.search(r'tvg-id="[^"]*"', extinf, re.I):
                 extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
@@ -2300,12 +2607,13 @@ def cargar_ids_pluto_es_anime(session):
 
 
 def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
-    """Retira Pluto ES solo de Anime por nombre o identidad de fuente, ubica Avatar y añade American Ninja Warrior."""
+    """Retira Pluto ES de Anime, elimina solo Los Pitufos ES y prioriza los canales infantiles solicitados."""
     ids_pluto_es_anime = {str(x).lower() for x in (ids_pluto_es_anime or set())}
     prefijo = []
     bloques = []
     avatar = []
     eliminados_pluto_es_anime = 0
+    eliminados_pitufos_es = 0
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
@@ -2325,11 +2633,50 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
         if not identidad:
             m_identidad = re.search(r'tvg-id="([a-f0-9]{20,})"', bloque[0], re.I)
             identidad = m_identidad.group(1).lower() if m_identidad else ""
-        es_pluto_es = "[pluto es]" in normalizar(nombre) or bool(identidad and identidad in ids_pluto_es_anime)
+        tvg_name_match = re.search(r'tvg-name="([^"]*)"', bloque[0], re.I)
+        nombre_completo = normalizar((tvg_name_match.group(1) if tvg_name_match else "") + " " + nombre)
+        url_es = any(marker in url_bloque.lower() for marker in (
+            "country=es", "marketingregion=es", "preferredlanguage=es-es"
+        ))
+
+        es_pitufos = "los pitufos" in nombre_completo
+        pitufos_es = es_pitufos and (
+            url_es or bool(re.search(r"\b(?:es|espanol|espana)\b", nombre_completo))
+        )
+        if pitufos_es:
+            eliminados_pitufos_es += 1
+            i = j
+            continue
+
+        es_pluto_es = (
+            "[pluto es]" in nombre_completo
+            or "espanol" in nombre_completo
+            or "espana" in nombre_completo
+            or bool(identidad and identidad in ids_pluto_es_anime and url_es)
+        )
         if categoria == "anime" and es_pluto_es:
             eliminados_pluto_es_anime += 1
             i = j
             continue
+
+        nombre_sin_opcion = re.sub(
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
+            "",
+            nombre,
+            flags=re.I,
+        ).strip()
+        nombre_kid = normalizar(nombre_sin_opcion)
+        kid_key = None
+        if nombre_kid.startswith("popeye"):
+            kid_key = "popeye"
+        elif nombre_kid.startswith("los pitufos"):
+            kid_key = "los pitufos"
+        elif nombre_kid.startswith("heidi"):
+            kid_key = "heidi"
+        if kid_key:
+            bloque[0] = reemplazar_categoria(bloque[0], "Infantiles")
+
         if normalizar(nombre).startswith("avatar: la leyenda de aang"):
             if categoria != "infantiles":
                 bloque[0] = reemplazar_categoria(bloque[0], "Infantiles")
@@ -2355,6 +2702,42 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
                 raise RuntimeError("No existe Infantiles para ubicar Avatar.")
             posicion = posiciones[-1] + 1
         bloques[posicion:posicion] = avatar
+
+    # Ordenar los tres canales solicitados al inicio de Infantiles, manteniendo
+    # consecutivas todas sus alternativas y sin mover el resto de la categoría.
+    prioritarios = {"popeye": [], "los pitufos": [], "heidi": []}
+    restantes = []
+    for bloque in bloques:
+        if not bloque or not bloque[0].startswith("#EXTINF"):
+            restantes.append(bloque)
+            continue
+        nombre_bloque = extraer_nombre(bloque[0])
+        nombre_bloque = re.sub(
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
+            "",
+            nombre_bloque,
+            flags=re.I,
+        ).strip()
+        nombre_norm = normalizar(nombre_bloque)
+        clave = next((k for k in prioritarios if nombre_norm.startswith(k)), None)
+        if clave:
+            prioritarios[clave].append(bloque)
+        else:
+            restantes.append(bloque)
+    grupos_prioritarios = [
+        bloque
+        for clave in ("popeye", "los pitufos", "heidi")
+        for bloque in prioritarios[clave]
+    ]
+    if grupos_prioritarios:
+        primera_infantil = next((
+            idx for idx, bloque in enumerate(restantes)
+            if bloque and bloque[0].startswith("#EXTINF")
+            and normalizar(extraer_categoria(bloque[0])) in {"infantil", "infantiles"}
+        ), len(restantes))
+        restantes[primera_infantil:primera_infantil] = grupos_prioritarios
+        bloques = restantes
 
     xumo_url = "https://d4whmvwm0rdvi.cloudfront.net/10007/99951318/hls/master.m3u8?ads.xumo_channelId=99951318&ads.asnw=169843&ads.afid=405342864&ads.sfid=19647852&ads.csid=xumo_web_NBCUAmericanNinjaWarrior_ssai_cro&ads._fw_is_lat=0&ads._fw_us_privacy=&ads._fw_coppa=0&ads._fw_did=a5090924-15b1-4b7f-b6cd-2f06e2ba51e1&ads._fw_vcid2=512116:a5090924-15b1-4b7f-b6cd-2f06e2ba51e1&ads._fw_app_bundle=web.xumo.com&ads._fw_app_store_url=&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=GitHubAction&ads._fw_device_model=PythonScript&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0.0&ads.appName=XumoPlay&ads.xumo_contentId=4063&ads.xumo_contentName=NBCUAmericanNinjaWarrior&ads.xumo_providerId=4063&ads.xumo_providerName=NBCUAmericanNinjaWarrior&ads.channelId=99951318"
     xumo_logo = "https://raw.githubusercontent.com/RoqueDJ/iptv-svg/main/1792421696158.png"
@@ -2382,6 +2765,7 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
         salida.extend(bloque)
     print(
         f"Ajustes referencia: Pluto ES Anime retirados={eliminados_pluto_es_anime}; "
+        f"Los Pitufos ES retirados={eliminados_pitufos_es}; "
         f"Avatar movidos={len(avatar)}; American Ninja Warrior agregado={xumo_agregado}."
     )
     return salida
@@ -2522,7 +2906,7 @@ def ordenar_bloques_magma_y_originales(lineas, session):
     return salida, auditoria
 
 
-def main():
+def main(restaurar_faltantes=True, preservar_orden=False):
     print("=" * 72)
     print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
     print("=" * 72)
@@ -2622,7 +3006,7 @@ def main():
                     "  -> IPTVSV integridad: "
                     f"{iptvsv_auditoria['urls_fuente']} URLs fuente, "
                     f"{iptvsv_auditoria['conflictos_fuente']} conflictos de URL, "
-                    f"{iptvsv_auditoria['errores_categoria']} categorías incorrectas."
+                    f"{iptvsv_auditoria['categorias_pendientes_mover']} categorías pendientes de mover."
                 )
                 lineas, iptvsv_reclasificados, iptvsv_conflictos = reclasificar_iptvsv_existente(
                     lineas,
@@ -2695,8 +3079,8 @@ def main():
     print("PLUTO — SOLO FUENTES PROPIAS")
     print("=" * 72)
 
-    for i, fuente in enumerate(FUENTES_PLUTO, 1):
-        print(f"\n[PLUTO {i}/{len(FUENTES_PLUTO)}] {fuente}")
+    for i, fuente in enumerate(FUENTES_PLUTO_PRINCIPAL, 1):
+        print(f"\n[PLUTO {i}/{len(FUENTES_PLUTO_PRINCIPAL)}] {fuente}")
         try:
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
@@ -2705,12 +3089,15 @@ def main():
             sin_categoria = 0
 
             for canal in canales:
-                # La referencia excluye Pluto España únicamente dentro de Anime.
-                if (
-                    "pluto_es.m3u" in fuente.lower()
-                    and normalizar(canal.get("categoria", "")) == "anime"
-                ):
-                    continue
+                # Pluto ES no se incorpora a Anime y se elimina únicamente
+                # su variante de Los Pitufos; el canal LATAM/MX se conserva.
+                if "pluto_es.m3u" in fuente.lower():
+                    categoria_es = normalizar(canal.get("categoria", ""))
+                    nombre_es = normalizar(
+                        canal.get("nombre", "") or extraer_nombre(canal.get("extinf", ""))
+                    )
+                    if categoria_es == "anime" or nombre_es.startswith("los pitufos"):
+                        continue
 
                 destino = determinar_destino_pluto(
                     canal.get("categoria", ""),
@@ -2733,7 +3120,7 @@ def main():
                     canales_pluto_fuentes_por_id[identidad].append(canal)
 
                             # Pluto se deduplica por channel ID global: LATAM gana y
-                # ES/MX solo aportan IDs todavía ausentes.
+                # ES solo aporta IDs todavía ausentes.
                 if (
                     identidad
                     and normalizar(destino) in PLUTO_CATEGORIAS_CANONICAS
@@ -2775,13 +3162,18 @@ def main():
         canales_pluto_fuentes_por_id,
     )
 
-    # 8) Consolidar físicamente SOLO Pluto. Esto elimina bloques Pluto
-    # intercalados entre categorías ajenas sin mover ningún bloque no-Pluto.
-    (
-        lineas,
-        pluto_movidos_fisicamente,
-        pluto_movidos_fisicamente_por_categoria,
-    ) = reubicar_bloques_pluto_sin_reordenar_principal(lineas)
+    # 8) Consolidar físicamente Pluto solo en el modo histórico. El orquestador
+    # incremental deja esta tarea al sincronizador final para no alterar el orden.
+    if not preservar_orden:
+        (
+            lineas,
+            pluto_movidos_fisicamente,
+            pluto_movidos_fisicamente_por_categoria,
+        ) = reubicar_bloques_pluto_sin_reordenar_principal(lineas)
+    else:
+        pluto_movidos_fisicamente = 0
+        pluto_movidos_fisicamente_por_categoria = {}
+        print("Orden protegido: la reubicación de bloques Pluto queda a cargo de la reconciliación final.")
 
     # 9) Limpieza de seguridad: nunca conservar EXTINF sin URL.
     lineas, extinf_huerfanos_eliminados = limpiar_extinf_huerfanos(lineas)
@@ -2817,26 +3209,25 @@ def main():
                 duplicados_finales += 1
             vistos.add(u)
 
-    # 13) Protección de no-regresión: ningún canal no-Pluto que ya existía
-    # puede desaparecer por una limpieza interna accidental.
-    lineas, no_pluto_restaurados = restaurar_no_pluto_existente(
-        lineas,
-        bloques_no_pluto_iniciales,
-    )
-    if no_pluto_restaurados:
-        print(f"Autorreparación: {no_pluto_restaurados} canales no-Pluto restaurados.")
+    # 13) Protección de no-regresión. El orquestador moderno compara y audita
+    # contra la copia original; no restauramos aquí por URL porque podría
+    # resucitar enlaces viejos o insertar alternativas fuera de su posición.
+    no_pluto_restaurados = 0
+    if restaurar_faltantes:
+        lineas, no_pluto_restaurados = restaurar_no_pluto_existente(
+            lineas,
+            lineas_iniciales,
+        )
+        if no_pluto_restaurados:
+            print(f"Autorreparación: {no_pluto_restaurados} canales no-Pluto restaurados.")
 
-    # 14) Última barrera: deduplicación exacta después de cualquier autorreparación.
-    # Así una restauración nunca puede volver a introducir una URL duplicada.
-    lineas, duplicados_post_restauracion, _ = limpiar_duplicados_globales_y_carpetas_especiales(lineas)
-    if duplicados_post_restauracion:
-        print(f"Deduplicación final tras autorreparación: {duplicados_post_restauracion} duplicados eliminados.")
+        lineas, duplicados_post_restauracion, _ = limpiar_duplicados_globales_y_carpetas_especiales(lineas)
+        if duplicados_post_restauracion:
+            print(f"Deduplicación final tras autorreparación: {duplicados_post_restauracion} duplicados eliminados.")
 
-    # Consolidar de nuevo las categorías después de la autorreparación.
-    # Esto evita que un canal restaurado genere un bloque físico separado.
-    lineas, cambios_orden_post_restauracion = ordenar_y_normalizar_carpetas(lineas)
-    if cambios_orden_post_restauracion:
-        print("Orden final tras autorreparación aplicado.")
+        lineas, cambios_orden_post_restauracion = ordenar_y_normalizar_carpetas(lineas)
+        if cambios_orden_post_restauracion:
+            print("Orden final tras autorreparación aplicado.")
 
     # 14) Consolidación física definitiva: una sola sección por categoría.
     lineas, categorias_fisicas = consolidar_bloques_por_categoria(lineas)
@@ -3008,27 +3399,33 @@ def main():
     # Aplicar las correcciones fijas de la referencia antes de publicar.
     lineas = aplicar_ajustes_referencia(lineas, ids_pluto_es_anime)
 
-    # Orden fijo de entretenimiento: bloque inicial, MAGMA alfabético y
-    # canales originales alfabéticos. Se valida la cobertura MAGMA antes de escribir.
-    lineas, orden_entretenimiento = ordenar_bloques_magma_y_originales(lineas, session)
-    print(
-        "Orden entretenimiento: "
-        f"{orden_entretenimiento['fijos']} fijos; "
-        f"{orden_entretenimiento['magma']} MAGMA; "
-        f"{orden_entretenimiento['originales']} originales."
-    )
+    # El orden alfabético histórico de entretenimiento solo se aplica en
+    # ejecución directa. El orquestador conserva el orden de la maestra.
+    if not preservar_orden:
+        lineas, orden_entretenimiento = ordenar_bloques_magma_y_originales(lineas, session)
+        print(
+            "Orden entretenimiento: "
+            f"{orden_entretenimiento['fijos']} fijos; "
+            f"{orden_entretenimiento['magma']} MAGMA; "
+            f"{orden_entretenimiento['originales']} originales."
+        )
+    else:
+        print("Orden protegido: no se reordena entretenimiento ni canales existentes.")
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
     # representación final, para que ninguna transformación posterior las
     # elimine. Pluto queda excluido por diseño.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
-    validar_orden_canales(
-        lineas_iniciales,
-        lineas,
-        categorias_reordenables={"Entretenimiento / Cine / Series"},
-        ids_pluto_omitidos=set(ids_pluto_fuentes) | set(pluto_ids_canonicos),
-    )
+    if preservar_orden:
+        print("La comprobación final de orden por categoría se ejecuta en selftest_sincronizacion_real.py.")
+    else:
+        validar_orden_canales(
+            lineas_iniciales,
+            lineas,
+            categorias_reordenables={"Entretenimiento / Cine / Series"},
+            ids_pluto_omitidos=set(ids_pluto_fuentes) | set(pluto_ids_canonicos),
+        )
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
 
     texto_final = "\n".join(lineas)
@@ -3064,7 +3461,8 @@ def main():
         raise RuntimeError(
             "VALIDACION PLUTO FALLIDA: faltan "
             f"{len(ids_pluto_faltantes)} IDs de las fuentes propias "
-            "después del autorreparo."
+            "después del autorreparo. IDs: "
+            + ", ".join(sorted(ids_pluto_faltantes))
         )
 
     print("\n" + "=" * 72)
@@ -3074,6 +3472,7 @@ def main():
     print(f"Pluto terceros reemplazados:         {pluto_reemplazo["reemplazados"]}")
     print(f"Pluto terceros sin reemplazo:        {pluto_reemplazo["eliminados_sin_reemplazo"]}")
     print(f"Pluto ya propios conservados:        {pluto_reemplazo["ya_propios"]}")
+    print(f"Pluto MX externo sin JWT conservados: {pluto_reemplazo["mx_externos_conservados"]}")
     print(f"Pluto reubicados por categoría:        {pluto_reubicados}")
     print(f"Errores sincronizando carpetas Pluto:   {pluto_reubicados_errores}")
     print(f"Pluto duplicados por URL exacta:       {pluto_duplicados_existentes}")
@@ -3131,7 +3530,7 @@ def main():
     print("  - TOTAL/OTROS únicos se reclasifican cuando es posible.")
     print("  - Ninguna fuente puede crear categorías nuevas.")
     print("  - Pluto antiguo se elimina antes de cargar Pluto propio.")
-    print("  - Pluto propio usa exclusivamente FUENTES_PLUTO.")
+    print("  - Pluto principal usa LATAM + ES tokenizados y MX externo jmp2 sin JWT.")
     print("  - CHILE de fuentes normales -> CHILE TV.")
     print("  - LATAM.m3u NO crea carpeta LATAM: sus canales se redistribuyen por país/temática; los no clasificables se omiten.")
     print("=" * 72)
