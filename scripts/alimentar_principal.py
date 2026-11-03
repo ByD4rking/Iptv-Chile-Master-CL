@@ -2144,6 +2144,18 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
     orden_por_categoria_nombre = defaultdict(list)
     orden_por_categoria_url = defaultdict(list)
     identidad_anterior = []
+    opciones_sin_base = defaultdict(list)
+    categorias_con_base = set()
+
+    def registrar_rango_original(categoria_original, channel_id, nombre, index, item):
+        if channel_id:
+            orden_por_categoria_id[(categoria_original, channel_id)].append(index)
+        if nombre:
+            orden_por_categoria_nombre[(categoria_original, nombre)].append(index)
+        url_original = (item.get("url") or "").strip()
+        if url_original:
+            orden_por_categoria_url[(categoria_original, url_original)].append(index)
+
     for index, item in enumerate(anteriores):
         extinf = item["lineas"][0]
         categoria_original = categoria_canonica(extraer_categoria(extinf))
@@ -2163,18 +2175,21 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                 re.I,
             ))
         )
-        # El orden histórico se ancla al canal principal, no a la primera
-        # alternativa. Si una [Opc.1] precede al canal base, usarla como rango
-        # desplaza todo el grupo y rompe el orden de la categoría.
+        clave_nombre = (categoria_original, nombre)
         if es_alternativa_original:
+            opciones_sin_base[clave_nombre].append((index, channel_id, item))
             continue
-        if channel_id:
-            orden_por_categoria_id[(categoria_original, channel_id)].append(index)
-        if nombre:
-            orden_por_categoria_nombre[(categoria_original, nombre)].append(index)
-        url_original = (item.get("url") or "").strip()
-        if url_original:
-            orden_por_categoria_url[(categoria_original, url_original)].append(index)
+        categorias_con_base.add(clave_nombre)
+        registrar_rango_original(categoria_original, channel_id, nombre, index, item)
+
+    # Si la maestra histórica solo tenía alternativas y no un canal base,
+    # la primera opción actúa como ancla de posición. Si sí existía base, las
+    # alternativas nunca adelantan el grupo respecto de ese canal principal.
+    for clave_nombre, opciones in opciones_sin_base.items():
+        if clave_nombre in categorias_con_base or not opciones:
+            continue
+        index, channel_id, item = min(opciones, key=lambda value: value[0])
+        registrar_rango_original(clave_nombre[0], channel_id, clave_nombre[1], index, item)
 
     grupos = {}
     orden_grupos = []
