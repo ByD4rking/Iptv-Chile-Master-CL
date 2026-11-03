@@ -3089,12 +3089,15 @@ def main(restaurar_faltantes=True, preservar_orden=False):
             sin_categoria = 0
 
             for canal in canales:
-                # La referencia excluye Pluto España únicamente dentro de Anime.
-                if (
-                    "pluto_es.m3u" in fuente.lower()
-                    and normalizar(canal.get("categoria", "")) == "anime"
-                ):
-                    continue
+                # Pluto ES no se incorpora a Anime y se elimina únicamente
+                # su variante de Los Pitufos; el canal LATAM/MX se conserva.
+                if "pluto_es.m3u" in fuente.lower():
+                    categoria_es = normalizar(canal.get("categoria", ""))
+                    nombre_es = normalizar(
+                        canal.get("nombre", "") or extraer_nombre(canal.get("extinf", ""))
+                    )
+                    if categoria_es == "anime" or nombre_es.startswith("los pitufos"):
+                        continue
 
                 destino = determinar_destino_pluto(
                     canal.get("categoria", ""),
@@ -3458,7 +3461,8 @@ def main(restaurar_faltantes=True, preservar_orden=False):
         raise RuntimeError(
             "VALIDACION PLUTO FALLIDA: faltan "
             f"{len(ids_pluto_faltantes)} IDs de las fuentes propias "
-            "después del autorreparo."
+            "después del autorreparo. IDs: "
+            + ", ".join(sorted(ids_pluto_faltantes))
         )
 
     print("\n" + "=" * 72)
