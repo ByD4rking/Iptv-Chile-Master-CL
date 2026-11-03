@@ -46,9 +46,9 @@ USER_AGENT = (
 
 REQUEST_TIMEOUT = (10, 45)
 MAX_RETRIES = 3
-# Renovar antes de la expiración para que una URL HLS recién generada nunca
-# reutilice un JWT cercano a caducar. La renovación no elimina canales.
-TOKEN_REFRESH_MARGIN = 300
+# Los JWT de Pluto duran aproximadamente 24 horas. Renovar con 12 horas
+# de margen evita reutilizar tokens en la segunda mitad de su vigencia.
+TOKEN_REFRESH_MARGIN = 12 * 60 * 60
 
 
 class PlutoClient:
