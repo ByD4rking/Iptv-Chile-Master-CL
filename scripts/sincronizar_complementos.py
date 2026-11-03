@@ -237,6 +237,15 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         if identity:
             candidate_groups[identity].append(item)
 
+    candidate_name_counts = Counter()
+    for group in candidate_groups.values():
+        item = group[0]
+        name = ap.normalizar(
+            _attr(item.get("extinf", ""), "tvg-name") or item.get("nombre", "")
+        )
+        if name:
+            candidate_name_counts[name] += 1
+
     main_name_counts = Counter({
         name: len(indexes) for name, indexes in main_by_name.items()
     })
@@ -271,10 +280,10 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             ]
             if exact_matches:
                 match = exact_matches[0]
-        if match is None and identity.startswith("name:"):
-            if len(group) == 1 and source_name and main_name_counts[source_name] == 1:
+        if match is None and source_name:
+            if candidate_name_counts[source_name] == 1 and main_name_counts[source_name] == 1:
                 match = main_by_name[source_name][0]
-            elif len(group) > 1 or (source_name and main_name_counts[source_name] > 1):
+            elif candidate_name_counts[source_name] > 1 or main_name_counts[source_name] > 1:
                 stats["ambiguos"] += 1
                 continue
 
