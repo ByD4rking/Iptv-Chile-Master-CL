@@ -35,7 +35,7 @@ def norm(value: str) -> str:
 def base_name(value: str) -> str:
     value = re.sub(r"\s*\|\s*(?:cl|chile)\s*$", "", value or "", flags=re.I)
     value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value or "", flags=re.I)
-    if re.match(r"^\s*baby\s*tv\s*\(\s*opc\.?\s*\d+\s*\)\s*$", value, re.I):
+    if not re.match(r"^\s*cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)\s*$", value, re.I):
         value = re.sub(r"\s*\(\s*opc\.?\s*\d+\s*\)\s*$", "", value, flags=re.I)
     value = re.sub(
         r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
@@ -97,16 +97,12 @@ def parse_entries(path: Path) -> list[dict]:
             is_pluto_es_stream or explicit_pluto_es
         )
         option_match = re.search(
-            r"(?:\[\s*(?:opci[oó]n|opc\.?|option)\s*(\d+)\s*\]|\(\s*(?:opci[oó]n|option)\s*(\d+)\s*\))$",
+            r"(?:\[\s*(?:opci[oó]n|opc\.?|option)\s*(\d+)\s*\]|\(\s*(?:opci[oó]n|opc\.?|option)\s*(\d+)\s*\))$",
             display_raw,
             re.I,
         )
-        if not option_match and re.match(
-            r"^baby\s*tv\s*\(\s*opc\.?\s*\d+\s*\)$",
-            display_raw,
-            re.I,
-        ):
-            option_match = re.search(r"\(\s*opc\.?\s*(\d+)\s*\)$", display_raw, re.I)
+        if re.match(r"^cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)$", display_raw, re.I):
+            option_match = None
         logo_match = re.search(r'(?:tvg-logo|logo)="([^"]*)"', line, re.I)
         entries.append({
             "id": (id_match.group(1).strip() if id_match else ""),
