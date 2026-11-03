@@ -2,6 +2,7 @@ import unittest
 import re
 
 import alimentar_principal as ap
+from selftest_sincronizacion_real import identity_key
 from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _identity, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, quitar_los_pitufos_es, reconcile_lines
 
 
@@ -855,6 +856,18 @@ class PlutoEsFinalFilterTests(unittest.TestCase):
         urls = [line for line in output if line.startswith("https://")]
         self.assertEqual(names, ["Los Pitufos"])
         self.assertEqual(urls, ["https://kids.example/pitufos-latam.m3u8"])
+
+
+class AuditIdentityRegressionTests(unittest.TestCase):
+
+    def test_identity_audit_matches_channel_when_source_adds_tvg_id(self):
+        before = {"id": "", "tvg_name": "C y G TV", "name": "C y G TV | CL"}
+        after = {"id": "1626", "tvg_name": "C y G TV", "name": "C y G TV | CL"}
+        unique_names = {"cygtv"}
+        self.assertEqual(
+            identity_key(before, {"1626"}, unique_names),
+            identity_key(after, set(), unique_names),
+        )
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
