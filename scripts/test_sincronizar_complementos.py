@@ -337,26 +337,70 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertIn("https://keep.example/heidi.m3u8", output)
         self.assertEqual(stats["canales_chichicasteca_a_guatemala"], 1)
 
-    def test_only_los_pitufos_is_removed_and_heidi_remains(self):
+    def test_only_los_pitufos_es_is_removed_and_normal_channel_remains(self):
         base = (
             ["#EXTM3U"]
             + entry("pitufos.id", "Infantiles", "Los Pitufos", "https://bad.example/pitufos.m3u8")
-            + entry("pitufos.id", "Infantiles", "Los Pitufos [Pluto ES]", "https://bad.example/pitufos-es.m3u8")
+            + entry("pitufos.es.id", "Infantiles", "Los Pitufos (ES)", "https://bad.example/pitufos-es.m3u8")
             + entry("heidi.id", "Infantiles", "Heidi", "https://good.example/heidi.m3u8")
         )
         source = [
             candidate(
                 "pitufos.id",
-                "Infantil",
+                "Infantiles",
                 "Los Pitufos",
                 "https://new.example/pitufos.m3u8",
                 ap.FUENTES_PLUTO[2],
             )
         ]
         output, stats = reconcile_lines(base, source)
-        self.assertFalse(any("Los Pitufos" in line for line in output))
+        self.assertTrue(any("Los Pitufos" in line and "(ES)" not in line for line in output))
+        self.assertIn("https://new.example/pitufos.m3u8", output)
+        self.assertFalse(any("Los Pitufos (ES)" in line for line in output))
         self.assertIn("https://good.example/heidi.m3u8", output)
-        self.assertEqual(stats["los_pitufos_eliminados"], 2)
+        self.assertEqual(stats["los_pitufos_eliminados"], 1)
+
+    def test_all_source_urls_are_grouped_and_numbered_as_alternatives(self):
+        base = ["#EXTM3U"] + entry(
+            "pokemon.id", "Infantiles", "Pokémon", "https://old.example/pokemon.m3u8"
+        )
+        source = [
+            candidate("pokemon.id", "Infantiles", "Pokémon", "https://magma.example/pokemon.m3u8", ap.FUENTE_MAGMA),
+            candidate("pokemon.id", "Infantiles", "Pokémon", "https://mx.example/pokemon.m3u8", ap.FUENTES_PLUTO[2]),
+            candidate("pokemon.id", "Infantiles", "Pokémon", "https://latam.example/pokemon.m3u8", ap.FUENTES_PLUTO[0]),
+        ]
+        source[2]["extinf"] = source[2]["extinf"].replace(
+            'group-title="Infantiles"',
+            'tvg-logo="https://logos.example/pokemon.png" group-title="Infantiles"',
+        )
+        output, stats = reconcile_lines(base, source)
+        extinfs = [line for line in output if line.startswith("#EXTINF") and 'tvg-id="pokemon.id"' in line]
+        urls = [output[output.index(line) + 1] for line in extinfs]
+        self.assertEqual(urls, [
+            "https://latam.example/pokemon.m3u8",
+            "https://mx.example/pokemon.m3u8",
+            "https://magma.example/pokemon.m3u8",
+        ])
+        self.assertIn(",Pokémon", extinfs[0])
+        self.assertIn(",Pokémon [Opción 2]", extinfs[1])
+        self.assertIn(",Pokémon [Opción 3]", extinfs[2])
+        self.assertTrue(all('tvg-logo="https://logos.example/pokemon.png"' in line for line in extinfs))
+        self.assertEqual(stats["alternativas_agregadas"], 2)
+
+    def test_infantiles_priority_order_is_popeye_pitufos_heidi(self):
+        base = ["#EXTM3U"] + (
+            entry("kids.heidi", "Infantiles", "Heidi", "https://kids.example/heidi.m3u8")
+            + entry("kids.other", "Infantiles", "Otro infantil", "https://kids.example/other.m3u8")
+            + entry("kids.popeye", "Infantiles", "Popeye", "https://kids.example/popeye.m3u8")
+            + entry("kids.pitufos", "Infantiles", "Los Pitufos", "https://kids.example/pitufos.m3u8")
+        )
+        output, _ = reconcile_lines(base, [])
+        names = [
+            ap.extraer_nombre(line)
+            for line in output
+            if line.startswith("#EXTINF") and ap.normalizar(ap.extraer_categoria(line)) == "infantiles"
+        ]
+        self.assertEqual(names[:3], ["Popeye", "Los Pitufos", "Heidi"])
 
     def test_pluto_es_anime_excluded_but_latam_and_mx_anime_are_added(self):
         base = (
