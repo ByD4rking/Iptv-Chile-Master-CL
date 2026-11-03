@@ -1912,6 +1912,79 @@ def firma_orden_canales(lineas):
     return orden
 
 
+def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias_reordenables=None):
+    """Restaura el orden previo de canales existentes y deja los nuevos al final.
+
+    La principal puede fusionar carpetas o reubicar canales durante la
+    normalización. Este paso conserva el orden relativo de todas las URLs que
+    ya estaban publicadas, agrega los canales nuevos después y mantiene Pluto
+    al final de cada categoría según su regla específica.
+    """
+    categorias_especiales = {
+        normalizar(x) for x in (categorias_reordenables or set())
+    }
+
+    def extraer_bloques(contenido):
+        prefijo = []
+        bloques = []
+        i = 0
+        while i < len(contenido):
+            if not contenido[i].startswith("#EXTINF"):
+                if not bloques:
+                    prefijo.append(contenido[i])
+                i += 1
+                continue
+            inicio = i
+            j = i + 1
+            while j < len(contenido) and contenido[j].startswith("#") and not contenido[j].startswith("#EXTINF"):
+                j += 1
+            if j < len(contenido) and url_es_valida(contenido[j].strip()):
+                extinf = contenido[inicio]
+                bloques.append({
+                    "categoria": normalizar(extraer_categoria(extinf)),
+                    "url": contenido[j].strip(),
+                    "lineas": contenido[inicio:j + 1],
+                    "orden_actual": len(bloques),
+                })
+                i = j + 1
+            else:
+                i = j
+        return prefijo, bloques
+
+    _, anteriores = extraer_bloques(lineas_anteriores)
+    prefijo, actuales = extraer_bloques(lineas)
+    if not actuales:
+        return lineas
+
+    orden_original = {item["url"]: index for index, item in enumerate(anteriores)}
+    grupos = {}
+    orden_grupos = []
+    for bloque in actuales:
+        categoria = bloque["categoria"]
+        if categoria not in grupos:
+            grupos[categoria] = []
+            orden_grupos.append(categoria)
+        grupos[categoria].append(bloque)
+
+    salida = list(prefijo)
+    for categoria in orden_grupos:
+        bloques = grupos[categoria]
+        if categoria in categorias_especiales:
+            ordenados = bloques
+        else:
+            pluto = [b for b in bloques if es_url_pluto(b["url"])]
+            normales = [b for b in bloques if not es_url_pluto(b["url"])]
+            existentes = [b for b in normales if b["url"] in orden_original]
+            nuevos = [b for b in normales if b["url"] not in orden_original]
+            existentes.sort(key=lambda b: orden_original[b["url"]])
+            # Mantener el orden actual entre los canales nuevos y entre los Pluto.
+            ordenados = existentes + nuevos + pluto
+        for bloque in ordenados:
+            salida.extend(bloque["lineas"])
+
+    return salida
+
+
 def validar_orden_canales(
     lineas_anteriores,
     lineas_nuevas,
@@ -3004,6 +3077,14 @@ def main():
         f"{orden_entretenimiento['originales']} originales."
     )
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
+
+    # Restaurar primero el orden de los canales que ya estaban publicados.
+    # Los nuevos se anexan; las carpetas especiales y Pluto conservan sus reglas.
+    lineas = restaurar_orden_original_por_categoria(
+        lineas,
+        lineas_iniciales,
+        categorias_reordenables={"Entretenimiento / Cine / Series"},
+    )
 
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
     # representación final, para que ninguna transformación posterior las
