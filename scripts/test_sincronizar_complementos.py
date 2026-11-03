@@ -34,6 +34,48 @@ def candidate(channel_id, category, name, url, source=None):
     }
 
 
+class OriginalPlaylistOrderTests(unittest.TestCase):
+    def test_restore_category_and_channel_order_and_append_new_channels(self):
+        original = ["#EXTM3U"] + (
+            entry("cat1.a", "Categoría A", "Canal A", "https://a.example/a.m3u8")
+            + entry("cat1.b", "Categoría A", "Canal B", "https://b.example/b.m3u8")
+            + entry("cat2.c", "Categoría B", "Canal C", "https://c.example/c.m3u8")
+        )
+        current = ["#EXTM3U"] + (
+            entry("cat2.new", "Categoría B", "Nuevo B", "https://new.example/b.m3u8")
+            + entry("cat1.b", "Categoría A", "Canal B", "https://b.example/b.m3u8")
+            + entry("cat2.c", "Categoría B", "Canal C", "https://c.example/c.m3u8")
+            + entry("cat1.a", "Categoría A", "Canal A", "https://a.example/a.m3u8")
+            + entry("cat1.new", "Categoría A", "Nuevo A", "https://new.example/a.m3u8")
+        )
+        output, stats = ap.restaurar_orden_original_por_categoria(current, original)
+        extinfs = [line for line in output if line.startswith("#EXTINF")]
+        categories = [ap.extraer_categoria(line) for line in extinfs]
+        names = [ap.extraer_nombre(line) for line in extinfs]
+        self.assertEqual(categories, ["Categoría A", "Categoría A", "Categoría A", "Categoría B", "Categoría B"])
+        self.assertEqual(names, ["Canal A", "Canal B", "Nuevo A", "Canal C", "Nuevo B"])
+        self.assertGreaterEqual(stats["bloques_reordenados"], 1)
+
+    def test_moved_channel_appends_after_original_channels_in_destination(self):
+        original = ["#EXTM3U"] + (
+            entry("a.one", "País A", "Canal A", "https://a.example/a.m3u8")
+            + entry("a.two", "País A", "Canal B", "https://b.example/b.m3u8")
+            + entry("b.one", "País B", "Canal C", "https://c.example/c.m3u8")
+        )
+        current = ["#EXTM3U"] + (
+            entry("a.one", "País A", "Canal A", "https://a.example/a.m3u8")
+            + entry("a.new", "País B", "Nuevo B", "https://new.example/b.m3u8")
+            + entry("a.two", "País B", "Canal B", "https://b.example/b.m3u8")
+            + entry("b.one", "País B", "Canal C", "https://c.example/c.m3u8")
+        )
+        output, _ = ap.restaurar_orden_original_por_categoria(current, original)
+        extinfs = [line for line in output if line.startswith("#EXTINF")]
+        categories = [ap.extraer_categoria(line) for line in extinfs]
+        names = [ap.extraer_nombre(line) for line in extinfs]
+        self.assertEqual(categories, ["País A", "País B", "País B", "País B"])
+        self.assertEqual(names, ["Canal A", "Canal C", "Canal B", "Nuevo B"])
+
+
 class RestorationOrderTests(unittest.TestCase):
     def test_iptvsv_category_change_is_reclassified_instead_of_blocked(self):
         url = "http://45.5.118.152:8000/play/chichi.m3u8"
