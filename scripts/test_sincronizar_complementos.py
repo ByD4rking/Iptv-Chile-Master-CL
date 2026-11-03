@@ -902,7 +902,7 @@ class AlternativeGroupingRegressionTests(unittest.TestCase):
         lines += entry("", "Infantiles", "Baby TV [Opción 2]", "https://b.example/babytv.m3u8")
         lines += entry("", "Infantiles", "Baby TV(Opc.2)", "https://c.example/babytv.m3u8")
 
-        output = sc._group_and_label_alternatives(lines, {})
+        output = _group_and_label_alternatives(lines, {})
         names = [
             ap.extraer_nombre(line)
             for line in output
