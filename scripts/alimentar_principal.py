@@ -219,9 +219,10 @@ def es_categoria_pais_generica_iptvsv(categoria):
 
 
 def determinar_destino_iptvsv(categoria, nombre, categorias):
-    """IPTV-SV respeta la carpeta declarada, con solo alias canónicos explícitos.
+    """Respeta la carpeta de IPTV-SV y normaliza solo alias documentados.
 
-    No reclasifica por nombre, no usa reglas temáticas y no crea carpetas.
+    Las categorías nuevas se devuelven como destino para que la sincronización
+    incremental pueda crear el group-title sin descartar canales.
     """
     categoria = (categoria or "").strip()
     if not categoria:
@@ -233,6 +234,8 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
         "el salvador": "EL Salvador",
         "el salvador - tcs": "EL Salvador",
         "el salvador local": "EL Salvador",
+        "tv chichicasteca": "Guatemala",
+        "los chichastecas": "Guatemala",
         "documentales": "Documentales y Cultura",
         "infantil": "Infantiles",
         "teen": "Infantiles",
@@ -244,14 +247,12 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
     }
     categoria_busqueda = aliases.get(c_norm, categoria)
 
-    # La carpeta especial solo se acepta si YA existe.
     if c_norm == "tv mas importantes de cada pais":
         return buscar_categoria_existente(
             "TV MÁS IMPORTANTES DE CADA PAÍS", categorias
-        )
+        ) or "TV MÁS IMPORTANTES DE CADA PAÍS"
 
-    # Coincidencia con una carpeta existente. Nunca inventar una nueva.
-    return buscar_categoria_existente(categoria_busqueda, categorias)
+    return buscar_categoria_existente(categoria_busqueda, categorias) or categoria_busqueda
 
 def validar_integridad_iptvsv(lineas, canales, categorias):
     """Barrera bloqueante para impedir que IPTVSV vuelva a perder categorías.
