@@ -1262,13 +1262,13 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
     pluto_principales = []
     for bloque in pluto:
         nombre = extraer_nombre(bloque["lineas"][0])
-        es_opcion = bool(re.search(r"\\(OPCIÓN\\s+\\d+\\)$", nombre, re.I))
+        es_opcion = bool(re.search(r"\(OPCIÓN\s+\d+\)$", nombre, re.I))
         if es_opcion:
-            nombre_base = re.sub(r"\\s*\\(OPCIÓN\\s+\\d+\\)$", "", nombre, flags=re.I).strip()
+            nombre_base = re.sub(r"\s*\(OPCIÓN\s+\d+\)$", "", nombre, flags=re.I).strip()
             base = next((
                 candidato for candidato in pluto
                 if candidato is not bloque
-                and not re.search(r"\\(OPCIÓN\\s+\\d+\\)$", extraer_nombre(candidato["lineas"][0]), re.I)
+                and not re.search(r"\(OPCIÓN\s+\d+\)$", extraer_nombre(candidato["lineas"][0]), re.I)
                 and normalizar(candidato["categoria"]) == normalizar(bloque["categoria"])
                 and (
                     (bloque.get("id") and candidato.get("id") == bloque.get("id"))
