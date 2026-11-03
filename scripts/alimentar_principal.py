@@ -783,6 +783,34 @@ def es_url_pluto(url):
     )
 
 
+def obtener_ids_pluto_existentes(lineas):
+    """Identifica todos los IDs Pluto ya presentes para excluirlos del guardia de orden normal.
+
+    El reubicador Pluto mueve deliberadamente los bloques Pluto al final de su
+    categoría. Esos movimientos no deben confundirse con una reordenación de
+    canales normales; el orden relativo de canales no-Pluto sigue protegido.
+    """
+    ids = set()
+    for index, linea in enumerate(lineas):
+        if not linea.startswith("#EXTINF"):
+            continue
+        j = index + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j >= len(lineas):
+            continue
+        url = lineas[j].strip()
+        if not es_url_pluto(url):
+            continue
+        channel_id = extraer_pluto_id(url)
+        if not channel_id:
+            match = re.search(r'tvg-id="([^"]+)"', linea, re.I)
+            channel_id = match.group(1).strip().lower() if match else ""
+        if channel_id:
+            ids.add(channel_id)
+    return ids
+
+
 def cargar_catalogo_pluto_propio(session):
     """Carga exclusivamente nuestras playlists Pluto e indexa por ID y nombre."""
     por_id = {}
@@ -2985,7 +3013,11 @@ def main():
         lineas_iniciales,
         lineas,
         categorias_reordenables={"Entretenimiento / Cine / Series"},
-        ids_pluto_omitidos=set(ids_pluto_fuentes) | set(pluto_ids_canonicos),
+        ids_pluto_omitidos=(
+            set(ids_pluto_fuentes)
+            | set(pluto_ids_canonicos)
+            | obtener_ids_pluto_existentes(lineas_iniciales)
+        ),
     )
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
 
