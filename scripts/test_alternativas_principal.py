@@ -123,7 +123,10 @@ class TestAlternativasPrincipal(unittest.TestCase):
         current = ["#EXTM3U"]
         current += block("1626", "CHILE TV", "C y G TV", "https://c.example/cygtv.m3u8")
         current += block("cadena.id", "CHILE TV", "Cadenartv", "https://b.example/cadenartv.m3u8")
-        restored = ap.restaurar_orden_original_por_categoria(current, original)
+        # Simula la última consolidación de alternativas que se ejecutaba
+        # después de restaurar el orden y podía volver a adelantar el bloque.
+        grouped = ap.agrupar_alternativas_por_identidad(current)
+        restored = ap.restaurar_orden_original_por_categoria(grouped, original)
         parsed = self.entries(restored)
         names = [item[0].split(",", 1)[1] for item in parsed]
         self.assertLess(names.index("Cadenartv"), names.index("C y G TV"))
