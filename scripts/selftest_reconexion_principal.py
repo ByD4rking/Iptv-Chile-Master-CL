@@ -16,6 +16,7 @@ from alimentar_principal import (
     FUENTE_PLUTO_ALTERNATIVAS,
     reubicar_bloques_pluto_sin_reordenar_principal,
     reemplazar_categoria,
+    ordenar_bloques_magma_y_originales,
 )
 
 
@@ -263,6 +264,109 @@ def test_pluto_option_on_external_cdn_stays_adjacent() -> None:
     assert option_index == base_index + 1, names
 
 
+def test_magma_and_original_entertainment_blocks_are_sorted() -> None:
+    class FakeResponse:
+        def __init__(self, text: str):
+            self.text = text
+
+        def raise_for_status(self) -> None:
+            return None
+
+    class FakeSession:
+        def get(self, url: str, timeout: int):
+            return FakeResponse("\\n".join([
+                "#EXTM3U",
+                '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Alpha',
+                "https://magma.example/alpha.m3u8",
+                '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Zulu',
+                "https://magma.example/zulu.m3u8",
+            ]))
+
+    lines = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Retro TV',
+        "https://original.example/retro.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Zulu [MAGMA]',
+        "https://magma.example/zulu.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Original Zulu',
+        "https://original.example/zulu.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Chespirito TV',
+        "https://original.example/chespirito.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Alpha [MAGMA]',
+        "https://magma.example/alpha.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Los Simpson Latino Opc. 2',
+        "https://original.example/simpson2.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Original Alpha',
+        "https://original.example/alpha.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",El Chavo TV',
+        "https://original.example/chavo.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Los Simpson Latino',
+        "https://original.example/simpson.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Canal fijo extra',
+        "https://original.example/fijo-extra.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Canal original extra',
+        "https://original.example/extra.m3u8",
+        '#EXTINF:-1 group-title="Anime",Delmi TV [V2]',
+        "https://original.example/delmi.m3u8",
+    ]
+    result, audit = ordenar_bloques_magma_y_originales(lines, FakeSession())
+    names = [
+        line.split(",", 1)[1]
+        for line in result
+        if line.startswith("#EXTINF") and 'group-title="Entretenimiento / Cine / Series"' in line
+    ]
+    assert names[:5] == [
+        "Los Simpson Latino",
+        "Los Simpson Latino Opc. 2",
+        "El Chavo TV",
+        "Chespirito TV",
+        "Retro TV",
+    ], names
+    assert names[5:7] == ["Alpha [MAGMA]", "Zulu [MAGMA]"], names
+    assert names[7:] == [
+        "Canal fijo extra",
+        "Canal original extra",
+        "Original Alpha",
+        "Original Zulu",
+    ], names
+    assert audit == {"fijos": 5, "magma": 2, "originales": 4, "urls_magma": 2}
+    assert "Delmi TV [V2]" in "\\n".join(result)
+
+
+def test_pluto_mx_tvg_id_keeps_extinf_duration() -> None:
+    class FakeResponse:
+        def __init__(self, text: str):
+            self.text = text
+
+        def raise_for_status(self) -> None:
+            return None
+
+    channel_id = "6320d2755e54db000783fd87"
+
+    class FakeSession:
+        def get(self, url: str, timeout: int):
+            if url.endswith("PlutoTV.MX.m3u"):
+                return FakeResponse("\\n".join([
+                    "#EXTM3U",
+                    '#EXTINF:-1 tvg-id="",Claro Sports (720p)',
+                    f"https://jmp2.uk/plu-{channel_id}.m3u8",
+                ]))
+            return FakeResponse("#EXTM3U")
+
+    base = [
+        "#EXTM3U",
+        '#EXTINF:0 type="stream" group-title="Deportes",Claro Sports (México)',
+        f"https://service-stitcher.clusters.pluto.tv/v2/channel/{channel_id}/master.m3u8",
+    ]
+    result, audit = integrar_pluto_mx(base, FakeSession())
+    option = next(
+        line for line in result
+        if line.startswith("#EXTINF") and line.endswith(",Claro Sports (México) (OPCIÓN 2)")
+    )
+    assert option.startswith(f'#EXTINF:0 tvg-id="{channel_id}" type="stream"')
+    assert audit["agregadas"] == 1
+
+
 def test_external_source_urls() -> None:
     assert FUENTE_MAGMA == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u"
     assert FUENTE_PLUTO_ALTERNATIVAS == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
@@ -276,6 +380,8 @@ if __name__ == "__main__":
     test_extinf_category_fallback_preserves_duration()
     test_pluto_mx_fails_closed()
     test_pluto_option_on_external_cdn_stays_adjacent()
+    test_magma_and_original_entertainment_blocks_are_sorted()
+    test_pluto_mx_tvg_id_keeps_extinf_duration()
     test_external_source_urls()
     print("SELFTEST OK: MAGMA, Pluto MX, Anime, Avatar y American Ninja Warrior.")
 
