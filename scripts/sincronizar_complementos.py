@@ -33,7 +33,7 @@ FUENTES_PLUTO_COMPLETAS = [
 
 
 def _attr(text: str, name: str) -> str:
-    match = re.search(r'\\b' + re.escape(name) + r'="([^"]*)"', text or "", re.I)
+    match = re.search(r'\b' + re.escape(name) + r'="([^"]*)"', text or "", re.I)
     return match.group(1).strip() if match else ""
 
 
@@ -51,7 +51,7 @@ def _identity(channel: dict, *, pluto: bool = False) -> str:
 def _set_attr(extinf: str, key: str, value: str) -> str:
     if not value:
         return extinf
-    pattern = r'\\b' + re.escape(key) + r'="[^"]*"'
+    pattern = r'\b' + re.escape(key) + r'="[^"]*"'
     replacement = f'{key}="{value}"'
     if re.search(pattern, extinf, re.I):
         return re.sub(pattern, lambda _: replacement, extinf, count=1, flags=re.I)
