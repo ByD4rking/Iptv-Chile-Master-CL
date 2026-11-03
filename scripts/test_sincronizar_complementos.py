@@ -20,7 +20,7 @@ def candidate(channel_id, category, name, url, source=None):
     url_id = ""
     if source in FUENTES_PLUTO_COMPLETAS:
         import re
-        match = re.search(r"/(?:channel/|plu-)([a-f0-9]{20,})(?:/|\\.m3u8)", url, re.I)
+        match = re.search(r"/(?:channel/|plu-)([a-f0-9]{20,})(?:/|\.m3u8)", url, re.I)
         url_id = match.group(1) if match else ""
     identity = (
         "id:" + ap.normalizar(url_id or channel_id)
