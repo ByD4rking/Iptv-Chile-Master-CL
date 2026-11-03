@@ -10,8 +10,7 @@ import alimentar_principal as alimentador
 from sincronizar_complementos import (
     _group_and_label_alternatives,
     _prioritize_infantiles,
-    _source_priority,
-    collect_candidates,
+    get_last_url_priority,
     synchronize_once,
 )
 
@@ -50,12 +49,7 @@ def main():
 
     # La restauración histórica puede separar alternativas; volver a agrupar
     # usando la prioridad real de las fuentes y dejar Infantil en el orden pedido.
-    candidates, _ = collect_candidates()
-    url_priority = {
-        candidate["url"]: _source_priority(candidate.get("source", ""))
-        for candidate in candidates
-        if candidate.get("url")
-    }
+    url_priority = get_last_url_priority()
     ordered_lines = _group_and_label_alternatives(ordered_lines, url_priority)
     ordered_lines = _prioritize_infantiles(ordered_lines)
 
