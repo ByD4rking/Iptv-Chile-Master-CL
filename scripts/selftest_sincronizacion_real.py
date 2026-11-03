@@ -30,19 +30,29 @@ def norm(value: str) -> str:
 
 def base_name(value: str) -> str:
     value = re.sub(
-        r"\s*(?:\[\s*opc(?:ion)?\.?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
+        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
         "",
         value or "",
         flags=re.I,
     )
     value = re.sub(
-        r"\s*(?:\[\s*pluto(?:\s*tv)?\s*(?:es|españa)\s*\]|\(\s*pluto(?:\s*tv)?\s*(?:es|españa)\s*\))\s*$",
+        r"\s*(?:\[\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
+        r"\(\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
         "",
         value or "",
         flags=re.I,
     )
-    value = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", value, flags=re.I)
+    value = re.sub(r"\s+(?:magna|pluto\s*(?:latam|mx|es)|espanol|españa|spanish|hd|sd|fhd|uhd)$", "", value, flags=re.I)
     return norm(value)
+
+
+def channel_name_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", base_name(value))
+
+
+def is_es_region_url(url: str) -> bool:
+    value = (url or "").lower()
+    return any(marker in value for marker in ("country=es", "marketingregion=es", "preferredlanguage=es-es"))
 
 
 def parse_entries(path: Path) -> list[dict]:
@@ -54,9 +64,10 @@ def parse_entries(path: Path) -> list[dict]:
         id_match = re.search(r'tvg-id="([^"]*)"', line, re.I)
         name_match = re.search(r'tvg-name="([^"]*)"', line, re.I)
         group_match = re.search(r'group-title="([^"]*)"', line, re.I)
-        display = line.split(",", 1)[1].strip() if "," in line else ""
-        tvg_name = base_name(name_match.group(1) if name_match else display)
-        display_name = base_name(display)
+        display_raw = line.split(",", 1)[1].strip() if "," in line else ""
+        tvg_name_raw = name_match.group(1).strip() if name_match else display_raw
+        tvg_name = base_name(tvg_name_raw)
+        display_name = base_name(display_raw)
         url = ""
         for next_index in range(index + 1, len(lines)):
             if lines[next_index].startswith("#EXTINF:"):
@@ -65,13 +76,35 @@ def parse_entries(path: Path) -> list[dict]:
             if candidate_url and not candidate_url.startswith("#"):
                 url = candidate_url
                 break
+        category = group_match.group(1).strip() if group_match else ""
+        full_name = norm(tvg_name_raw + " " + display_raw)
+        is_pitufos = channel_name_key(tvg_name_raw).startswith("lospitufos") or channel_name_key(display_raw).startswith("lospitufos")
+        is_pitufos_es = is_pitufos and (
+            is_es_region_url(url) or bool(re.search(r"\b(?:es|espanol|espana)\b", full_name))
+        )
+        is_es_anime = norm(category) == "anime" and (
+            is_es_region_url(url) or bool(re.search(r"\b(?:espanol|espana|pluto\s*es)\b", full_name))
+        )
+        option_match = re.search(
+            r"\[\s*(?:opci[oó]n|opc\.?|option)\s*(\d+)\s*\]$",
+            display_raw,
+            re.I,
+        )
+        logo_match = re.search(r'(?:tvg-logo|logo)="([^"]*)"', line, re.I)
         entries.append({
             "id": (id_match.group(1).strip() if id_match else ""),
             "name": display_name,
             "tvg_name": tvg_name,
-            "is_pitufos": tvg_name == "los pitufos" or display_name == "los pitufos",
-            "category": group_match.group(1).strip() if group_match else "",
+            "display_raw": display_raw,
+            "is_option": bool(option_match),
+            "option_number": int(option_match.group(1)) if option_match else 1,
+            "logo": logo_match.group(1).strip() if logo_match else "",
+            "is_pitufos": is_pitufos,
+            "is_pitufos_es": is_pitufos_es,
+            "is_es_anime": is_es_anime,
+            "category": category,
             "url": url,
+            "position": len(entries),
             "extinf": line,
         })
     return entries
@@ -142,20 +175,17 @@ def main(args: argparse.Namespace) -> None:
 
     pluto_latam = source_channels(ap.FUENTES_PLUTO[0])
     pluto_es = source_channels(ap.FUENTES_PLUTO[1])
-    pluto_mx = source_channels(ap.FUENTES_PLUTO[2])
-    pluto_mx_alt = source_channels(ap.FUENTE_PLUTO_ALTERNATIVAS)
+    # La principal usa Pluto MX externo sin JWT, no la playlist MX propia tokenizada.
+    pluto_mx = source_channels(ap.FUENTE_PLUTO_ALTERNATIVAS)
 
     es_anime_ids = channel_ids(pluto_es, anime_only=True)
-    latam_mx_ids = (
-        channel_ids(pluto_latam)
-        | channel_ids(pluto_mx)
-        | channel_ids(pluto_mx_alt)
-    )
-    allowed_anime_ids = (
-        channel_ids(pluto_latam, anime_only=True)
-        | channel_ids(pluto_mx, anime_only=True)
-        | channel_ids(pluto_mx_alt, anime_only=True)
-    )
+    latam_mx_ids = channel_ids(pluto_latam) | channel_ids(pluto_mx)
+    allowed_anime_names = {
+        channel_name_key(channel.get("nombre") or channel.get("tvg-name") or "")
+        for channel in pluto_latam + pluto_mx
+        if norm(channel.get("categoria", "")) == "anime"
+        and channel_name_key(channel.get("nombre") or channel.get("tvg-name") or "")
+    }
     es_only_ids = es_anime_ids - latam_mx_ids
     es_only_ids |= {norm(value) for value in ap.PLUTO_ES_ANIME_IDS_HISTORICOS} - latam_mx_ids
 
@@ -174,17 +204,33 @@ def main(args: argparse.Namespace) -> None:
     after = parse_entries(PRINCIPAL)
     after_playable = [item for item in after if item["url"]]
     after_ids = {norm(item["id"]) for item in after_playable if item["id"]}
-    after_nonpluto = [
+    after_nonpluto_all = [
         item for item in after_playable if not ap.es_url_pluto(item["url"])
     ]
-    missing_pluto_latam_mx = allowed_anime_ids - after_ids
+    # Las alternativas se validan por grupo/contigüidad, no como un cambio
+    # de orden de los canales principales históricos.
+    after_nonpluto = [item for item in after_nonpluto_all if not item["is_option"]]
+    after_anime_names = {
+        channel_name_key(item["display_raw"])
+        for item in after
+        if norm(item["category"]) == "anime"
+    }
+    missing_pluto_latam_mx = allowed_anime_names - after_anime_names
     if missing_pluto_latam_mx:
         raise AssertionError(
-            f"Faltan {len(missing_pluto_latam_mx)} IDs Anime de Pluto LATAM/MX en la principal."
+            f"Faltan {len(missing_pluto_latam_mx)} canales Anime de Pluto LATAM/MX en la principal."
         )
 
-    if any(item["is_pitufos"] for item in after):
-        raise AssertionError("Los Pitufos sigue presente en la principal.")
+    if any(item["is_pitufos_es"] for item in after):
+        raise AssertionError("La variante Los Pitufos de Pluto ES sigue presente.")
+    pitufos_infantiles = [
+        item for item in after
+        if item["is_pitufos"] and norm(item["category"]) in {"infantil", "infantiles"}
+    ]
+    if not pitufos_infantiles:
+        raise AssertionError("No quedó Los Pitufos de LATAM/MX/MAGNA en Infantiles.")
+    if any(item["is_es_anime"] for item in after):
+        raise AssertionError("Quedó un canal Pluto ES o Español en Anime.")
 
     if any(
         norm(item["category"]) in {"tv chichicasteca", "los chichastecas"}
@@ -232,7 +278,8 @@ def main(args: argparse.Namespace) -> None:
     }
     before_kept = [
         item for item in before
-        if not item["is_pitufos"]
+        if not item["is_pitufos_es"]
+        and not item["is_es_anime"]
         and norm(item["category"]) not in allowed_cleanup_categories
         and item["url"]
         and not ap.es_url_pluto(item["url"])
@@ -247,7 +294,7 @@ def main(args: argparse.Namespace) -> None:
         if item["tvg_name"] or item["name"]
     )
     after_name_counts = Counter(
-        item["tvg_name"] or item["name"] for item in after_nonpluto
+        item["tvg_name"] or item["name"] for item in after_nonpluto_all
         if item["tvg_name"] or item["name"]
     )
     unique_names = {
@@ -255,7 +302,7 @@ def main(args: argparse.Namespace) -> None:
         if count == 1 and after_name_counts.get(name, 0) == 1
     }
     before_ids = {norm(item["id"]) for item in before_kept if item["id"]}
-    after_ids_nonpluto = {norm(item["id"]) for item in after_nonpluto if item["id"]}
+    after_ids_nonpluto = {norm(item["id"]) for item in after_nonpluto_all if item["id"]}
 
     before_by_category = defaultdict(list)
     after_by_category = defaultdict(list)
@@ -269,7 +316,8 @@ def main(args: argparse.Namespace) -> None:
         )
 
     global_after_counts = Counter(
-        key for keys in after_by_category.values() for key in keys
+        identity_key(item, before_ids, unique_names)
+        for item in after_nonpluto_all
     )
     for category, before_keys in before_by_category.items():
         after_keys = after_by_category.get(category, [])
@@ -310,6 +358,49 @@ def main(args: argparse.Namespace) -> None:
                 f"longitudes={len(expected_order)}/{len(actual_order)}"
             )
 
+    # Verificar el orden de los tres canales prioritarios dentro de Infantiles.
+    infantiles = [
+        item for item in after_playable
+        if norm(item["category"]) in {"infantil", "infantiles"}
+    ]
+    infantiles_unique = []
+    for item in infantiles:
+        key = channel_name_key(item["display_raw"])
+        if key and key not in infantiles_unique:
+            infantiles_unique.append(key)
+    if infantiles_unique[:3] != ["popeye", "lospitufos", "heidi"]:
+        raise AssertionError(
+            "Infantiles no comienza en el orden Popeye, Los Pitufos, Heidi: "
+            + repr(infantiles_unique[:6])
+        )
+
+    # Verificar que las alternativas estén juntas, numeradas y compartan logo/ID.
+    alternatives_by_name = defaultdict(list)
+    for item in after_playable:
+        key = (norm(item["category"]), channel_name_key(item["display_raw"]))
+        if key[1]:
+            alternatives_by_name[key].append(item)
+    for key, group in alternatives_by_name.items():
+        if len(group) < 2:
+            continue
+        group.sort(key=lambda item: item["position"])
+        positions = [item["position"] for item in group]
+        if positions[-1] - positions[0] + 1 != len(positions):
+            raise AssertionError(f"Alternativas separadas para {key}: {positions}")
+        ids = {item["id"] for item in group}
+        if len(ids) > 1:
+            raise AssertionError(f"Alternativas con tvg-id diferentes para {key}: {ids}")
+        logos = {item["logo"] for item in group if item["logo"]}
+        if len(logos) > 1:
+            raise AssertionError(f"Alternativas con logos diferentes para {key}: {logos}")
+        for option_index, item in enumerate(group, start=1):
+            if option_index == 1 and item["is_option"]:
+                raise AssertionError(f"La URL principal tiene etiqueta de opción: {key}")
+            if option_index > 1 and (not item["is_option"] or item["option_number"] != option_index):
+                raise AssertionError(f"Numeración incorrecta de alternativas para {key}")
+            if re.search(r"\\bMAGNA\\b|\\bPluto\\s+(?:LATAM|MX|ES)\\b", item["display_raw"], re.I):
+                raise AssertionError(f"El nombre muestra el proveedor en {key}: {item['display_raw']}")
+
     before_heidi = [item for item in before if item["url"] and ("heidi" in item["name"] or "heidi" in item["tvg_name"])]
     after_heidi = [item for item in after_playable if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
     if before_heidi and not after_heidi:
@@ -328,8 +419,8 @@ def main(args: argparse.Namespace) -> None:
     print(f"Canales finales: {len(after)}")
     print(f"Canales IPTVSV: {len(iptvsv)}; MAGNA: {len(magma)}")
     print(f"Canales TV Chichicasteca clasificados en Guatemala: {len(source_urls)}")
-    print(f"Canales Pluto LATAM/ES/MX: {len(pluto_latam)}/{len(pluto_es)}/{len(pluto_mx)}")
-    print(f"IDs Anime LATAM/MX integrados: {len(allowed_anime_ids)}")
+    print(f"Canales Pluto LATAM/ES/MX externo: {len(pluto_latam)}/{len(pluto_es)}/{len(pluto_mx)}")
+    print(f"Canales Anime LATAM/MX integrados: {len(allowed_anime_names)}")
     print(f"Canales Heidi conservados: {len(after_heidi)}")
     print(f"Canales Pluto ES Anime exclusivos excluidos: {len(es_only_ids)}")
     print(f"Resumen sincronización: {result}")
