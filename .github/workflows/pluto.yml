@@ -9,6 +9,8 @@ on:
       - "pluto/src/**"
       - "pluto/requirements.txt"
       - ".github/workflows/pluto.yml"
+      - "scripts/auditar_fuentes.py"
+      - "scripts/test_auditar_fuentes.py"
   schedule:
     - cron: "0 * * * *"
   workflow_dispatch:
@@ -36,6 +38,9 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
         with:
           python-version: "3.12"
+
+      - name: Auditar inventario y URLs de las siete listas Pluto
+        run: python scripts/auditar_fuentes.py --scope pluto
 
       - name: Instalar dependencias
         working-directory: pluto
@@ -107,6 +112,9 @@ jobs:
           print("Inventario previo:", {k: len(v) for k, v in out.items()})
           PY
 
+      - name: Probar detector de cambios de fuentes
+        run: python -m unittest scripts.test_auditar_fuentes
+
       - name: Selftest estructural Pluto
         run: |
           set -e
@@ -153,6 +161,9 @@ jobs:
         run: |
           python src/generate_multiregion.py
 
+      - name: Comparar los siete resultados Pluto con el inventario anterior
+        run: python scripts/auditar_fuentes.py --scope pluto
+
 
       - name: Verificar que el generador no tocó archivos ajenos
         run: |
@@ -161,7 +172,7 @@ jobs:
             file="${line:3}"
             file="${file%/}"
             case "$file" in
-              pluto/output/playlists/pluto_*.m3u|pluto/output/regional|pluto/output/regional/channels_*.json|pluto/output/health/streams.json|reportes/pluto/REPORTE.md)
+              pluto/output/playlists/pluto_*.m3u|pluto/output/regional|pluto/output/regional/channels_*.json|pluto/output/health/streams.json|reportes/pluto/REPORTE.md|reportes/fuentes/auditoria_pluto.json|reportes/fuentes/estado_pluto.json)
                 ;;
               "")
                 ;;
@@ -314,6 +325,8 @@ jobs:
           git add pluto/output/playlists/pluto_us.m3u
           git add pluto/output/health/streams.json
           git add reportes/pluto/REPORTE.md
+          git add reportes/fuentes/auditoria_pluto.json
+          git add reportes/fuentes/estado_pluto.json
 
           python - <<'PY'
           from pathlib import Path
