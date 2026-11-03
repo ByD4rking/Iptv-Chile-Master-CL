@@ -185,5 +185,20 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertIn("country=MX", parsed[0][-1])
 
 
+    def test_restore_keeps_first_position_when_historical_channel_gains_id(self):
+        original = ["#EXTM3U"]
+        original += block("", "CHILE TV", "C y G TV", "https://a.example/cygtv-legacy.m3u8")
+        original += block("", "CHILE TV", "Cadena-RTV", "https://a.example/cadena.m3u8")
+        original += block("1626", "CHILE TV", "C y G TV", "https://a.example/cygtv-id.m3u8")
+        current = ["#EXTM3U"]
+        current += block("", "CHILE TV", "Cadena-RTV", "https://a.example/cadena.m3u8")
+        current += block("1626", "CHILE TV", "C y G TV", "https://a.example/cygtv-id.m3u8")
+        restored = ap.restaurar_orden_original_por_categoria(current, original)
+        parsed = self.entries(restored)
+        names = [item[0].split(",", 1)[1] for item in parsed]
+        self.assertLess(names.index("C y G TV"), names.index("Cadena-RTV"))
+        ap.validar_orden_canales(original, restored)
+
+
 if __name__ == "__main__":
     unittest.main()
