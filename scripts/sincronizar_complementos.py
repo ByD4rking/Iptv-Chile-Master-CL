@@ -101,7 +101,7 @@ def _set_display_name(extinf: str, display_name: str) -> str:
 
 
 def _without_option_suffix(value: str) -> str:
-    return re.sub(r"\\s*\\[\\s*opci[oó]n\\s*\\d+\\s*\\]\\s*$", "", value or "", flags=re.I).strip()
+    return re.sub(r"\s*\[\s*opci[oó]n\s*\d+\s*\]\s*$", "", value or "", flags=re.I).strip()
 
 
 def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]) -> list[str]:
@@ -159,7 +159,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
         base_tvg_name = _attr(primary_extinf, "tvg-name")
         channel_id = _attr(primary_extinf, "tvg-id")
         category = ap.extraer_categoria(primary_extinf)
-        logo = _attr(primary_extinf, "tvg-logo") or _attr(primary_extinf, "logo")
+        logo = next((_attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo") for item in unique if _attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo")), "")
         for option_index, item in enumerate(unique, start=1):
             extinf = item["extinf"]
             if channel_id:
