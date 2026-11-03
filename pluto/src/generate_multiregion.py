@@ -427,13 +427,13 @@ def preserve_previous_channels(
         for item in previous_state
         if str(item.get("id") or "").strip()
     }
-    response_complete = len(channels) >= max(
-        1,
-        int(len(previous) * ABSENCE_MIN_COVERAGE_RATIO),
-    )
-
     current_ids = {str(ch.get("id") or "").strip() for ch in channels}
     current_streams = {str(ch.get("stream") or "").strip() for ch in channels}
+    current_ids.discard("")
+    response_complete = (
+        len(current_ids) / len(previous) >= ABSENCE_MIN_COVERAGE_RATIO
+        if previous else True
+    )
     current_names: dict[str, int] = {}
     for channel in channels:
         channel["consecutive_absences"] = 0
