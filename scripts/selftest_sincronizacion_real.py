@@ -71,9 +71,9 @@ def source_channels(url: str) -> list[dict]:
     return parsed
 
 
-def source_ids(url: str, *, anime_only: bool = False) -> set[str]:
+def channel_ids(channels: list[dict], *, anime_only: bool = False) -> set[str]:
     ids = set()
-    for channel in source_channels(url):
+    for channel in channels:
         if anime_only and norm(channel.get("categoria", "")) != "anime":
             continue
         extinf = channel.get("extinf", "")
@@ -114,6 +114,7 @@ def main() -> None:
     hashes_before = protected_hashes()
 
     iptvsv = source_channels(ap.FUENTE_IPTVSV)
+    magma = source_channels(ap.FUENTE_MAGMA)
     chichicasteca = [
         channel for channel in iptvsv
         if norm(channel.get("categoria", "")) == "tv chichicasteca"
@@ -121,17 +122,33 @@ def main() -> None:
     if not chichicasteca:
         raise RuntimeError("IPTVSV no entregó el grupo TV Chichicasteca para validar su clasificación.")
 
-    es_anime_ids = source_ids(ap.FUENTES_PLUTO[1], anime_only=True)
+    pluto_latam = source_channels(ap.FUENTES_PLUTO[0])
+    pluto_es = source_channels(ap.FUENTES_PLUTO[1])
+    pluto_mx = source_channels(ap.FUENTES_PLUTO[2])
+    pluto_mx_alt = source_channels(ap.FUENTE_PLUTO_ALTERNATIVAS)
+
+    es_anime_ids = channel_ids(pluto_es, anime_only=True)
     latam_mx_ids = (
-        source_ids(ap.FUENTES_PLUTO[0])
-        | source_ids(ap.FUENTES_PLUTO[2])
-        | source_ids(ap.FUENTE_PLUTO_ALTERNATIVAS)
+        channel_ids(pluto_latam)
+        | channel_ids(pluto_mx)
+        | channel_ids(pluto_mx_alt)
+    )
+    allowed_anime_ids = (
+        channel_ids(pluto_latam, anime_only=True)
+        | channel_ids(pluto_mx, anime_only=True)
+        | channel_ids(pluto_mx_alt, anime_only=True)
     )
     es_only_ids = es_anime_ids - latam_mx_ids
     es_only_ids |= {norm(value) for value in ap.PLUTO_ES_ANIME_IDS_HISTORICOS} - latam_mx_ids
 
     result = synchronize_once()
     after = parse_entries(PRINCIPAL)
+    after_ids = {norm(item["id"]) for item in after if item["id"]}
+    missing_pluto_latam_mx = allowed_anime_ids - after_ids
+    if missing_pluto_latam_mx:
+        raise AssertionError(
+            f"Faltan {len(missing_pluto_latam_mx)} IDs Anime de Pluto LATAM/MX en la principal."
+        )
 
     if any(item["name"] == "los pitufos" for item in after):
         raise AssertionError("Los Pitufos sigue presente en la principal.")
@@ -212,7 +229,10 @@ def main() -> None:
     print("SELFTEST SINCRONIZACIÓN REAL: OK")
     print(f"Canales iniciales: {len(before)}")
     print(f"Canales finales: {len(after)}")
+    print(f"Canales IPTVSV: {len(iptvsv)}; MAGNA: {len(magma)}")
     print(f"Canales TV Chichicasteca clasificados en Guatemala: {len(source_urls)}")
+    print(f"Canales Pluto LATAM/ES/MX: {len(pluto_latam)}/{len(pluto_es)}/{len(pluto_mx)}")
+    print(f"IDs Anime LATAM/MX integrados: {len(allowed_anime_ids)}")
     print(f"Canales Heidi conservados: {len(after_heidi)}")
     print(f"Canales Pluto ES Anime exclusivos excluidos: {len(es_only_ids)}")
     print(f"Resumen sincronización: {result}")
