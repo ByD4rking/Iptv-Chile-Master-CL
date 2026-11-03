@@ -290,6 +290,8 @@ def test_magma_and_original_entertainment_blocks_are_sorted() -> None:
         "https://magma.example/zulu.m3u8",
         '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Original Zulu',
         "https://original.example/zulu.m3u8",
+        '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Venevisión Internacional (Venezuela)',
+        "https://original.example/venevision-int.m3u8",
         '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Venevisión [V3](Venezuela)',
         "https://original.example/venevision-v3.m3u8",
         '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Venevisión (Venezuela)[Opc.2]',
@@ -340,8 +342,9 @@ def test_magma_and_original_entertainment_blocks_are_sorted() -> None:
         "Venevisión (Venezuela)[Opc.2]",
         "Venevisión [V2](Venezuela)",
         "Venevisión [V3](Venezuela)",
+        "Venevisión Internacional (Venezuela)",
     ], names
-    assert audit == {"fijos": 5, "magma": 2, "originales": 8, "urls_magma": 2}
+    assert audit == {"fijos": 5, "magma": 2, "originales": 9, "urls_magma": 2}
     assert "Delmi TV [V2]" in "\\n".join(result)
 
 
