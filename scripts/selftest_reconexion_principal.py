@@ -274,7 +274,7 @@ def test_magma_and_original_entertainment_blocks_are_sorted() -> None:
 
     class FakeSession:
         def get(self, url: str, timeout: int):
-            return FakeResponse("\\n".join([
+            return FakeResponse("\n".join([
                 "#EXTM3U",
                 '#EXTINF:-1 group-title="Entretenimiento / Cine / Series",Alpha',
                 "https://magma.example/alpha.m3u8",
@@ -345,7 +345,7 @@ def test_magma_and_original_entertainment_blocks_are_sorted() -> None:
         "Venevisión Internacional (Venezuela)",
     ], names
     assert audit == {"fijos": 5, "magma": 2, "originales": 9, "urls_magma": 2}
-    assert "Delmi TV [V2]" in "\\n".join(result)
+    assert "Delmi TV [V2]" in "\n".join(result)
 
 
 def test_pluto_mx_tvg_id_keeps_extinf_duration() -> None:
@@ -361,7 +361,7 @@ def test_pluto_mx_tvg_id_keeps_extinf_duration() -> None:
     class FakeSession:
         def get(self, url: str, timeout: int):
             if url.endswith("PlutoTV.MX.m3u"):
-                return FakeResponse("\\n".join([
+                return FakeResponse("\n".join([
                     "#EXTM3U",
                     '#EXTINF:-1 tvg-id="",Claro Sports (720p)',
                     f"https://jmp2.uk/plu-{channel_id}.m3u8",
