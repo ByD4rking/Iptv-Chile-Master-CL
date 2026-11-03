@@ -21,13 +21,13 @@ PRINCIPAL = ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
 
 def main():
-    print("\n[ORQUESTADOR] Actualización base: Pluto, IPTVSV, MAGMA y fuentes existentes.")
-    # El alimentador actual conserva las barreras de identidad/cobertura Pluto
-    # y ordena el bloque fijo + MAGMA + originales antes de la reconciliación.
-    alimentador.main()
-
-    # La referencia de orden debe capturarse DESPUÉS del ordenamiento MAGMA.
+    # La referencia de orden es la M3U comprometida en main, antes de que el
+    # alimentador base normalice o reordene canales.
     original_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
+
+    print("\n[ORQUESTADOR] Actualización base: Pluto, IPTVSV, MAGMA y fuentes existentes.")
+    # El alimentador conserva las barreras de identidad/cobertura Pluto.
+    alimentador.main()
 
     print("\n[ORQUESTADOR] Unificando categorías CHILE.")
     subprocess.run(
