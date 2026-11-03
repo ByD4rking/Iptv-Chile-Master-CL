@@ -260,6 +260,31 @@ def test_iptvsv_reclasifica_urls_existentes_antes_de_validar_categoria() -> None
     assert audit["errores_categoria"] == 0, audit
 
 
+def test_restaurar_orden_con_tvg_id_agregado_o_eliminado() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 group-title="Deportes",Canal A',
+        "https://example.test/a.m3u8",
+        '#EXTINF:-1 tvg-id="channel-b" group-title="Deportes",Canal B',
+        "https://example.test/b.m3u8",
+        '#EXTINF:-1 tvg-id="channel-c" group-title="Deportes",Canal C',
+        "https://example.test/c.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="channel-c" group-title="Deportes",Canal C',
+        "https://example.test/c.m3u8",
+        '#EXTINF:-1 tvg-id="channel-a" group-title="Deportes",Canal A',
+        "https://example.test/a.m3u8",
+        '#EXTINF:-1 group-title="Deportes",Canal B',
+        "https://example.test/b.m3u8",
+    ]
+    restored = restaurar_orden_original_por_categoria(after, before)
+    names = [line.split(",", 1)[-1] for line in restored if line.startswith("#EXTINF")]
+    assert names == ["Canal A", "Canal B", "Canal C"], names
+    validar_orden_canales(before, restored)
+
+
 def test_ajustes_referencia() -> None:
     source = [
         "#EXTM3U",

@@ -1966,16 +1966,11 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
     if not actuales:
         return lineas
 
-    def identidades(extinf):
-        # Si existe tvg-id, es la identidad primaria y exclusiva.
-        # Usar también el nombre mezcla canales distintos que comparten
-        # etiqueta (por ejemplo, variantes regionales) y puede asignar a un
-        # canal nuevo el rango de otro canal ya publicado.
+    def identidad(extinf):
         match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
-        if match and match.group(1).strip():
-            return ["id:" + normalizar(match.group(1))]
+        channel_id = normalizar(match.group(1)) if match and match.group(1).strip() else ""
         nombre = normalizar(extraer_nombre(extinf))
-        return ["name:" + nombre] if nombre else []
+        return channel_id, nombre
 
     def categoria_canonica(categoria):
         key = normalizar(categoria)
@@ -1983,11 +1978,22 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
         key = normalizar(PAISES_CANONICOS.get(key, key))
         return key
 
-    orden_original = {}
+    # Índices separados por ID y nombre. El nombre solo sirve de fallback
+    # cuando una de las dos versiones carece de tvg-id; dos IDs distintos
+    # nunca heredan el orden por compartir una etiqueta.
+    orden_por_categoria_id = defaultdict(list)
+    orden_por_categoria_nombre = defaultdict(list)
+    identidad_anterior = []
     for index, item in enumerate(anteriores):
-        categoria_original = categoria_canonica(extraer_categoria(item["lineas"][0]))
-        for key in identidades(item["lineas"][0]):
-            orden_original.setdefault((categoria_original, key), index)
+        extinf = item["lineas"][0]
+        categoria_original = categoria_canonica(extraer_categoria(extinf))
+        channel_id, nombre = identidad(extinf)
+        identidad_anterior.append((categoria_original, channel_id, nombre, index))
+        if channel_id:
+            orden_por_categoria_id[(categoria_original, channel_id)].append(index)
+        if nombre:
+            orden_por_categoria_nombre[(categoria_original, nombre)].append(index)
+
     grupos = {}
     orden_grupos = []
     for bloque in actuales:
@@ -2011,12 +2017,24 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
             pluto = [b for b in bloques if es_bloque_pluto(b)]
             normales = [b for b in bloques if not es_bloque_pluto(b)]
             for bloque in normales:
-                categoria_actual = categoria_canonica(extraer_categoria(bloque["lineas"][0]))
-                ranks = [
-                    orden_original[(categoria_actual, key)]
-                    for key in identidades(bloque["lineas"][0])
-                    if (categoria_actual, key) in orden_original
-                ]
+                extinf = bloque["lineas"][0]
+                categoria_actual = categoria_canonica(extraer_categoria(extinf))
+                channel_id, nombre = identidad(extinf)
+                ranks = (
+                    list(orden_por_categoria_id.get((categoria_actual, channel_id), []))
+                    if channel_id else []
+                )
+                if not ranks and nombre:
+                    candidates = orden_por_categoria_nombre.get((categoria_actual, nombre), [])
+                    if channel_id:
+                        # Fallback solo a una entrada histórica sin ID.
+                        candidates = [
+                            idx for idx in candidates
+                            if not identidad_anterior[idx][1]
+                        ]
+                    # Sin ID actual, aceptar el nombre solo si es inequívoco.
+                    if len(candidates) == 1:
+                        ranks = candidates
                 bloque["orden_original"] = min(ranks) if ranks else None
             existentes = [b for b in normales if b["orden_original"] is not None]
             nuevos = [b for b in normales if b["orden_original"] is None]
@@ -2054,19 +2072,22 @@ def validar_orden_canales(
             if nombre.startswith("avatar: la leyenda de aang"):
                 continue
             match = re.search(r'tvg-id="([^"]+)"', linea, re.I)
-            if match and match.group(1).strip():
-                clave = "id:" + normalizar(match.group(1))
-            else:
-                clave = "name:" + categoria + ":" + normalizar(extraer_nombre(linea))
+            channel_id = normalizar(match.group(1)) if match and match.group(1).strip() else ""
             if (
-                clave in {"name::", avatar_id}
-                or (clave.startswith("id:") and clave[3:] in ids_pluto_omitidos)
+                (channel_id and channel_id in ids_pluto_omitidos)
+                or (not channel_id and not nombre)
+                or (channel_id == avatar_id.removeprefix("id:"))
             ):
                 continue
+            key = ("id", channel_id) if channel_id else ("name", nombre)
             vistos_categoria = vistos.setdefault(categoria, set())
-            if clave not in vistos_categoria:
-                vistos_categoria.add(clave)
-                resultado.setdefault(categoria, []).append(clave)
+            if key not in vistos_categoria:
+                vistos_categoria.add(key)
+                resultado.setdefault(categoria, []).append({
+                    "id": channel_id,
+                    "name": nombre,
+                    "key": ("id:" + channel_id) if channel_id else ("name:" + categoria + ":" + nombre),
+                })
         return resultado
 
     anterior = firmas_por_categoria(lineas_anteriores)
@@ -2074,27 +2095,67 @@ def validar_orden_canales(
     for categoria in set(anterior) | set(actual):
         if categoria in categorias_omitidas:
             continue
-        orden_anterior = anterior.get(categoria, [])
-        orden_actual = actual.get(categoria, [])
-        conjunto_anterior = set(orden_anterior)
-        conjunto_actual = set(orden_actual)
-        anterior_vigente = [clave for clave in orden_anterior if clave in conjunto_actual]
-        actual_anterior = [clave for clave in orden_actual if clave in conjunto_anterior]
-        if anterior_vigente != actual_anterior:
-            posicion = next(
+        old_items = anterior.get(categoria, [])
+        new_items = actual.get(categoria, [])
+        pairs = []
+        used_old = set()
+        used_new = set()
+
+        # Primera pasada: coincidencia exacta por tvg-id.
+        old_by_id = defaultdict(list)
+        new_by_id = defaultdict(list)
+        for i, item in enumerate(old_items):
+            if item["id"]:
+                old_by_id[item["id"]].append(i)
+        for i, item in enumerate(new_items):
+            if item["id"]:
+                new_by_id[item["id"]].append(i)
+        for channel_id in set(old_by_id) & set(new_by_id):
+            if len(old_by_id[channel_id]) == 1 and len(new_by_id[channel_id]) == 1:
+                oi, ni = old_by_id[channel_id][0], new_by_id[channel_id][0]
+                pairs.append((oi, ni))
+                used_old.add(oi)
+                used_new.add(ni)
+
+        # Fallback por nombre solo si es inequívoco y al menos una versión
+        # carece de ID. Dos IDs distintos con el mismo nombre no se mezclan.
+        old_by_name = defaultdict(list)
+        new_by_name = defaultdict(list)
+        for i, item in enumerate(old_items):
+            if i not in used_old and item["name"]:
+                old_by_name[item["name"]].append(i)
+        for i, item in enumerate(new_items):
+            if i not in used_new and item["name"]:
+                new_by_name[item["name"]].append(i)
+        for name in set(old_by_name) & set(new_by_name):
+            old_candidates = old_by_name[name]
+            new_candidates = new_by_name[name]
+            if len(old_candidates) != 1 or len(new_candidates) != 1:
+                continue
+            oi, ni = old_candidates[0], new_candidates[0]
+            if old_items[oi]["id"] and new_items[ni]["id"]:
+                continue
+            pairs.append((oi, ni))
+            used_old.add(oi)
+            used_new.add(ni)
+
+        old_order = [oi for oi, _ in sorted(pairs, key=lambda pair: pair[0])]
+        new_order = [oi for oi, _ in sorted(pairs, key=lambda pair: pair[1])]
+        if old_order != new_order:
+            position = next(
                 (
-                    indice for indice, (antes, despues)
-                    in enumerate(zip(anterior_vigente, actual_anterior))
-                    if antes != despues
+                    index for index, (before_index, after_index)
+                    in enumerate(zip(old_order, new_order))
+                    if before_index != after_index
                 ),
-                min(len(anterior_vigente), len(actual_anterior)),
+                min(len(old_order), len(new_order)),
             )
-            antes = anterior_vigente[posicion:posicion + 4]
-            despues = actual_anterior[posicion:posicion + 4]
+            before_keys = [old_items[i]["key"] for i in old_order[position:position + 4]]
+            after_keys = [old_items[i]["key"] for i in new_order[position:position + 4]]
             raise RuntimeError(
                 "ORDEN BLOQUEADO: la actualización reordenó canales dentro de "
-                f"la categoría '{categoria}'. Primera diferencia en posición {posicion}: "
-                f"antes={antes}; después={despues}."
+                f"la categoría '{categoria}'. Primera diferencia en posición {position}: "
+                f"antes={before_keys}; después={after_keys}."
             )
 
 
