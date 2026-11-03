@@ -90,6 +90,47 @@ def main() -> None:
     print("SELFTEST base OK: buffer VLC, reconexión y orden/URLs preservados.")
 
 
+def test_ordenamiento_solicitado_de_entretenimiento_no_bloquea_la_lista() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="ent-a" group-title="Entretenimiento / Cine / Series",Canal A',
+        "https://example.test/a.m3u8",
+        '#EXTINF:-1 tvg-id="ent-b" group-title="Entretenimiento / Cine / Series",Canal B',
+        "https://example.test/b.m3u8",
+        '#EXTINF:-1 tvg-id="sports-a" group-title="Deportes",Canal Deportes A',
+        "https://example.test/sports-a.m3u8",
+        '#EXTINF:-1 tvg-id="sports-b" group-title="Deportes",Canal Deportes B',
+        "https://example.test/sports-b.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="ent-b" group-title="Entretenimiento / Cine / Series",Canal B',
+        "https://example.test/b.m3u8",
+        '#EXTINF:-1 tvg-id="ent-a" group-title="Entretenimiento / Cine / Series",Canal A',
+        "https://example.test/a.m3u8",
+        '#EXTINF:-1 tvg-id="sports-a" group-title="Deportes",Canal Deportes A',
+        "https://example.test/sports-a.m3u8",
+        '#EXTINF:-1 tvg-id="sports-b" group-title="Deportes",Canal Deportes B',
+        "https://example.test/sports-b.m3u8",
+    ]
+    before_order = firma_orden_canales(before)
+    entertainment_keys = set(firma_orden_canales([
+        line for line in before
+        if line.startswith("#EXTINF")
+        and normalizar(extraer_categoria(line)) == normalizar("Entretenimiento / Cine / Series")
+    ]))
+    entertainment_keys.update(firma_orden_canales([
+        line for line in after
+        if line.startswith("#EXTINF")
+        and normalizar(extraer_categoria(line)) == normalizar("Entretenimiento / Cine / Series")
+    ]))
+    validar_orden_canales(
+        before_order,
+        after,
+        claves_reordenables=entertainment_keys,
+    )
+
+
 def test_ajustes_referencia() -> None:
     source = [
         "#EXTM3U",
@@ -482,6 +523,7 @@ def test_external_source_urls() -> None:
 
 if __name__ == "__main__":
     main()
+    test_ordenamiento_solicitado_de_entretenimiento_no_bloquea_la_lista()
     test_ajustes_referencia()
     test_pluto_es_identity_lookup_fails_closed()
     test_pluto_es_identity_lookup_loads_catalog_ids()
