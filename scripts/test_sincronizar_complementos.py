@@ -863,11 +863,12 @@ class AuditIdentityRegressionTests(unittest.TestCase):
     def test_identity_audit_matches_channel_when_source_adds_tvg_id(self):
         before = {"id": "", "tvg_name": "C y G TV", "name": "C y G TV | CL"}
         after = {"id": "1626", "tvg_name": "C y G TV", "name": "C y G TV | CL"}
-        unique_names = {"cygtv"}
+        name_to_ids = {"cygtv": {"1626"}}
         self.assertEqual(
-            identity_key(before, {"1626"}, unique_names),
-            identity_key(after, set(), unique_names),
+            identity_key(before, name_to_ids),
+            identity_key(after, name_to_ids),
         )
+        self.assertEqual(identity_key(before, name_to_ids), "id:1626")
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
