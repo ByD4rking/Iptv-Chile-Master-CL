@@ -7,60 +7,23 @@ from collections import defaultdict
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
-# Fuente especial IPTV-SV. NO hereda las reglas de Pluto.
-FUENTE_IPTVSV = "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
-FUENTE_MAGMA = "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u"
-FUENTE_PLUTO_ALTERNATIVAS = "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
+# Todas las fuentes editables se administran en config/playlist_sources.json.
+# Las reglas de importación y categorización permanecen en este script.
+from playlist_sources import load_principal_settings
+
+_SOURCE_SETTINGS = load_principal_settings()
+_SPECIAL_SOURCES = _SOURCE_SETTINGS["special_sources"]
+FUENTE_IPTVSV = _SPECIAL_SOURCES["iptvsv"]
+FUENTE_MAGMA = _SPECIAL_SOURCES["magma"]
+FUENTE_PLUTO_ALTERNATIVAS = _SPECIAL_SOURCES["pluto_mx_alternatives"]
+
 # Identidad histórica de Pluto TV Anime España; se mantiene fuera de Anime.
 PLUTO_ES_ANIME_IDS_HISTORICOS = {"608035b8d8705f0007260287"}
 
-# ============================================================
-# FUENTES NORMALES / COLABORADORAS
-# ============================================================
-# La principal manda. Estas fuentes SOLO complementan.
-# Nunca se reconstruye ni se reordena la principal.
-FUENTES = [
-    "https://m3u.cl/lista/XXX.m3u",
-    "https://m3u.cl/lista/religiosos.m3u",
-    "https://m3u.cl/lista/musica.m3u",
-    "https://m3u.cl/lista/LATAM.m3u",
-    "https://m3u.cl/lista/VE.m3u",
-    "https://m3u.cl/lista/DO.m3u",
-    "https://m3u.cl/lista/PE.m3u",
-    "https://m3u.cl/lista/PY.m3u",
-    "https://m3u.cl/lista/MX.m3u",
-    "https://m3u.cl/lista/ES.m3u",
-    "https://m3u.cl/lista/EC.m3u",
-    "https://m3u.cl/lista/CR.m3u",
-    "https://m3u.cl/lista/CO.m3u",
-    "https://m3u.cl/lista/CL.m3u",
-    "https://m3u.cl/lista/BR.m3u",
-    "https://m3u.cl/lista/BO.m3u",
-    "https://m3u.cl/lista/AR.m3u",
-    FUENTE_IPTVSV,
-    FUENTE_MAGMA,
-    "https://m3u.cl/lista/total.m3u",
-    "https://m3u.cl/lista/top.m3u",
-]
-
-# ============================================================
-# PLUTO: SOLO NUESTRAS LISTAS
-# Las URLs antiguas de Pluto se sustituyen por las listas propias al actualizar la principal.
-# ============================================================
-# Estas son las listas Pluto que alimentan la PRINCIPAL.
-# US y ALL NO se agregan aquí: pertenecen a la lista GOD.
-FUENTES_PLUTO = [
-    # LATAM es la fuente maestra y SIEMPRE tiene prioridad.
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
-    # Solo se permiten como complementos España y México.
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
-    "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
-]
-
-# Catálogo adicional SOLO para reemplazar enlaces Pluto de terceros.
-# Estas fuentes no se agregan como canales a la principal.
+# La principal conserva su orden: estas fuentes solo complementan.
+FUENTES = _SOURCE_SETTINGS["sources"]
+FUENTES_PLUTO = _SOURCE_SETTINGS["pluto_sources"]
 FUENTE_PLUTO_CANONICA = FUENTES_PLUTO[0]
-
 PLUTO_CATEGORIAS_CANONICAS = {"retro", "zona paranormal", "competencia"}
 
 CATEGORIAS_PAIS_NO_AUTORIZADAS = {
@@ -70,12 +33,7 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
 }
 
 FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO
-
-# Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
-# eliminan de la principal antes de incorporar nuestras listas.
-# No se consultan ni reintroducen listas Pluto regionales antiguas.
-# La principal solo usa LATAM + ES + MX.
-FUENTES_PLUTO_ANTIGUAS = []
+FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
 PAIS_POR_FUENTE = {
     "/XXX.m3u": "xxx",
