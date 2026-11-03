@@ -179,11 +179,29 @@ def _clean_channel_display(value: str) -> str:
         r"\s*(?:\[\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
         r"\(\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
         "",
+        value or "",
+        flags=re.I,
+    )
+    value = re.sub(
+        r"\s*(?:[-–—|•]\s*)?(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?|"
+        r"espanol|españa|spanish)$",
+        "",
         value,
         flags=re.I,
     )
-    value = re.sub(r"\s+(?:magna|pluto\s*(?:latam|mx|es)|espanol|españa)$", "", value, flags=re.I)
     return value.strip()
+
+
+def _clean_channel_display_preserving_option(value: str) -> str:
+    option = re.search(
+        r"\s*(\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
+        value or "",
+        flags=re.I,
+    )
+    suffix = option.group(1) if option else ""
+    base = (value or "")[:option.start()] if option else (value or "")
+    cleaned = _clean_channel_display(base)
+    return f"{cleaned} {suffix}".strip() if suffix else cleaned
 
 
 def _merge_alternative_extinf(primary: str, alternative: str, destination: str) -> str:
@@ -228,11 +246,16 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
         category_key = _canonical_category(ap.extraer_categoria(block["extinf"]))
         group_key = (category_key, canonical_name)
         group = grouped.get(group_key, [])
-        if not canonical_name or len(group) < 2:
+        group_ids = {
+            _attr(item["extinf"], "tvg-id")
+            for item in group
+            if _attr(item["extinf"], "tvg-id")
+        }
+        if not canonical_name or len(group) < 2 or len(group_ids) > 1:
             extinf = block["extinf"]
-            clean_display = _clean_channel_display(ap.extraer_nombre(extinf))
+            clean_display = _clean_channel_display_preserving_option(ap.extraer_nombre(extinf))
             extinf = _set_display_name(extinf, clean_display)
-            clean_tvg_name = _clean_channel_display(_attr(extinf, "tvg-name"))
+            clean_tvg_name = _clean_channel_display_preserving_option(_attr(extinf, "tvg-name"))
             if clean_tvg_name:
                 extinf = _set_attr(extinf, "tvg-name", clean_tvg_name)
             block["extinf"] = extinf
@@ -623,10 +646,6 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                     and (
                         identity in pluto_es_only_ids
                         or _is_pluto_es_url(block["url"])
-                        or (
-                            isinstance(manifest.get(identity), dict)
-                            and manifest.get(identity, {}).get("source") == ap.FUENTES_PLUTO[1]
-                        )
                     )
                 )
             )
@@ -721,7 +740,12 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             _canonical_category(ap.extraer_categoria(blocks[index]["extinf"]))
             for index in main_matches
         }
-        if len(parts) < 2 or len(main_categories) > 1:
+        main_ids = {
+            _attr(blocks[index]["extinf"], "tvg-id")
+            for index in main_matches
+            if _attr(blocks[index]["extinf"], "tvg-id")
+        }
+        if len(parts) < 2 or len(main_categories) > 1 or len(main_ids) > 1:
             continue
         combined = [item for _, group in parts for item in group]
         destinations = {_canonical_category(item.get("destination", "")) for item in combined}
@@ -793,7 +817,12 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                 _canonical_category(ap.extraer_categoria(blocks[index]["extinf"]))
                 for index in canonical_matches
             }
-            if canonical_matches and len(canonical_categories) == 1:
+            canonical_ids = {
+                _attr(blocks[index]["extinf"], "tvg-id")
+                for index in canonical_matches
+                if _attr(blocks[index]["extinf"], "tvg-id")
+            }
+            if canonical_matches and len(canonical_categories) == 1 and len(canonical_ids) <= 1:
                 match = canonical_matches[0]
             elif canonical_matches:
                 stats["ambiguos"] += 1
@@ -864,12 +893,18 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                 _canonical_category(ap.extraer_categoria(blocks[index]["extinf"]))
                 for index in canonical_related
             }
-            if canonical_related and len(canonical_categories) == 1:
-                related_matches = list(dict.fromkeys(
-                    list(main_by_id.get(identity, [])) + list(canonical_related)
-                ))
+            id_related = list(main_by_id.get(identity, [])) if identity.startswith("id:") else []
+            canonical_ids = {
+                _attr(blocks[index]["extinf"], "tvg-id")
+                for index in canonical_related
+                if _attr(blocks[index]["extinf"], "tvg-id")
+            }
+            if id_related:
+                related_matches = id_related
+            elif canonical_related and len(canonical_categories) == 1 and len(canonical_ids) <= 1:
+                related_matches = list(canonical_related)
             else:
-                related_matches = list(main_by_id.get(identity, [])) or [match]
+                related_matches = [match]
             if match not in related_matches:
                 related_matches.append(match)
             occupied_by = main_by_url.get(source_url)
