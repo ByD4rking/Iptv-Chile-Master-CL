@@ -190,7 +190,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
             pluto=_is_pluto_url(block["url"]),
         )
-        if identity.startswith("id:"):
+        if identity:
             grouped[identity].append(block)
 
     ordered: list[dict] = []
@@ -204,7 +204,11 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             pluto=ap.es_url_pluto(block["url"]),
         )
         group = grouped.get(identity, [])
-        if not identity.startswith("id:") or len(group) < 2:
+        group_categories = {
+            ap.normalizar(ap.extraer_categoria(item["extinf"]))
+            for item in group
+        }
+        if not identity or len(group) < 2 or len(group_categories) > 1:
             extinf = _set_display_name(block["extinf"], _clean_channel_display(ap.extraer_nombre(block["extinf"])))
             block["extinf"] = extinf
             block["raw"] = [extinf] + block["extras"] + [block["url"]]
@@ -470,6 +474,11 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
 
         for channel in parsed:
             if _is_los_pitufos_es(channel.get("extinf", "")):
+                continue
+            if (
+                ap.normalizar(channel.get("categoria", "")) == "anime"
+                and _is_spanish_anime_label(channel.get("extinf", ""))
+            ):
                 continue
             url = (channel.get("url") or "").strip()
             if not ap.url_es_valida(url):
