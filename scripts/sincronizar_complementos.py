@@ -148,7 +148,7 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             response = session.get(source_url, timeout=TIMEOUT)
             response.raise_for_status()
             body = response.text or ""
-            if not body.lstrip("\\ufeff \\r\\n\\t").startswith("#EXTM3U"):
+            if not body.lstrip("\ufeff \r\n\t").startswith("#EXTM3U"):
                 raise ValueError("respuesta sin cabecera #EXTM3U")
             parsed = ap.parsear_m3u(body)
             if not parsed:
