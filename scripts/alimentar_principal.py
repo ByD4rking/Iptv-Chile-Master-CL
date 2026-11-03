@@ -76,6 +76,15 @@ def normalizar(s):
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
     return re.sub(r"\s+", " ", s.lower()).strip()
 
+
+def normalizar_nombre_canal(value):
+    """Clave de nombre estable para preservar orden entre fuentes con etiquetas distintas."""
+    value = normalizar(value)
+    value = re.sub(r"\s*\[\s*(?:opcion|option)\s*\d+\s*\]\s*$", "", value, flags=re.I)
+    value = re.sub(r"\s*\|\s*(?:cl|chile)\s*$", "", value, flags=re.I)
+    value = re.sub(r"\bv2$", "2", value, flags=re.I)
+    return re.sub(r"[^a-z0-9]+", "", value)
+
 TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
 
 
@@ -1026,7 +1035,7 @@ def limpiar_pluto_antiguo(lineas, session):
     while i < len(lineas):
         if lineas[i].startswith("#EXTINF"):
             extinf = lineas[i]
-            nombre = normalizar(extraer_nombre(extinf))
+            nombre = normalizar_nombre_canal(extraer_nombre(extinf))
             bloque = [extinf]
             j = i + 1
 
@@ -1910,7 +1919,7 @@ def restaurar_no_pluto_existente(lineas, iniciales):
         extinf_actual = bloque_actual[0]
         match_actual = re.search(r'tvg-id="([^"]+)"', extinf_actual, re.I)
         id_actual = normalizar(match_actual.group(1)) if match_actual and match_actual.group(1).strip() else ""
-        nombre_actual = normalizar(extraer_nombre(extinf_actual))
+        nombre_actual = normalizar_nombre_canal(extraer_nombre(extinf_actual))
         categoria_actual = normalizar(extraer_categoria(extinf_actual))
         if id_actual:
             ids_actuales.add(id_actual)
@@ -1925,7 +1934,7 @@ def restaurar_no_pluto_existente(lineas, iniciales):
         extinf = bloque[0]
         match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         id_anterior = normalizar(match.group(1)) if match and match.group(1).strip() else ""
-        nombre_anterior = normalizar(extraer_nombre(extinf))
+        nombre_anterior = normalizar_nombre_canal(extraer_nombre(extinf))
         categoria_anterior = normalizar(extraer_categoria(extinf))
 
         # Si el ID permanece, la URL antigua fue reemplazada correctamente.
@@ -2005,7 +2014,7 @@ def firma_orden_canales(lineas):
         if channel_id:
             clave = "id:" + channel_id
         else:
-            clave = "name:" + normalizar(extraer_categoria(linea)) + ":" + normalizar(extraer_nombre(linea))
+            clave = "name:" + normalizar(extraer_categoria(linea)) + ":" + normalizar_nombre_canal(extraer_nombre(linea))
         if clave != "name::" and clave not in vistos:
             vistos.add(clave)
             orden.append(clave)
@@ -2065,7 +2074,7 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
     def identidad(extinf):
         match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         channel_id = tvg_id_valido(match.group(1)) if match and match.group(1).strip() else ""
-        nombre = normalizar(extraer_nombre(extinf))
+        nombre = normalizar_nombre_canal(extraer_nombre(extinf))
         return channel_id, nombre
 
     def categoria_canonica(categoria):
@@ -2185,7 +2194,7 @@ def validar_orden_canales(
                 continue
 
             categoria = normalizar(extraer_categoria(extinf))
-            nombre = normalizar(extraer_nombre(extinf))
+            nombre = normalizar_nombre_canal(extraer_nombre(extinf))
             # Avatar cambia deliberadamente desde Anime a Infantiles; hay dos variantes.
             if nombre.startswith("avatar: la leyenda de aang"):
                 index = j + 1 if url else index + 1
