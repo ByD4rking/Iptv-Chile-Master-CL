@@ -163,8 +163,9 @@ def main(args: argparse.Namespace) -> None:
     if args.audit_only:
         result = {"mode": "audit-only"}
     else:
-        # Ejecuta el mismo flujo de producción: sincronización previa,
-        # alimentador histórico, unificación CHILE y reconciliación final.
+        # Ejecuta el mismo flujo de producción: alimentador histórico
+        # (con su barrera de orden), reconciliación, unificación CHILE
+        # y reconciliación final.
         subprocess.run(
             [sys.executable, str(ROOT / "scripts" / "ejecutar_actualizacion_principal.py")],
             cwd=ROOT,
