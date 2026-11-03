@@ -2281,6 +2281,136 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
     return salida
 
 
+def ordenar_bloques_magma_y_originales(lineas, session):
+    """
+    Ordena exclusivamente Entretenimiento / Cine / Series en tres bloques:
+      1) Los cinco canales fijos solicitados.
+      2) Canales de la fuente MAGMA, alfabéticamente.
+      3) Canales originales, alfabéticamente.
+    Las alternativas permanecen junto a su canal base.
+    """
+    respuesta = session.get(FUENTE_MAGMA, timeout=30)
+    respuesta.raise_for_status()
+    canales_magma = parsear_m3u(respuesta.text)
+    categoria_objetivo = normalizar("Entretenimiento / Cine / Series")
+    urls_magma = {
+        (canal.get("url") or "").strip()
+        for canal in canales_magma
+        if normalizar(canal.get("categoria", "")) == categoria_objetivo
+        and (canal.get("url") or "").strip()
+    }
+    if not urls_magma:
+        raise RuntimeError("La fuente MAGMA no entregó canales de Entretenimiento / Cine / Series.")
+
+    prefijo = []
+    bloques = []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        raw = lineas[inicio:j]
+        url = next((x.strip() for x in raw[1:] if url_es_valida(x.strip())), "")
+        bloques.append({
+            "lineas": raw,
+            "categoria": extraer_categoria(raw[0]),
+            "nombre": extraer_nombre(raw[0]),
+            "url": url,
+            "orden": len(bloques),
+        })
+        i = j
+
+    objetivo = [
+        b for b in bloques
+        if normalizar(b["categoria"]) == categoria_objetivo
+    ]
+    if not objetivo:
+        raise RuntimeError("No existe la categoría Entretenimiento / Cine / Series en la principal.")
+
+    fijos = [
+        "Los Simpson Latino",
+        "Los Simpson Latino Opc. 2",
+        "El Chavo TV",
+        "Chespirito TV",
+        "Retro TV",
+    ]
+    claves_fijas = {normalizar(x) for x in fijos}
+    fijos_por_nombre = {}
+    for bloque in objetivo:
+        clave = normalizar(bloque["nombre"])
+        if clave in claves_fijas:
+            fijos_por_nombre.setdefault(clave, []).append(bloque)
+
+    faltantes_fijos = [
+        nombre for nombre in fijos
+        if normalizar(nombre) not in fijos_por_nombre
+    ]
+    if faltantes_fijos:
+        raise RuntimeError(
+            "Faltan canales del bloque fijo de entretenimiento: "
+            + ", ".join(faltantes_fijos)
+        )
+
+    fijos_ordenados = [
+        fijos_por_nombre[normalizar(nombre)][0]
+        for nombre in fijos
+    ]
+    fijos_ids = {id(b) for b in fijos_ordenados}
+
+    magma = [b for b in objetivo if b["url"] in urls_magma and id(b) not in fijos_ids]
+    urls_presentes_magma = {b["url"] for b in magma}
+    faltantes_magma = urls_magma - urls_presentes_magma
+    if faltantes_magma:
+        raise RuntimeError(
+            f"Faltan {len(faltantes_magma)} canales MAGMA en la categoría objetivo; "
+            "se cancela el ordenamiento para no publicar una lista incompleta."
+        )
+
+    magma_ids = {id(b) for b in magma}
+    originales = [
+        b for b in objetivo
+        if id(b) not in fijos_ids and id(b) not in magma_ids
+    ]
+
+    def clave_alfabetica(bloque):
+        nombre = re.sub(r"\\s*\\[MAGMA\\]$", "", bloque["nombre"], flags=re.I).strip()
+        opcion = re.search(
+            r"\\s*(?:\\((?:OPCIÓN|OPC)\\s*\\.?\\s*(\\d+)\\)|\\[(?:OPCIÓN|OPC)\\s*\\.?\\s*(\\d+)\\])$",
+            nombre,
+            flags=re.I,
+        )
+        numero_opcion = int(opcion.group(1) or opcion.group(2)) if opcion else 0
+        base = nombre[:opcion.start()].strip() if opcion else nombre
+        return (normalizar(base), numero_opcion, normalizar(nombre), bloque["orden"])
+
+    magma_ordenado = sorted(magma, key=clave_alfabetica)
+    originales_ordenados = sorted(originales, key=clave_alfabetica)
+    ordenados = fijos_ordenados + magma_ordenado + originales_ordenados
+
+    primer_indice = min(b["orden"] for b in objetivo)
+    objetivo_ids = {id(b) for b in objetivo}
+    resultado = [b for b in bloques if id(b) not in objetivo_ids]
+    resultado[primer_indice:primer_indice] = ordenados
+
+    salida = list(prefijo)
+    for bloque in resultado:
+        salida.extend(bloque["lineas"])
+
+    auditoria = {
+        "fijos": len(fijos_ordenados),
+        "magma": len(magma_ordenado),
+        "originales": len(originales_ordenados),
+        "urls_magma": len(urls_magma),
+    }
+    return salida, auditoria
+
+
 def main():
     print("=" * 72)
     print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
@@ -2780,6 +2910,16 @@ def main():
 
     # Aplicar las correcciones fijas de la referencia antes de publicar.
     lineas = aplicar_ajustes_referencia(lineas, ids_pluto_es_anime)
+
+    # Orden fijo de entretenimiento: bloque inicial, MAGMA alfabético y
+    # canales originales alfabéticos. Se valida la cobertura MAGMA antes de escribir.
+    lineas, orden_entretenimiento = ordenar_bloques_magma_y_originales(lineas, session)
+    print(
+        "Orden entretenimiento: "
+        f"{orden_entretenimiento['fijos']} fijos; "
+        f"{orden_entretenimiento['magma']} MAGMA; "
+        f"{orden_entretenimiento['originales']} originales."
+    )
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
