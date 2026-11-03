@@ -1,4 +1,5 @@
 import unittest
+import re
 import alimentar_principal as ap
 import sincronizar_complementos as sc
 
