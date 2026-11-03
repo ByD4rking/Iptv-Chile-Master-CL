@@ -1859,23 +1859,58 @@ def extraer_bloques_no_pluto_por_url(lineas):
 
 def restaurar_no_pluto_existente(lineas, iniciales):
     """
-    Restaura URLs no-Pluto que ya existían antes de la actualización.
-    Las fuentes solo pueden sumar canales; no pueden hacer desaparecer
-    una señal existente por una limpieza accidental.
+    Restaura canales históricos que desaparecieron por una limpieza accidental.
+
+    Una URL antigua no se restaura si la misma identidad sigue publicada con
+    una URL nueva. Así la autorrenovación de enlaces no vuelve a introducir
+    streams obsoletos como duplicados.
     """
-    actuales = mapa_urls_principal(lineas)
+    urls_actuales = mapa_urls_principal(lineas)
     categorias = categorias_de_lineas(lineas)
     bloques_por_categoria = defaultdict(list)
+    ids_actuales = set()
+    nombres_actuales = defaultdict(set)
+
+    # Índice de identidades ya presentes en la salida actual.
+    for bloque_actual in extraer_bloques_no_pluto_por_url(lineas).values():
+        extinf_actual = bloque_actual[0]
+        match_actual = re.search(r'tvg-id="([^"]+)"', extinf_actual, re.I)
+        id_actual = normalizar(match_actual.group(1)) if match_actual and match_actual.group(1).strip() else ""
+        nombre_actual = normalizar(extraer_nombre(extinf_actual))
+        categoria_actual = normalizar(extraer_categoria(extinf_actual))
+        if id_actual:
+            ids_actuales.add(id_actual)
+        if nombre_actual:
+            nombres_actuales[(categoria_actual, nombre_actual)].add(id_actual)
+
     restaurados = 0
-
     for url, bloque in iniciales.items():
-        if url in actuales:
+        if url in urls_actuales:
             continue
-        extinf = bloque[0]
-        categoria = extraer_categoria(extinf)
-        destino = buscar_categoria_existente(categoria, categorias)
 
-        # Si la categoría fue normalizada, reutilizar su carpeta canónica.
+        extinf = bloque[0]
+        match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+        id_anterior = normalizar(match.group(1)) if match and match.group(1).strip() else ""
+        nombre_anterior = normalizar(extraer_nombre(extinf))
+        categoria_anterior = normalizar(extraer_categoria(extinf))
+
+        # Si el ID permanece, la URL antigua fue reemplazada correctamente.
+        if id_anterior and id_anterior in ids_actuales:
+            continue
+
+        # Sin ID estable, solo se acepta una coincidencia inequívoca por
+        # nombre+categoría y cuando una de las dos versiones carece de ID.
+        candidatos = nombres_actuales.get((categoria_anterior, nombre_anterior), set())
+        if nombre_anterior and len(candidatos) == 1:
+            id_actual = next(iter(candidatos))
+            if not id_anterior or not id_actual:
+                continue
+
+        categoria_original = extraer_categoria(extinf)
+        destino = buscar_categoria_existente(categoria_original, categorias)
+
+        # Si la carpeta histórica ya no existe, conservar el canal en su
+        # categoría original al final de la M3U en vez de eliminarlo.
         if not destino:
             aliases = {
                 "chile": "CHILE TV",
@@ -1884,28 +1919,31 @@ def restaurar_no_pluto_existente(lineas, iniciales):
                 "noticias": "INFORMATIVOS",
             }
             destino = buscar_categoria_existente(
-                aliases.get(normalizar(categoria), categoria),
+                aliases.get(normalizar(categoria_original), categoria_original),
                 categorias,
-            )
+            ) or categoria_original
 
         if not destino:
-            # No crear carpetas nuevas durante la autorreparación.
             continue
 
         bloque_restaurado = list(bloque)
         bloque_restaurado[0] = reemplazar_categoria(extinf, destino)
         bloques_por_categoria[destino].append(bloque_restaurado)
-        actuales.add(url)
+        urls_actuales.add(url)
         restaurados += 1
 
     for categoria, bloques in bloques_por_categoria.items():
         rango = encontrar_rango_categoria(lineas, categoria)
-        if not rango:
-            continue
-        posicion = rango[1] + 1
         insertar = []
         for bloque in bloques:
             insertar.extend(bloque)
+        if not rango:
+            # La carpeta original ya no existe en el catálogo actual: reactivar
+            # el group-title histórico al final de la playlist.
+            lineas.extend(insertar)
+            categorias.add(normalizar(categoria))
+            continue
+        posicion = rango[1] + 1
         lineas[posicion:posicion] = insertar
 
     return lineas, restaurados
