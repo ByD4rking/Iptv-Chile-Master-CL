@@ -2798,21 +2798,19 @@ def agrupar_alternativas_por_identidad(lineas):
         extinf = raw[0]
         url = next((x.strip() for x in raw[1:] if url_es_valida(x.strip())), "")
         display = extraer_nombre(extinf)
-        base = re.sub(
-            r"\\s*(?:\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|\\(\\s*(?:opci[oó]n|option)\\s*\\d+\\s*\\))\\s*$",
+        display_base = re.sub(
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
             "",
             display,
             flags=re.I,
         ).strip()
-        base = re.sub(
-            r"\\s*(?:\\[\\s*(?:magna|magma|pluto(?:\\s*tv)?(?:\\s*(?:latam|mx|es|españa))?)\\s*\\]|"
-            r"\\(\\s*(?:magna|magma|pluto(?:\\s*tv)?(?:\\s*(?:latam|mx|es|españa))?)\\s*\\))\\s*$",
+        display_base = re.sub(
+            r"\s*(?:\[\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|\(\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
             "",
-            base,
+            display_base,
             flags=re.I,
         ).strip()
-        display_base = base
-        base = re.sub(r"\\s+(?:hd|sd|fhd|uhd)$", "", base, flags=re.I).strip()
+        canonical_base = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", display_base, flags=re.I).strip()
         id_match = re.search(r'tvg-id="([^"]*)"', extinf, re.I)
         tvg_name_match = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
         logo_match = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
@@ -2820,7 +2818,7 @@ def agrupar_alternativas_por_identidad(lineas):
             "lineas": raw,
             "url": url,
             "categoria": normalizar(extraer_categoria(extinf)),
-            "nombre": normalizar(base),
+            "nombre": normalizar(canonical_base),
             "display": display_base,
             "id": id_match.group(1).strip() if id_match else "",
             "tvg_name": tvg_name_match.group(1).strip() if tvg_name_match else "",
@@ -2835,7 +2833,7 @@ def agrupar_alternativas_por_identidad(lineas):
 
     reemplazos = {}
     omitidos = set()
-    for clave, indices in grupos.items():
+    for _, indices in grupos.items():
         if len(indices) < 2:
             continue
         ids = {bloques[idx]["id"] for idx in indices if bloques[idx]["id"]}
@@ -2854,24 +2852,26 @@ def agrupar_alternativas_por_identidad(lineas):
             seen_urls.add(item["url"])
             raw = list(item["lineas"])
             extinf = raw[0]
+
             def set_attr(texto, clave_attr, valor):
                 if not valor:
                     return texto
-                patron = r'\\b' + re.escape(clave_attr) + r'="[^"]*"'
+                patron = r'\b' + re.escape(clave_attr) + r'="[^"]*"'
                 reemplazo = f'{clave_attr}="{valor}"'
                 if re.search(patron, texto, re.I):
                     return re.sub(patron, lambda _: reemplazo, texto, count=1, flags=re.I)
                 coma = texto.find(",")
                 return texto[:coma].rstrip() + " " + reemplazo + texto[coma:] if coma >= 0 else texto
+
             extinf = set_attr(extinf, "tvg-id", canonical_id)
             extinf = set_attr(extinf, "tvg-name", canonical_tvg)
             extinf = set_attr(extinf, "tvg-logo", canonical_logo)
-            raw[0] = re.sub(r",.*$", "," + (base if len(normalizados) == 0 else f"{base} [Opción {len(normalizados) + 1}]"), extinf)
+            label = base if len(normalizados) == 0 else f"{base} [Opción {len(normalizados) + 1}]"
+            raw[0] = re.sub(r",.*$", "," + label, extinf)
             normalizados.append(raw)
         if len(normalizados) < 2:
             continue
-        first = indices[0]
-        reemplazos[first] = normalizados
+        reemplazos[indices[0]] = normalizados
         omitidos.update(indices[1:])
 
     salida = list(prefijo)
@@ -2884,7 +2884,6 @@ def agrupar_alternativas_por_identidad(lineas):
         else:
             salida.extend(bloque["lineas"])
     return salida
-
 
 
 def ordenar_bloques_magma_y_originales(lineas, session):
