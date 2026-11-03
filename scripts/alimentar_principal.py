@@ -2026,14 +2026,18 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                 )
                 if not ranks and nombre:
                     candidates = orden_por_categoria_nombre.get((categoria_actual, nombre), [])
-                    if channel_id:
-                        # Fallback solo a una entrada histórica sin ID.
-                        candidates = [
-                            idx for idx in candidates
-                            if not identidad_anterior[idx][1]
-                        ]
-                    # Sin ID actual, aceptar el nombre solo si es inequívoco.
-                    if len(candidates) == 1:
+                    sin_id = [
+                        idx for idx in candidates
+                        if not identidad_anterior[idx][1]
+                    ]
+                    if sin_id:
+                        # Los duplicados históricos sin ID comparten identidad
+                        # de nombre; todos conservan la primera posición y su
+                        # orden relativo actual. Esto no mezcla IDs distintos.
+                        ranks = [min(sin_id)]
+                    elif not channel_id and len(candidates) == 1:
+                        # Si el ID desapareció, aceptar solo una identidad
+                        # histórica inequívoca por nombre.
                         ranks = candidates
                 bloque["orden_original"] = min(ranks) if ranks else None
             existentes = [b for b in normales if b["orden_original"] is not None]
