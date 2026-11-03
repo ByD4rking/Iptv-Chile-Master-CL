@@ -178,7 +178,8 @@ def main(args: argparse.Namespace) -> None:
         )
         result = synchronize_once()
     after = parse_entries(PRINCIPAL)
-    after_ids = {norm(item["id"]) for item in after if item["id"]}
+    after_playable = [item for item in after if item["url"]]
+    after_ids = {norm(item["id"]) for item in after_playable if item["id"]}
     missing_pluto_latam_mx = allowed_anime_ids - after_ids
     if missing_pluto_latam_mx:
         raise AssertionError(
@@ -236,6 +237,7 @@ def main(args: argparse.Namespace) -> None:
         item for item in before
         if not item["is_pitufos"]
         and norm(item["category"]) not in allowed_cleanup_categories
+        and item["url"]
         and not (
             norm(item["id"]) in es_only_ids
             and norm(item["category"]) == "anime"
@@ -247,7 +249,7 @@ def main(args: argparse.Namespace) -> None:
         if item["tvg_name"] or item["name"]
     )
     after_name_counts = Counter(
-        item["tvg_name"] or item["name"] for item in after
+        item["tvg_name"] or item["name"] for item in after_playable
         if item["tvg_name"] or item["name"]
     )
     unique_names = {
@@ -255,7 +257,7 @@ def main(args: argparse.Namespace) -> None:
         if count == 1 and after_name_counts.get(name, 0) == 1
     }
     before_ids = {norm(item["id"]) for item in before_kept if item["id"]}
-    after_ids = {norm(item["id"]) for item in after if item["id"]}
+    after_ids = {norm(item["id"]) for item in after_playable if item["id"]}
 
     before_keys = [
         identity_key(item, after_ids, unique_names)
@@ -263,7 +265,7 @@ def main(args: argparse.Namespace) -> None:
     ]
     after_keys = [
         identity_key(item, before_ids, unique_names)
-        for item in after
+        for item in after_playable
     ]
     before_counts = Counter(before_keys)
     after_counts = Counter(after_keys)
@@ -282,8 +284,8 @@ def main(args: argparse.Namespace) -> None:
             f"antes={before_order[:30]!r}; después={after_order[:30]!r}"
         )
 
-    before_heidi = [item for item in before if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
-    after_heidi = [item for item in after if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
+    before_heidi = [item for item in before if item["url"] and ("heidi" in item["name"] or "heidi" in item["tvg_name"])]
+    after_heidi = [item for item in after_playable if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
     if before_heidi and not after_heidi:
         raise AssertionError("Heidi u otro canal Heidi existente fue eliminado.")
 
