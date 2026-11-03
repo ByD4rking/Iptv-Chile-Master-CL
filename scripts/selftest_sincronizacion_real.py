@@ -318,8 +318,16 @@ def main(args: argparse.Namespace) -> None:
     ]
     if not pitufos_infantiles:
         raise AssertionError("No quedó Los Pitufos de LATAM/MX/MAGNA en Infantiles.")
-    if any(item["is_es_anime"] for item in after):
-        raise AssertionError("Quedó un canal Pluto ES o Español en Anime.")
+    latam_mx_identity = {norm(channel_id) for channel_id in latam_mx_ids}
+    if any(
+        item["is_es_anime"]
+        and norm(item["id"]) not in latam_mx_identity
+        for item in after
+    ):
+        raise AssertionError(
+            "Quedó un canal exclusivo de Pluto ES o Español en Anime; "
+            "las identidades compartidas LATAM/MX están permitidas."
+        )
 
     anime_names = {
         channel_name_key(item["display_raw"])
