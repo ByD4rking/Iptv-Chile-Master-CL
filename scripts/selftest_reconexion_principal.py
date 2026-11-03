@@ -18,6 +18,7 @@ from alimentar_principal import (
     reubicar_bloques_pluto_sin_reordenar_principal,
     reemplazar_categoria,
     ordenar_bloques_magma_y_originales,
+    obtener_ids_pluto_existentes,
 )
 
 
@@ -126,6 +127,8 @@ def test_guard_ignora_reordenamiento_de_pluto_verificado() -> None:
         "#EXTM3U",
         '#EXTINF:-1 tvg-id="5ddc503ac7ef120009b101a2" group-title="Documentales y Cultura",Pluto documental A',
         "https://jmp2.uk/plu-5ddc503ac7ef120009b101a2.m3u8",
+        '#EXTINF:-1 tvg-id="63a084934734f30007457b2c" group-title="Documentales y Cultura",Pluto documental B',
+        "https://jmp2.uk/plu-63a084934734f30007457b2c.m3u8",
         '#EXTINF:-1 tvg-id="animal" group-title="Documentales y Cultura",Animal Planet',
         "https://example.test/animal.m3u8",
         '#EXTINF:-1 tvg-id="discovery" group-title="Documentales y Cultura",Discovery Channel',
@@ -139,12 +142,12 @@ def test_guard_ignora_reordenamiento_de_pluto_verificado() -> None:
         "https://example.test/discovery.m3u8",
         '#EXTINF:-1 tvg-id="5ddc503ac7ef120009b101a2" group-title="Documentales y Cultura",Pluto documental A',
         "https://jmp2.uk/plu-5ddc503ac7ef120009b101a2.m3u8",
+        '#EXTINF:-1 tvg-id="63a084934734f30007457b2c" group-title="Documentales y Cultura",Pluto documental B',
+        "https://jmp2.uk/plu-63a084934734f30007457b2c.m3u8",
     ]
-    validar_orden_canales(
-        before,
-        after,
-        ids_pluto_omitidos={"5ddc503ac7ef120009b101a2"},
-    )
+    ignored = obtener_ids_pluto_existentes(before)
+    assert ignored == {"5ddc503ac7ef120009b101a2", "63a084934734f30007457b2c"}
+    validar_orden_canales(before, after, ids_pluto_omitidos=ignored)
 
 
 def test_ajustes_referencia() -> None:
