@@ -128,7 +128,14 @@ jobs:
               name=extinf.split(",", 1)[-1].strip().casefold()
               category=re.search(r'group-title="([^"]*)"', extinf, re.I)
               group=category.group(1).strip().casefold() if category else ""
-              return ("name", group, re.sub(r"\\s+", " ", name))
+              return ("name", group, re.sub(r"\s+", " ", name))
+
+          def missing_channel_entries(old_entries, new_entries):
+              new_identities={identity(ext) for ext, _ in new_entries}
+              return [
+                  (ext, url) for ext, url in old_entries
+                  if identity(ext) not in new_identities
+              ]
 
           def is_pluto_url(url):
               value=url.casefold()
@@ -136,17 +143,15 @@ jobs:
 
           # La sustitución de URL es válida si la identidad del canal permanece.
           # Solo se considera regresión que desaparezca el canal completo.
-          after_identities={identity(ext) for ext, _ in a}
           lost_non_pluto=[]
-          for ext, url in b:
+          for ext, url in missing_channel_entries(b, a):
               if is_pluto_url(url) or url in a_set:
                   continue
               category=re.search(r'group-title="([^"]*)"', ext, re.I)
               group=category.group(1).strip().casefold() if category else ""
               if group in allowed_cleanup:
                   continue
-              if identity(ext) not in after_identities:
-                  lost_non_pluto.append(url)
+              lost_non_pluto.append(url)
 
           if lost_non_pluto:
               raise SystemExit("REGRESION: desaparecieron canales no-Pluto existentes (no solo cambió su URL): "+str(sorted(set(lost_non_pluto))[:20]))
@@ -154,8 +159,8 @@ jobs:
           # Prueba interna: el cambio de URL conserva el canal; la desaparición completa se rechaza.
           synthetic_before=[('#EXTINF:-1 tvg-id="id-a" group-title="Deportes",Canal A', "https://old.example/a.m3u8")]
           synthetic_after=[('#EXTINF:-1 tvg-id="id-a" group-title="Deportes",Canal A', "https://new.example/a.m3u8")]
-          assert identity(synthetic_before[0][0]) in {identity(ext) for ext, _ in synthetic_after}
-          assert identity(synthetic_before[0][0]) not in {identity(ext) for ext, _ in []}
+          assert not missing_channel_entries(synthetic_before, synthetic_after)
+          assert missing_channel_entries(synthetic_before, []) == synthetic_before
 
           # Una URL de acceso solo puede aparecer una vez.
           dup=sorted(u for u in set(a_urls) if a_urls.count(u)>1)
