@@ -20,6 +20,8 @@ from alimentar_principal import (
     ordenar_bloques_magma_y_originales,
     obtener_ids_pluto_existentes,
     restaurar_orden_original_por_categoria,
+    reclasificar_iptvsv_existente,
+    validar_integridad_iptvsv,
 )
 
 
@@ -206,6 +208,56 @@ def test_canales_reclasificados_se_anexan_al_final_de_la_categoria_destino() -> 
     restored = restaurar_orden_original_por_categoria(after, before)
     names = [line.split(",", 1)[-1] for line in restored if line.startswith("#EXTINF")]
     assert names == ["Canal existente", "Canal reclasificado"], names
+
+
+def test_identidad_tvg_id_no_hereda_orden_por_nombre_compartido() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="116" group-title="Colombia",Canal Colombia',
+        "https://example.test/116.m3u8",
+        '#EXTINF:-1 tvg-id="117" group-title="Colombia",Caracol',
+        "https://example.test/117.m3u8",
+        '#EXTINF:-1 tvg-id="120" group-title="Colombia",RCN',
+        "https://example.test/120.m3u8",
+    ]
+    after = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="495" group-title="Colombia",Canal Colombia',
+        "https://example.test/495.m3u8",
+        '#EXTINF:-1 tvg-id="120" group-title="Colombia",RCN',
+        "https://example.test/120.m3u8",
+        '#EXTINF:-1 tvg-id="117" group-title="Colombia",Caracol',
+        "https://example.test/117.m3u8",
+        '#EXTINF:-1 tvg-id="116" group-title="Colombia",Canal Colombia',
+        "https://example.test/116.m3u8",
+    ]
+    restored = restaurar_orden_original_por_categoria(after, before)
+    ids = [
+        re.search(r'tvg-id="([^"]+)"', line).group(1)
+        for line in restored if line.startswith("#EXTINF")
+    ]
+    assert ids == ["116", "117", "120", "495"], ids
+    validar_orden_canales(before, restored)
+
+
+def test_iptvsv_reclasifica_urls_existentes_antes_de_validar_categoria() -> None:
+    before = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="channel-a" group-title="Documentales y Cultura",Canal A',
+        "https://example.test/channel-a.m3u8",
+        '#EXTINF:-1 tvg-id="channel-b" group-title="Anime",Canal B',
+        "https://example.test/channel-b.m3u8",
+    ]
+    channels = [
+        {"url": "https://example.test/channel-a.m3u8", "categoria": "Entretenimiento Premium", "nombre": "Canal A"},
+        {"url": "https://example.test/channel-b.m3u8", "categoria": "Infantiles", "nombre": "Canal B"},
+    ]
+    categories = ["Documentales y Cultura", "Entretenimiento Premium", "Anime", "Infantiles"]
+    updated, moved, conflicts = reclasificar_iptvsv_existente(before, channels, categories)
+    assert moved == 2, moved
+    assert conflicts == 0, conflicts
+    audit = validar_integridad_iptvsv(updated, channels, categories)
+    assert audit["errores_categoria"] == 0, audit
 
 
 def test_ajustes_referencia() -> None:
