@@ -442,6 +442,50 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertTrue(all('tvg-logo="https://logos.example/pokemon.png"' in line for line in extinfs))
         self.assertEqual(stats["alternativas_agregadas"], 2)
 
+    def test_pluto_es_url_is_removed_even_when_same_id_exists_in_latam(self):
+        pluto_id = "5fceaab478f2af00080ff51f"
+        base = ["#EXTM3U"] + (
+            entry(
+                pluto_id,
+                "Anime",
+                "Yu-Gi-Oh",
+                f"https://stitcher.pluto.tv/channel/{pluto_id}/master.m3u8?country=ES&marketingRegion=ES",
+            )
+            + entry(
+                pluto_id,
+                "Anime",
+                "Yu-Gi-Oh",
+                f"https://stitcher.pluto.tv/channel/{pluto_id}/master.m3u8?country=MX&marketingRegion=MX",
+            )
+        )
+        source = [
+            candidate(
+                pluto_id,
+                "Anime",
+                "Yu-Gi-Oh",
+                f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/v2/stitch/hls/channel/{pluto_id}/master.m3u8?country=MX&jwt=latam",
+                ap.FUENTES_PLUTO[0],
+            ),
+            candidate(
+                pluto_id,
+                "Anime",
+                "Yu-Gi-Oh",
+                f"https://jmp2.uk/plu-{pluto_id}.m3u8",
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
+            ),
+            candidate(
+                pluto_id,
+                "Anime",
+                "Yu-Gi-Oh",
+                f"https://stitcher.pluto.tv/channel/{pluto_id}/master.m3u8?country=ES&marketingRegion=ES",
+                ap.FUENTES_PLUTO[1],
+            ),
+        ]
+        output, _ = reconcile_lines(base, source)
+        self.assertFalse(any("country=ES" in line or "marketingRegion=ES" in line for line in output))
+        self.assertTrue(any("country=MX&jwt=latam" in line for line in output))
+        self.assertTrue(any(f"https://jmp2.uk/plu-{pluto_id}.m3u8" in line for line in output))
+
     def test_yugioh_espanol_is_removed_but_latam_mx_and_magna_stay_grouped(self):
         base = ["#EXTM3U"] + (
             entry(
