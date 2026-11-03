@@ -3593,6 +3593,21 @@ def main():
             f"{len(pluto_reinsertados_finales)} canales reinsertados tras la última normalización."
         )
 
+    # Restaurar por última vez el orden histórico después de todas las reparaciones.
+    # Solo se exceptúan las categorías con reordenamiento explícito solicitado.
+    lineas = restaurar_orden_original_por_categoria(
+        lineas,
+        lineas_iniciales,
+        categorias_reordenables={
+            "Entretenimiento / Cine / Series",
+            "Infantiles",
+        },
+        ids_pluto=ids_pluto_orden_protegidos,
+    )
+    # La restauración puede separar opciones del mismo canal: reagrupar sin
+    # alterar el orden de los canales principales.
+    lineas = agrupar_alternativas_por_identidad(lineas)
+
     # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
     validar_orden_canales(
