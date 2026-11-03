@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "scripts/**"
+      - "config/**"
       - ".github/workflows/actualizar.yml"
   schedule:
     - cron: "0 */6 * * *"
