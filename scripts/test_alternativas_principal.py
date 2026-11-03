@@ -3,8 +3,10 @@ import alimentar_principal as ap
 
 
 def block(channel_id, category, name, url):
+    id_attr = f' tvg-id="{channel_id}"' if channel_id else ""
+    logo_id = channel_id or "channel"
     return [
-        f'#EXTINF:-1 tvg-id="{channel_id}" tvg-name="{name}" tvg-logo="https://logo.example/{channel_id}.png" group-title="{category}",{name}',
+        f'#EXTINF:-1{id_attr} tvg-name="{name}" tvg-logo="https://logo.example/{logo_id}.png" group-title="{category}",{name}',
         url,
     ]
 
@@ -41,7 +43,16 @@ class TestAlternativasPrincipal(unittest.TestCase):
             playable.append((category.group(1) if category else "", display, url, extinf))
 
         kids = [item for item in playable if item[0].strip().lower() in {"infantiles", "infantil"}]
-        kid_names = [re.sub(r"\s*\[(?:opci[oó]n|opc\.?|option)\s*\d+\]$", "", x[1], flags=re.I).strip().lower() for x in kids]
+        kid_names = []
+        for item in kids:
+            base_name = re.sub(
+                r"\s*\[(?:opci[oó]n|opc\.?|option)\s*\d+\]$",
+                "",
+                item[1],
+                flags=re.I,
+            ).strip().lower()
+            if base_name not in kid_names:
+                kid_names.append(base_name)
         self.assertEqual(kid_names[:3], ["popeye", "los pitufos", "heidi"])
 
         self.assertFalse(any("los pitufos" in x[1].lower() and (
