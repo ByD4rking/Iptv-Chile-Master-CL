@@ -33,7 +33,7 @@ def norm(value: str) -> str:
 
 
 def base_name(value: str) -> str:
-    value = re.sub(r"\s*\|\s*(?:cl|chile)\s*$", "", value or "", flags=re.I)
+    value = re.sub(r"\s*\|\s*(?:cl|co|chile)\s*$", "", value or "", flags=re.I)
     value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value or "", flags=re.I)
     if not re.match(r"^\s*cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)\s*$", value, re.I):
         value = re.sub(r"\s*\(\s*opc\.?\s*\d+\s*\)\s*$", "", value, flags=re.I)
