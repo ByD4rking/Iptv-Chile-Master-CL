@@ -453,6 +453,10 @@ def main(args: argparse.Namespace) -> None:
     for key, group in alternatives_by_name.items():
         if len(group) < 2:
             continue
+        ids = {item["id"] for item in group if item["id"]}
+        # Nombres repetidos con IDs distintos son ambiguos; no se fusionan a ciegas.
+        if len(ids) > 1:
+            continue
         group.sort(key=lambda item: item["position"])
         positions = [item["position"] for item in group]
         if positions[-1] - positions[0] + 1 != len(positions):
