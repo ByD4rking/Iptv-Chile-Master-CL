@@ -2193,6 +2193,47 @@ def integrar_pluto_mx(lineas, session):
     }
 
 
+def cargar_ids_pluto_es_anime(session):
+    """Carga identidades Pluto ES de Anime; si la fuente falla, aborta antes de publicar."""
+    ids_pluto_es_anime = set(PLUTO_ES_ANIME_IDS_HISTORICOS)
+    try:
+        respuesta_es = session.get(FUENTES_PLUTO[1], timeout=30)
+        respuesta_es.raise_for_status()
+        contenido_es = respuesta_es.text or ""
+        if "#EXTM3U" not in contenido_es:
+            raise ValueError("la respuesta no contiene una cabecera M3U válida")
+
+        canales_es = parsear_m3u(contenido_es)
+        canales_anime = [
+            canal for canal in canales_es
+            if normalizar(canal.get("categoria", "")) == "anime"
+        ]
+        if not canales_anime:
+            raise ValueError("el catálogo Pluto ES no contiene canales de Anime verificables")
+
+        for canal_es in canales_anime:
+            identidad_es = extraer_pluto_id(canal_es.get("url", ""))
+            if not identidad_es:
+                m_es = re.search(
+                    r'tvg-id="([a-f0-9]{20,})"',
+                    canal_es.get("extinf", ""),
+                    re.I,
+                )
+                identidad_es = m_es.group(1).lower() if m_es else ""
+            if identidad_es:
+                ids_pluto_es_anime.add(identidad_es)
+
+        if len(ids_pluto_es_anime) == len(PLUTO_ES_ANIME_IDS_HISTORICOS):
+            raise ValueError("el catálogo Pluto ES no aportó ninguna identidad de Anime")
+    except Exception as exc:
+        raise RuntimeError(
+            "No se pudo validar la identidad de Pluto ES; se cancela la actualización "
+            "para evitar publicar Anime sin aplicar la exclusión."
+        ) from exc
+
+    return ids_pluto_es_anime
+
+
 def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
     """Retira Pluto ES solo de Anime por nombre o identidad de fuente, ubica Avatar y añade American Ninja Warrior."""
     ids_pluto_es_anime = {str(x).lower() for x in (ids_pluto_es_anime or set())}
@@ -2895,23 +2936,9 @@ def main():
         f"{pluto_mx_auditoria['sin_coincidencia']} sin coincidencia."
     )
 
-    # Retirar también canales Pluto España ya existentes en Anime aunque su
-    # nombre no lleve la etiqueta [Pluto ES]; se identifica por el catálogo ES.
-    ids_pluto_es_anime = set(PLUTO_ES_ANIME_IDS_HISTORICOS)
-    try:
-        respuesta_es = session.get(FUENTES_PLUTO[1], timeout=30)
-        respuesta_es.raise_for_status()
-        for canal_es in parsear_m3u(respuesta_es.text):
-            if normalizar(canal_es.get("categoria", "")) != "anime":
-                continue
-            identidad_es = extraer_pluto_id(canal_es.get("url", ""))
-            if not identidad_es:
-                m_es = re.search(r'tvg-id="([a-f0-9]{20,})"', canal_es.get("extinf", ""), re.I)
-                identidad_es = m_es.group(1).lower() if m_es else ""
-            if identidad_es:
-                ids_pluto_es_anime.add(identidad_es)
-    except Exception as exc:
-        print(f"AVISO: no se pudo consultar identidad Pluto ES para limpiar Anime: {exc}")
+    # La identidad de Pluto ES es obligatoria para esta limpieza. Si no se puede
+    # verificar el catálogo, se aborta antes de escribir la lista principal.
+    ids_pluto_es_anime = cargar_ids_pluto_es_anime(session)
 
     # Aplicar las correcciones fijas de la referencia antes de publicar.
     lineas = aplicar_ajustes_referencia(lineas, ids_pluto_es_anime)
