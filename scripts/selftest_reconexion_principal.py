@@ -126,6 +126,8 @@ def test_ajustes_referencia() -> None:
         "#EXTM3U",
         '#EXTINF:-1 tvg-id="6759ee82bd523200083b4f0f" group-title="Anime",Avatar: La Leyenda de Aang',
         "https://jmp2.uk/plu-6759ee82bd523200083b4f0f.m3u8",
+        '#EXTINF:-1 tvg-id="avatar-v2" group-title="Anime",Avatar: La Leyenda de Aang (OPCIÓN 2)',
+        "https://example.test/avatar-v2.m3u8",
         '#EXTINF:-1 tvg-id="delmi-1" group-title="Anime",Delmi TV',
         "https://example.test/delmi-1.m3u8",
         '#EXTINF:-1 tvg-id="delmi-2" group-title="Anime",Delmi TV 2',
@@ -149,7 +151,13 @@ def test_ajustes_referencia() -> None:
     assert sum(1 for x in result if x.startswith("#EXTINF") and x.endswith(",Delmi TV 2")) == 1
     avatar_index = next(i for i, x in enumerate(result) if x.startswith("#EXTINF") and ",Avatar: La Leyenda de Aang" in x)
     baby_index = next(i for i, x in enumerate(result) if x.startswith("#EXTINF") and ",Baby Shark TV" in x)
-    assert 'group-title="Infantiles"' in result[avatar_index]
+    avatar_variants = [
+        x for x in result
+        if x.startswith("#EXTINF")
+        and "Avatar: La Leyenda de Aang" in x
+    ]
+    assert len(avatar_variants) == 2
+    assert all('group-title="Infantiles"' in x for x in avatar_variants)
     assert avatar_index < baby_index
     assert "American Ninja Warrior" in result_text
     assert 'group-title="Competencia",American Ninja Warrior' in result_text
@@ -158,7 +166,7 @@ def test_ajustes_referencia() -> None:
     validar_orden_canales(source, result)
     again = aplicar_ajustes_referencia(result)
     assert "\n".join(again).count("American Ninja Warrior") == 1
-    assert sum(1 for x in again if x.startswith("#EXTINF") and "Avatar: La Leyenda de Aang" in x) == 1
+    assert sum(1 for x in again if x.startswith("#EXTINF") and "Avatar: La Leyenda de Aang" in x) == 2
 
 
 def test_pluto_es_identity_lookup_fails_closed() -> None:
