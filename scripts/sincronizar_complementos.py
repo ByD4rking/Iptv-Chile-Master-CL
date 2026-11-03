@@ -517,7 +517,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             candidate_groups[identity].append(item)
 
     for identity, group in candidate_groups.items():
-        group.sort(key=lambda item: (_source_priority(item.get("source", "")), item.get("url", "")))
+        group.sort(key=lambda item: _source_priority(item.get("source", "")))
 
     candidate_name_counts = Counter()
     for group in candidate_groups.values():
