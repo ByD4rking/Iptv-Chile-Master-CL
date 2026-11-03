@@ -12,6 +12,7 @@ from alimentar_principal import (
     firma_orden_canales,
     integrar_pluto_mx,
     aplicar_ajustes_referencia,
+    cargar_ids_pluto_es_anime,
     FUENTE_MAGMA,
     FUENTE_PLUTO_ALTERNATIVAS,
     reubicar_bloques_pluto_sin_reordenar_principal,
@@ -128,6 +129,40 @@ def test_ajustes_referencia() -> None:
     again = aplicar_ajustes_referencia(result)
     assert "\n".join(again).count("American Ninja Warrior") == 1
     assert sum(1 for x in again if x.startswith("#EXTINF") and "Avatar: La Leyenda de Aang" in x) == 1
+
+
+def test_pluto_es_identity_lookup_fails_closed() -> None:
+    class FailingSession:
+        def get(self, url: str, timeout: int):
+            raise OSError("catálogo Pluto ES temporalmente no disponible")
+
+    try:
+        cargar_ids_pluto_es_anime(FailingSession())
+    except RuntimeError as exc:
+        assert "se cancela la actualización" in str(exc)
+    else:
+        raise AssertionError("la caída de Pluto ES no canceló la actualización")
+
+
+def test_pluto_es_identity_lookup_loads_catalog_ids() -> None:
+    class FakeResponse:
+        text = "\\n".join([
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-id="aaaaaaaaaaaaaaaaaaaaaaaa" group-title="Anime",Anime ES',
+            "https://jmp2.uk/plu-bbbbbbbbbbbbbbbbbbbbbbbb.m3u8",
+        ])
+
+        def raise_for_status(self) -> None:
+            return None
+
+    class FakeSession:
+        def get(self, url: str, timeout: int):
+            return FakeResponse()
+
+    ids = cargar_ids_pluto_es_anime(FakeSession())
+    assert "aaaaaaaaaaaaaaaaaaaaaaaa" in ids
+    assert "bbbbbbbbbbbbbbbbbbbbbbbb" in ids
+    assert "608035b8d8705f0007260287" in ids
 
 
 def test_pluto_mx_importer() -> None:
@@ -390,6 +425,8 @@ def test_external_source_urls() -> None:
 if __name__ == "__main__":
     main()
     test_ajustes_referencia()
+    test_pluto_es_identity_lookup_fails_closed()
+    test_pluto_es_identity_lookup_loads_catalog_ids()
     test_pluto_mx_importer()
     test_pluto_options_remain_adjacent()
     test_extinf_category_fallback_preserves_duration()
