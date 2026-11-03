@@ -252,5 +252,18 @@ class TestAlternativasPrincipal(unittest.TestCase):
         ap.validar_orden_canales(original, restored)
 
 
+    def test_pluto_ids_protect_nonpluto_alternatives_from_order_audit(self):
+        pluto_id = "5ee92e72fb286e0007285fec"
+        original = ["#EXTM3U"]
+        original += block("", "Anime", "Naruto Peliculas", "https://a.example/naruto-peliculas.m3u8")
+        current = ["#EXTM3U"]
+        current += block(pluto_id, "Anime", "Naruto", "https://a.example/naruto-alt.m3u8")
+        current += block(pluto_id, "Anime", "Naruto", f"https://jmp2.uk/plu-{pluto_id}.m3u8")
+        current += block("", "Anime", "Naruto Peliculas", "https://a.example/naruto-peliculas.m3u8")
+        ids = ap.obtener_ids_pluto_existentes(current)
+        self.assertIn(pluto_id, ids)
+        ap.validar_orden_canales(original, current, ids_pluto_omitidos=ids)
+
+
 if __name__ == "__main__":
     unittest.main()
