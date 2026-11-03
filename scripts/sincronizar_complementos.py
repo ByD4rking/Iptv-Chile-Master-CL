@@ -331,29 +331,49 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         source_url = selected["url"].strip()
 
         if match is not None:
-            block = blocks[match]
-            old_url = block["url"]
-            new_url = source_url
-            destination = selected["destination"]
-            occupied_by = main_by_url.get(new_url)
-            if occupied_by is not None and occupied_by != match:
+            related_matches = (
+                list(main_by_id.get(identity, []))
+                if identity.startswith("id:") and main_by_id.get(identity)
+                else [match]
+            )
+            if match not in related_matches:
+                related_matches = [match]
+            related_urls = {blocks[idx]["url"] for idx in related_matches}
+            occupied_by = main_by_url.get(source_url)
+            if occupied_by is not None and occupied_by not in related_matches:
                 stats["ambiguos"] += 1
                 continue
-            old_category = ap.extraer_categoria(block["extinf"])
-            merged = _merge_extinf(block["extinf"], selected.get("extinf", ""), destination)
-            if old_url != new_url:
-                block["url"] = new_url
-                main_by_url.pop(old_url, None)
-                main_by_url[new_url] = match
-                reserved_urls.add(new_url)
-                stats["url_actualizadas"] += 1
-            if ap.normalizar(old_category) != ap.normalizar(destination):
-                stats["categorias_movidas"] += 1
-            if merged != block["extinf"]:
-                stats["metadatos_actualizados"] += 1
-            block["extinf"] = merged
-            block["raw"] = [merged] + block["extras"] + [block["url"]]
-            updated_indices.add(match)
+
+            # Si la URL nueva ya existe como alternativa del mismo canal,
+            # esa entrada pasa a ser la principal; las otras alternativas
+            # permanecen, pero todas adoptan la categoría fuente.
+            primary_match = next(
+                (idx for idx in related_matches if blocks[idx]["url"] == source_url),
+                match,
+            )
+            for idx in related_matches:
+                block = blocks[idx]
+                old_url = block["url"]
+                old_category = ap.extraer_categoria(block["extinf"])
+                destination = selected["destination"]
+                merged = _merge_extinf(
+                    block["extinf"],
+                    selected.get("extinf", ""),
+                    destination,
+                )
+                if idx == primary_match and old_url != source_url:
+                    block["url"] = source_url
+                    main_by_url.pop(old_url, None)
+                    main_by_url[source_url] = idx
+                    reserved_urls.add(source_url)
+                    stats["url_actualizadas"] += 1
+                if ap.normalizar(old_category) != ap.normalizar(destination):
+                    stats["categorias_movidas"] += 1
+                if merged != block["extinf"]:
+                    stats["metadatos_actualizados"] += 1
+                block["extinf"] = merged
+                block["raw"] = [merged] + block["extras"] + [block["url"]]
+            updated_indices.update(related_matches)
             continue
 
         if source_url in reserved_urls:
