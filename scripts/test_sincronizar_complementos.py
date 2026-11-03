@@ -840,7 +840,7 @@ class PlaceholderIdRegressionTests(unittest.TestCase):
             "url": "https://delmi.example/v2.m3u8",
         }
         self.assertEqual(_identity(first), "name:delmi tv")
-        self.assertEqual(_identity(second), "name:delmi tv v2")
+        self.assertEqual(_identity(second), "name:delmi tv 2")
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
