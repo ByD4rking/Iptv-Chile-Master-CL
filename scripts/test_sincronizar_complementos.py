@@ -2,7 +2,12 @@ import unittest
 import re
 
 import alimentar_principal as ap
-from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _prioritize_infantiles, reconcile_lines
+from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _merge_extinf, _prioritize_infantiles, reconcile_lines
+
+
+def _attr_for_test(extinf, name):
+    match = re.search(r'\b' + re.escape(name) + r'="([^"]*)"', extinf or "", re.I)
+    return match.group(1) if match else ""
 
 
 def entry(channel_id, category, name, url):
@@ -783,6 +788,18 @@ class ComplementSyncTests(unittest.TestCase):
             if line.startswith("#EXTINF:")
         ]
         self.assertEqual(names, ["Uno", "Dos", "Tres", "Cuatro"])
+
+
+class MergeMetadataRegressionTests(unittest.TestCase):
+
+    def test_merge_preserves_explicit_cartoonito_variant_and_missing_id(self):
+        current = '#EXTINF:-1 group-title="Infantiles" tvg-logo="old.png",Cartoonito HD (Opc.4)'
+        source = '#EXTINF:-1 tvg-id="1306" tvg-name="Cartoonito HD (Opc.3)" group-title="Infantiles" tvg-logo="new.png",Cartoonito HD (Opc.3)'
+        merged = _merge_extinf(current, source, "Infantiles")
+        self.assertEqual(ap.extraer_nombre(merged), "Cartoonito HD (Opc.4)")
+        self.assertEqual(_attr_for_test(merged, "tvg-id"), "")
+        self.assertEqual(_attr_for_test(merged, "tvg-name"), "")
+        self.assertEqual(_attr_for_test(merged, "tvg-logo"), "new.png")
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
