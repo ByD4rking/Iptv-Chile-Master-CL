@@ -102,7 +102,7 @@ def _is_los_pitufos_es(extinf: str) -> bool:
 
 
 def _source_priority(source: str) -> int:
-    """Prioridad de alternativas acordada: LATAM, MX, MAGNA y luego el resto."""
+    """Prioridad de alternativas acordada: LATAM, MX, MAGMA y luego el resto."""
     if source == ap.FUENTES_PLUTO[0]:
         return 0
     if source == ap.FUENTE_PLUTO_ALTERNATIVAS:
@@ -156,6 +156,20 @@ def _canonical_channel_name(channel: dict) -> str:
         flags=re.I,
     )
     return re.sub(r"[^a-z0-9]+", "", ap.normalizar(value))
+
+
+def normalizar_nombres_solicitados(lines: list[str]) -> list[str]:
+    """Normaliza alias solicitados sin duplicar ni alterar las URLs."""
+    result = list(lines)
+    for index, line in enumerate(result):
+        if not line.startswith("#EXTINF:"):
+            continue
+        if ap.normalizar(ap.extraer_categoria(line)) != "anime":
+            continue
+        name_key = re.sub(r"[^a-z0-9]+", "", ap.normalizar(ap.extraer_nombre(line)))
+        if name_key in {"delmitvv2", "delmitv2"}:
+            result[index] = _set_display_name(line, "Delmi TV 2")
+    return result
 
 
 def _canonical_category(value: str) -> str:
@@ -454,7 +468,7 @@ def _read_blocks(lines: list[str]) -> tuple[list[str], list[dict], list[str]]:
 def _source_label(source: str) -> str:
     known = {
         ap.FUENTE_IPTVSV: "IPTVSV",
-        ap.FUENTE_MAGMA: "MAGNA",
+        ap.FUENTE_MAGMA: "MAGMA",
         ap.FUENTES_PLUTO[0]: "Pluto LATAM",
         ap.FUENTES_PLUTO[1]: "Pluto ES",
         ap.FUENTES_PLUTO[2]: "Pluto MX JWT interno",
