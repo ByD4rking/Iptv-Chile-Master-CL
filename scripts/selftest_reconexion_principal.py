@@ -146,8 +146,13 @@ def test_guard_ignora_reordenamiento_de_pluto_verificado() -> None:
         '#EXTINF:-1 tvg-id="63a084934734f30007457b2c" group-title="Documentales y Cultura",Pluto documental B',
         "https://jmp2.uk/plu-63a084934734f30007457b2c.m3u8",
     ]
+    before[1] = before[1].replace('tvg-id="5ddc503ac7ef120009b101a2"', 'tvg-id="mtv-classic"')
     ignored = obtener_ids_pluto_existentes(before)
-    assert ignored == {"5ddc503ac7ef120009b101a2", "63a084934734f30007457b2c"}
+    assert ignored == {
+        "5ddc503ac7ef120009b101a2",
+        "mtv-classic",
+        "63a084934734f30007457b2c",
+    }
     validar_orden_canales(before, after, ids_pluto_omitidos=ignored)
 
 
