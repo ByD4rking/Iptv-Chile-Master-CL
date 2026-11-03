@@ -136,14 +136,14 @@ def _canonical_channel_name(channel: dict) -> str:
         value = ap.extraer_nombre(channel.get("extinf", ""))
     value = _without_option_suffix(value)
     value = re.sub(
-        r"\s*(?:\[\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
-        r"\(\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
+        r"\s*(?:\[\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
+        r"\(\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
         "",
         value,
         flags=re.I,
     )
     value = re.sub(
-        r"\s*(?:[-–—|•]\s*)?(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?|"
+        r"\s*(?:[-–—|•]\s*)?(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?|"
         r"espanol|españa|spanish|hd|sd|fhd|uhd)$",
         "",
         value,
@@ -176,14 +176,14 @@ def _is_pluto_es_url(url: str) -> bool:
 def _clean_channel_display(value: str) -> str:
     value = _without_option_suffix(value)
     value = re.sub(
-        r"\s*(?:\[\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
-        r"\(\s*(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
+        r"\s*(?:\[\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
+        r"\(\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
         "",
         value or "",
         flags=re.I,
     )
     value = re.sub(
-        r"\s*(?:[-–—|•]\s*)?(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?|"
+        r"\s*(?:[-–—|•]\s*)?(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?|"
         r"espanol|españa|spanish)$",
         "",
         value,
