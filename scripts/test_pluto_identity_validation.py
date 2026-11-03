@@ -40,7 +40,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
             "https://service.example/vod/channel/abcdef0123456789abcdef01/master.m3u8",
         )
         self.assertEqual(
-            ids_pluto_faltantes(required, aliases, final_aliases),
+            calcular_ids_pluto_faltantes(required, aliases, final_aliases),
             {"id:epg.alias"},
         )
 
