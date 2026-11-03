@@ -1956,7 +1956,20 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
     if not actuales:
         return lineas
 
-    orden_original = {item["url"]: index for index, item in enumerate(anteriores)}
+    def identidades(extinf):
+        keys = []
+        match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+        if match and match.group(1).strip():
+            keys.append("id:" + normalizar(match.group(1)))
+        nombre = normalizar(extraer_nombre(extinf))
+        if nombre:
+            keys.append("name:" + nombre)
+        return keys
+
+    orden_original = {}
+    for index, item in enumerate(anteriores):
+        for key in identidades(item["lineas"][0]):
+            orden_original.setdefault(key, index)
     grupos = {}
     orden_grupos = []
     for bloque in actuales:
@@ -1974,9 +1987,16 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
         else:
             pluto = [b for b in bloques if es_url_pluto(b["url"])]
             normales = [b for b in bloques if not es_url_pluto(b["url"])]
-            existentes = [b for b in normales if b["url"] in orden_original]
-            nuevos = [b for b in normales if b["url"] not in orden_original]
-            existentes.sort(key=lambda b: orden_original[b["url"]])
+            for bloque in normales:
+                ranks = [
+                    orden_original[key]
+                    for key in identidades(bloque["lineas"][0])
+                    if key in orden_original
+                ]
+                bloque["orden_original"] = min(ranks) if ranks else None
+            existentes = [b for b in normales if b["orden_original"] is not None]
+            nuevos = [b for b in normales if b["orden_original"] is None]
+            existentes.sort(key=lambda b: b["orden_original"])
             # Mantener el orden actual entre los canales nuevos y entre los Pluto.
             ordenados = existentes + nuevos + pluto
         for bloque in ordenados:
