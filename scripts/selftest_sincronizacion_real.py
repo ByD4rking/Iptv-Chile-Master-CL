@@ -196,6 +196,15 @@ def main(args: argparse.Namespace) -> None:
     ):
         raise AssertionError("Quedó Anime exclusivo de Pluto España en la principal.")
 
+    forbidden_categories = {"pluto tv", "total", "otros", "tv chichicasteca", "los chichastecas"}
+    if any(norm(item["category"]) in forbidden_categories for item in after):
+        raise AssertionError("La principal conserva una carpeta prohibida o la carpeta Chichicasteca.")
+
+    urls = [item["url"] for item in after if item["url"]]
+    duplicates = [url for url, count in Counter(urls).items() if count > 1]
+    if duplicates:
+        raise AssertionError(f"Hay URLs duplicadas en la principal: {duplicates[:10]!r}")
+
     before_kept = [
         item for item in before
         if not item["is_pitufos"]
