@@ -2380,14 +2380,19 @@ def ordenar_bloques_magma_y_originales(lineas, session):
 
     def clave_alfabetica(bloque):
         nombre = re.sub(r"\\s*\\[MAGMA\\]$", "", bloque["nombre"], flags=re.I).strip()
-        opcion = re.search(
-            r"\\s*(?:\\((?:OPCIÓN|OPC)\\s*\\.?\\s*(\\d+)\\)|\\[(?:OPCIÓN|OPC)\\s*\\.?\\s*(\\d+)\\])$",
-            nombre,
-            flags=re.I,
-        )
-        numero_opcion = int(opcion.group(1) or opcion.group(2)) if opcion else 0
-        base = nombre[:opcion.start()].strip() if opcion else nombre
-        return (normalizar(base), numero_opcion, normalizar(nombre), bloque["orden"])
+        version = re.search(r"\\s*\\[V(\\d+)\\]", nombre, flags=re.I)
+        if version:
+            numero_variante = int(version.group(1))
+            base = (nombre[:version.start()] + nombre[version.end():]).strip()
+        else:
+            opcion = re.search(
+                r"\\s*(?:\\((?:OPCIÓN|OPC)\\s*\\.?\\s*(\\d+)\\)|\\[(?:OPCIÓN|OPC)\\s*\\.?\\s*(\\d+)\\])$",
+                nombre,
+                flags=re.I,
+            )
+            numero_variante = int(opcion.group(1) or opcion.group(2)) if opcion else 0
+            base = nombre[:opcion.start()].strip() if opcion else nombre
+        return (normalizar(base), numero_variante, normalizar(nombre), bloque["orden"])
 
     magma_ordenado = sorted(magma, key=clave_alfabetica)
     originales_ordenados = sorted(originales, key=clave_alfabetica)
