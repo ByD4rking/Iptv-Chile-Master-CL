@@ -3705,6 +3705,11 @@ def main():
         ids_pluto=ids_pluto_orden_protegidos,
     )
 
+    # Las variantes no-Pluto pueden compartir tvg-id con una URL Pluto.
+    # Añadir los IDs observados en la salida final al conjunto protegido para
+    # que una alternativa regional no se confunda con un canal normal reordenado.
+    ids_pluto_orden_protegidos.update(obtener_ids_pluto_existentes(lineas))
+
     # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
     validar_orden_canales(
