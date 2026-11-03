@@ -1252,6 +1252,31 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
             i = j
 
     pluto = [b for b in bloques if es_url_pluto(b["url"])]
+
+    # Algunas alternativas MX usan CDN que no contiene "pluto" en la URL.
+    # Si su nombre/ID corresponde a un canal base Pluto, se consideran parte
+    # del mismo bloque para que no queden separadas en no_pluto.
+    ids_base_pluto = {
+        b["id"] for b in pluto if b.get("id")
+    }
+    nombres_base_pluto = {
+        (normalizar(b["categoria"]), normalizar(extraer_nombre(b["lineas"][0])))
+        for b in pluto
+        if not re.search(r"\\(OPCIÓN\\s+\\d+\\)$", extraer_nombre(b["lineas"][0]), re.I)
+    }
+    for bloque in bloques:
+        nombre = extraer_nombre(bloque["lineas"][0])
+        m_opcion = re.search(r"\\s*\\(OPCIÓN\\s+\\d+\\)$", nombre, re.I)
+        if not m_opcion or bloque in pluto:
+            continue
+        nombre_base = re.sub(r"\\s*\\(OPCIÓN\\s+\\d+\\)$", "", nombre, flags=re.I).strip()
+        coincide_base = (
+            (bloque.get("id") and bloque["id"] in ids_base_pluto)
+            or (normalizar(bloque["categoria"]), normalizar(nombre_base)) in nombres_base_pluto
+        )
+        if coincide_base:
+            pluto.append(bloque)
+
     if not pluto:
         return lineas, 0, {}
 
@@ -1982,8 +2007,13 @@ def integrar_pluto_mx(lineas, session):
         respuesta_latam.raise_for_status()
         canales_latam = parsear_m3u(respuesta_latam.text)
     except Exception as exc:
-        print(f"  -> AVISO: no se pudo integrar Pluto MX externo: {exc}")
-        return lineas, {"fuente_ok": False, "agregadas": 0, "bases_nuevas": 0, "sin_coincidencia": 0}
+        # No escribir una M3U sin alternativas MX verificadas.
+        # La deduplicación anterior puede haber retirado opciones previas;
+        # si la fuente falla, se cancela la actualización completa.
+        raise RuntimeError(
+            f"No se pudo verificar Pluto MX/LATAM; se cancela la actualización "
+            f"para conservar las alternativas existentes: {exc}"
+        ) from exc
 
     def canal_id(canal):
         cid = extraer_pluto_id(canal.get("url", ""))
@@ -2047,7 +2077,13 @@ def integrar_pluto_mx(lineas, session):
             if re.search(r'tvg-id="[^"]*"', extinf, re.I):
                 extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
             else:
-                extinf = extinf.replace("#EXTINF:", f'#EXTINF:-1 tvg-id="{cid}"', 1)
+                extinf = re.sub(
+                    r"^(#EXTINF:\\s*[^,\\s]+)(.*)$",
+                    lambda match: f'{match.group(1)} tvg-id="{cid}"{match.group(2)}',
+                    extinf,
+                    count=1,
+                    flags=re.I,
+                )
         bloque = [extinf]
         bloque.extend(canal.get("extras", []))
         bloque.append(canal.get("url", "").strip())
@@ -2085,7 +2121,13 @@ def integrar_pluto_mx(lineas, session):
             if re.search(r'tvg-id="[^"]*"', extinf, re.I):
                 extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
             else:
-                extinf = extinf.replace("#EXTINF:", f'#EXTINF:-1 tvg-id="{cid}"', 1)
+                extinf = re.sub(
+                    r"^(#EXTINF:\\s*[^,\\s]+)(.*)$",
+                    lambda match: f'{match.group(1)} tvg-id="{cid}"{match.group(2)}',
+                    extinf,
+                    count=1,
+                    flags=re.I,
+                )
         bloque = [extinf]
         bloque.extend(canal.get("extras", []))
         bloque.append(canal.get("url", "").strip())
