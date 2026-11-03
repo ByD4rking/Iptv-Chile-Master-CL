@@ -58,6 +58,9 @@ jobs:
       - name: Verificar registro editable de fuentes de todas las listas
         run: python -m unittest discover -s scripts -p 'test_playlist_sources.py'
 
+      - name: Verificar identidad y cobertura de canales Pluto
+        run: python -m unittest discover -s scripts -p 'test_pluto_identity_validation.py'
+
       - name: Verificar orden y reconexión de la lista general
         run: python scripts/selftest_reconexion_principal.py
 

@@ -62,10 +62,14 @@ jobs:
             scripts/health_principal.py \
             scripts/selftest_health_principal.py \
             scripts/selftest_reconexion_principal.py \
-            scripts/auditar_fuentes.py
+            scripts/auditar_fuentes.py \
+            scripts/test_pluto_identity_validation.py
 
       - name: Probar detector de cambios de fuentes
         run: python -m unittest scripts.test_auditar_fuentes
+
+      - name: Probar identidad y cobertura de canales Pluto
+        run: python -m unittest scripts.test_pluto_identity_validation
 
       - name: Blindaje canónico de GOD
         run: |
