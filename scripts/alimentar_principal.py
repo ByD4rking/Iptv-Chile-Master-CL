@@ -2158,21 +2158,22 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                         if coincidencias_id_nombre
                         else []
                     )
-                if not ranks and nombre:
+                if nombre:
                     candidates = orden_por_categoria_nombre.get((categoria_actual, nombre), [])
-                    if len(candidates) == 1:
-                        # Si el nombre es único en la categoría histórica, permite
-                        # conservar orden aunque la fuente haya cambiado el tvg-id.
+                    sin_id = [
+                        idx for idx in candidates
+                        if not identidad_anterior[idx][1]
+                    ]
+                    if sin_id:
+                        # Si una fuente añadió tvg-id a un canal histórico que
+                        # ya existía sin ID, conserva la primera posición por
+                        # nombre. El ID puede aparecer más tarde en la maestra
+                        # como otra URL del mismo canal.
+                        ranks = [min([*ranks, *sin_id])] if ranks else [min(sin_id)]
+                    elif not ranks and len(candidates) == 1:
+                        # Si el nombre es único, permite conservar orden aunque
+                        # la fuente haya cambiado el tvg-id.
                         ranks = candidates
-                    else:
-                        sin_id = [
-                            idx for idx in candidates
-                            if not identidad_anterior[idx][1]
-                        ]
-                        if sin_id:
-                            # Duplicados históricos sin ID comparten identidad
-                            # de nombre; conservar su primera posición.
-                            ranks = [min(sin_id)]
                 bloque["orden_original"] = min(ranks) if ranks else None
             existentes = [b for b in normales if b["orden_original"] is not None]
             nuevos = [b for b in normales if b["orden_original"] is None]
@@ -2197,6 +2198,21 @@ def validar_orden_canales(
     }
     ids_pluto_omitidos = {str(x).strip().lower().removeprefix("id:") for x in (ids_pluto_omitidos or set())}
     avatar_id = "id:6759ee82bd523200083b4f0f"
+
+    # Alias de identidad compartidos entre ambas versiones: si una versión
+    # carece de tvg-id y la otra lo añade, el nombre puede mantener la identidad.
+    ids_por_nombre = defaultdict(set)
+    nombres_por_id = defaultdict(set)
+    for contenido in (lineas_anteriores, lineas_nuevas):
+        for extinf in contenido:
+            if not extinf.startswith("#EXTINF"):
+                continue
+            match_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+            channel_id = tvg_id_valido(match_id.group(1)) if match_id else ""
+            nombre = normalizar_nombre_canal(extraer_nombre(extinf))
+            if channel_id and nombre:
+                ids_por_nombre[nombre].add(channel_id)
+                nombres_por_id[channel_id].add(nombre)
 
     def firmas_por_categoria(lineas):
         resultado = {}
@@ -2243,14 +2259,29 @@ def validar_orden_canales(
             ):
                 index = j + 1 if url else index + 1
                 continue
-            key = ("id", channel_id) if channel_id else ("name", nombre)
+            if nombre and len(ids_por_nombre.get(nombre, set())) == 1:
+                unique_id = next(iter(ids_por_nombre[nombre]))
+                # Un ID reutilizado por nombres distintos no es identidad segura.
+                key = ("id", unique_id) if nombres_por_id.get(unique_id, set()) == {nombre} else ("name", nombre)
+            elif channel_id and nombre:
+                key = ("id_name", channel_id, nombre)
+            elif channel_id:
+                key = ("id", channel_id)
+            else:
+                key = ("name", nombre)
             vistos_categoria = vistos.setdefault(categoria, set())
             if key not in vistos_categoria:
                 vistos_categoria.add(key)
+                if key[0] == "id":
+                    key_label = "id:" + key[1]
+                elif key[0] == "id_name":
+                    key_label = "id:" + key[1] + ":name:" + key[2]
+                else:
+                    key_label = "name:" + categoria + ":" + key[1]
                 resultado.setdefault(categoria, []).append({
                     "id": channel_id,
                     "name": nombre,
-                    "key": ("id:" + channel_id) if channel_id else ("name:" + categoria + ":" + nombre),
+                    "key": key_label,
                 })
             index = j + 1 if url else index + 1
         return resultado
