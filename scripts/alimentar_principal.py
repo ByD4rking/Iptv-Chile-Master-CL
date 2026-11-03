@@ -1239,11 +1239,15 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
             prefijo.extend(lineas[inicio:j])
             i = j
 
-    pluto = [b for b in bloques if es_url_pluto(b["url"])]
+    pluto = [
+        b for b in bloques
+        if es_url_pluto(b["url"])
+        and not re.search(r"\\(OPCIÓN\\s+\\d+\\)$", extraer_nombre(b["lineas"][0]), re.I)
+    ]
     if not pluto:
         return lineas, 0, {}
 
-    no_pluto = [b for b in bloques if not es_url_pluto(b["url"])]
+    no_pluto = [b for b in bloques if b not in pluto]
 
     # Pluto por categoría, manteniendo exactamente el orden original.
     por_categoria = defaultdict(list)
@@ -2129,8 +2133,9 @@ def aplicar_ajustes_referencia(lineas):
             eliminados_pluto_es_anime += 1
             i = j
             continue
-        if categoria == "anime" and normalizar(nombre).startswith("avatar: la leyenda de aang"):
-            bloque[0] = reemplazar_categoria(bloque[0], "Infantiles")
+        if normalizar(nombre).startswith("avatar: la leyenda de aang"):
+            if categoria != "infantiles":
+                bloque[0] = reemplazar_categoria(bloque[0], "Infantiles")
             avatar.append(bloque)
         else:
             bloques.append(bloque)
