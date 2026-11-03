@@ -9,6 +9,8 @@ on:
     paths:
       - "IPTV-CHILE-GENERADOR/**"
       - ".github/workflows/generador.yml"
+      - "scripts/auditar_fuentes.py"
+      - "scripts/test_auditar_fuentes.py"
   schedule:
     - cron: "30 */6 * * *"
 
@@ -39,6 +41,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Auditar cambios de canales y URLs del Generador
+        run: python scripts/auditar_fuentes.py --scope generador
+
       - name: Validar sintaxis
         run: |
           set -euo pipefail
@@ -52,6 +57,9 @@ jobs:
               ast.parse(source, filename=str(path))
               print(f"OK: {path}")
           PY
+
+      - name: Probar detector de cambios de fuentes
+        run: python -m unittest scripts.test_auditar_fuentes
 
       - name: Prueba inventario M3U del generador
         run: python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
@@ -134,7 +142,7 @@ jobs:
                 echo "REGRESION: el generador intentó modificar código, pruebas o configuración protegida: $file"
                 exit 1
                 ;;
-              IPTV-CHILE-GENERADOR/data/*|IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md) ;;
+              IPTV-CHILE-GENERADOR/data/*|IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md|reportes/fuentes/auditoria_generador.json|reportes/fuentes/estado_generador.json) ;;
               "") ;;
               *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
             esac
@@ -147,7 +155,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add IPTV-CHILE-GENERADOR reportes/generador/REPORTE.md reportes/god/REPORTE.md
+          git add IPTV-CHILE-GENERADOR reportes/generador/REPORTE.md reportes/god/REPORTE.md reportes/fuentes/auditoria_generador.json reportes/fuentes/estado_generador.json
 
           if git diff --cached --quiet; then
             echo "No hay cambios nuevos en el generador."
@@ -204,6 +212,8 @@ jobs:
             find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/pluto.sha256
             find scripts -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/scripts.sha256
             find IPTV-CHILE-GENERADOR/config IPTV-CHILE-GENERADOR/scripts IPTV-CHILE-GENERADOR/tests -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/generador-guard/source.sha256
+            python scripts/auditar_fuentes.py --scope generador
+            python -m unittest scripts.test_auditar_fuentes
             python -m compileall -q IPTV-CHILE-GENERADOR/scripts
             python IPTV-CHILE-GENERADOR/tests/test_collect.py
             python IPTV-CHILE-GENERADOR/scripts/teleon_discovery.py
