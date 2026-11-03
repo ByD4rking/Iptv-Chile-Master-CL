@@ -61,7 +61,8 @@ jobs:
             scripts/generar_reporte.py \
             scripts/health_principal.py \
             scripts/selftest_health_principal.py \
-            scripts/selftest_reconexion_principal.py
+            scripts/selftest_reconexion_principal.py \
+            scripts/auditar_fuentes.py
 
       - name: Probar detector de cambios de fuentes
         run: python -m unittest scripts.test_auditar_fuentes
