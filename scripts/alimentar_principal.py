@@ -1242,7 +1242,7 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
     pluto = [
         b for b in bloques
         if es_url_pluto(b["url"])
-        and not re.search(r"\\(OPCIÓN\\s+\\d+\\)$", extraer_nombre(b["lineas"][0]), re.I)
+        and not re.search(r"\(OPCIÓN\s+\d+\)$", extraer_nombre(b["lineas"][0]), re.I)
     ]
     if not pluto:
         return lineas, 0, {}
