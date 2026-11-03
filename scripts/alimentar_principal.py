@@ -2067,21 +2067,41 @@ def validar_orden_canales(
     def firmas_por_categoria(lineas):
         resultado = {}
         vistos = {}
-        for linea in lineas:
+        index = 0
+        while index < len(lineas):
+            linea = lineas[index]
             if not linea.startswith("#EXTINF"):
+                index += 1
                 continue
-            categoria = normalizar(extraer_categoria(linea))
-            nombre = normalizar(extraer_nombre(linea))
+
+            extinf = linea
+            j = index + 1
+            while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+                j += 1
+            url = lineas[j].strip() if j < len(lineas) and url_es_valida(lineas[j].strip()) else ""
+
+            # La restauración coloca Pluto al final de cada categoría por regla
+            # propia. No comparar su posición con canales normales, incluso si
+            # el ID de la variante externa no quedó incluido en la lista de IDs
+            # Pluto protegidos.
+            if url and es_url_pluto(url):
+                index = j + 1
+                continue
+
+            categoria = normalizar(extraer_categoria(extinf))
+            nombre = normalizar(extraer_nombre(extinf))
             # Avatar cambia deliberadamente desde Anime a Infantiles; hay dos variantes.
             if nombre.startswith("avatar: la leyenda de aang"):
+                index = j + 1 if url else index + 1
                 continue
-            match = re.search(r'tvg-id="([^"]+)"', linea, re.I)
+            match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
             channel_id = normalizar(match.group(1)) if match and match.group(1).strip() else ""
             if (
                 (channel_id and channel_id in ids_pluto_omitidos)
                 or (not channel_id and not nombre)
                 or (channel_id == avatar_id.removeprefix("id:"))
             ):
+                index = j + 1 if url else index + 1
                 continue
             key = ("id", channel_id) if channel_id else ("name", nombre)
             vistos_categoria = vistos.setdefault(categoria, set())
@@ -2092,6 +2112,7 @@ def validar_orden_canales(
                     "name": nombre,
                     "key": ("id:" + channel_id) if channel_id else ("name:" + categoria + ":" + nombre),
                 })
+            index = j + 1 if url else index + 1
         return resultado
 
     anterior = firmas_por_categoria(lineas_anteriores)
