@@ -2807,7 +2807,9 @@ def agrupar_alternativas_por_identidad(lineas):
                     return re.sub(pattern, lambda _: replacement, texto, count=1, flags=re.I)
                 comma = texto.find(",")
                 return texto[:comma].rstrip() + " " + replacement + texto[comma:] if comma >= 0 else texto
-            extinf = set_attr(extinf, "tvg-id", canonical_id)
+            # No propagar un ID nuevo a una entrada histórica que no lo tenía:
+            # el guardia de orden debe poder reconocerla por nombre.
+            extinf = set_attr(extinf, "tvg-id", item["id"])
             extinf = set_attr(extinf, "tvg-name", canonical_tvg)
             extinf = set_attr(extinf, "tvg-logo", canonical_logo)
             label = base if not normalizados else f"{base} [Opción {len(normalizados) + 1}]"
