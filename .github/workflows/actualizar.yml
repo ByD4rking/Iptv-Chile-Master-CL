@@ -10,6 +10,14 @@ on:
       - ".github/workflows/actualizar.yml"
   schedule:
     - cron: "0 */6 * * *"
+  # La principal se actualiza después de que Pluto renueve los JWT regionales.
+  workflow_run:
+    workflows:
+      - "Pluto TV - Actualizar listas regionales"
+    types:
+      - completed
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -24,7 +32,10 @@ concurrency:
 jobs:
   actualizar:
     # Este workflow publica en main; no ejecutar desde ramas de trabajo.
-    if: github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_run' || github.actor != 'github-actions[bot]') &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -56,6 +67,10 @@ jobs:
         run: |
           python -m py_compile \
             scripts/alimentar_principal.py \
+            scripts/sincronizar_complementos.py \
+            scripts/ejecutar_actualizacion_principal.py \
+            scripts/test_sincronizar_complementos.py \
+            scripts/selftest_sincronizacion_real.py \
             scripts/unificar_chile.py \
             scripts/mega_lista.py \
             scripts/generar_reporte.py \
@@ -71,6 +86,9 @@ jobs:
       - name: Probar identidad y cobertura de canales Pluto
         run: python -m unittest scripts.test_pluto_identity_validation
 
+      - name: Pruebas unitarias de sincronización complementaria
+        run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
+
       - name: Blindaje canónico de GOD
         run: |
           set -euo pipefail
@@ -85,104 +103,11 @@ jobs:
           find pluto/output/playlists -type f -print0 | sort -z | xargs -0 sha256sum > /tmp/pluto_before.sha256
           grep '^#EXTINF' IPTV-CHILE-MAESTRA_CORREGIDO.m3u | sed -n 's/.*$//p' >/dev/null
 
-      - name: Actualizar lista principal
-        run: |
-          python scripts/alimentar_principal.py
+      - name: Actualizar principal y sincronizar fuentes complementarias
+        run: python scripts/ejecutar_actualizacion_principal.py
 
-      - name: Unificar categoría CHILE
-        run: |
-          python scripts/unificar_chile.py
-
-      - name: Auditoría de no regresión
-        run: |
-          python - <<'PY'
-          import re
-          from pathlib import Path
-
-          before = Path("/tmp/principal_before.m3u").read_text(encoding="utf-8-sig")
-          after = Path("IPTV-CHILE-MAESTRA_CORREGIDO.m3u").read_text(encoding="utf-8-sig")
-
-          def entries(text):
-              out=[]
-              lines=text.splitlines()
-              for i,line in enumerate(lines):
-                  if line.startswith("#EXTINF:"):
-                      j=i+1
-                      while j < len(lines) and lines[j].startswith("#"):
-                          j += 1
-                      if j < len(lines) and lines[j].startswith(("http://","https://")):
-                          out.append((line, lines[j].strip()))
-              return out
-
-          b=entries(before); a=entries(after)
-          b_urls={u for _,u in b}; a_urls=[u for _,u in a]
-          a_set=set(a_urls)
-
-          allowed_cleanup = {
-              "total", "otros", "telemundo noticias", "sky sports",
-              "qatar", "palestina", "corea del norte", "corea del sur",
-              "israel", "alemania", "francia", "iran", "rusia",
-              "guinea ecuatorial", "estados unidos",
-          }
-
-          def identity(extinf):
-              channel_id=re.search(r'tvg-id="([^"]+)"', extinf, re.I)
-              if channel_id and channel_id.group(1).strip():
-                  return ("id", channel_id.group(1).strip().casefold())
-              name=extinf.split(",", 1)[-1].strip().casefold()
-              category=re.search(r'group-title="([^"]*)"', extinf, re.I)
-              group=category.group(1).strip().casefold() if category else ""
-              return ("name", group, re.sub(r"\s+", " ", name))
-
-          def missing_channel_entries(old_entries, new_entries):
-              new_identities={identity(ext) for ext, _ in new_entries}
-              return [
-                  (ext, url) for ext, url in old_entries
-                  if identity(ext) not in new_identities
-              ]
-
-          def is_pluto_url(url):
-              value=url.casefold()
-              return "pluto" in value or "jmp2.uk/plu-" in value
-
-          # La sustitución de URL es válida si la identidad del canal permanece.
-          # Solo se considera regresión que desaparezca el canal completo.
-          lost_non_pluto=[]
-          for ext, url in missing_channel_entries(b, a):
-              if is_pluto_url(url) or url in a_set:
-                  continue
-              category=re.search(r'group-title="([^"]*)"', ext, re.I)
-              group=category.group(1).strip().casefold() if category else ""
-              if group in allowed_cleanup:
-                  continue
-              lost_non_pluto.append(url)
-
-          if lost_non_pluto:
-              raise SystemExit("REGRESION: desaparecieron canales no-Pluto existentes (no solo cambió su URL): "+str(sorted(set(lost_non_pluto))[:20]))
-
-          # Prueba interna: el cambio de URL conserva el canal; la desaparición completa se rechaza.
-          synthetic_before=[('#EXTINF:-1 tvg-id="id-a" group-title="Deportes",Canal A', "https://old.example/a.m3u8")]
-          synthetic_after=[('#EXTINF:-1 tvg-id="id-a" group-title="Deportes",Canal A', "https://new.example/a.m3u8")]
-          assert not missing_channel_entries(synthetic_before, synthetic_after)
-          assert missing_channel_entries(synthetic_before, []) == synthetic_before
-
-          # Una URL de acceso solo puede aparecer una vez.
-          dup=sorted(u for u in set(a_urls) if a_urls.count(u)>1)
-          if dup:
-              raise SystemExit("REGRESION: URLs duplicadas en principal: "+str(dup[:20]))
-
-          # No se pueden recrear carpetas prohibidas.
-          cats=[re.search(r'group-title="([^"]*)"',line) for line,_ in a]
-          cats={m.group(1).strip().lower() for m in cats if m}
-          forbidden={"pluto tv","total","otros"}
-          bad=sorted(c for c in cats if c in forbidden)
-          if bad:
-              raise SystemExit("REGRESION: carpetas prohibidas: "+str(bad))
-
-          print(f"Principal antes: {len(b)} | después: {len(a)}")
-          print(f"URLs no-Pluto preservadas: {len(b_urls)-len(lost_non_pluto)}")
-          print("OK: no-regresión, sin duplicados URL y sin carpetas prohibidas.")
-          PY
+      - name: Auditoría integral de la M3U generada
+        run: python scripts/selftest_sincronizacion_real.py --audit-only --before /tmp/principal_before.m3u
 
       - name: Validar aprendizaje
         run: |
@@ -309,7 +234,7 @@ jobs:
 
           while IFS= read -r file; do
             case "$file" in
-              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|reportes/principal/REPORTE.md|reportes/fuentes/auditoria_principal.json|reportes/fuentes/estado_principal.json|scripts/aprendizaje.json|scripts/health/principal_health.json)
+              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|reportes/principal/REPORTE.md|reportes/fuentes/auditoria_principal.json|reportes/fuentes/estado_principal.json|scripts/aprendizaje.json|scripts/health/principal_health.json|scripts/sync_sources.json)
                 ;;
               "")
                 ;;
@@ -332,6 +257,7 @@ jobs:
             reportes/principal/REPORTE.md \
             scripts/aprendizaje.json \
             scripts/health/principal_health.json \
+            scripts/sync_sources.json \
             reportes/fuentes/auditoria_principal.json \
             reportes/fuentes/estado_principal.json
 
