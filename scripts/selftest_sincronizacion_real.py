@@ -12,7 +12,7 @@ import hashlib
 import re
 import subprocess
 import sys
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import requests
@@ -259,30 +259,49 @@ def main(args: argparse.Namespace) -> None:
     before_ids = {norm(item["id"]) for item in before_kept if item["id"]}
     after_ids = {norm(item["id"]) for item in after_playable if item["id"]}
 
-    before_keys = [
-        identity_key(item, after_ids, unique_names)
-        for item in before_kept
-    ]
-    after_keys = [
-        identity_key(item, before_ids, unique_names)
-        for item in after_playable
-    ]
-    before_counts = Counter(before_keys)
-    after_counts = Counter(after_keys)
-    for key, count in before_counts.items():
-        if after_counts.get(key, 0) < count:
-            raise AssertionError(
-                f"Se perdió una alternativa existente: {key}; "
-                f"antes={count}, después={after_counts.get(key, 0)}; resumen={result!r}"
-            )
-
-    before_order = list(dict.fromkeys(before_keys))
-    after_order = [key for key in dict.fromkeys(after_keys) if key in before_counts]
-    if after_order != before_order:
-        raise AssertionError(
-            f"Cambió el orden relativo de los canales/categorías existentes: "
-            f"antes={before_order[:30]!r}; después={after_order[:30]!r}"
+    before_by_category = defaultdict(list)
+    after_by_category = defaultdict(list)
+    for item in before_kept:
+        before_by_category[norm(item["category"])].append(
+            identity_key(item, after_ids, unique_names)
         )
+    for item in after_playable:
+        after_by_category[norm(item["category"])].append(
+            identity_key(item, before_ids, unique_names)
+        )
+
+    global_after_counts = Counter(
+        key for keys in after_by_category.values() for key in keys
+    )
+    for category, before_keys in before_by_category.items():
+        after_keys = after_by_category.get(category, [])
+        before_counts = Counter(before_keys)
+        after_counts = Counter(after_keys)
+
+        for key, count in before_counts.items():
+            if after_counts.get(key, 0) < count and global_after_counts.get(key, 0) < count:
+                raise AssertionError(
+                    f"Se perdió una alternativa existente: {key} en {category}; "
+                    f"antes={count}, después_total={global_after_counts.get(key, 0)}; "
+                    f"resumen={result!r}"
+                )
+
+        # Las categorías pueden cambiar; se compara el orden solo de los
+        # canales que permanecen en la misma categoría. Los movidos se auditan
+        # por identidad y cantidad global, no como una pérdida.
+        expected_order = [
+            key for key in dict.fromkeys(before_keys)
+            if after_counts.get(key, 0) > 0
+        ]
+        actual_order = [
+            key for key in dict.fromkeys(after_keys)
+            if key in before_counts
+        ]
+        if actual_order != expected_order:
+            raise AssertionError(
+                f"Cambió el orden relativo dentro de {category}: "
+                f"antes={expected_order[:30]!r}; después={actual_order[:30]!r}"
+            )
 
     before_heidi = [item for item in before if item["url"] and ("heidi" in item["name"] or "heidi" in item["tvg_name"])]
     after_heidi = [item for item in after_playable if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
