@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+"""Ejecuta la actualización integral de la principal y reconcilia sus complementos."""
+from pathlib import Path
+import subprocess
+import sys
+
+import requests
+
+import alimentar_principal as alimentador
+from sincronizar_complementos import (
+    _group_and_label_alternatives,
+    _prioritize_infantiles,
+    get_last_url_priority,
+    synchronize_once,
+)
+
+ROOT = Path(__file__).resolve().parents[1]
+PRINCIPAL = ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+
+
+def main():
+    print("\n[ORQUESTADOR] Actualización base: Pluto, IPTVSV, MAGMA y fuentes existentes.")
+    # El alimentador actual conserva las barreras de identidad/cobertura Pluto
+    # y ordena el bloque fijo + MAGMA + originales antes de la reconciliación.
+    alimentador.main()
+
+    # La referencia de orden debe capturarse DESPUÉS del ordenamiento MAGMA.
+    original_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
+
+    print("\n[ORQUESTADOR] Unificando categorías CHILE.")
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "unificar_chile.py")],
+        cwd=ROOT,
+        check=True,
+    )
+
+    print("\n[ORQUESTADOR] Sincronizando todas las fuentes complementarias.")
+    result = synchronize_once()
+
+    current_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
+    ordered_lines, order_stats = alimentador.restaurar_orden_original_por_categoria(
+        current_lines,
+        original_lines,
+    )
+    ordered_lines = [line.rstrip() for line in ordered_lines]
+
+    session = requests.Session()
+    session.headers.update({"User-Agent": "Mozilla/5.0"})
+
+    print("\n[ORQUESTADOR] Aplicando exclusiones y reclasificaciones finales.")
+    ids_pluto_es_anime = alimentador.cargar_ids_pluto_es_anime(session)
+    ordered_lines = alimentador.aplicar_ajustes_referencia(
+        ordered_lines,
+        ids_pluto_es_anime,
+    )
+
+    # MAGMA se vuelve a ordenar DESPUÉS de sincronizar: así los canales que
+    # entren en este ciclo no quedan mezclados con el bloque histórico.
+    ordered_lines, magma_stats = alimentador.ordenar_bloques_magma_y_originales(
+        ordered_lines,
+        session,
+    )
+
+    print("\n[ORQUESTADOR] Agrupando alternativas y priorizando Infantiles.")
+    ordered_lines = _group_and_label_alternatives(
+        ordered_lines,
+        get_last_url_priority(),
+    )
+    ordered_lines = _prioritize_infantiles(ordered_lines)
+
+    temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
+    temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
+    temporary.replace(PRINCIPAL)
+
+    print("[ORQUESTADOR] Orden previo restaurado:", order_stats)
+    print("[ORQUESTADOR] Bloque MAGMA:", magma_stats)
+    print("[ORQUESTADOR] Resultado de sincronización:", result)
+    return result
+
+
+if __name__ == "__main__":
+    main()
