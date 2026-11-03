@@ -659,14 +659,6 @@ def reclasificar_pluto_existente(lineas, session):
         bloque.append(url)
         j += 1
 
-        # jmp2.uk es la alternativa Pluto MX sin JWT: debe permanecer tal
-        # cual y nunca reemplazarse por una URL JWT de LATAM/ES.
-        if "jmp2.uk/plu-" in url.lower():
-            salida.extend(bloque)
-            mx_externos_conservados += 1
-            i = j
-            continue
-
         if not es_url_pluto(url):
             salida.extend(bloque)
             i = j
@@ -923,6 +915,14 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         url = lineas[j].strip()
         bloque.append(url)
         j += 1
+
+        # jmp2.uk es la alternativa Pluto MX sin JWT: debe permanecer tal
+        # cual y nunca reemplazarse por una URL JWT de LATAM/ES.
+        if "jmp2.uk/plu-" in url.lower():
+            salida.extend(bloque)
+            mx_externos_conservados += 1
+            i = j
+            continue
 
         if not es_url_pluto(url):
             salida.extend(bloque)
