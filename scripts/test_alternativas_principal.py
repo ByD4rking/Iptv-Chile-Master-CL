@@ -200,5 +200,29 @@ class TestAlternativasPrincipal(unittest.TestCase):
         ap.validar_orden_canales(original, restored)
 
 
+    def test_pluto_es_excludes_anime_and_los_pitufos_but_not_other_channels(self):
+        fuente_es = ap.FUENTES_PLUTO[1]
+        fuente_latam = ap.FUENTES_PLUTO[0]
+        pitufos = {
+            "categoria": "Infantiles",
+            "nombre": "Los Pitufos",
+            "extinf": '#EXTINF:-1 tvg-name="Los Pitufos",Los Pitufos',
+        }
+        anime = {
+            "categoria": "Anime",
+            "nombre": "Anime ES",
+            "extinf": '#EXTINF:-1 tvg-name="Anime ES",Anime ES',
+        }
+        otro_infantil = {
+            "categoria": "Infantiles",
+            "nombre": "Heidi",
+            "extinf": '#EXTINF:-1 tvg-name="Heidi",Heidi',
+        }
+        self.assertTrue(ap.canal_excluido_pluto_es(fuente_es, pitufos))
+        self.assertTrue(ap.canal_excluido_pluto_es(fuente_es, anime))
+        self.assertFalse(ap.canal_excluido_pluto_es(fuente_es, otro_infantil))
+        self.assertFalse(ap.canal_excluido_pluto_es(fuente_latam, pitufos))
+
+
 if __name__ == "__main__":
     unittest.main()
