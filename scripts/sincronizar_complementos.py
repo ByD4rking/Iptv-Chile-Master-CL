@@ -49,6 +49,12 @@ def _base_channel_name(name: str) -> str:
         name or "",
         flags=re.I,
     )
+    name = re.sub(
+        r"\s*(?:\[\s*pluto(?:\s*tv)?\s*(?:es|españa)\s*\]|\(\s*pluto(?:\s*tv)?\s*(?:es|españa)\s*\))\s*$",
+        "",
+        name,
+        flags=re.I,
+    )
     name = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", name, flags=re.I)
     return ap.normalizar(name)
 
