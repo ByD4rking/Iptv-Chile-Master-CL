@@ -398,7 +398,23 @@ def _merge_extinf(current: str, source: str, destination: str) -> str:
         result = _set_attr(result, "tvg-name", _clean_channel_display(source_name))
     source_display = ap.extraer_nombre(source)
     if source_display:
-        result = _set_display_name(result, _clean_channel_display(source_display))
+        existing_display = ap.extraer_nombre(current)
+        existing_option = re.search(
+            r"\s*(\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
+            existing_display or "",
+            flags=re.I,
+        )
+        source_has_option = re.search(
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
+            source_display,
+            flags=re.I,
+        )
+        display_name = _clean_channel_display(source_display)
+        if existing_option and not source_has_option:
+            display_name = f"{display_name} {existing_option.group(1)}".strip()
+        result = _set_display_name(result, display_name)
 
     for key in ("tvg-logo", "logo", "tvg-language", "tvg-country", "tvg-chno"):
         value = _attr(source, key)
