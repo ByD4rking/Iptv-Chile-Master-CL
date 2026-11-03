@@ -70,6 +70,12 @@ jobs:
       - name: Verificar orden histórico de Pluto
         run: python -m unittest discover -s pluto/src -p 'test_*.py'
 
+      - name: Ejecutar selftest de Pluto y margen JWT
+        run: python pluto/src/selftest.py
+
+      - name: Pruebas unitarias de sincronización complementaria
+        run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
+
       - name: Verificar fuentes y fallos transitorios del generador
         run: python IPTV-CHILE-GENERADOR/tests/test_collect.py
 
