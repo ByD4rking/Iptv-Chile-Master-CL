@@ -19,6 +19,7 @@ import alimentar_principal as ap
 
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+MANIFEST = BASE / "scripts" / "sync_sources.json"
 TIMEOUT = 30
 
 # Todas las regiones Pluto son complementarias de la principal. LATAM tiene
@@ -392,28 +393,65 @@ def synchronize_once() -> dict:
     session = requests.Session()
     session.headers.update({"User-Agent": "IPTV-Chile-Master/1.1 (+source-sync)"})
     candidates, source_stats = collect_candidates(session)
+
     original_bytes = PRINCIPAL.read_bytes()
     original = original_bytes.decode("utf-8-sig", errors="replace").splitlines()
-    updated, changes = reconcile_lines(original, candidates)
-    text = "\n".join(updated).rstrip("\n") + "\n"
-    if not text.startswith("#EXTM3U\n") or not any(line.startswith("#EXTINF:") for line in updated):
+    manifest_original = MANIFEST.read_bytes() if MANIFEST.exists() else None
+    if manifest_original:
+        try:
+            manifest_data = json.loads(manifest_original.decode("utf-8"))
+            manifest = manifest_data.get("channels", {})
+            if not isinstance(manifest, dict):
+                raise ValueError("channels no es un objeto")
+        except Exception as exc:
+            raise RuntimeError(
+                f"Manifiesto de propiedad inválido; se cancela la sincronización segura: {exc}"
+            ) from exc
+    else:
+        manifest = {}
+
+    updated, changes = reconcile_lines(original, candidates, manifest)
+    text = "\\n".join(updated).rstrip("\\n") + "\\n"
+    if not text.startswith("#EXTM3U\\n") or not any(line.startswith("#EXTINF:") for line in updated):
         raise RuntimeError("La sincronización produjo una M3U inválida; se conserva el archivo original.")
-    temp = PRINCIPAL.with_name(PRINCIPAL.name + ".sync.tmp")
+
+    manifest_text = json.dumps(
+        {"version": 1, "channels": manifest},
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+    ) + "\\n"
+    temp_playlist = PRINCIPAL.with_name(PRINCIPAL.name + ".sync.tmp")
+    temp_manifest = MANIFEST.with_name(MANIFEST.name + ".sync.tmp")
     try:
-        temp.write_text(text, encoding="utf-8", newline="\n")
-        staged = temp.read_text(encoding="utf-8")
-        if not staged.startswith("#EXTM3U\n") or staged.count("#EXTINF:") != sum(
-            1 for line in staged.splitlines() if line.startswith("#EXTINF:")
+        temp_playlist.write_text(text, encoding="utf-8", newline="\\n")
+        temp_manifest.write_text(manifest_text, encoding="utf-8", newline="\\n")
+
+        staged = temp_playlist.read_text(encoding="utf-8")
+        if not staged.startswith("#EXTM3U\\n") or not any(
+            line.startswith("#EXTINF:") for line in staged.splitlines()
         ):
             raise RuntimeError("Validación temporal de M3U fallida.")
-        temp.replace(PRINCIPAL)
+        staged_manifest = json.loads(temp_manifest.read_text(encoding="utf-8"))
+        if staged_manifest.get("version") != 1 or not isinstance(staged_manifest.get("channels"), dict):
+            raise RuntimeError("Validación temporal del manifiesto fallida.")
+
+        # Publicar los dos artefactos como una operación recuperable.
+        temp_playlist.replace(PRINCIPAL)
+        temp_manifest.replace(MANIFEST)
     except Exception:
-        temp.unlink(missing_ok=True)
-        # La ruta principal solo se reemplaza después de validar el temporal.
+        temp_playlist.unlink(missing_ok=True)
+        temp_manifest.unlink(missing_ok=True)
         if PRINCIPAL.exists() and PRINCIPAL.read_bytes() != original_bytes:
             restore = PRINCIPAL.with_name(PRINCIPAL.name + ".sync.restore")
             restore.write_bytes(original_bytes)
             restore.replace(PRINCIPAL)
+        if manifest_original is None:
+            MANIFEST.unlink(missing_ok=True)
+        elif not MANIFEST.exists() or MANIFEST.read_bytes() != manifest_original:
+            restore_manifest = MANIFEST.with_name(MANIFEST.name + ".sync.restore")
+            restore_manifest.write_bytes(manifest_original)
+            restore_manifest.replace(MANIFEST)
         raise
     return {**source_stats, **changes}
 
