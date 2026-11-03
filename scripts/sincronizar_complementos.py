@@ -241,7 +241,10 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
 
     # Excluir Pluto España de Anime, pero mantener el mismo ID si también
     # está disponible en Pluto LATAM o México.
-    pluto_es_anime_ids = set()
+    pluto_es_anime_ids = {
+        "id:" + ap.normalizar(channel_id)
+        for channel_id in ap.PLUTO_ES_ANIME_IDS_HISTORICOS
+    }
     pluto_latam_mx_ids = set()
     for candidate in candidates:
         identity = candidate.get("identity") or _identity(
