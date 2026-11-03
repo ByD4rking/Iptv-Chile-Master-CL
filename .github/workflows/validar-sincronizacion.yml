@@ -11,6 +11,22 @@ on:
       - "scripts/test_sincronizar_complementos.py"
       - "scripts/selftest_sincronizacion_real.py"
       - ".github/workflows/validar-sincronizacion.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/alimentar_principal.py"
+      - "scripts/sincronizar_complementos.py"
+      - "scripts/ejecutar_actualizacion_principal.py"
+      - "scripts/test_sincronizar_complementos.py"
+      - "scripts/selftest_sincronizacion_real.py"
+      - ".github/workflows/validar-sincronizacion.yml"
+      - "scripts/alimentar_principal.py"
+      - "scripts/sincronizar_complementos.py"
+      - "scripts/ejecutar_actualizacion_principal.py"
+      - "scripts/test_sincronizar_complementos.py"
+      - "scripts/selftest_sincronizacion_real.py"
+      - ".github/workflows/validar-sincronizacion.yml"
 
 permissions:
   contents: read
