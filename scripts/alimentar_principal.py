@@ -2010,12 +2010,7 @@ def integrar_pluto_mx(lineas, session):
             raise ValueError("Pluto MX devolvió una lista vacía, sin canales")
         respuesta_latam = session.get(FUENTE_PLUTO_CANONICA, timeout=30)
         respuesta_latam.raise_for_status()
-        contenido_latam = respuesta_latam.text or ""
-        if not contenido_latam.lstrip().startswith("#EXTM3U"):
-            raise ValueError("Pluto LATAM no devolvió una cabecera M3U válida")
-        canales_latam = parsear_m3u(contenido_latam)
-        if not canales_latam:
-            raise ValueError("Pluto LATAM devolvió una lista vacía, sin canales")
+        canales_latam = parsear_m3u(respuesta_latam.text or "")
     except Exception as exc:
         # No escribir una M3U sin alternativas MX verificadas.
         # La deduplicación anterior puede haber retirado opciones previas;
