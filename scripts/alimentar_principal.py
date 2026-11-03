@@ -773,6 +773,32 @@ def extraer_pluto_id(url):
     return m.group(1).lower() if m else ""
 
 
+def identidades_pluto(extinf, url):
+    """Devuelve todas las identidades disponibles, no solo la preferida.
+
+    En algunas M3U el tvg-id es un alias EPG y no coincide con el channel ID
+    de la URL Pluto. Ambos identificadores deben poder reconocer la misma
+    entrada al comprobar cobertura tras la normalización.
+    """
+    identidades = set()
+    match = re.search(r'tvg-id="([^"]+)"', extinf or "", re.I)
+    if match and match.group(1).strip():
+        identidades.add("id:" + match.group(1).strip().lower())
+    channel_id = extraer_pluto_id(url)
+    if channel_id:
+        identidades.add("id:" + channel_id)
+    return identidades
+
+
+def ids_pluto_faltantes(ids_requeridos, aliases_fuente, aliases_finales):
+    """Exige que cada ID fuente sobreviva por al menos uno de sus alias."""
+    return {
+        identidad
+        for identidad in ids_requeridos
+        if not (aliases_fuente.get(identidad, {identidad}) & aliases_finales)
+    }
+
+
 def es_url_pluto(url):
     """Detecta URLs de streaming Pluto sin considerar el dominio."""
     u = (url or "").lower()
@@ -2849,6 +2875,7 @@ def main():
     pluto_ids_canonicos = obtener_ids_pluto_canonicos(session)
 
     ids_pluto_fuentes = set()
+    aliases_pluto_fuentes = defaultdict(set)
     urls_pluto_fuentes_por_id = defaultdict(set)
     canales_pluto_fuentes_por_id = defaultdict(list)
     urls_pluto_fuentes = set()
@@ -3027,6 +3054,9 @@ def main():
                 # obligatoria. Copias regionales/JWT del mismo ID no se exigen.
                 if identidad:
                     ids_pluto_fuentes.add(identidad)
+                    aliases_pluto_fuentes[identidad].update(
+                        identidades_pluto(canal.get("extinf", ""), url_pluto_fuente)
+                    )
 
                 if agregar_bloque(canal, destino, urls_globales, bloques_nuevos):
                     agregados_pluto += 1
@@ -3329,7 +3359,7 @@ def main():
 
     # Validación final después del autorreparo: una representación por ID
     # aceptado es suficiente; no se exige conservar cada JWT regional.
-    ids_pluto_finales_actualizados = set()
+    aliases_pluto_finales_actualizados = set()
     for i_post, linea_post in enumerate(lineas):
         if not linea_post.startswith("#EXTINF"):
             continue
@@ -3337,15 +3367,15 @@ def main():
         while j_post < len(lineas) and lineas[j_post].startswith("#"):
             j_post += 1
         if j_post < len(lineas) and url_es_valida(lineas[j_post].strip()):
-            identidad_post = identidad_pluto(linea_post, lineas[j_post].strip())
-            if identidad_post:
-                ids_pluto_finales_actualizados.add(identidad_post)
+            aliases_pluto_finales_actualizados.update(
+                identidades_pluto(linea_post, lineas[j_post].strip())
+            )
 
-    ids_pluto_faltantes = {
-        identidad
-        for identidad in ids_pluto_fuentes
-        if identidad not in ids_pluto_finales_actualizados
-    }
+    ids_pluto_faltantes = ids_pluto_faltantes(
+        ids_pluto_fuentes,
+        aliases_pluto_fuentes,
+        aliases_pluto_finales_actualizados,
+    )
     if ids_pluto_faltantes:
         raise RuntimeError(
             "VALIDACION PLUTO FALLIDA: faltan "
