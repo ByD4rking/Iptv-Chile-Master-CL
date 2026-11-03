@@ -167,6 +167,31 @@ def test_pluto_es_identity_lookup_loads_catalog_ids() -> None:
     assert "608035b8d8705f0007260287" in ids
 
 
+def test_pluto_es_rejects_any_anime_without_identity() -> None:
+    class FakeResponse:
+        text = "\\n".join([
+            "#EXTM3U",
+            '#EXTINF:-1 group-title="Anime",Anime sin ID',
+            "https://cdn.example.test/anime-sin-id.m3u8",
+            '#EXTINF:-1 tvg-id="bbbbbbbbbbbbbbbbbbbbbbbb" group-title="Anime",Anime con ID',
+            "https://jmp2.uk/plu-bbbbbbbbbbbbbbbbbbbbbbbb.m3u8",
+        ])
+
+        def raise_for_status(self) -> None:
+            return None
+
+    class FakeSession:
+        def get(self, url: str, timeout: int):
+            return FakeResponse()
+
+    try:
+        cargar_ids_pluto_es_anime(FakeSession())
+    except RuntimeError as exc:
+        assert "se cancela la actualización" in str(exc)
+    else:
+        raise AssertionError("Pluto ES aceptó un canal Anime sin identidad")
+
+
 def test_pluto_mx_importer() -> None:
     class FakeResponse:
         def __init__(self, text: str):
@@ -283,6 +308,33 @@ def test_pluto_mx_fails_closed() -> None:
         assert "se cancela la actualización" in str(exc)
     else:
         raise AssertionError("Pluto MX fallido no canceló la actualización")
+
+
+def test_pluto_mx_rejects_empty_m3u() -> None:
+    class FakeResponse:
+        def __init__(self, text: str):
+            self.text = text
+
+        def raise_for_status(self) -> None:
+            return None
+
+    class FakeSession:
+        def get(self, url: str, timeout: int):
+            if url.endswith("PlutoTV.MX.m3u"):
+                return FakeResponse("#EXTM3U")
+            return FakeResponse("#EXTM3U\\n#EXTINF:-1,Canal LATAM\\nhttps://latam.example/canal.m3u8")
+
+    original = [
+        "#EXTM3U",
+        '#EXTINF:-1 tvg-id="canal-a" group-title="Anime",Canal A',
+        "https://example.test/canal-a.m3u8",
+    ]
+    try:
+        integrar_pluto_mx(original, FakeSession())
+    except RuntimeError as exc:
+        assert "se cancela la actualización" in str(exc)
+    else:
+        raise AssertionError("Pluto MX aceptó una M3U vacía como importación válida")
 
 
 def test_pluto_option_on_external_cdn_stays_adjacent() -> None:
@@ -429,7 +481,9 @@ if __name__ == "__main__":
     test_ajustes_referencia()
     test_pluto_es_identity_lookup_fails_closed()
     test_pluto_es_identity_lookup_loads_catalog_ids()
+    test_pluto_es_rejects_any_anime_without_identity()
     test_pluto_mx_importer()
+    test_pluto_mx_rejects_empty_m3u()
     test_pluto_options_remain_adjacent()
     test_extinf_category_fallback_preserves_duration()
     test_pluto_mx_fails_closed()
