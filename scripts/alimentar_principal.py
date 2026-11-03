@@ -1916,7 +1916,7 @@ def firma_orden_canales(lineas):
     return orden
 
 
-def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias_reordenables=None):
+def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias_reordenables=None, ids_pluto=None):
     """Restaura el orden previo de canales existentes y deja los nuevos al final.
 
     La principal puede fusionar carpetas o reubicar canales durante la
@@ -1927,6 +1927,7 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
     categorias_especiales = {
         normalizar(x) for x in (categorias_reordenables or set())
     }
+    ids_pluto = {str(x).strip().lower().removeprefix("id:") for x in (ids_pluto or set())}
 
     def extraer_bloques(contenido):
         prefijo = []
@@ -1948,7 +1949,12 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                     "categoria": normalizar(extraer_categoria(extinf)),
                     "url": contenido[j].strip(),
                     "lineas": contenido[inicio:j + 1],
-                    "orden_actual": len(bloques),
+                            "orden_actual": len(bloques),
+                    "tvg_id": (
+                        re.search(r'tvg-id="([^"]+)"', extinf, re.I).group(1).strip().lower()
+                        if re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+                        else ""
+                    ),
                 })
                 i = j + 1
             else:
@@ -1989,8 +1995,13 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
         if categoria in categorias_especiales:
             ordenados = bloques
         else:
-            pluto = [b for b in bloques if es_url_pluto(b["url"])]
-            normales = [b for b in bloques if not es_url_pluto(b["url"])]
+            es_bloque_pluto = lambda b: (
+                es_url_pluto(b["url"])
+                or (b.get("tvg_id") and b["tvg_id"] in ids_pluto)
+                or (extraer_pluto_id(b["url"]) in ids_pluto)
+            )
+            pluto = [b for b in bloques if es_bloque_pluto(b)]
+            normales = [b for b in bloques if not es_bloque_pluto(b)]
             for bloque in normales:
                 ranks = [
                     orden_original[key]
@@ -3104,10 +3115,16 @@ def main():
 
     # Restaurar primero el orden de los canales que ya estaban publicados.
     # Los nuevos se anexan; las carpetas especiales y Pluto conservan sus reglas.
+    ids_pluto_orden_protegidos = (
+        set(ids_pluto_fuentes)
+        | set(pluto_ids_canonicos)
+        | obtener_ids_pluto_existentes(lineas_iniciales)
+    )
     lineas = restaurar_orden_original_por_categoria(
         lineas,
         lineas_iniciales,
         categorias_reordenables={"Entretenimiento / Cine / Series"},
+        ids_pluto=ids_pluto_orden_protegidos,
     )
 
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
@@ -3118,11 +3135,7 @@ def main():
         lineas_iniciales,
         lineas,
         categorias_reordenables={"Entretenimiento / Cine / Series"},
-        ids_pluto_omitidos=(
-            set(ids_pluto_fuentes)
-            | set(pluto_ids_canonicos)
-            | obtener_ids_pluto_existentes(lineas_iniciales)
-        ),
+        ids_pluto_omitidos=ids_pluto_orden_protegidos,
     )
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
 
