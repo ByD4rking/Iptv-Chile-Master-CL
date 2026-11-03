@@ -33,6 +33,7 @@ def norm(value: str) -> str:
 
 
 def base_name(value: str) -> str:
+    value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value or "", flags=re.I)
     value = re.sub(
         r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
         "",
