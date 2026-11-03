@@ -103,10 +103,10 @@ def protected_hashes() -> dict[str, str]:
     }
 
 
-def identity_key(item: dict, before_ids: set[str], after_ids: set[str], unique_names: set[str]) -> str:
+def identity_key(item: dict, other_ids: set[str], unique_names: set[str]) -> str:
     channel_id = norm(item.get("id", ""))
     name = item.get("tvg_name") or item.get("name") or ""
-    if channel_id and (channel_id in before_ids or channel_id in after_ids):
+    if channel_id and channel_id in other_ids:
         return "id:" + channel_id
     if name and name in unique_names:
         return "name:" + name
@@ -216,11 +216,11 @@ def main() -> None:
     after_ids = {norm(item["id"]) for item in after if item["id"]}
 
     before_keys = [
-        identity_key(item, before_ids, after_ids, unique_names)
+        identity_key(item, after_ids, unique_names)
         for item in before_kept
     ]
     after_keys = [
-        identity_key(item, before_ids, after_ids, unique_names)
+        identity_key(item, before_ids, unique_names)
         for item in after
     ]
     before_counts = Counter(before_keys)
