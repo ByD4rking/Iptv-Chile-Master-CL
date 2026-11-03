@@ -2,7 +2,7 @@ import unittest
 import re
 
 import alimentar_principal as ap
-from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, reconcile_lines
+from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _prioritize_infantiles, reconcile_lines
 
 
 def entry(channel_id, category, name, url):
