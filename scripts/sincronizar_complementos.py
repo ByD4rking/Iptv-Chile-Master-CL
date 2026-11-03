@@ -138,6 +138,20 @@ def _read_blocks(lines: list[str]) -> tuple[list[str], list[dict], list[str]]:
     return prefix, blocks, trailing
 
 
+def _source_label(source: str) -> str:
+    known = {
+        ap.FUENTE_IPTVSV: "IPTVSV",
+        ap.FUENTE_MAGMA: "MAGNA",
+        ap.FUENTES_PLUTO[0]: "Pluto LATAM",
+        ap.FUENTES_PLUTO[1]: "Pluto ES",
+        ap.FUENTES_PLUTO[2]: "Pluto MX",
+        ap.FUENTE_PLUTO_ALTERNATIVAS: "Pluto MX alternativo",
+    }
+    if source in known:
+        return known[source]
+    return (source or "fuente_desconocida").rstrip("/").rsplit("/", 1)[-1]
+
+
 def _destination(source_url: str, channel: dict, categories: list[str]) -> str | None:
     category = (channel.get("categoria") or "").strip()
     name = channel.get("nombre", "")
@@ -325,8 +339,13 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
 
     # Recalcular destinos con el catálogo real de categorías de la maestra.
     valid_candidates = []
+    valid_by_source = Counter()
+    skipped_by_source = Counter()
+    pitufos_by_source = Counter()
     for candidate in candidates:
+        source_label = _source_label(candidate.get("source", ""))
         if _is_los_pitufos(candidate.get("extinf", "")):
+            pitufos_by_source[source_label] += 1
             continue
         destination = _destination(
             candidate.get("source", ""),
@@ -334,7 +353,9 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             categories,
         )
         if not destination:
+            skipped_by_source[source_label] += 1
             continue
+        valid_by_source[source_label] += 1
         item = dict(candidate)
         # Reutiliza el nombre canónico existente; si no existe, crea la
         # categoría al añadir el primer canal con ese group-title.
@@ -386,6 +407,9 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         "metadatos_actualizados": 0,
         "ambiguos": 0,
         "sin_categoria": len(candidates) - len(valid_candidates),
+        "candidatos_validos_por_fuente": dict(sorted(valid_by_source.items())),
+        "sin_categoria_por_fuente": dict(sorted(skipped_by_source.items())),
+        "pitufos_omitidos_por_fuente": dict(sorted(pitufos_by_source.items())),
         "fuentes_propietarias": 0,
         "los_pitufos_eliminados": pitufos_removed,
         "pluto_es_anime_eliminados": pluto_es_anime_removed,
