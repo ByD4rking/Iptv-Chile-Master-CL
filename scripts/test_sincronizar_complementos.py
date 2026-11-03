@@ -511,6 +511,52 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertTrue(all('tvg-logo="https://logos.example/pokemon.png"' in line for line in extinfs))
         self.assertEqual(stats["alternativas_agregadas"], 2)
 
+    def test_pluto_mx_without_group_title_inherits_unique_latam_category(self):
+        base = ["#EXTM3U"] + entry(
+            "pokemon.old", "Anime", "Pokémon", "https://old.example/pokemon.m3u8"
+        )
+        pluto_id = "6870072ca9d5c45c3e9466f1"
+        source = [
+            candidate(
+                pluto_id,
+                "Anime",
+                "Pokémon",
+                f"https://stitcher.pluto.tv/channel/{pluto_id}/master.m3u8?country=MX&jwt=latam",
+                ap.FUENTES_PLUTO[0],
+            ),
+            candidate(
+                "PlutoTVPokemon.us@US",
+                "",
+                "Pokémon",
+                f"https://jmp2.uk/plu-{pluto_id}.m3u8",
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
+            ),
+            candidate(
+                "",
+                "Anime",
+                "Pokémon",
+                "https://magma.example/pokemon.m3u8",
+                ap.FUENTE_MAGMA,
+            ),
+        ]
+        source[0]["extinf"] = source[0]["extinf"].replace(
+            'group-title="Anime"',
+            'tvg-logo="https://logos.example/pokemon.png" group-title="Anime"',
+        )
+        output, stats = reconcile_lines(base, source)
+        extinfs = [
+            line for line in output
+            if line.startswith("#EXTINF") and f'tvg-id="{pluto_id}"' in line
+        ]
+        urls = [output[output.index(line) + 1] for line in extinfs]
+        self.assertEqual(urls, [
+            f"https://stitcher.pluto.tv/channel/{pluto_id}/master.m3u8?country=MX&jwt=latam",
+            f"https://jmp2.uk/plu-{pluto_id}.m3u8",
+            "https://magma.example/pokemon.m3u8",
+        ])
+        self.assertEqual(stats["candidatos_validos_por_fuente"]["Pluto MX"], 1)
+        self.assertEqual(stats["sin_categoria_por_fuente"].get("Pluto MX", 0), 0)
+
     def test_pluto_es_url_is_removed_even_when_same_id_exists_in_latam(self):
         pluto_id = "5fceaab478f2af00080ff51f"
         base = ["#EXTM3U"] + (
