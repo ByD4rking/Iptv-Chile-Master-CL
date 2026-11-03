@@ -11,7 +11,7 @@ import alimentar_principal as alimentador
 
 
 def main():
-    print("\\n[ORQUESTADOR] Sincronización incremental previa.")
+    print("\n[ORQUESTADOR] Sincronización incremental previa.")
     result = synchronize_once()
     print("[ORQUESTADOR] Resultado previo:", result)
     alimentador.main()
