@@ -252,6 +252,7 @@ class ComplementSyncTests(unittest.TestCase):
         base = (
             ["#EXTM3U"]
             + entry("pitufos.id", "Infantiles", "Los Pitufos", "https://bad.example/pitufos.m3u8")
+            + entry("pitufos.id", "Infantiles", "Los Pitufos [Pluto ES]", "https://bad.example/pitufos-es.m3u8")
             + entry("heidi.id", "Infantiles", "Heidi", "https://good.example/heidi.m3u8")
         )
         source = [
@@ -266,7 +267,7 @@ class ComplementSyncTests(unittest.TestCase):
         output, stats = reconcile_lines(base, source)
         self.assertFalse(any("Los Pitufos" in line for line in output))
         self.assertIn("https://good.example/heidi.m3u8", output)
-        self.assertEqual(stats["los_pitufos_eliminados"], 1)
+        self.assertEqual(stats["los_pitufos_eliminados"], 2)
 
     def test_pluto_es_anime_excluded_but_latam_and_mx_anime_are_added(self):
         base = (
