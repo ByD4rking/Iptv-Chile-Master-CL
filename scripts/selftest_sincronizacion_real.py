@@ -205,9 +205,16 @@ def main(args: argparse.Namespace) -> None:
     if duplicates:
         raise AssertionError(f"Hay URLs duplicadas en la principal: {duplicates[:10]!r}")
 
+    allowed_cleanup_categories = {
+        "total", "otros", "telemundo noticias", "sky sports",
+        "qatar", "palestina", "corea del norte", "corea del sur",
+        "israel", "alemania", "francia", "iran", "rusia",
+        "guinea ecuatorial", "estados unidos",
+    }
     before_kept = [
         item for item in before
         if not item["is_pitufos"]
+        and norm(item["category"]) not in allowed_cleanup_categories
         and not (
             norm(item["id"]) in es_only_ids
             and norm(item["category"]) == "anime"
