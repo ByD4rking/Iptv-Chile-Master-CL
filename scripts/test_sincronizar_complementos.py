@@ -809,7 +809,7 @@ class RequestedChannelLabelTests(unittest.TestCase):
             "#EXTM3U",
             '#EXTINF:-1 group-title="Anime",Delmi TV',
             "https://delmi.example/v1.m3u8",
-            '#EXTINF:-1 group-title="Anime",Delmi TV [V2]',
+            '#EXTINF:-1 group-title="Infantiles",Delmi TV [V2]',
             "https://delmi.example/v2.m3u8",
         ]
         output = normalizar_nombres_solicitados(lines)
@@ -819,6 +819,7 @@ class RequestedChannelLabelTests(unittest.TestCase):
             [ap.extraer_nombre(line) for line in extinfs],
             ["Delmi TV", "Delmi TV 2"],
         )
+        self.assertEqual(ap.extraer_categoria(extinfs[1]), "Anime")
         self.assertEqual(
             urls,
             ["https://delmi.example/v1.m3u8", "https://delmi.example/v2.m3u8"],
