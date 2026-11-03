@@ -908,6 +908,16 @@ class PlutoEsFinalFilterTests(unittest.TestCase):
 
 class AuditIdentityRegressionTests(unittest.TestCase):
 
+    def test_identity_audit_matches_caracol_country_suffix_when_source_adds_id(self):
+        before = {"id": "", "tvg_name": "", "name": "Caracol | CO"}
+        after = {"id": "123", "tvg_name": "Caracol", "name": "Caracol"}
+        name_to_ids = {"caracol": {"123"}}
+        self.assertEqual(
+            identity_key(before, name_to_ids),
+            identity_key(after, name_to_ids),
+        )
+        self.assertEqual(identity_key(before, name_to_ids), "id:123")
+
     def test_identity_audit_matches_channel_when_source_adds_tvg_id(self):
         before = {"id": "", "tvg_name": "C y G TV", "name": "C y G TV | CL"}
         after = {"id": "1626", "tvg_name": "C y G TV", "name": "C y G TV | CL"}
