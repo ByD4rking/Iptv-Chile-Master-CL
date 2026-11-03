@@ -61,7 +61,7 @@ class RestorationOrderTests(unittest.TestCase):
         current = ["#EXTM3U"] + entry("music.id", "Música", "MTV Classic", "https://new.example/mtv.m3u8")
         output, restored = ap.restaurar_no_pluto_existente(
             current,
-            {"https://old.example/mtv.m3u8": original},
+            ["#EXTM3U"] + original,
         )
         self.assertEqual(restored, 0)
         self.assertIn("https://new.example/mtv.m3u8", output)
@@ -72,11 +72,7 @@ class RestorationOrderTests(unittest.TestCase):
         missing = entry("music.b", "Música", "Canal B", "https://b.example/b.m3u8")
         last = entry("music.c", "Música", "Canal C", "https://c.example/c.m3u8")
         current = ["#EXTM3U"] + first + last
-        initial = {
-            "https://a.example/a.m3u8": first,
-            "https://b.example/b.m3u8": missing,
-            "https://c.example/c.m3u8": last,
-        }
+        initial = ["#EXTM3U"] + first + missing + last
         output, restored = ap.restaurar_no_pluto_existente(current, initial)
         self.assertEqual(restored, 1)
         self.assertEqual(
