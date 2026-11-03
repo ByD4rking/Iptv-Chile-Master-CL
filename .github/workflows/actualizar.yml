@@ -84,14 +84,6 @@ jobs:
         run: |
           python scripts/ejecutar_actualizacion_principal.py
 
-      - name: Unificar categoría CHILE
-        run: |
-          python scripts/unificar_chile.py
-
-      - name: Reconciliar nuevamente todas las fuentes complementarias
-        run: |
-          python scripts/sincronizar_complementos.py
-
       - name: Auditoría integral de la lista principal
         run: |
           python scripts/selftest_sincronizacion_real.py --audit-only --before /tmp/principal_before.m3u
