@@ -73,6 +73,7 @@ def main():
         categorias_reordenables={
             "Entretenimiento / Cine / Series",
             "Infantiles",
+            "Anime",
         },
     )
 
