@@ -619,7 +619,7 @@ class ComplementSyncTests(unittest.TestCase):
         ]
         unique_names = []
         for name in infant_names:
-            base_name = re.sub(r"\\s*\\[Opción \\d+\\]$", "", name)
+            base_name = name.split(" [Opción ", 1)[0]
             if base_name not in unique_names:
                 unique_names.append(base_name)
         self.assertEqual(unique_names[:3], ["Popeye", "Los Pitufos", "Heidi"])
