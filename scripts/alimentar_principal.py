@@ -1976,10 +1976,17 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
             keys.append("name:" + nombre)
         return keys
 
+    def categoria_canonica(categoria):
+        key = normalizar(categoria)
+        key = normalizar(CATEGORIAS_CANONICAS.get(key, key))
+        key = normalizar(PAISES_CANONICOS.get(key, key))
+        return key
+
     orden_original = {}
     for index, item in enumerate(anteriores):
+        categoria_original = categoria_canonica(extraer_categoria(item["lineas"][0]))
         for key in identidades(item["lineas"][0]):
-            orden_original.setdefault(key, index)
+            orden_original.setdefault((categoria_original, key), index)
     grupos = {}
     orden_grupos = []
     for bloque in actuales:
@@ -2003,10 +2010,11 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
             pluto = [b for b in bloques if es_bloque_pluto(b)]
             normales = [b for b in bloques if not es_bloque_pluto(b)]
             for bloque in normales:
+                categoria_actual = categoria_canonica(extraer_categoria(bloque["lineas"][0]))
                 ranks = [
-                    orden_original[key]
+                    orden_original[(categoria_actual, key)]
                     for key in identidades(bloque["lineas"][0])
-                    if key in orden_original
+                    if (categoria_actual, key) in orden_original
                 ]
                 bloque["orden_original"] = min(ranks) if ranks else None
             existentes = [b for b in normales if b["orden_original"] is not None]
