@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
-"""Ejecuta el alimentador histórico; la reconciliación unificada corre al final.
+"""Sincroniza fuentes nuevas antes de ejecutar el alimentador histórico.
 
-El orden es intencional: primero se ejecutan las validaciones y protecciones
-históricas del alimentador; después el workflow sincroniza las fuentes nuevas
-sin reorganizar los bloques que ya existen en la playlist principal.
+La primera reconciliación crea categorías nuevas y mueve los canales por
+identidad. Después, el alimentador aplica sus validaciones y mantenimiento
+histórico usando ya las categorías reconciliadas. El workflow vuelve a
+reconciliar al final para dejar los cambios de fuentes en el resultado final.
 """
+from sincronizar_complementos import synchronize_once
 import alimentar_principal as alimentador
 
 
 def main():
+    print("\\n[ORQUESTADOR] Sincronización incremental previa.")
+    result = synchronize_once()
+    print("[ORQUESTADOR] Resultado previo:", result)
     alimentador.main()
 
 
