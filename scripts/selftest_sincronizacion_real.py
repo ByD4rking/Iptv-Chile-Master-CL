@@ -7,6 +7,7 @@ nunca publica ni hace push.
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import re
 from collections import Counter
@@ -115,11 +116,12 @@ def identity_key(item: dict, other_ids: set[str], unique_names: set[str]) -> str
     return "name:" + name
 
 
-def main() -> None:
+def main(args: argparse.Namespace) -> None:
     if not PRINCIPAL.is_file() or PRINCIPAL.stat().st_size == 0:
         raise RuntimeError("No existe la playlist principal para la prueba end-to-end.")
 
-    before = parse_entries(PRINCIPAL)
+    before_path = args.before if args.before else PRINCIPAL
+    before = parse_entries(before_path)
     hashes_before = protected_hashes()
 
     iptvsv = source_channels(ap.FUENTE_IPTVSV)
@@ -150,7 +152,10 @@ def main() -> None:
     es_only_ids = es_anime_ids - latam_mx_ids
     es_only_ids |= {norm(value) for value in ap.PLUTO_ES_ANIME_IDS_HISTORICOS} - latam_mx_ids
 
-    result = synchronize_once()
+    if args.audit_only:
+        result = {"mode": "audit-only"}
+    else:
+        result = synchronize_once()
     after = parse_entries(PRINCIPAL)
     after_ids = {norm(item["id"]) for item in after if item["id"]}
     missing_pluto_latam_mx = allowed_anime_ids - after_ids
@@ -267,4 +272,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--audit-only", action="store_true")
+    parser.add_argument("--before", type=Path)
+    main(parser.parse_args())
