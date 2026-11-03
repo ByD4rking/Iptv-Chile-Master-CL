@@ -38,7 +38,7 @@ def main():
 
     cantidad = len(
         re.findall(
-            r'group-title="CHILE\\s+TV"',
+            r'group-title="CHILE\s+TV"',
             texto,
             flags=re.IGNORECASE
         )
