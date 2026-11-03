@@ -46,7 +46,7 @@ class AuditSourceTests(unittest.TestCase):
         self.assertEqual(len(MODULE.parse_m3u(text)), 2)
 
     def test_snapshot_never_persists_raw_stream_urls(self):
-        raw = b'#EXTM3U\\n#EXTINF:-1 tvg-id="x",Canal X\\nhttps://signed.example/stream.m3u8?token=secret\\n'
+        raw = b'#EXTM3U\n#EXTINF:-1 tvg-id="x",Canal X\nhttps://signed.example/stream.m3u8?token=secret\n'
         snapshot = MODULE.snapshot_entry(raw, "TEST", "https://source.example/list.m3u")
         serialized = str(snapshot)
         self.assertNotIn("signed.example", serialized)
