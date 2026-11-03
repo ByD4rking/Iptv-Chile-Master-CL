@@ -103,12 +103,23 @@ def protected_hashes() -> dict[str, str]:
     }
 
 
-def same_channel(after: dict, before: dict, unique_names: set[str]) -> bool:
+def same_channel(
+    after: dict,
+    before: dict,
+    unique_names: set[str],
+    unique_tvg_names: set[str],
+) -> bool:
     if after["id"] and before["id"] and norm(after["id"]) == norm(before["id"]):
         return True
     if after["url"] and before["url"] and after["url"] == before["url"]:
         return True
     if after.get("extinf") and before.get("extinf") and after["extinf"] == before["extinf"]:
+        return True
+    if (
+        before["tvg_name"]
+        and before["tvg_name"] == after["tvg_name"]
+        and before["tvg_name"] in unique_tvg_names
+    ):
         return True
     return bool(
         before["name"]
@@ -208,13 +219,19 @@ def main() -> None:
         name for name, count in before_name_counts.items()
         if count == 1 and after_name_counts.get(name, 0) == 1
     }
+    before_tvg_counts = Counter(item["tvg_name"] for item in before_kept if item["tvg_name"])
+    after_tvg_counts = Counter(item["tvg_name"] for item in after if item["tvg_name"])
+    unique_tvg_names = {
+        name for name, count in before_tvg_counts.items()
+        if count == 1 and after_tvg_counts.get(name, 0) == 1
+    }
 
     cursor = 0
     for old in before_kept:
         match_index = next(
             (
                 index for index in range(cursor, len(after))
-                if same_channel(after[index], old, unique_names)
+                if same_channel(after[index], old, unique_names, unique_tvg_names)
             ),
             None,
         )
