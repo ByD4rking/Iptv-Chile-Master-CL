@@ -98,8 +98,8 @@ def main() -> None:
 
     client_path = ROOT / "client.py"
     client = client_path.read_text(encoding="utf-8-sig")
-    if "TOKEN_REFRESH_MARGIN = 300" not in client:
-        fail("client.py: falta margen de renovación JWT adelantada")
+    if "TOKEN_REFRESH_MARGIN = 12 * 60 * 60" not in client:
+        fail("client.py: falta margen JWT de 12 horas")
     if "LEGACY_CHANNELS_URL" not in client or "_get_us_legacy_catalog" not in client or "_get_us_legacy_channels" not in client:
         fail("client.py: faltan fallbacks US de catálogo")
     if "if not channels and self.region.code == \"us\"" not in client:
