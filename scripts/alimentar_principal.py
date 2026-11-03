@@ -2131,19 +2131,19 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                 )
                 if not ranks and nombre:
                     candidates = orden_por_categoria_nombre.get((categoria_actual, nombre), [])
-                    sin_id = [
-                        idx for idx in candidates
-                        if not identidad_anterior[idx][1]
-                    ]
-                    if sin_id:
-                        # Los duplicados históricos sin ID comparten identidad
-                        # de nombre; todos conservan la primera posición y su
-                        # orden relativo actual. Esto no mezcla IDs distintos.
-                        ranks = [min(sin_id)]
-                    elif not channel_id and len(candidates) == 1:
-                        # Si el ID desapareció, aceptar solo una identidad
-                        # histórica inequívoca por nombre.
+                    if len(candidates) == 1:
+                        # Si el nombre es único en la categoría histórica, permite
+                        # conservar orden aunque la fuente haya cambiado el tvg-id.
                         ranks = candidates
+                    else:
+                        sin_id = [
+                            idx for idx in candidates
+                            if not identidad_anterior[idx][1]
+                        ]
+                        if sin_id:
+                            # Duplicados históricos sin ID comparten identidad
+                            # de nombre; conservar su primera posición.
+                            ranks = [min(sin_id)]
                 bloque["orden_original"] = min(ranks) if ranks else None
             existentes = [b for b in normales if b["orden_original"] is not None]
             nuevos = [b for b in normales if b["orden_original"] is None]
