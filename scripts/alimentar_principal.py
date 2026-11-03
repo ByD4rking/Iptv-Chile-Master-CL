@@ -47,18 +47,21 @@ FUENTES = [
 # PLUTO: SOLO NUESTRAS LISTAS
 # Las URLs antiguas de Pluto se sustituyen por las listas propias al actualizar la principal.
 # ============================================================
-# Estas son las listas Pluto que alimentan la PRINCIPAL.
-# US y ALL NO se agregan aquí: pertenecen a la lista GOD.
+# Playlists regionales propias; la lista MX generada se mantiene independiente.
 FUENTES_PLUTO = [
     # LATAM es la fuente maestra y SIEMPRE tiene prioridad.
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
-    # Solo se permiten como complementos España y México.
+    # España también es propia y tokenizada; se excluye de Anime.
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+    # La playlist MX propia usa JWT y permanece separada de la principal.
     "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
 ]
 
-# Catálogo adicional SOLO para reemplazar enlaces Pluto de terceros.
-# Estas fuentes no se agregan como canales a la principal.
+# Solo LATAM y ES, ambas tokenizadas, son fuentes propias de la principal.
+# México entra por FUENTE_PLUTO_ALTERNATIVAS (jmp2.uk, sin JWT).
+FUENTES_PLUTO_PRINCIPAL = [FUENTES_PLUTO[0], FUENTES_PLUTO[1]]
+
+# Catálogo canónico para reemplazar enlaces Pluto antiguos: no usar MX JWT.
 FUENTE_PLUTO_CANONICA = FUENTES_PLUTO[0]
 
 PLUTO_CATEGORIAS_CANONICAS = {"retro", "zona paranormal", "competencia"}
@@ -69,7 +72,7 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO
+FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO_PRINCIPAL
 
 # Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
 # eliminan de la principal antes de incorporar nuestras listas.
@@ -601,7 +604,7 @@ def reclasificar_pluto_existente(lineas, session):
     # complementan, pero nunca deben sobrescribir una categoría ya declarada
     # por LATAM. Brasil se corrige después con su regla específica.
     fuentes_pluto_ordenadas = sorted(
-        FUENTES_PLUTO,
+        FUENTES_PLUTO_PRINCIPAL,
         key=lambda f: (
             0 if f.lower().endswith("pluto_latam.m3u") else 1,
             0 if f.lower().endswith("pluto.m3u") else 1,
@@ -655,6 +658,14 @@ def reclasificar_pluto_existente(lineas, session):
         url = lineas[j].strip()
         bloque.append(url)
         j += 1
+
+        # jmp2.uk es la alternativa Pluto MX sin JWT: debe permanecer tal
+        # cual y nunca reemplazarse por una URL JWT de LATAM/ES.
+        if "jmp2.uk/plu-" in url.lower():
+            salida.extend(bloque)
+            mx_externos_conservados += 1
+            i = j
+            continue
 
         if not es_url_pluto(url):
             salida.extend(bloque)
@@ -886,6 +897,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
     eliminados_sin_reemplazo = 0
     ya_propios = 0
     no_pluto = 0
+    mx_externos_conservados = 0
 
     i = 0
     while i < len(lineas):
@@ -959,6 +971,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         "eliminados_sin_reemplazo": eliminados_sin_reemplazo,
         "ya_propios": ya_propios,
         "no_pluto": no_pluto,
+        "mx_externos_conservados": mx_externos_conservados,
         "errores_catalogo": errores_catalogo,
     }
 
@@ -2462,12 +2475,12 @@ def integrar_pluto_mx(lineas, session):
         nonlocal agregadas
         cid = canal_id(canal)
         nombre_base = re.sub(
-            r"\s*(?:\[\s*opc(?:ión)?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
             "",
             base["nombre"],
             flags=re.I,
         ).strip()
-        extinf = re.sub(r",(.*)$", f",{nombre_base} (OPCIÓN {numero})", base["extinf"], count=1)
+        extinf = re.sub(r",(.*)$", f",{nombre_base} [Opción {numero}]", base["extinf"], count=1)
         if cid:
             if re.search(r'tvg-id="[^"]*"', extinf, re.I):
                 extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
@@ -2600,6 +2613,7 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
     bloques = []
     avatar = []
     eliminados_pluto_es_anime = 0
+    eliminados_pitufos_es = 0
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
@@ -2619,11 +2633,50 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
         if not identidad:
             m_identidad = re.search(r'tvg-id="([a-f0-9]{20,})"', bloque[0], re.I)
             identidad = m_identidad.group(1).lower() if m_identidad else ""
-        es_pluto_es = "[pluto es]" in normalizar(nombre) or bool(identidad and identidad in ids_pluto_es_anime)
+        tvg_name_match = re.search(r'tvg-name="([^"]*)"', bloque[0], re.I)
+        nombre_completo = normalizar((tvg_name_match.group(1) if tvg_name_match else "") + " " + nombre)
+        url_es = any(marker in url_bloque.lower() for marker in (
+            "country=es", "marketingregion=es", "preferredlanguage=es-es"
+        ))
+
+        es_pitufos = "los pitufos" in nombre_completo
+        pitufos_es = es_pitufos and (
+            url_es or bool(re.search(r"\\b(?:es|espanol|espana)\\b", nombre_completo))
+        )
+        if pitufos_es:
+            eliminados_pitufos_es += 1
+            i = j
+            continue
+
+        es_pluto_es = (
+            "[pluto es]" in nombre_completo
+            or "espanol" in nombre_completo
+            or "espana" in nombre_completo
+            or bool(identidad and identidad in ids_pluto_es_anime and url_es)
+        )
         if categoria == "anime" and es_pluto_es:
             eliminados_pluto_es_anime += 1
             i = j
             continue
+
+        nombre_sin_opcion = re.sub(
+            r"\\s*(?:\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|"
+            r"\\(\\s*(?:opci[oó]n|option)\\s*\\d+\\s*\\))\\s*$",
+            "",
+            nombre,
+            flags=re.I,
+        ).strip()
+        nombre_kid = normalizar(nombre_sin_opcion)
+        kid_key = None
+        if nombre_kid.startswith("popeye"):
+            kid_key = "popeye"
+        elif nombre_kid.startswith("los pitufos"):
+            kid_key = "los pitufos"
+        elif nombre_kid.startswith("heidi"):
+            kid_key = "heidi"
+        if kid_key:
+            bloque[0] = reemplazar_categoria(bloque[0], "Infantiles")
+
         if normalizar(nombre).startswith("avatar: la leyenda de aang"):
             if categoria != "infantiles":
                 bloque[0] = reemplazar_categoria(bloque[0], "Infantiles")
@@ -2649,6 +2702,42 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
                 raise RuntimeError("No existe Infantiles para ubicar Avatar.")
             posicion = posiciones[-1] + 1
         bloques[posicion:posicion] = avatar
+
+    # Ordenar los tres canales solicitados al inicio de Infantiles, manteniendo
+    # consecutivas todas sus alternativas y sin mover el resto de la categoría.
+    prioritarios = {"popeye": [], "los pitufos": [], "heidi": []}
+    restantes = []
+    for bloque in bloques:
+        if not bloque or not bloque[0].startswith("#EXTINF"):
+            restantes.append(bloque)
+            continue
+        nombre_bloque = extraer_nombre(bloque[0])
+        nombre_bloque = re.sub(
+            r"\\s*(?:\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|"
+            r"\\(\\s*(?:opci[oó]n|option)\\s*\\d+\\s*\\))\\s*$",
+            "",
+            nombre_bloque,
+            flags=re.I,
+        ).strip()
+        nombre_norm = normalizar(nombre_bloque)
+        clave = next((k for k in prioritarios if nombre_norm.startswith(k)), None)
+        if clave:
+            prioritarios[clave].append(bloque)
+        else:
+            restantes.append(bloque)
+    grupos_prioritarios = [
+        bloque
+        for clave in ("popeye", "los pitufos", "heidi")
+        for bloque in prioritarios[clave]
+    ]
+    if grupos_prioritarios:
+        primera_infantil = next((
+            idx for idx, bloque in enumerate(restantes)
+            if bloque and bloque[0].startswith("#EXTINF")
+            and normalizar(extraer_categoria(bloque[0])) in {"infantil", "infantiles"}
+        ), len(restantes))
+        restantes[primera_infantil:primera_infantil] = grupos_prioritarios
+        bloques = restantes
 
     xumo_url = "https://d4whmvwm0rdvi.cloudfront.net/10007/99951318/hls/master.m3u8?ads.xumo_channelId=99951318&ads.asnw=169843&ads.afid=405342864&ads.sfid=19647852&ads.csid=xumo_web_NBCUAmericanNinjaWarrior_ssai_cro&ads._fw_is_lat=0&ads._fw_us_privacy=&ads._fw_coppa=0&ads._fw_did=a5090924-15b1-4b7f-b6cd-2f06e2ba51e1&ads._fw_vcid2=512116:a5090924-15b1-4b7f-b6cd-2f06e2ba51e1&ads._fw_app_bundle=web.xumo.com&ads._fw_app_store_url=&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=GitHubAction&ads._fw_device_model=PythonScript&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0.0&ads.appName=XumoPlay&ads.xumo_contentId=4063&ads.xumo_contentName=NBCUAmericanNinjaWarrior&ads.xumo_providerId=4063&ads.xumo_providerName=NBCUAmericanNinjaWarrior&ads.channelId=99951318"
     xumo_logo = "https://raw.githubusercontent.com/RoqueDJ/iptv-svg/main/1792421696158.png"
@@ -2676,6 +2765,7 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
         salida.extend(bloque)
     print(
         f"Ajustes referencia: Pluto ES Anime retirados={eliminados_pluto_es_anime}; "
+        f"Los Pitufos ES retirados={eliminados_pitufos_es}; "
         f"Avatar movidos={len(avatar)}; American Ninja Warrior agregado={xumo_agregado}."
     )
     return salida
@@ -2989,7 +3079,7 @@ def main(restaurar_faltantes=True, preservar_orden=False):
     print("PLUTO — SOLO FUENTES PROPIAS")
     print("=" * 72)
 
-    for i, fuente in enumerate(FUENTES_PLUTO, 1):
+    for i, fuente in enumerate(FUENTES_PLUTO_PRINCIPAL, 1):
         print(f"\n[PLUTO {i}/{len(FUENTES_PLUTO)}] {fuente}")
         try:
             r = session.get(fuente, timeout=30)
@@ -3435,7 +3525,7 @@ def main(restaurar_faltantes=True, preservar_orden=False):
     print("  - TOTAL/OTROS únicos se reclasifican cuando es posible.")
     print("  - Ninguna fuente puede crear categorías nuevas.")
     print("  - Pluto antiguo se elimina antes de cargar Pluto propio.")
-    print("  - Pluto propio usa exclusivamente FUENTES_PLUTO.")
+    print("  - Pluto principal usa LATAM + ES tokenizados y MX externo jmp2 sin JWT.")
     print("  - CHILE de fuentes normales -> CHILE TV.")
     print("  - LATAM.m3u NO crea carpeta LATAM: sus canales se redistribuyen por país/temática; los no clasificables se omiten.")
     print("=" * 72)
