@@ -2,7 +2,7 @@ import unittest
 import re
 
 import alimentar_principal as ap
-from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, reconcile_lines
+from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _identity, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, reconcile_lines
 
 
 def _attr_for_test(extinf, name):
@@ -824,6 +824,23 @@ class RequestedChannelLabelTests(unittest.TestCase):
             urls,
             ["https://delmi.example/v1.m3u8", "https://delmi.example/v2.m3u8"],
         )
+
+
+class PlaceholderIdRegressionTests(unittest.TestCase):
+
+    def test_placeholder_tvg_id_is_not_used_as_channel_identity(self):
+        first = {
+            "extinf": '#EXTINF:-1 tvg-id="-1" tvg-name="Delmi TV" group-title="Anime",Delmi TV',
+            "nombre": "Delmi TV",
+            "url": "https://delmi.example/v1.m3u8",
+        }
+        second = {
+            "extinf": '#EXTINF:-1 tvg-id="-1" tvg-name="Delmi TV [V2]" group-title="Anime",Delmi TV [V2]',
+            "nombre": "Delmi TV [V2]",
+            "url": "https://delmi.example/v2.m3u8",
+        }
+        self.assertEqual(_identity(first), "name:delmi tv")
+        self.assertEqual(_identity(second), "name:delmi tv v2")
 
 
 class AlternativeGroupingRegressionTests(unittest.TestCase):
