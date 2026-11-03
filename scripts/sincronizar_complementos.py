@@ -8,7 +8,6 @@ la URL anterior haya cambiado.
 from __future__ import annotations
 
 import json
-import os
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -165,11 +164,8 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             url = (channel.get("url") or "").strip()
             if not ap.url_es_valida(url):
                 continue
-            destination = _destination(source_url, channel, [])
-            # Se vuelve a resolver con las categorías reales en reconcile().
             candidate = dict(channel)
             candidate["source"] = source_url
-            candidate["destination_hint"] = destination
             candidate["is_pluto"] = source_url in FUENTES_PLUTO_COMPLETAS
             identity = _identity(candidate, pluto=candidate["is_pluto"])
             if identity.startswith("id:") and identity in seen_source_identity:
@@ -338,7 +334,6 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             )
             if match not in related_matches:
                 related_matches = [match]
-            related_urls = {blocks[idx]["url"] for idx in related_matches}
             occupied_by = main_by_url.get(source_url)
             if occupied_by is not None and occupied_by not in related_matches:
                 stats["ambiguos"] += 1
