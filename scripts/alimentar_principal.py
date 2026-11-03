@@ -3335,7 +3335,61 @@ def main():
         ids_pluto=ids_pluto_orden_protegidos,
     )
 
-    # SOLO AHORA se publica la principal: aplicar las directivas sobre la
+    # ÚLTIMA barrera Pluto: las correcciones posteriores pueden retirar una
+    # entrada ya reparada. Restaurar después de TODAS las transformaciones.
+    aliases_pluto_salida = set()
+    for i_final, extinf_final in enumerate(lineas):
+        if not extinf_final.startswith("#EXTINF"):
+            continue
+        j_final = i_final + 1
+        while j_final < len(lineas) and lineas[j_final].startswith("#"):
+            j_final += 1
+        if j_final < len(lineas) and url_es_valida(lineas[j_final].strip()):
+            aliases_pluto_salida.update(
+                identidades_pluto(extinf_final, lineas[j_final].strip())
+            )
+
+    pluto_reinsertados_finales = []
+    for identidad in sorted(ids_pluto_fuentes):
+        aliases_fuente = aliases_pluto_fuentes.get(identidad, {identidad})
+        if aliases_fuente & aliases_pluto_salida:
+            continue
+        candidatos = canales_pluto_fuentes_por_id.get(identidad, [])
+        canal_fuente = next(
+            (c for c in candidatos if (c.get("url") or "").strip()),
+            None,
+        )
+        if not canal_fuente:
+            raise RuntimeError(
+                f"PLUTO BLOQUEADO: no existe bloque fuente para restaurar {identidad}."
+            )
+        destino = determinar_destino_pluto(
+            canal_fuente.get("categoria", ""),
+            canal_fuente.get("nombre", ""),
+            categorias_de_lineas(lineas),
+        )
+        if not destino:
+            raise RuntimeError(
+                f"PLUTO BLOQUEADO: {identidad} no tiene una categoría existente válida "
+                f"(fuente: {canal_fuente.get('categoria', '')!r})."
+            )
+        pluto_reinsertados_finales.append({
+            "categoria": destino,
+            "bloque": construir_bloque(canal_fuente, destino),
+        })
+        aliases_pluto_salida.update(identidades_pluto(
+            canal_fuente.get("extinf", ""),
+            canal_fuente.get("url", ""),
+        ))
+
+    if pluto_reinsertados_finales:
+        lineas = insertar_bloques(lineas, pluto_reinsertados_finales)
+        print(
+            "Autorreparación Pluto final: "
+            f"{len(pluto_reinsertados_finales)} canales reinsertados tras la última normalización."
+        )
+
+    # Aplicar directivas solo después de completar la restauración final.
     # representación final, para que ninguna transformación posterior las
     # elimine. Pluto queda excluido por diseño.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
@@ -3350,12 +3404,6 @@ def main():
     texto_final = "\n".join(lineas)
     if not texto_final.endswith("\n"):
         texto_final += "\n"
-
-    PRINCIPAL.write_text(
-        texto_final,
-        encoding="utf-8",
-        newline="\n",
-    )
 
     # Validación final después del autorreparo: una representación por ID
     # aceptado es suficiente; no se exige conservar cada JWT regional.
@@ -3387,6 +3435,14 @@ def main():
             "después del autorreparo. "
             f"Identidades no encontradas y aliases: {detalle_ids}"
         )
+
+    # Escritura segura: solo publicar en disco después de superar todas las
+    # validaciones bloqueantes, evitando dejar una principal parcial al fallar.
+    PRINCIPAL.write_text(
+        texto_final,
+        encoding="utf-8",
+        newline="\\n",
+    )
 
     print("\n" + "=" * 72)
     print("RESUMEN")
