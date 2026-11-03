@@ -74,6 +74,7 @@ def main():
             "Entretenimiento / Cine / Series",
             "Infantiles",
             "Anime",
+            "CHILE TV",
         },
     )
 
