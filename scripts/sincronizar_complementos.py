@@ -142,7 +142,13 @@ def _canonical_channel_name(channel: dict) -> str:
         value,
         flags=re.I,
     )
-    value = re.sub(r"\s+(?:espanol|españa|spanish|hd|sd|fhd|uhd)$", "", value, flags=re.I)
+    value = re.sub(
+        r"\s*(?:[-–—|•]\s*)?(?:magna|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?|"
+        r"espanol|españa|spanish|hd|sd|fhd|uhd)$",
+        "",
+        value,
+        flags=re.I,
+    )
     return re.sub(r"[^a-z0-9]+", "", ap.normalizar(value))
 
 
