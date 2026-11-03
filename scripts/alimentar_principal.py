@@ -1926,11 +1926,17 @@ def firma_orden_canales(lineas):
     return orden
 
 
-def validar_orden_canales(lineas_anteriores, lineas_nuevas, categorias_reordenables=None):
-    """Protege el orden relativo dentro de cada categoría, aunque cambie el orden de carpetas."""
+def validar_orden_canales(
+    lineas_anteriores,
+    lineas_nuevas,
+    categorias_reordenables=None,
+    ids_pluto_omitidos=None,
+):
+    """Protege el orden relativo de canales normales dentro de cada categoría."""
     categorias_omitidas = {
         normalizar(categoria) for categoria in (categorias_reordenables or set())
     }
+    ids_pluto_omitidos = {str(x).strip().lower().removeprefix("id:") for x in (ids_pluto_omitidos or set())}
     avatar_id = "id:6759ee82bd523200083b4f0f"
 
     def firmas_por_categoria(lineas):
@@ -1949,7 +1955,10 @@ def validar_orden_canales(lineas_anteriores, lineas_nuevas, categorias_reordenab
                 clave = "id:" + normalizar(match.group(1))
             else:
                 clave = "name:" + categoria + ":" + normalizar(extraer_nombre(linea))
-            if clave in {"name::", avatar_id}:
+            if (
+                clave in {"name::", avatar_id}
+                or (clave.startswith("id:") and clave[3:] in ids_pluto_omitidos)
+            ):
                 continue
             vistos_categoria = vistos.setdefault(categoria, set())
             if clave not in vistos_categoria:
@@ -3018,6 +3027,7 @@ def main():
         lineas_iniciales,
         lineas,
         categorias_reordenables={"Entretenimiento / Cine / Series"},
+        ids_pluto_omitidos=set(ids_pluto_fuentes) | set(pluto_ids_canonicos),
     )
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
 
