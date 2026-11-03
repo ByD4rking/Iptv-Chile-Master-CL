@@ -382,10 +382,11 @@ Los informes cuentan cambios de URL de origen, canales añadidos/retirados, nomb
 categorías y URLs de reproducción. Los endpoints de reproducción se guardan como
 huellas SHA-256 truncadas; no se almacenan URLs HLS firmadas ni tokens en el historial.
 
-Las fuentes con fallos transitorios conservan su última huella válida; si ninguna
-fuente del ámbito responde, el flujo se detiene antes de publicar una lista vacía
-o incompleta. Los generadores existentes son los que aplican los cambios a sus
-playlists, respetando las reglas de catálogo y la protección de GOD.
+Las fuentes M3U con fallos transitorios conservan su última huella válida; si
+ninguna fuente M3U del ámbito responde, el flujo se detiene antes de publicar
+una lista vacía o incompleta. Pluto compara sus archivos regionales antes y
+después de consultar su API. Los generadores existentes aplican los cambios a
+sus playlists, respetando las reglas de catálogo y la protección de GOD.
 
 ## 🧰 Registro editable de fuentes
 
