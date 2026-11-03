@@ -368,6 +368,34 @@ Para problemas de compatibilidad de vídeo, puedes probar:
 
 ---
 
+## 🧰 Registro editable de fuentes
+
+Las fuentes M3U de **Principal** y **GOD** se administran desde
+`config/playlist_sources.json`. Los scripts ya no necesitan editarse para
+cambiar una URL o incorporar una fuente nueva.
+
+- `principal.sources`: fuentes complementarias M3U.CL, IPTV-SV y MAGMA.
+- `principal.special_sources`: URLs especiales de IPTV-SV, MAGMA y la alternativa Pluto MX.
+- `principal.pluto_sources`: LATAM, España y México, en ese orden de prioridad.
+- `god.sources`: fuentes generales, regionales, temáticas y las siete playlists Pluto regionales existentes.
+
+Para incorporar una fuente, agrega un objeto con `name`, `url` y `priority`
+en la sección correspondiente. Para cambiarla, modifica su `url`. Los scripts
+validan nombres y URLs duplicadas y exigen HTTP/HTTPS antes de descargar.
+
+El **Generador** conserva su configuración independiente en
+`IPTV-CHILE-GENERADOR/config/sources.json`. Su catálogo es curado: las fuentes
+pueden actualizar endpoints de canales ya catalogados; los canales nuevos se
+guardan como candidatos y requieren validación/promoción antes de publicarse.
+
+**Pluto TV** se actualiza mediante su cliente API y la configuración de regiones
+en `pluto/config/regions.json`; genera LATAM, España, México, Argentina,
+Brasil, Chile y Estados Unidos. No se debe agregar una región inventada ni
+referenciar archivos antiguos que no existen.
+
+La lista **MAESTRA_GOD** sigue protegida contra reescrituras automáticas fuera
+del flujo autorizado.
+
 ## 🤖 5. Actualización y mantenimiento
 
 El repositorio utiliza procesos automatizados para mantener y revisar las playlists.
