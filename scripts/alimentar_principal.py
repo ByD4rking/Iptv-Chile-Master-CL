@@ -76,6 +76,14 @@ def normalizar(s):
     s = "".join(c for c in s if unicodedata.category(c) != "Mn")
     return re.sub(r"\s+", " ", s.lower()).strip()
 
+TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
+
+
+def tvg_id_valido(value):
+    value = normalizar(value)
+    return value if value and value not in TVG_IDS_INVALIDOS else ""
+
+
 def url_es_valida(url):
     return bool(re.match(r"^https?://", url.strip(), re.I))
 
@@ -1993,8 +2001,9 @@ def firma_orden_canales(lineas):
         if not linea.startswith("#EXTINF"):
             continue
         match = re.search(r'tvg-id="([^"]+)"', linea, re.I)
-        if match and match.group(1).strip():
-            clave = "id:" + normalizar(match.group(1))
+        channel_id = tvg_id_valido(match.group(1)) if match and match.group(1).strip() else ""
+        if channel_id:
+            clave = "id:" + channel_id
         else:
             clave = "name:" + normalizar(extraer_categoria(linea)) + ":" + normalizar(extraer_nombre(linea))
         if clave != "name::" and clave not in vistos:
@@ -2038,7 +2047,7 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                     "lineas": contenido[inicio:j + 1],
                     "orden_actual": len(bloques),
                     "tvg_id": (
-                        re.search(r'tvg-id="([^"]+)"', extinf, re.I).group(1).strip().lower()
+                        tvg_id_valido(re.search(r'tvg-id="([^"]+)"', extinf, re.I).group(1))
                         if re.search(r'tvg-id="([^"]+)"', extinf, re.I)
                         else ""
                     ),
@@ -2055,7 +2064,7 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
 
     def identidad(extinf):
         match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
-        channel_id = normalizar(match.group(1)) if match and match.group(1).strip() else ""
+        channel_id = tvg_id_valido(match.group(1)) if match and match.group(1).strip() else ""
         nombre = normalizar(extraer_nombre(extinf))
         return channel_id, nombre
 
@@ -2188,7 +2197,7 @@ def validar_orden_canales(
                 index = j + 1 if url else index + 1
                 continue
             match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
-            channel_id = normalizar(match.group(1)) if match and match.group(1).strip() else ""
+            channel_id = tvg_id_valido(match.group(1)) if match and match.group(1).strip() else ""
             if (
                 (channel_id and channel_id in ids_pluto_omitidos)
                 or (not channel_id and not nombre)
