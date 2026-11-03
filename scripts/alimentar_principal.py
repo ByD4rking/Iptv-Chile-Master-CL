@@ -2237,8 +2237,6 @@ def cargar_ids_pluto_es_anime(session):
             raise ValueError(
                 f"el catálogo Pluto ES contiene canales Anime sin identidad verificable: {muestra}"
             )
-        if len(ids_obtenidos_fuente) != len(canales_anime):
-            raise ValueError("no se pudo obtener una identidad única para cada canal Anime de Pluto ES")
         ids_pluto_es_anime.update(ids_obtenidos_fuente)
     except Exception as exc:
         raise RuntimeError(
