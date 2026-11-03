@@ -2094,7 +2094,6 @@ def integrar_pluto_mx(lineas, session):
             nuevo["nombre"] = nuevo["nombre"] + " (OPCIÓN 2)"
             nuevo["lineas"][0] = re.sub(r",(.*)$", f",{nuevo['nombre']}", nuevo["extinf"], count=1)
             nuevo["extinf"] = nuevo["lineas"][0]
-        agregadas += 1
 
     salida = list(prefijo)
     for bloque in bloques:
