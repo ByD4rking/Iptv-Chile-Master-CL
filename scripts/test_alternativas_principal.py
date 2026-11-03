@@ -303,6 +303,22 @@ class TestAlternativasPrincipal(unittest.TestCase):
             self.assertIn('tvg-logo="https://logo.example/canonical.png"', item[0])
             self.assertIn('logo="https://logo.example/canonical.png"', item[0])
 
+    def test_final_orchestrator_grouping_updates_logo_without_overwriting_tvg_logo(self):
+        logo = "https://logo.example/disney.png"
+        lines = ["#EXTM3U"]
+        lines += [
+            f'#EXTINF:-1 group-title="Infantiles" tvg-name="Disney Channel" tvg-logo="{logo}" logo="{logo}",Disney Channel',
+            "https://a.example/disney-1.m3u8",
+            f'#EXTINF:-1 logo="https://logo.example/old.png" group-title="Infantiles" tvg-name="Disney Channel" tvg-logo="{logo}",Disney Channel',
+            "https://a.example/disney-2.m3u8",
+        ]
+        output = sc._group_and_label_alternatives(lines, {})
+        parsed = self.entries(output)
+        self.assertEqual(len(parsed), 2)
+        for item in parsed:
+            self.assertIn(f'tvg-logo="{logo}"', item[0])
+            self.assertIn(f'logo="{logo}"', item[0])
+
 
 if __name__ == "__main__":
     unittest.main()
