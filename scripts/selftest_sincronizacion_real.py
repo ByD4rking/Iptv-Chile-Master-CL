@@ -36,7 +36,7 @@ def base_name(value: str) -> str:
     value = re.sub(r"\s*\|\s*(?:cl|chile)\s*$", "", value or "", flags=re.I)
     value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value or "", flags=re.I)
     value = re.sub(
-        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))\s*$",
+        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
         "",
         value or "",
         flags=re.I,
@@ -92,7 +92,7 @@ def parse_entries(path: Path) -> list[dict]:
             is_es_region_url(url) or bool(re.search(r"\b(?:espanol|espana|pluto\s*es)\b", full_name))
         )
         option_match = re.search(
-            r"(?:\[\s*(?:opci[oó]n|opc\.?|option)\s*(\d+)\s*\]|\(\s*(?:opci[oó]n|opc\.?|option)\s*(\d+)\s*\))$",
+            r"(?:\[\s*(?:opci[oó]n|opc\.?|option)\s*(\d+)\s*\]|\(\s*(?:opci[oó]n|option)\s*(\d+)\s*\))$",
             display_raw,
             re.I,
         )
