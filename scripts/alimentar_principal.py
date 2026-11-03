@@ -1855,25 +1855,100 @@ def extraer_bloques_no_pluto_por_url(lineas):
     return resultado
 
 
+def _identidad_extinf_restauracion(extinf):
+    """Identidad estable para no restaurar una URL vieja si el canal ya fue actualizado."""
+    match_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+    if match_id and match_id.group(1).strip():
+        return "id:" + normalizar(match_id.group(1))
+
+    match_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
+    nombre = match_name.group(1) if match_name else extraer_nombre(extinf)
+    nombre = normalizar(nombre)
+    return "name:" + nombre if nombre else ""
+
+
+def _mapa_bloques_url_categoria(lineas):
+    """URL -> categoría y posiciones del bloque en la playlist actual."""
+    resultado = {}
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            url = lineas[j].strip()
+            resultado[url] = {
+                "categoria": extraer_categoria(lineas[inicio]),
+                "inicio": inicio,
+                "fin": j + 1,
+            }
+            i = j + 1
+        else:
+            i = j
+    return resultado
+
+
 def restaurar_no_pluto_existente(lineas, iniciales):
     """
-    Restaura URLs no-Pluto que ya existían antes de la actualización.
-    Las fuentes solo pueden sumar canales; no pueden hacer desaparecer
-    una señal existente por una limpieza accidental.
+    Restaura solo canales realmente desaparecidos, en su posición original.
+
+    Si el mismo canal ya está presente con otra URL, no restaura el enlace
+    antiguo: eso sería deshacer una actualización válida. La identidad usa
+    tvg-id y, si falta, nombre solo cuando es inequívoco.
     """
-    actuales = mapa_urls_principal(lineas)
+    orden_urls = list(iniciales.keys())
+    mapa_actual = _mapa_bloques_url_categoria(lineas)
+    ids_actuales = set()
+    nombres_actuales = Counter()
+    nombres_originales = Counter()
+
+    def extraer_id_nombre(extinf):
+        match_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+        channel_id = normalizar(match_id.group(1)) if match_id and match_id.group(1).strip() else ""
+        match_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
+        nombre = match_name.group(1) if match_name else extraer_nombre(extinf)
+        return channel_id, normalizar(nombre)
+
+    for extinf in lineas:
+        if extinf.startswith("#EXTINF"):
+            channel_id, nombre = extraer_id_nombre(extinf)
+            if channel_id:
+                ids_actuales.add(channel_id)
+            if nombre:
+                nombres_actuales[nombre] += 1
+
+    for bloque in iniciales.values():
+        if bloque:
+            _, nombre = extraer_id_nombre(bloque[0])
+            if nombre:
+                nombres_originales[nombre] += 1
+
     categorias = categorias_de_lineas(lineas)
-    bloques_por_categoria = defaultdict(list)
     restaurados = 0
 
-    for url, bloque in iniciales.items():
-        if url in actuales:
+    for indice, (url, bloque) in enumerate(iniciales.items()):
+        if url in mapa_actual:
             continue
+
         extinf = bloque[0]
+        channel_id, nombre = extraer_id_nombre(extinf)
+
+        # URL cambiada para el mismo canal: conservar la nueva, no resucitar la vieja.
+        if channel_id and channel_id in ids_actuales:
+            continue
+        if (
+            nombre
+            and nombres_originales[nombre] == 1
+            and nombres_actuales.get(nombre, 0) == 1
+        ):
+            continue
+
         categoria = extraer_categoria(extinf)
         destino = buscar_categoria_existente(categoria, categorias)
-
-        # Si la categoría fue normalizada, reutilizar su carpeta canónica.
         if not destino:
             aliases = {
                 "chile": "CHILE TV",
@@ -1885,29 +1960,53 @@ def restaurar_no_pluto_existente(lineas, iniciales):
                 aliases.get(normalizar(categoria), categoria),
                 categorias,
             )
-
         if not destino:
-            # No crear carpetas nuevas durante la autorreparación.
             continue
+
+        categoria_normalizada = normalizar(destino)
+        siguiente_url = next(
+            (
+                candidata
+                for candidata in orden_urls[indice + 1:]
+                if candidata in mapa_actual
+                and normalizar(mapa_actual[candidata]["categoria"]) == categoria_normalizada
+            ),
+            None,
+        )
+
+        if siguiente_url:
+            posicion = mapa_actual[siguiente_url]["inicio"]
+        else:
+            anterior_url = next(
+                (
+                    candidata
+                    for candidata in reversed(orden_urls[:indice])
+                    if candidata in mapa_actual
+                    and normalizar(mapa_actual[candidata]["categoria"]) == categoria_normalizada
+                ),
+                None,
+            )
+            if anterior_url:
+                posicion = mapa_actual[anterior_url]["fin"]
+            else:
+                rango = encontrar_rango_categoria(lineas, destino)
+                if not rango:
+                    continue
+                posicion = rango[0]
 
         bloque_restaurado = list(bloque)
         bloque_restaurado[0] = reemplazar_categoria(extinf, destino)
-        bloques_por_categoria[destino].append(bloque_restaurado)
-        actuales.add(url)
+        lineas[posicion:posicion] = bloque_restaurado
         restaurados += 1
 
-    for categoria, bloques in bloques_por_categoria.items():
-        rango = encontrar_rango_categoria(lineas, categoria)
-        if not rango:
-            continue
-        posicion = rango[1] + 1
-        insertar = []
-        for bloque in bloques:
-            insertar.extend(bloque)
-        lineas[posicion:posicion] = insertar
+        # Actualizar mapas para que los siguientes bloques se inserten en orden.
+        mapa_actual = _mapa_bloques_url_categoria(lineas)
+        if channel_id:
+            ids_actuales.add(channel_id)
+        if nombre:
+            nombres_actuales[nombre] += 1
 
     return lineas, restaurados
-
 
 def firma_orden_canales(lineas):
     """Orden de primera aparición por tvg-id o por grupo/nombre cuando falta."""
