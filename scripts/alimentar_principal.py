@@ -1926,13 +1926,17 @@ def firma_orden_canales(lineas):
     return orden
 
 
-def validar_orden_canales(orden_anterior, lineas_nuevas):
-    """Bloquea una publicación que reordene canales ya existentes."""
+def validar_orden_canales(orden_anterior, lineas_nuevas, claves_reordenables=None):
+    """Protege el orden existente, permitiendo solo reordenamientos explícitamente autorizados."""
     actual = firma_orden_canales(lineas_nuevas)
     # Avatar cambia de Anime a Infantiles por su ubicación explícita en la referencia.
     avatar_id = "id:6759ee82bd523200083b4f0f"
-    actual = [clave for clave in actual if clave != avatar_id]
-    orden_anterior = [clave for clave in orden_anterior if clave != avatar_id]
+    ignorar = set(claves_reordenables or ())
+    actual = [clave for clave in actual if clave != avatar_id and clave not in ignorar]
+    orden_anterior = [
+        clave for clave in orden_anterior
+        if clave != avatar_id and clave not in ignorar
+    ]
     conjunto_actual = set(actual)
     conjunto_anterior = set(orden_anterior)
     anterior_vigente = [clave for clave in orden_anterior if clave in conjunto_actual]
@@ -2487,6 +2491,12 @@ def main():
         errors="replace",
     ).splitlines()
     orden_inicial = firma_orden_canales(lineas)
+    categoria_reordenable = normalizar("Entretenimiento / Cine / Series")
+    orden_entretenimiento_inicial = firma_orden_canales([
+        linea for linea in lineas
+        if linea.startswith("#EXTINF")
+        and normalizar(extraer_categoria(linea)) == categoria_reordenable
+    ])
 
     total_inicial = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
@@ -2971,7 +2981,23 @@ def main():
     # representación final, para que ninguna transformación posterior las
     # elimine. Pluto queda excluido por diseño.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
-    validar_orden_canales(orden_inicial, lineas)
+    orden_entretenimiento_final = firma_orden_canales([
+        linea for linea in lineas
+        if linea.startswith("#EXTINF")
+        and normalizar(extraer_categoria(linea)) == categoria_reordenable
+    ])
+    orden_fuera_entretenimiento = firma_orden_canales([
+        linea for linea in lineas
+        if linea.startswith("#EXTINF")
+        and normalizar(extraer_categoria(linea)) != categoria_reordenable
+    ])
+    if set(orden_entretenimiento_inicial) & set(orden_fuera_entretenimiento):
+        raise RuntimeError(
+            "ORDEN BLOQUEADO: un canal original de Entretenimiento / Cine / Series "
+            "fue desplazado a otra categoría."
+        )
+    claves_reordenables = set(orden_entretenimiento_inicial) | set(orden_entretenimiento_final)
+    validar_orden_canales(orden_inicial, lineas, claves_reordenables=claves_reordenables)
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
 
     texto_final = "\n".join(lineas)
