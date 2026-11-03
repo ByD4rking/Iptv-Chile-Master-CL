@@ -127,22 +127,17 @@ jobs:
               "guinea ecuatorial", "estados unidos",
           }
           def identity(ext):
-              m=re.search(r'tvg-id="([^"]+)"', ext, re.I)
-              if m and m.group(1).strip():
-                  return "id:" + m.group(1).strip().casefold()
-              n=re.search(r'tvg-name="([^"]+)"', ext, re.I)
-              name=(n.group(1) if n else ext.rsplit(",", 1)[-1]).strip().casefold()
-              name=" ".join(name.split())
+              match = re.search(r'tvg-id="([^"]+)"', ext, re.I)
+              if match and match.group(1).strip():
+                  return "id:" + match.group(1).strip().casefold()
+              name = ext.rsplit(",", 1)[-1].strip().casefold()
+              name = " ".join(name.split())
               return "name:" + name if name else ""
 
           before_by_url={}
-          before_identity=set()
           for ext,url in b:
               m=re.search(r'group-title="([^"]*)"', ext)
               before_by_url.setdefault(url, m.group(1).strip().lower() if m else "")
-              key=identity(ext)
-              if key:
-                  before_identity.add(key)
           after_identity={identity(ext) for ext,_ in a if identity(ext)}
 
           lost_non_pluto=[]
@@ -151,8 +146,9 @@ jobs:
                   continue
               if before_by_url.get(url,"") in allowed_cleanup:
                   continue
+              # Una URL cambiada sigue siendo el mismo canal si conserva tvg-id
+              # o, como respaldo, el nombre normalizado.
               key=identity(ext)
-              # Una URL cambiada sigue siendo el mismo canal si conserva su identidad.
               if key and key in after_identity:
                   continue
               lost_non_pluto.append(url)
@@ -326,261 +322,6 @@ jobs:
             scripts/aprendizaje.json \
             scripts/health/principal_health.json \
             scripts/sync_sources.json
-
-          if git diff --cached --quiet; then
-            echo "No hay cambios nuevos."
-            exit 0
-          fi
-
-          git commit -m "Actualización y verificación automática IPTV"
-
-          # Otra ejecución/commit puede haber avanzado main durante la
-          # verificación (que tarda bastante). Rebasamos de forma segura.
-          # Los archivos de resultado secundarios pueden tomar la versión
-          # remota si entran en conflicto; si hay conflicto en las M3U,
-          # se detiene en lugar de sobrescribir canales.
-          for intento in 1 2 3; do
-            git fetch origin main
-
-            if git rebase origin/main; then
-              if git push origin main; then
-                exit 0
-              fi
-            else
-              conflictos=$(git status --porcelain | awk '{print $2}')
-              solo_secundarios=true
-              for archivo in $conflictos; do
-                case "$archivo" in
-                  reportes/principal/REPORTE.md|scripts/aprendizaje.json) ;;
-                  *) solo_secundarios=false ;;
-                esac
-              done
-
-              if [ "$solo_secundarios" = true ] && [ -n "$conflictos" ]; then
-                git checkout --theirs -- reportes/principal/REPORTE.md scripts/aprendizaje.json
-                git add reportes/principal/REPORTE.md scripts/aprendizaje.json
-                GIT_EDITOR=true git rebase --continue
-                if git push origin main; then
-                  exit 0
-                fi
-              else
-                echo "ERROR: conflicto en archivos de lista o código; no se sobrescribe nada."
-                git rebase --abort || true
-                exit 1
-              fi
-            fi
-
-            sleep 5
-          done
-
-          echo "ERROR: no se pudo publicar tras 3 intentos."
-          exit 1
-
-      - name: Resumen final
-        run: |
-          echo "=========================================="
-          echo " ACTUALIZACIÓN IPTV COMPLETADA"
-          echo "=========================================="
-          echo "La lista principal fue generada y verificada."
-          echo "El resultado fue guardado en GitHub."
-
-
-, ext)
-              name=(n.group(1) if n else "").strip().casefold()
-              return "name:" + re.sub(r"\\s+", " ", name) if name else ""
-
-          before_by_url={}
-          before_identity=set()
-          for ext,url in b:
-              m=re.search(r'group-title="([^"]*)"', ext)
-              before_by_url.setdefault(url, m.group(1).strip().lower() if m else "")
-              key=identity(ext)
-              if key:
-                  before_identity.add(key)
-          after_identity={identity(ext) for ext,_ in a if identity(ext)}
-
-          lost_non_pluto=[]
-          for ext,url in b:
-              if "pluto" in url.lower() or url in a_set:
-                  continue
-              if before_by_url.get(url,"") in allowed_cleanup:
-                  continue
-              key=identity(ext)
-              # Una URL que cambia sigue siendo el mismo canal si conserva
-              # su identidad estable (tvg-id o nombre normalizado inequívoco).
-              if key and key in after_identity:
-                  continue
-              lost_non_pluto.append(url)
-
-          if lost_non_pluto:
-              raise SystemExit("REGRESION: se perdieron URLs no-Pluto existentes fuera de limpiezas autorizadas: "+str(sorted(lost_non_pluto)[:20]))
-
-          # Una URL de acceso solo puede aparecer una vez.
-          dup=sorted(u for u in set(a_urls) if a_urls.count(u)>1)
-          if dup:
-              raise SystemExit("REGRESION: URLs duplicadas en principal: "+str(dup[:20]))
-
-          # No se pueden recrear carpetas prohibidas.
-          cats=[re.search(r'group-title="([^"]*)"',line) for line,_ in a]
-          cats={m.group(1).strip().lower() for m in cats if m}
-          forbidden={"pluto tv","total","otros"}
-          bad=sorted(c for c in cats if c in forbidden)
-          if bad:
-              raise SystemExit("REGRESION: carpetas prohibidas: "+str(bad))
-
-          print(f"Principal antes: {len(b)} | después: {len(a)}")
-          print(f"URLs no-Pluto preservadas: {len(b_urls)-len(lost_non_pluto)}")
-          print("OK: no-regresión, sin duplicados URL y sin carpetas prohibidas.")
-          PY
-
-      - name: Validar aprendizaje
-        run: |
-          python scripts/aprendizaje.py
-          if [ -f scripts/aprendizaje.json ]; then
-            TAMANO=$(wc -c < scripts/aprendizaje.json)
-            echo "Tamaño aprendizaje.json: $TAMANO bytes"
-            if [ "$TAMANO" -ge 5000000 ]; then
-              echo "ERROR: el historial de aprendizaje superó 5 MB."
-              exit 1
-            fi
-          fi
-          echo "Aprendizaje persistente validado."
-
-      - name: Validar archivos M3U
-        run: |
-          set -e
-
-          for archivo in \
-            "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
-          do
-            echo "========================================"
-            echo "Validando: $archivo"
-            echo "========================================"
-
-            if [ ! -f "$archivo" ]; then
-              echo "ERROR: No existe $archivo"
-              exit 1
-            fi
-
-            if [ ! -s "$archivo" ]; then
-              echo "ERROR: $archivo está vacío"
-              exit 1
-            fi
-
-            if ! head -n 1 "$archivo" | grep -q "#EXTM3U"; then
-              echo "ERROR: $archivo no parece un M3U válido"
-              exit 1
-            fi
-
-            CANALES=$(grep -c "^#EXTINF" "$archivo" || true)
-
-            echo "Canales encontrados: $CANALES"
-
-            if [ "$CANALES" -eq 0 ]; then
-              echo "ERROR: $archivo no contiene canales"
-              exit 1
-            fi
-          done
-
-          echo "La lista principal M3U es válida."
-
-      - name: Selftest Health Score principal
-        run: |
-          python scripts/selftest_health_principal.py
-          python scripts/selftest_reconexion_principal.py
-
-      - name: Motor Health Score independiente de la principal
-        run: |
-          set -e
-          python scripts/health_principal.py IPTV-CHILE-MAESTRA_CORREGIDO.m3u
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          p = Path("scripts/health/principal_health.json")
-          data = json.loads(p.read_text(encoding="utf-8"))
-          if not isinstance(data, dict):
-              raise SystemExit("ERROR: estado de health principal inválido")
-          if len(data) > 5000:
-              raise SystemExit("ERROR: health principal superó el límite de 5000 fuentes")
-          if any(len(v.get("history", [])) > 5 for v in data.values()):
-              raise SystemExit("ERROR: historial por fuente superó 5 muestras")
-          scores = [int(v.get("health_score", 0)) for v in data.values()]
-          if scores and min(scores) < 0 or scores and max(scores) > 100:
-              raise SystemExit("ERROR: Health Score fuera de 0-100")
-          print(f"Health principal: {len(data)} fuentes; OK={sum(1 for v in data.values() if v.get('ok'))}; cooldown={sum(1 for v in data.values() if v.get('state') == 'COOLDOWN')}")
-          PY
-
-      - name: Verificar lista principal
-        run: |
-          mkdir -p reportes/principal
-          python scripts/generar_reporte.py \
-            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
-            --salida reportes/principal/REPORTE.md \
-            --hilos 100 \
-            --timeout 4 \
-            --max-por-servidor 1 \
-            --reintentos 0 \
-            --espera-reintento 0
-
-      - name: Comprobar resultado de verificación
-        run: |
-          set -e
-
-          if [ ! -f "reportes/principal/REPORTE.md" ]; then
-            echo "ERROR: No se generó REPORTE.md"
-            exit 1
-          fi
-
-          echo "Reporte generado correctamente."
-
-          echo ""
-          echo "========== RESUMEN =========="
-
-          for archivo in \
-            "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
-          do
-            CANALES=$(grep -c "^#EXTINF" "$archivo" || true)
-            echo "$archivo -> $CANALES canales"
-          done
-
-          echo ""
-          echo "Verificación completada."
-
-      - name: Barrera final de archivos protegidos
-        run: |
-          set -euo pipefail
-          # GOD permite únicamente las dos directivas de reconexión autorizadas.
-          # La integridad canónica se valida de forma normalizada mediante guard.py.
-          python IPTV-CHILE-GENERADOR/scripts/guard.py
-          sha256sum -c /tmp/god_before.sha256
-          sha256sum -c /tmp/generador_before.sha256
-          sha256sum -c /tmp/pluto_before.sha256
-
-          while IFS= read -r file; do
-            case "$file" in
-              IPTV-CHILE-MAESTRA_CORREGIDO.m3u|reportes/principal/REPORTE.md|scripts/aprendizaje.json|scripts/health/principal_health.json)
-                ;;
-              "")
-                ;;
-              *)
-                echo "REGRESION: el mantenimiento principal intentó modificar un archivo fuera de su ámbito: $file"
-                exit 1
-                ;;
-            esac
-          done < <(git status --porcelain | sed 's/^...//')
-
-          echo "OK: GOD, GENERADOR y Pluto permanecen íntegros; solo la principal y artefactos autorizados pueden publicarse."
-
-      - name: Guardar cambios
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add \
-            IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
-            reportes/principal/REPORTE.md \
-            scripts/aprendizaje.json \
-            scripts/health/principal_health.json
 
           if git diff --cached --quiet; then
             echo "No hay cambios nuevos."
