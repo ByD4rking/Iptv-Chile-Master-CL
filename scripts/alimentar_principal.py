@@ -2141,6 +2141,19 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                     list(orden_por_categoria_id.get((categoria_actual, channel_id), []))
                     if channel_id else []
                 )
+                if len(ranks) > 1:
+                    # Un tvg-id puede estar reutilizado por la fuente para
+                    # canales distintos. Nunca heredar la primera posición del
+                    # ID sin comprobar también el nombre normalizado.
+                    coincidencias_id_nombre = [
+                        idx for idx in ranks
+                        if identidad_anterior[idx][2] == nombre
+                    ]
+                    ranks = (
+                        [min(coincidencias_id_nombre)]
+                        if coincidencias_id_nombre
+                        else []
+                    )
                 if not ranks and nombre:
                     candidates = orden_por_categoria_nombre.get((categoria_actual, nombre), [])
                     if len(candidates) == 1:
