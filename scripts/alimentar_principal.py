@@ -1865,6 +1865,7 @@ def restaurar_no_pluto_existente(lineas, iniciales):
     una URL nueva. Así la autorrenovación de enlaces no vuelve a introducir
     streams obsoletos como duplicados.
     """
+    urls_actuales = mapa_urls_principal(lineas)
     categorias = categorias_de_lineas(lineas)
     bloques_por_categoria = defaultdict(list)
     ids_actuales = set()
@@ -1884,7 +1885,7 @@ def restaurar_no_pluto_existente(lineas, iniciales):
 
     restaurados = 0
     for url, bloque in iniciales.items():
-        if url in mapa_urls_principal(lineas):
+        if url in urls_actuales:
             continue
 
         extinf = bloque[0]
@@ -1928,6 +1929,7 @@ def restaurar_no_pluto_existente(lineas, iniciales):
         bloque_restaurado = list(bloque)
         bloque_restaurado[0] = reemplazar_categoria(extinf, destino)
         bloques_por_categoria[destino].append(bloque_restaurado)
+        urls_actuales.add(url)
         restaurados += 1
 
     for categoria, bloques in bloques_por_categoria.items():
