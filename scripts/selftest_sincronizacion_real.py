@@ -454,6 +454,7 @@ def main(args: argparse.Namespace) -> None:
         if category in {
             norm("Entretenimiento / Cine / Series"),
             norm("Infantiles"),
+            norm("Anime"),
         }:
             continue
         after_keys = after_by_category.get(category, [])
@@ -493,6 +494,16 @@ def main(args: argparse.Namespace) -> None:
                 f"después={actual_order[mismatch:mismatch + 8]!r}; "
                 f"longitudes={len(expected_order)}/{len(actual_order)}"
             )
+
+    # Anime tiene orden alfabético solicitado; las alternativas se ordenan
+    # junto a su canal base y no cuentan como nombres independientes.
+    anime_order = [
+        channel_name_key(item["display_raw"])
+        for item in after
+        if norm(item["category"]) == "anime" and not item["is_option"]
+    ]
+    if anime_order != sorted(anime_order):
+        raise AssertionError("Anime no quedó ordenado alfabéticamente.")
 
     # Verificar el orden de los tres canales prioritarios dentro de Infantiles.
     infantiles = [
