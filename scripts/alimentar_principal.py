@@ -11,6 +11,8 @@ PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 FUENTE_IPTVSV = "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
 FUENTE_MAGMA = "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u"
 FUENTE_PLUTO_ALTERNATIVAS = "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
+# Identidad histórica de Pluto TV Anime España; se mantiene fuera de Anime.
+PLUTO_ES_ANIME_IDS_HISTORICOS = {"608035b8d8705f0007260287"}
 
 # ============================================================
 # FUENTES NORMALES / COLABORADORAS
@@ -2714,7 +2716,7 @@ def main():
 
     # Retirar también canales Pluto España ya existentes en Anime aunque su
     # nombre no lleve la etiqueta [Pluto ES]; se identifica por el catálogo ES.
-    ids_pluto_es_anime = set()
+    ids_pluto_es_anime = set(PLUTO_ES_ANIME_IDS_HISTORICOS)
     try:
         respuesta_es = session.get(FUENTES_PLUTO[1], timeout=30)
         respuesta_es.raise_for_status()
