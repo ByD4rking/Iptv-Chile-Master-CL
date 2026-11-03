@@ -855,8 +855,8 @@ def cargar_catalogo_pluto_propio(session):
                     cid = m_id.group(1).strip().lower()
                 nombre = normalizar(canal.get("nombre", ""))
                 if cid:
-                    # LATAM aparece primero en FUENTES_PLUTO y por tanto
-                    # gana frente a ES/MX cuando comparten el mismo canal.
+                    # LATAM aparece primero en FUENTES_PLUTO_PRINCIPAL y por tanto
+                    # gana frente a ES cuando comparten el mismo canal.
                     por_id.setdefault(cid, canal)
                     por_region[region].setdefault(cid, canal)
                 if nombre:
@@ -3117,7 +3117,7 @@ def main(restaurar_faltantes=True, preservar_orden=False):
                     canales_pluto_fuentes_por_id[identidad].append(canal)
 
                             # Pluto se deduplica por channel ID global: LATAM gana y
-                # ES/MX solo aportan IDs todavía ausentes.
+                # ES solo aporta IDs todavía ausentes.
                 if (
                     identidad
                     and normalizar(destino) in PLUTO_CATEGORIAS_CANONICAS
@@ -3468,6 +3468,7 @@ def main(restaurar_faltantes=True, preservar_orden=False):
     print(f"Pluto terceros reemplazados:         {pluto_reemplazo["reemplazados"]}")
     print(f"Pluto terceros sin reemplazo:        {pluto_reemplazo["eliminados_sin_reemplazo"]}")
     print(f"Pluto ya propios conservados:        {pluto_reemplazo["ya_propios"]}")
+    print(f"Pluto MX externo sin JWT conservados: {pluto_reemplazo["mx_externos_conservados"]}")
     print(f"Pluto reubicados por categoría:        {pluto_reubicados}")
     print(f"Errores sincronizando carpetas Pluto:   {pluto_reubicados_errores}")
     print(f"Pluto duplicados por URL exacta:       {pluto_duplicados_existentes}")
