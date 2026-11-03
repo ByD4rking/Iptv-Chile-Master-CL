@@ -67,7 +67,14 @@ def main():
         ordered_lines,
         session,
     )
-    alimentador.validar_orden_canales(ordered_lines)
+    alimentador.validar_orden_canales(
+        original_lines,
+        ordered_lines,
+        categorias_reordenables={
+            "Entretenimiento / Cine / Series",
+            "Infantiles",
+        },
+    )
 
     print("\n[ORQUESTADOR] Agrupando alternativas y priorizando Infantiles.")
     ordered_lines = _group_and_label_alternatives(
