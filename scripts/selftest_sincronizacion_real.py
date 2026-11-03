@@ -44,8 +44,11 @@ def parse_entries(path: Path) -> list[dict]:
         if not line.startswith("#EXTINF:"):
             continue
         id_match = re.search(r'tvg-id="([^"]*)"', line, re.I)
+        name_match = re.search(r'tvg-name="([^"]*)"', line, re.I)
         group_match = re.search(r'group-title="([^"]*)"', line, re.I)
         display = line.split(",", 1)[1].strip() if "," in line else ""
+        tvg_name = base_name(name_match.group(1) if name_match else display)
+        display_name = base_name(display)
         url = ""
         for next_index in range(index + 1, len(lines)):
             if lines[next_index].startswith("#EXTINF:"):
@@ -56,7 +59,9 @@ def parse_entries(path: Path) -> list[dict]:
                 break
         entries.append({
             "id": (id_match.group(1).strip() if id_match else ""),
-            "name": base_name(display),
+            "name": display_name,
+            "tvg_name": tvg_name,
+            "is_pitufos": tvg_name == "los pitufos" or display_name == "los pitufos",
             "category": group_match.group(1).strip() if group_match else "",
             "url": url,
             "extinf": line,
@@ -156,7 +161,7 @@ def main() -> None:
             f"Faltan {len(missing_pluto_latam_mx)} IDs Anime de Pluto LATAM/MX en la principal."
         )
 
-    if any(item["name"] == "los pitufos" for item in after):
+    if any(item["is_pitufos"] for item in after):
         raise AssertionError("Los Pitufos sigue presente en la principal.")
 
     if any(
@@ -190,7 +195,7 @@ def main() -> None:
 
     before_kept = [
         item for item in before
-        if item["name"] != "los pitufos"
+        if not item["is_pitufos"]
         and not (
             norm(item["id"]) in es_only_ids
             and norm(item["category"]) == "anime"
@@ -214,13 +219,20 @@ def main() -> None:
             None,
         )
         if match_index is None:
+            similar = [
+                item for item in after
+                if (old["id"] and norm(item["id"]) == norm(old["id"]))
+                or (old["name"] and item["name"] == old["name"])
+                or (old["tvg_name"] and item["tvg_name"] == old["tvg_name"])
+            ][:5]
             raise AssertionError(
-                f"Se perdió un canal existente o una alternativa: {old['name']} / {old['id']}"
+                f"Se perdió un canal existente o una alternativa: antes={old!r}; "
+                f"similares_despues={similar!r}; resumen={result!r}"
             )
         cursor = match_index + 1
 
-    before_heidi = [item for item in before if "heidi" in item["name"]]
-    after_heidi = [item for item in after if "heidi" in item["name"]]
+    before_heidi = [item for item in before if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
+    after_heidi = [item for item in after if "heidi" in item["name"] or "heidi" in item["tvg_name"]]
     if before_heidi and not after_heidi:
         raise AssertionError("Heidi u otro canal Heidi existente fue eliminado.")
 
