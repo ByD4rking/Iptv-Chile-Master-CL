@@ -2623,7 +2623,7 @@ def ordenar_bloques_magma_y_originales(lineas, session):
     return salida, auditoria
 
 
-def main():
+def main(restaurar_faltantes=True):
     print("=" * 72)
     print("        ALIMENTADOR / COMPLEMENTADOR DE LA PRINCIPAL")
     print("=" * 72)
@@ -2918,26 +2918,25 @@ def main():
                 duplicados_finales += 1
             vistos.add(u)
 
-    # 13) Protección de no-regresión: ningún canal no-Pluto que ya existía
-    # puede desaparecer por una limpieza interna accidental.
-    lineas, no_pluto_restaurados = restaurar_no_pluto_existente(
-        lineas,
-        bloques_no_pluto_iniciales,
-    )
-    if no_pluto_restaurados:
-        print(f"Autorreparación: {no_pluto_restaurados} canales no-Pluto restaurados.")
+    # 13) Protección de no-regresión. El orquestador moderno compara y audita
+    # contra la copia original; no restauramos aquí por URL porque podría
+    # resucitar enlaces viejos o insertar alternativas fuera de su posición.
+    no_pluto_restaurados = 0
+    if restaurar_faltantes:
+        lineas, no_pluto_restaurados = restaurar_no_pluto_existente(
+            lineas,
+            bloques_no_pluto_iniciales,
+        )
+        if no_pluto_restaurados:
+            print(f"Autorreparación: {no_pluto_restaurados} canales no-Pluto restaurados.")
 
-    # 14) Última barrera: deduplicación exacta después de cualquier autorreparación.
-    # Así una restauración nunca puede volver a introducir una URL duplicada.
-    lineas, duplicados_post_restauracion, _ = limpiar_duplicados_globales_y_carpetas_especiales(lineas)
-    if duplicados_post_restauracion:
-        print(f"Deduplicación final tras autorreparación: {duplicados_post_restauracion} duplicados eliminados.")
+        lineas, duplicados_post_restauracion, _ = limpiar_duplicados_globales_y_carpetas_especiales(lineas)
+        if duplicados_post_restauracion:
+            print(f"Deduplicación final tras autorreparación: {duplicados_post_restauracion} duplicados eliminados.")
 
-    # Consolidar de nuevo las categorías después de la autorreparación.
-    # Esto evita que un canal restaurado genere un bloque físico separado.
-    lineas, cambios_orden_post_restauracion = ordenar_y_normalizar_carpetas(lineas)
-    if cambios_orden_post_restauracion:
-        print("Orden final tras autorreparación aplicado.")
+        lineas, cambios_orden_post_restauracion = ordenar_y_normalizar_carpetas(lineas)
+        if cambios_orden_post_restauracion:
+            print("Orden final tras autorreparación aplicado.")
 
     # 14) Consolidación física definitiva: una sola sección por categoría.
     lineas, categorias_fisicas = consolidar_bloques_por_categoria(lineas)
