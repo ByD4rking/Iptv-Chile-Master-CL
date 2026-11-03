@@ -11,6 +11,7 @@ from sincronizar_complementos import (
     _group_and_label_alternatives,
     _prioritize_infantiles,
     normalizar_nombres_solicitados,
+    quitar_los_pitufos_es,
     get_last_url_priority,
     synchronize_once,
 )
@@ -35,20 +36,19 @@ def main():
         check=True,
     )
 
-    # Restaurar el orden antes de la reconciliación. Hacerlo después
-    # reintroduciría canales que la sincronización debe retirar (p. ej. Los Pitufos ES).
+    print("\n[ORQUESTADOR] Sincronizando todas las fuentes complementarias.")
+    result = synchronize_once()
+
+    # Restaurar el orden histórico DESPUÉS de sincronizar: el reconciliador puede
+    # insertar alternativas en medio de una categoría. La restauración también
+    # recupera bloques retirados; por eso se reaplican inmediatamente las
+    # exclusiones explícitas de Pluto ES.
     current_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
     ordered_lines = alimentador.restaurar_orden_original_por_categoria(
         current_lines,
         original_lines,
     )
-    temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
-    temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
-    temporary.replace(PRINCIPAL)
-
-    print("\n[ORQUESTADOR] Sincronizando todas las fuentes complementarias.")
-    result = synchronize_once()
-    ordered_lines = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
+    ordered_lines = quitar_los_pitufos_es(ordered_lines)
     ordered_lines = [line.rstrip() for line in ordered_lines]
 
     session = requests.Session()
