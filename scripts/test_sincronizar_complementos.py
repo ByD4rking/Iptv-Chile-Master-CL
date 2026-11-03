@@ -562,6 +562,30 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertTrue(any("country=MX&jwt=latam" in line for line in output))
         self.assertTrue(any(f"https://jmp2.uk/plu-{pluto_id}.m3u8" in line for line in output))
 
+    def test_shared_anime_identity_keeps_latam_mx_even_when_label_says_espanol(self):
+        pluto_id = "5fceaab478f2af00080ff51f"
+        base = ["#EXTM3U"] + entry(
+            pluto_id,
+            "Anime",
+            "Yu-Gi-Oh! Español",
+            "https://old.example/yugioh-es.m3u8",
+        )
+        latam_url = (
+            f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/"
+            f"v2/stitch/hls/channel/{pluto_id}/master.m3u8?jwt=latam"
+        )
+        mx_url = f"https://jmp2.uk/plu-{pluto_id}.m3u8"
+        source = [
+            candidate(pluto_id, "Anime", "Yu-Gi-Oh!", latam_url, ap.FUENTES_PLUTO[0]),
+            candidate(pluto_id, "Anime", "Yu-Gi-Oh!", mx_url, ap.FUENTE_PLUTO_ALTERNATIVAS),
+        ]
+
+        output, _ = reconcile_lines(base, source)
+
+        self.assertIn(latam_url, output)
+        self.assertIn(mx_url, output)
+        self.assertNotIn("https://old.example/yugioh-es.m3u8", output)
+
     def test_yugioh_espanol_is_removed_but_latam_mx_and_magna_stay_grouped(self):
         base = ["#EXTM3U"] + (
             entry(
