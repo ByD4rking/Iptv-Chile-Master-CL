@@ -24,6 +24,44 @@ class TestAlternativasPrincipal(unittest.TestCase):
                 i += 1
         return result
 
+    def test_generated_main_playlist_matches_requested_reference_rules(self):
+        from pathlib import Path
+        import re
+
+        path = Path(__file__).resolve().parents[1] / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+        if not path.is_file():
+            self.skipTest("La M3U real no está presente en este entorno.")
+        parsed = self.entries(path.read_text(encoding="utf-8-sig").splitlines())
+        playable = []
+        for item in parsed:
+            extinf = item[0]
+            category = re.search(r'group-title="([^"]*)"', extinf, re.I)
+            display = extinf.split(",", 1)[1].strip() if "," in extinf else ""
+            url = next((line.strip() for line in item[1:] if line.startswith(("http://", "https://"))), "")
+            playable.append((category.group(1) if category else "", display, url, extinf))
+
+        kids = [item for item in playable if item[0].strip().lower() in {"infantiles", "infantil"}]
+        kid_names = [re.sub(r"\\s*\\[(?:opci[oó]n|opc\\.?|option)\\s*\\d+\\]$", "", x[1], flags=re.I).strip().lower() for x in kids]
+        self.assertEqual(kid_names[:3], ["popeye", "los pitufos", "heidi"])
+
+        self.assertFalse(any("los pitufos" in x[1].lower() and (
+            "pluto es" in x[1].lower() or "country=es" in x[2].lower() or "marketingregion=es" in x[2].lower()
+        ) for x in playable))
+
+        delmi = [x for x in playable if "delmi" in x[1].lower()]
+        if delmi:
+            self.assertTrue(any(x[1] == "Delmi TV 2" and x[0].strip().lower() == "anime" for x in delmi))
+
+        cyg = [(i, x) for i, x in enumerate(playable) if re.sub(r"\\s*\\[.*?\\]$", "", x[1], flags=re.I).strip().lower() == "cygtvcl"]
+        if len(cyg) >= 2:
+            positions = [i for i, _ in cyg]
+            self.assertEqual(positions, list(range(positions[0], positions[0] + len(positions))))
+
+        cartoonito = [x for x in playable if "cartoonito" in x[1].lower()]
+        self.assertTrue(cartoonito, "Se perdió Cartoonito HD y su alternativa histórica.")
+        self.assertTrue(any("opc.4" in x[1].lower() or "opción 2" in x[1].lower() for x in cartoonito),
+                        "No se conservó/reagrupó la alternativa histórica de Cartoonito.")
+
     def test_cygtvcl_alternatives_become_adjacent_and_numbered(self):
         lines = ["#EXTM3U"] + block("cygtvcl.id", "CHILE TV", "CYGTVCL", "https://a.example/live.m3u8")
         lines += block("cygtvcl.id", "CHILE TV", "CYGTVCL", "https://other.example/live.m3u8")
