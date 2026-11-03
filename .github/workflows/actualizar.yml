@@ -856,7 +856,11 @@ jobs:
 
           raw = "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/pluto/output/playlists/"
           es_anime_ids = source_ids(raw + "pluto_es.m3u", anime_only=True)
-          latam_mx_ids = source_ids(raw + "pluto_latam.m3u") | source_ids(raw + "pluto_mx.m3u")
+          latam_mx_ids = (
+              source_ids(raw + "pluto_latam.m3u")
+              | source_ids(raw + "pluto_mx.m3u")
+              | source_ids("https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u")
+          )
           es_only_ids = es_anime_ids - latam_mx_ids
 
           before = entries("/tmp/principal_antes.m3u")
