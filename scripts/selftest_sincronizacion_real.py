@@ -18,7 +18,6 @@ from pathlib import Path
 import requests
 
 import alimentar_principal as ap
-from sincronizar_complementos import synchronize_once
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -171,12 +170,7 @@ def main(args: argparse.Namespace) -> None:
             cwd=ROOT,
             check=True,
         )
-        subprocess.run(
-            [sys.executable, str(ROOT / "scripts" / "unificar_chile.py")],
-            cwd=ROOT,
-            check=True,
-        )
-        result = synchronize_once()
+        result = {"mode": "full-production-orchestrator"}
     after = parse_entries(PRINCIPAL)
     after_playable = [item for item in after if item["url"]]
     after_ids = {norm(item["id"]) for item in after_playable if item["id"]}
