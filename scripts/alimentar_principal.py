@@ -80,11 +80,15 @@ def normalizar(s):
 def normalizar_nombre_canal(value):
     """Clave de nombre estable para preservar orden entre fuentes con etiquetas distintas."""
     value = normalizar(value)
-    value = re.sub(\n        r"\\s*(?:\\[\\s*(?:opc(?:ion)?\\.?|option)\\s*\\d+\\s*\\]|\\(\\s*(?:opc(?:ion)?\\.?|option)\\s*\\d+\\s*\\))\\s*$",\n        "",\n        value,\n        flags=re.I,\n    )
+    value = re.sub(
+        r"\s*(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))\s*$",
+        "",
+        value,
+        flags=re.I,
+    )
     value = re.sub(r"\s*\|\s*(?:cl|chile)\s*$", "", value, flags=re.I)
     value = re.sub(r"\bv2$", "2", value, flags=re.I)
     return re.sub(r"[^a-z0-9]+", "", value)
-
 TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
 
 
