@@ -3441,7 +3441,7 @@ def main():
     PRINCIPAL.write_text(
         texto_final,
         encoding="utf-8",
-        newline="\\n",
+        newline="\n",
     )
 
     print("\n" + "=" * 72)
