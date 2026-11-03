@@ -57,7 +57,7 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ""
 Write-Host "[1b/3] Reconciliando nuevamente todas las fuentes complementarias..."
-& $PYTHON "$BASE\\scripts\\sincronizar_complementos.py"
+& $PYTHON "$BASE\scripts\sincronizar_complementos.py"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
