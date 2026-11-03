@@ -3449,7 +3449,12 @@ def main():
     validar_orden_canales(
         lineas_iniciales,
         lineas,
-        categorias_reordenables={"Entretenimiento / Cine / Series"},
+        categorias_reordenables={
+            "Entretenimiento / Cine / Series",
+            "Infantiles",
+            "Anime",
+            "CHILE TV",
+        },
         ids_pluto_omitidos=ids_pluto_orden_protegidos,
     )
     print(f"Reconexión/caché aplicados en salida final: {reconexiones_agregadas}")
