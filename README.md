@@ -111,7 +111,7 @@ El proyecto mantiene siete playlists independientes de Pluto TV, cada una corres
 
 Puedes utilizar **una sola, varias o las siete** según lo que necesites. No es obligatorio cargarlas juntas.
 
-La organización conjunta que utiliza el proyecto es únicamente una **regla interna de integración y mantenimiento** para evitar duplicados y aprovechar primero el contenido de LATAM cuando está disponible.
+La integración conjunta se utiliza para complementar la lista principal, evitar duplicados y mantener actualizadas las URL y categorías. Las playlists regionales siguen disponibles de forma independiente.
 
 **Prioridad de integración en la lista principal:**
 
