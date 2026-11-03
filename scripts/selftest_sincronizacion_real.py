@@ -33,21 +33,26 @@ def norm(value: str) -> str:
 
 
 def base_name(value: str) -> str:
-    value = re.sub(r"\s*\|\s*(?:cl|co|chile)\s*$", "", value or "", flags=re.I)
-    value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value or "", flags=re.I)
+    value = value or ""
+    # Primero retirar marcas de alternativa, que pueden ir anidadas después
+    # de [V2]. Así la base y sus opciones producen exactamente la misma clave.
     if not re.match(r"^\s*cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)\s*$", value, re.I):
-        value = re.sub(r"\s*\(\s*opc\.?\s*\d+\s*\)\s*$", "", value, flags=re.I)
-    value = re.sub(
-        r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
-        "",
-        value or "",
-        flags=re.I,
-    )
+        option_suffix = re.compile(
+            r"\s*(?:\[\s*(?:opci[oó]n|opc\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opci[oó]n|opc\.?|option)\s*\d+\s*\))$",
+            re.I,
+        )
+        previous = None
+        while value.strip() and value != previous:
+            previous = value
+            value = option_suffix.sub("", value).strip()
+    value = re.sub(r"\s*\|\s*(?:cl|co|chile)\s*$", "", value, flags=re.I)
+    value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value, flags=re.I)
     value = re.sub(
         r"\s*(?:\[\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|"
         r"\(\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
         "",
-        value or "",
+        value,
         flags=re.I,
     )
     value = re.sub(r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es)|hd|sd|fhd|uhd)$", "", value, flags=re.I)
