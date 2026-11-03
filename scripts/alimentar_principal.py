@@ -1938,6 +1938,16 @@ def restaurar_no_pluto_existente(lineas, iniciales):
     una URL nueva. Así la autorrenovación de enlaces no vuelve a introducir
     streams obsoletos como duplicados.
     """
+    # Compatibilidad: algunos callers históricos y pruebas entregan la M3U
+    # completa; el orquestador nuevo entrega el índice URL -> bloque.
+    # Normalizar aquí evita AttributeError y mantiene una sola ruta de restauración.
+    if isinstance(iniciales, (list, tuple)):
+        iniciales = extraer_bloques_no_pluto_por_url(iniciales)
+    elif not isinstance(iniciales, dict):
+        raise TypeError(
+            "iniciales debe ser una M3U (lista de líneas) o un mapa URL -> bloque"
+        )
+
     urls_actuales = mapa_urls_principal(lineas)
     categorias = categorias_de_lineas(lineas)
     bloques_por_categoria = defaultdict(list)
