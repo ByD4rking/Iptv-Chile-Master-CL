@@ -8,6 +8,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from atomic import atomic_write_json
+from auto_discovery import merge_auto_catalog
 
 BASE = Path(__file__).resolve().parent.parent
 CONFIG = BASE / "config" / "sources.json"
@@ -15,6 +16,8 @@ CATALOG = BASE / "config" / "catalog.json"
 OUTPUT = BASE / "data" / "channels.json"
 SOURCE_HEALTH_FILE = BASE / "data" / "source_health.json"
 ENDPOINT_HEALTH_FILE = BASE / "data" / "endpoint_health.json"
+AUTO_CATALOG_FILE = BASE / "data" / "auto_catalog.json"
+DISCOVERED_FILE = BASE / "data" / "discovered_channels.json"
 TIMEOUT = 30
 RETRIES = 3
 RETRY_BACKOFF_SECONDS = (1.0, 2.0, 4.0)
@@ -91,10 +94,15 @@ def parse_m3u(text, source_name, priority):
                 "name": line.split(",", 1)[-1].strip(),
                 "group": "",
                 "logo": "",
+                "tvg_id": "",
                 "url": "",
                 "source": source_name,
                 "priority": priority,
             }
+
+            tvg_id_match = re.search(r'tvg-id="([^"]+)"', line, re.I)
+            if tvg_id_match:
+                current["tvg_id"] = tvg_id_match.group(1).strip()
 
             for key in ("group-title", "tvg-logo"):
                 marker = f'{key}="'
@@ -131,7 +139,7 @@ def candidate_keys(entry):
     return {normalize_label(value) for value in values if normalize_label(value)}
 
 
-def discover_new_candidates(all_entries, catalog_channels):
+def discover_new_candidates(all_entries, catalog_channels, run_started_at):
     discovery_cfg = load_json(BASE / "config" / "discovery.json", {})
     profiles = discovery_cfg.get("profiles", {})
     max_per_profile = int(discovery_cfg.get("max_candidates_per_profile", 250))
@@ -149,8 +157,10 @@ def discover_new_candidates(all_entries, catalog_channels):
     result = {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "mode": "discovery_only",
+        "run_started_at": run_started_at,
+        "mode": "automatic_validation",
         "published_automatically": False,
+        "queued_for_quality_validation": True,
         "profiles": {},
     }
 
@@ -159,6 +169,8 @@ def discover_new_candidates(all_entries, catalog_channels):
         for entry in all_entries:
             url = str(entry.get("url") or "").strip()
             if not url or url in catalog_urls:
+                continue
+            if normalize_label(entry.get("name", "")) in catalog_names:
                 continue
 
             haystack = normalize_label(
@@ -172,6 +184,7 @@ def discover_new_candidates(all_entries, catalog_channels):
                 "name": str(entry.get("name") or "").strip(),
                 "group": str(entry.get("group") or "").strip(),
                 "logo": str(entry.get("logo") or "").strip(),
+                "tvg_id": str(entry.get("tvg_id") or "").strip(),
                 "url": url,
                 "source": str(entry.get("source") or "").strip(),
                 "matched_terms": sorted(set(matches)),
@@ -184,10 +197,9 @@ def discover_new_candidates(all_entries, catalog_channels):
 
         result["profiles"][profile] = list(found.values())
 
-    save_json(BASE / "data" / "discovered_channels.json", result)
     total = sum(len(items) for items in result["profiles"].values())
-    print(f"Descubrimiento: {total} candidatos nuevos guardados en data/discovered_channels.json")
-    print("IMPORTANTE: descubrimiento separado; no modifica catalog.json ni publica candidatos.")
+    result["candidate_count"] = total
+    return result
 
 
 def main():
@@ -282,12 +294,26 @@ def main():
     if not catalog_channels:
         raise SystemExit("El catalogo propio esta vacio o no existe.")
 
-    discover_new_candidates(all_entries, catalog_channels)
+    discovery_report = discover_new_candidates(all_entries, catalog_channels, checked_at)
+    previous_auto_catalog = load_json(AUTO_CATALOG_FILE, {"schema_version": 1, "channels": []})
+    auto_channels, updated_auto_catalog, auto_stats = merge_auto_catalog(
+        discovery_report,
+        health,
+        previous_auto_catalog,
+        catalog_channels,
+        normalize_label,
+    )
+    save_json(AUTO_CATALOG_FILE, updated_auto_catalog)
+    discovery_report["automatic_validation"] = {
+        **auto_stats,
+        "publication_policy": "Solo se genera en la M3U si el endpoint responde y supera la prueba HLS/playback.",
+        "disappearance_policy": "Tres ejecuciones completas consecutivas sin presencia; fallos o fuentes en cuarentena no cuentan.",
+    }
+    save_json(DISCOVERED_FILE, discovery_report)
 
-    # El catalogo propio es la fuente de verdad de QUE canales pertenecen
-    # a nuestra lista. Las fuentes externas solo pueden aportar endpoints
-    # que ya esten declarados en el catalogo; nunca pueden insertar canales
-    # nuevos automaticamente.
+    # El catálogo curado conserva sus canales. Los candidatos nuevos se
+    # incorporan a un catálogo automático separado y pasan por check + HLS
+    # antes de entrar en la M3U publicada.
     catalog_ids_by_key = {}
     catalog_keys_by_id = {}
     catalog_url_keys = {}
@@ -402,6 +428,8 @@ def main():
         # pertenencia; la disponibilidad de endpoints es un estado operativo.
         channels.append(item)
 
+    channels.extend(auto_channels)
+
     channels.sort(
         key=lambda x: (
             x["group"].lower(),
@@ -488,10 +516,12 @@ def main():
     print(f"Fuentes OK:        {successful_sources}/{len(sources)}")
     print(f"Salud de fuentes:  {SOURCE_HEALTH_FILE}")
     print(f"Entradas originales:{len(all_entries)}")
-    print(f"Canales catalogados: {len(channels)}")
-    print(f"Endpoints candidatos:{len(claimed_urls)}")
-    print(f"Archivo:           {OUTPUT}")
-    print("OK: generador independiente; ninguna lista local del repositorio es fuente.")
+    print(f"Canales catalogados + auto: {len(channels)}")
+    print(f"Candidatos auto en catálogo: {len(auto_channels)}")
+    print(f"Endpoints candidatos: {len(claimed_urls)}")
+    print(f"Desapariciones confirmadas: {auto_stats['removed_after_three_successful_runs']}")
+    print(f"Archivo: {OUTPUT}")
+    print("OK: candidatos nuevos pasan por validación de endpoint y playback antes de publicarse.")
 
 
 if __name__ == "__main__":
