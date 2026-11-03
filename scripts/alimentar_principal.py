@@ -3335,9 +3335,98 @@ def main():
         ids_pluto=ids_pluto_orden_protegidos,
     )
 
-    # SOLO AHORA se publica la principal: aplicar las directivas sobre la
-    # representación final, para que ninguna transformación posterior las
-    # elimine. Pluto queda excluido por diseño.
+    # ÚLTIMA barrera Pluto: las correcciones posteriores pueden retirar una
+    # entrada ya reparada. Restaurar después de TODAS las transformaciones.
+    aliases_pluto_salida = set()
+    for i_final, extinf_final in enumerate(lineas):
+        if not extinf_final.startswith("#EXTINF"):
+            continue
+        j_final = i_final + 1
+        while j_final < len(lineas) and lineas[j_final].startswith("#"):
+            j_final += 1
+        if j_final < len(lineas) and url_es_valida(lineas[j_final].strip()):
+            aliases_pluto_salida.update(
+                identidades_pluto(extinf_final, lineas[j_final].strip())
+            )
+
+    pluto_reinsertados_finales = []
+    for identidad in sorted(ids_pluto_fuentes):
+        aliases_fuente = aliases_pluto_fuentes.get(identidad, {identidad})
+        if aliases_fuente & aliases_pluto_salida:
+            continue
+        candidatos = canales_pluto_fuentes_por_id.get(identidad, [])
+        canal_fuente = next(
+            (c for c in candidatos if (c.get("url") or "").strip()),
+            None,
+        )
+        if not canal_fuente:
+            raise RuntimeError(
+                f"PLUTO BLOQUEADO: no existe bloque fuente para restaurar {identidad}."
+            )
+        destino = determinar_destino_pluto(
+            canal_fuente.get("categoria", ""),
+            canal_fuente.get("nombre", ""),
+            categorias_de_lineas(lineas),
+        )
+        if not destino:
+            raise RuntimeError(
+                f"PLUTO BLOQUEADO: {identidad} no tiene una categoría existente válida "
+                f"(fuente: {canal_fuente.get('categoria', '')!r})."
+            )
+        pluto_reinsertados_finales.append({
+            "categoria": destino,
+            "bloque": construir_bloque(canal_fuente, destino),
+        })
+        aliases_pluto_salida.update(identidades_pluto(
+            canal_fuente.get("extinf", ""),
+            canal_fuente.get("url", ""),
+        ))
+
+    if pluto_reinsertados_finales:
+        # Insertar después del ÚLTIMO bloque completo de cada categoría.
+        # encontrar_rango_categoria devuelve índices EXTINF; insertar justo
+        # después de ese índice partiría el bloque anterior y corrompería la M3U.
+        posiciones_por_categoria = {}
+        i_pos = 0
+        while i_pos < len(lineas):
+            if not lineas[i_pos].startswith("#EXTINF"):
+                i_pos += 1
+                continue
+            j_pos = i_pos + 1
+            while j_pos < len(lineas) and lineas[j_pos].startswith("#") and not lineas[j_pos].startswith("#EXTINF"):
+                j_pos += 1
+            if j_pos < len(lineas) and url_es_valida(lineas[j_pos].strip()):
+                clave_categoria = normalizar(extraer_categoria(lineas[i_pos]))
+                posiciones_por_categoria[clave_categoria] = j_pos + 1
+                i_pos = j_pos + 1
+            else:
+                i_pos = j_pos
+
+        agrupados_pluto = defaultdict(list)
+        for item in pluto_reinsertados_finales:
+            agrupados_pluto.setdefault(normalizar(item["categoria"]), []).append(item["bloque"])
+
+        inserciones = []
+        for clave_categoria, bloques_categoria in agrupados_pluto.items():
+            posicion = posiciones_por_categoria.get(clave_categoria)
+            if posicion is None:
+                raise RuntimeError(
+                    f"PLUTO BLOQUEADO: no se encontró el cierre de la categoría {clave_categoria!r}."
+                )
+            bloque_conjunto = []
+            for bloque in bloques_categoria:
+                bloque_conjunto.extend(bloque)
+            inserciones.append((posicion, bloque_conjunto))
+
+        for posicion, contenido_insertar in sorted(inserciones, reverse=True):
+            lineas[posicion:posicion] = contenido_insertar
+
+        print(
+            "Autorreparación Pluto final: "
+            f"{len(pluto_reinsertados_finales)} canales reinsertados tras la última normalización."
+        )
+
+    # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
     validar_orden_canales(
         lineas_iniciales,
@@ -3350,12 +3439,6 @@ def main():
     texto_final = "\n".join(lineas)
     if not texto_final.endswith("\n"):
         texto_final += "\n"
-
-    PRINCIPAL.write_text(
-        texto_final,
-        encoding="utf-8",
-        newline="\n",
-    )
 
     # Validación final después del autorreparo: una representación por ID
     # aceptado es suficiente; no se exige conservar cada JWT regional.
@@ -3387,6 +3470,14 @@ def main():
             "después del autorreparo. "
             f"Identidades no encontradas y aliases: {detalle_ids}"
         )
+
+    # Escritura segura: solo publicar en disco después de superar todas las
+    # validaciones bloqueantes, evitando dejar una principal parcial al fallar.
+    PRINCIPAL.write_text(
+        texto_final,
+        encoding="utf-8",
+        newline="\n",
+    )
 
     print("\n" + "=" * 72)
     print("RESUMEN")
