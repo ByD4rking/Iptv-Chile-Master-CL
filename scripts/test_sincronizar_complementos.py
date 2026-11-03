@@ -34,6 +34,36 @@ def candidate(channel_id, category, name, url, source=None):
     }
 
 
+class RestorationOrderTests(unittest.TestCase):
+    def test_do_not_restore_old_url_when_same_tvg_id_has_new_url(self):
+        original = entry("music.id", "Música", "MTV Classic", "https://old.example/mtv.m3u8")
+        current = ["#EXTM3U"] + entry("music.id", "Música", "MTV Classic", "https://new.example/mtv.m3u8")
+        output, restored = ap.restaurar_no_pluto_existente(
+            current,
+            {"https://old.example/mtv.m3u8": original},
+        )
+        self.assertEqual(restored, 0)
+        self.assertIn("https://new.example/mtv.m3u8", output)
+        self.assertNotIn("https://old.example/mtv.m3u8", output)
+
+    def test_restore_missing_channel_at_its_original_relative_position(self):
+        first = entry("music.a", "Música", "Canal A", "https://a.example/a.m3u8")
+        missing = entry("music.b", "Música", "Canal B", "https://b.example/b.m3u8")
+        last = entry("music.c", "Música", "Canal C", "https://c.example/c.m3u8")
+        current = ["#EXTM3U"] + first + last
+        initial = {
+            "https://a.example/a.m3u8": first,
+            "https://b.example/b.m3u8": missing,
+            "https://c.example/c.m3u8": last,
+        }
+        output, restored = ap.restaurar_no_pluto_existente(current, initial)
+        self.assertEqual(restored, 1)
+        self.assertEqual(
+            ap.firma_orden_canales(output),
+            ["id:music.a", "id:music.b", "id:music.c"],
+        )
+
+
 class ComplementSyncTests(unittest.TestCase):
     def setUp(self):
         self.base = (
