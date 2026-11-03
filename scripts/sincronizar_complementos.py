@@ -690,6 +690,51 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
     categories = ap.categorias_de_lineas(lines)
     category_lookup = {ap.normalizar(value): value for value in categories}
 
+    # Pluto MX externo no publica group-title útil en la mayoría de sus URLs.
+    # Heredar categoría solo cuando LATAM/ES/MAGMA o la maestra dan un destino
+    # único; si hay conflicto, no se inventa una categoría.
+    main_destinations_by_id: dict[str, list[str]] = defaultdict(list)
+    main_destinations_by_name: dict[str, list[str]] = defaultdict(list)
+    for block in blocks:
+        category = ap.extraer_categoria(block["extinf"])
+        if not category:
+            continue
+        identity = _identity(
+            {
+                "extinf": block["extinf"],
+                "nombre": ap.extraer_nombre(block["extinf"]),
+                "url": block.get("url", ""),
+            },
+            pluto=_is_pluto_url(block.get("url", "")),
+        )
+        if identity.startswith("id:"):
+            main_destinations_by_id[identity].append(category)
+        canonical = _canonical_channel_name(
+            {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"])}
+        )
+        if canonical:
+            main_destinations_by_name[canonical].append(category)
+
+    pluto_destinations_by_name: dict[str, list[str]] = defaultdict(list)
+    for candidate in candidates:
+        if candidate.get("source") not in {
+            ap.FUENTES_PLUTO[0],
+            ap.FUENTES_PLUTO[1],
+            ap.FUENTE_MAGMA,
+        }:
+            continue
+        destination = _destination(candidate.get("source", ""), candidate, categories)
+        canonical = _canonical_channel_name(candidate)
+        if destination and canonical:
+            pluto_destinations_by_name[canonical].append(destination)
+
+    def unique_destination(values: list[str]) -> str | None:
+        distinct = {_canonical_category(value) for value in values if value}
+        if len(distinct) != 1:
+            return None
+        key = next(iter(distinct))
+        return next(value for value in values if _canonical_category(value) == key)
+
     # Recalcular destinos con el catálogo real de categorías de la maestra.
     valid_candidates = []
     valid_by_source = Counter()
@@ -705,6 +750,14 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             candidate,
             categories,
         )
+        if not destination and candidate.get("source") == ap.FUENTE_PLUTO_ALTERNATIVAS:
+            canonical = _canonical_channel_name(candidate)
+            identity = candidate.get("identity") or _identity(candidate, pluto=True)
+            destination = unique_destination(pluto_destinations_by_name.get(canonical, []))
+            if not destination:
+                destination = unique_destination(main_destinations_by_id.get(identity, []))
+            if not destination:
+                destination = unique_destination(main_destinations_by_name.get(canonical, []))
         if not destination:
             skipped_by_source[source_label] += 1
             continue
