@@ -2078,7 +2078,7 @@ def integrar_pluto_mx(lineas, session):
                 extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
             else:
                 extinf = re.sub(
-                    r"^(#EXTINF:\\s*[^,\\s]+)(.*)$",
+                    r"^(#EXTINF:\s*[^,\s]+)(.*)$",
                     lambda match: f'{match.group(1)} tvg-id="{cid}"{match.group(2)}',
                     extinf,
                     count=1,
@@ -2122,7 +2122,7 @@ def integrar_pluto_mx(lineas, session):
                 extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
             else:
                 extinf = re.sub(
-                    r"^(#EXTINF:\\s*[^,\\s]+)(.*)$",
+                    r"^(#EXTINF:\s*[^,\s]+)(.*)$",
                     lambda match: f'{match.group(1)} tvg-id="{cid}"{match.group(2)}',
                     extinf,
                     count=1,
