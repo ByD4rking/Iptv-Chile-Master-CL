@@ -23,23 +23,34 @@ Write-Host "============================================================"
 Write-Host ""
 
 $ORCHESTRATOR = Join-Path $BASE "scripts\ejecutar_actualizacion_principal.py"
+$UNIFY = Join-Path $BASE "scripts\unificar_chile.py"
 $SYNC = Join-Path $BASE "scripts\sincronizar_complementos.py"
 
 if (!(Test-Path $ORCHESTRATOR)) {
     throw "No existe scripts\ejecutar_actualizacion_principal.py"
 }
+if (!(Test-Path $UNIFY)) {
+    throw "No existe scripts\unificar_chile.py"
+}
 if (!(Test-Path $SYNC)) {
     throw "No existe scripts\sincronizar_complementos.py"
 }
 
-Write-Host "[1/2] Ejecutando alimentador principal y validaciones..."
+Write-Host "[1/3] Ejecutando alimentador principal y validaciones..."
 & $PYTHON $ORCHESTRATOR
 if ($LASTEXITCODE -ne 0) {
     throw "Falló ejecutar_actualizacion_principal.py (código $LASTEXITCODE)."
 }
 
 Write-Host ""
-Write-Host "[2/2] Reconciliando MAGNA, IPTVSV y Pluto LATAM/ES/MX..."
+Write-Host "[2/3] Unificando la categoría CHILE..."
+& $PYTHON $UNIFY
+if ($LASTEXITCODE -ne 0) {
+    throw "Falló unificar_chile.py (código $LASTEXITCODE)."
+}
+
+Write-Host ""
+Write-Host "[3/3] Reconciliando MAGNA, IPTVSV y Pluto LATAM/ES/MX..."
 & $PYTHON $SYNC
 if ($LASTEXITCODE -ne 0) {
     throw "Falló sincronizar_complementos.py (código $LASTEXITCODE)."
