@@ -77,7 +77,7 @@ FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO_PRINCIPAL
 # Fuentes Pluto antiguas. Sus URLs de canales se descargan y se
 # eliminan de la principal antes de incorporar nuestras listas.
 # No se consultan ni reintroducen listas Pluto regionales antiguas.
-# La principal solo usa LATAM + ES + MX.
+# La principal usa LATAM + ES tokenizados y Pluto MX externo sin JWT.
 FUENTES_PLUTO_ANTIGUAS = []
 
 PAIS_POR_FUENTE = {
@@ -2607,7 +2607,7 @@ def cargar_ids_pluto_es_anime(session):
 
 
 def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
-    """Retira Pluto ES solo de Anime por nombre o identidad de fuente, ubica Avatar y añade American Ninja Warrior."""
+    """Retira Pluto ES de Anime, elimina solo Los Pitufos ES y prioriza los canales infantiles solicitados."""
     ids_pluto_es_anime = {str(x).lower() for x in (ids_pluto_es_anime or set())}
     prefijo = []
     bloques = []
@@ -2641,7 +2641,7 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
 
         es_pitufos = "los pitufos" in nombre_completo
         pitufos_es = es_pitufos and (
-            url_es or bool(re.search(r"\\b(?:es|espanol|espana)\\b", nombre_completo))
+            url_es or bool(re.search(r"\b(?:es|espanol|espana)\b", nombre_completo))
         )
         if pitufos_es:
             eliminados_pitufos_es += 1
@@ -2660,8 +2660,8 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
             continue
 
         nombre_sin_opcion = re.sub(
-            r"\\s*(?:\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|"
-            r"\\(\\s*(?:opci[oó]n|option)\\s*\\d+\\s*\\))\\s*$",
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
             "",
             nombre,
             flags=re.I,
@@ -2713,8 +2713,8 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
             continue
         nombre_bloque = extraer_nombre(bloque[0])
         nombre_bloque = re.sub(
-            r"\\s*(?:\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|"
-            r"\\(\\s*(?:opci[oó]n|option)\\s*\\d+\\s*\\))\\s*$",
+            r"\s*(?:\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opci[oó]n|option)\s*\d+\s*\))\s*$",
             "",
             nombre_bloque,
             flags=re.I,
@@ -3080,7 +3080,7 @@ def main(restaurar_faltantes=True, preservar_orden=False):
     print("=" * 72)
 
     for i, fuente in enumerate(FUENTES_PLUTO_PRINCIPAL, 1):
-        print(f"\n[PLUTO {i}/{len(FUENTES_PLUTO)}] {fuente}")
+        print(f"\n[PLUTO {i}/{len(FUENTES_PLUTO_PRINCIPAL)}] {fuente}")
         try:
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
