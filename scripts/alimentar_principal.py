@@ -158,10 +158,13 @@ def reemplazar_categoria(extinf, destino):
             count=1,
             flags=re.I,
         )
-    return extinf.replace(
-        "#EXTINF:",
-        f'#EXTINF:-1 group-title="{destino}"',
-        1,
+    # Conserva la duración EXTINF existente e inserta group-title después de ella.
+    return re.sub(
+        r"^(#EXTINF:\s*[^,\s]+)(.*)$",
+        lambda match: f'{match.group(1)} group-title="{destino}"{match.group(2)}',
+        extinf,
+        count=1,
+        flags=re.I,
     )
 
 def buscar_categoria_existente(nombre, categorias):
@@ -1228,10 +1231,17 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
 
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
             bloque = lineas[inicio:j + 1]
+            url_bloque = lineas[j].strip()
+            identidad = extraer_pluto_id(url_bloque)
+            if not identidad:
+                m_identidad = re.search(r'tvg-id="([a-f0-9]{20,})"', extinf, re.I)
+                identidad = m_identidad.group(1).lower() if m_identidad else ""
             bloques.append({
                 "lineas": bloque,
                 "categoria": extraer_categoria(extinf),
-                "url": lineas[j].strip(),
+                "url": url_bloque,
+                "id": identidad,
+                "after": [],
                 "original": len(bloques),
             })
             i = j + 1
@@ -1239,24 +1249,39 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
             prefijo.extend(lineas[inicio:j])
             i = j
 
-    pluto = [
-        b for b in bloques
-        if es_url_pluto(b["url"])
-        and not re.search(r"\(OPCIÓN\s+\d+\)$", extraer_nombre(b["lineas"][0]), re.I)
-    ]
+    pluto = [b for b in bloques if es_url_pluto(b["url"])]
     if not pluto:
         return lineas, 0, {}
 
     no_pluto = [b for b in bloques if b not in pluto]
 
+    # Agrupa cada OPCIÓN junto a su canal base usando el ID Pluto compartido.
+    # Así el siguiente ciclo de actualización no separa las alternativas.
+    pluto_principales = []
+    for bloque in pluto:
+        nombre = extraer_nombre(bloque["lineas"][0])
+        es_opcion = bool(re.search(r"\\(OPCIÓN\\s+\\d+\\)$", nombre, re.I))
+        if es_opcion:
+            nombre_base = re.sub(r"\\s*\\(OPCIÓN\\s+\\d+\\)$", "", nombre, flags=re.I).strip()
+            base = next((
+                candidato for candidato in pluto
+                if candidato is not bloque
+                and not re.search(r"\\(OPCIÓN\\s+\\d+\\)$", extraer_nombre(candidato["lineas"][0]), re.I)
+                and normalizar(candidato["categoria"]) == normalizar(bloque["categoria"])
+                and (
+                    (bloque.get("id") and candidato.get("id") == bloque.get("id"))
+                    or normalizar(extraer_nombre(candidato["lineas"][0])) == normalizar(nombre_base)
+                )
+            ), None)
+            if base is not None:
+                base["after"].append(bloque)
+                continue
+        pluto_principales.append(bloque)
+
     # Pluto por categoría, manteniendo exactamente el orden original.
     por_categoria = defaultdict(list)
     primera_original = {}
-    for b in pluto:
-        clave = normalizar(b["categoria"])
-        por_categoria[clave].append(b)
-        primera_original.setdefault(clave, b["original"])
-
+    for b in pluto_principales:
     # Posición de inserción: después del último bloque NO-Pluto de la
     # categoría. Si la categoría solo contiene Pluto, se conserva la
     # posición aproximada del primer Pluto que había en ella.
@@ -1303,6 +1328,8 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
     salida = list(prefijo)
     for b in resultado:
         salida.extend(b["lineas"])
+        for alternativa in b.get("after", []):
+            salida.extend(alternativa["lineas"])
 
     return salida, movidos, dict(por_categoria_movidos)
 
@@ -2118,8 +2145,9 @@ def integrar_pluto_mx(lineas, session):
     }
 
 
-def aplicar_ajustes_referencia(lineas):
-    """Retira Pluto ES solo de Anime, ubica Avatar y añade American Ninja Warrior."""
+def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
+    """Retira Pluto ES solo de Anime por nombre o identidad de fuente, ubica Avatar y añade American Ninja Warrior."""
+    ids_pluto_es_anime = {str(x).lower() for x in (ids_pluto_es_anime or set())}
     prefijo = []
     bloques = []
     avatar = []
@@ -2138,7 +2166,13 @@ def aplicar_ajustes_referencia(lineas):
         bloque = lineas[inicio:j]
         categoria = normalizar(extraer_categoria(bloque[0]))
         nombre = extraer_nombre(bloque[0])
-        if categoria == "anime" and "[pluto es]" in normalizar(nombre):
+        url_bloque = next((x.strip() for x in bloque[1:] if url_es_valida(x.strip())), "")
+        identidad = extraer_pluto_id(url_bloque)
+        if not identidad:
+            m_identidad = re.search(r'tvg-id="([a-f0-9]{20,})"', bloque[0], re.I)
+            identidad = m_identidad.group(1).lower() if m_identidad else ""
+        es_pluto_es = "[pluto es]" in normalizar(nombre) or bool(identidad and identidad in ids_pluto_es_anime)
+        if categoria == "anime" and es_pluto_es:
             eliminados_pluto_es_anime += 1
             i = j
             continue
@@ -2678,8 +2712,26 @@ def main():
         f"{pluto_mx_auditoria['sin_coincidencia']} sin coincidencia."
     )
 
+    # Retirar también canales Pluto España ya existentes en Anime aunque su
+    # nombre no lleve la etiqueta [Pluto ES]; se identifica por el catálogo ES.
+    ids_pluto_es_anime = set()
+    try:
+        respuesta_es = session.get(FUENTES_PLUTO[1], timeout=30)
+        respuesta_es.raise_for_status()
+        for canal_es in parsear_m3u(respuesta_es.text):
+            if normalizar(canal_es.get("categoria", "")) != "anime":
+                continue
+            identidad_es = extraer_pluto_id(canal_es.get("url", ""))
+            if not identidad_es:
+                m_es = re.search(r'tvg-id="([a-f0-9]{20,})"', canal_es.get("extinf", ""), re.I)
+                identidad_es = m_es.group(1).lower() if m_es else ""
+            if identidad_es:
+                ids_pluto_es_anime.add(identidad_es)
+    except Exception as exc:
+        print(f"AVISO: no se pudo consultar identidad Pluto ES para limpiar Anime: {exc}")
+
     # Aplicar las correcciones fijas de la referencia antes de publicar.
-    lineas = aplicar_ajustes_referencia(lineas)
+    lineas = aplicar_ajustes_referencia(lineas, ids_pluto_es_anime)
     total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
