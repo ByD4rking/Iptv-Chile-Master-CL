@@ -1978,8 +1978,8 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
 
     def categoria_canonica(categoria):
         key = normalizar(categoria)
-        key = CATEGORIAS_CANONICAS.get(key, key)
-        key = PAISES_CANONICOS.get(key, key)
+        key = normalizar(CATEGORIAS_CANONICAS.get(key, key))
+        key = normalizar(PAISES_CANONICOS.get(key, key))
         return key
 
     orden_original = {}
