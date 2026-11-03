@@ -2147,6 +2147,18 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
         categoria_original = categoria_canonica(extraer_categoria(extinf))
         channel_id, nombre = identidad(extinf)
         identidad_anterior.append((categoria_original, channel_id, nombre, index))
+        nombre_original = extraer_nombre(extinf)
+        es_alternativa_original = bool(re.search(
+            r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
+            nombre_original,
+            re.I,
+        ))
+        # El orden histórico se ancla al canal principal, no a la primera
+        # alternativa. Si una [Opc.1] precede al canal base, usarla como rango
+        # desplaza todo el grupo y rompe el orden de la categoría.
+        if es_alternativa_original:
+            continue
         if channel_id:
             orden_por_categoria_id[(categoria_original, channel_id)].append(index)
         if nombre:
