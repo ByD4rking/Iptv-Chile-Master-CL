@@ -98,6 +98,13 @@ def main():
             "Infantiles",
         },
     )
+    # La restauración histórica puede separar URLs que pertenecen al mismo
+    # canal. Reagrupar después de restaurar mantiene juntas las alternativas
+    # sin cambiar la posición de la primera aparición del canal.
+    ordered_lines = _group_and_label_alternatives(
+        ordered_lines,
+        get_last_url_priority(),
+    )
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
     ids_pluto_orden = (
         alimentador.obtener_ids_pluto_existentes(original_lines)
