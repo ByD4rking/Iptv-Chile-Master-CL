@@ -1,5 +1,7 @@
 from pathlib import Path
+import os
 import re
+import tempfile
 import unicodedata
 import requests
 from collections import defaultdict
@@ -7,8 +9,11 @@ from collections import defaultdict
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
 
-# Fuente especial IPTV-SV. NO hereda las reglas de Pluto.
+# Fuentes colaboradoras externas con reglas de clasificación independientes.
 FUENTE_IPTVSV = "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u"
+FUENTE_MAGMA = "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u"
+# Pluto MX solo aporta alternativas de canales que ya existen en la principal.
+FUENTE_PLUTO_ALTERNATIVAS = "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
 
 # ============================================================
 # FUENTES NORMALES / COLABORADORAS
@@ -34,6 +39,7 @@ FUENTES = [
     "https://m3u.cl/lista/BO.m3u",
     "https://m3u.cl/lista/AR.m3u",
     FUENTE_IPTVSV,
+    FUENTE_MAGMA,
     "https://m3u.cl/lista/total.m3u",
     "https://m3u.cl/lista/top.m3u",
 ]
@@ -449,6 +455,28 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
 
     return encontrar_categoria_tematica(texto, categorias)
 
+def determinar_destino_magma(categoria, nombre, categorias):
+    """Mapea categorías Magma a carpetas existentes; no crea ninguna."""
+    categoria = (categoria or "").strip()
+    aliases = {
+        "chile": "CHILE TV",
+        "espn": "ESPN",
+        "dsports": "DSports",
+        "fox sports": "FOX Sports",
+        "deportes": "Deportes",
+        "cine / peliculas": "Cine / Películas",
+        "infantiles": "Infantiles",
+        "anime": "Anime",
+        "documentales y cultura": "Documentales y Cultura",
+        "entretenimiento / cine / series": "Entretenimiento / Cine / Series",
+    }
+    destino = aliases.get(normalizar(categoria), categoria)
+    existente = buscar_categoria_existente(destino, categorias)
+    if existente:
+        return existente
+    return determinar_destino(categoria, nombre, None, categorias)
+
+
 def determinar_destino_pluto(categoria, nombre, categorias):
     """
     Decide dónde va un canal Pluto respetando primero la carpeta declarada
@@ -777,8 +805,11 @@ def mover_pluto_brasil_a_brasil(lineas, session):
     return lineas, 0, 0
 
 def extraer_pluto_id(url):
-    """Obtiene el channel ID de una URL Pluto, sin depender del dominio."""
-    m = re.search(r"/channel[s]?/([a-f0-9]{20,})", url or "", re.I)
+    """Obtiene el channel ID de una URL Pluto, incluido el formato jmp2.uk/plu-ID."""
+    valor = url or ""
+    m = re.search(r"/channel[s]?/([a-f0-9]{20,})", valor, re.I)
+    if not m:
+        m = re.search(r"/plu-([a-f0-9]{20,})", valor, re.I)
     return m.group(1).lower() if m else ""
 
 
@@ -789,6 +820,7 @@ def es_url_pluto(url):
         "pluto.tv" in u
         or ("stitcher" in u and "pluto" in u)
         or ("pluto" in u and ("/channel/" in u or "/channels/" in u))
+        or "jmp2.uk/plu-" in u
     )
 
 
@@ -1849,6 +1881,180 @@ def validar_orden_canales(orden_anterior, lineas_nuevas):
         )
 
 
+def integrar_alternativas_pluto(lineas, session):
+    """Inserta alternativas MX junto al canal base, sin reordenar otras entradas."""
+    try:
+        response = session.get(FUENTE_PLUTO_ALTERNATIVAS, timeout=30)
+        response.raise_for_status()
+        canales_fuente = parsear_m3u(response.text)
+    except Exception as exc:
+        print(f"  -> AVISO: Pluto MX alternativo no disponible: {exc}")
+        return lineas, {"fuente_ok": False, "agregadas": 0, "sin_coincidencia": 0}
+
+    try:
+        response_latam = session.get(FUENTE_PLUTO_CANONICA, timeout=30)
+        response_latam.raise_for_status()
+        canales_latam = parsear_m3u(response_latam.text)
+    except Exception as exc:
+        print(f"  -> AVISO: no se pudo validar Pluto MX contra LATAM: {exc}")
+        return lineas, {"fuente_ok": False, "agregadas": 0, "sin_coincidencia": 0}
+
+    def canal_id(canal):
+        cid = extraer_pluto_id(canal.get("url", ""))
+        if not cid:
+            match = re.search(r'tvg-id="([a-f0-9]{24})"', canal.get("extinf", ""), re.I)
+            cid = match.group(1) if match else ""
+        return cid.lower()
+
+    ids_latam = {canal_id(c) for c in canales_latam if canal_id(c)}
+    existentes = defaultdict(list)
+    urls = set()
+    bloques = []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            url = lineas[j].strip()
+            cid = extraer_pluto_id(url)
+            if not cid:
+                match = re.search(r'tvg-id="([a-f0-9]{24})"', lineas[inicio], re.I)
+                cid = match.group(1) if match else ""
+            cid = cid.lower()
+            urls.add(url)
+            if cid and cid in ids_latam:
+                existentes[cid].append({
+                    "inicio": inicio,
+                    "extinf": lineas[inicio],
+                    "categoria": extraer_categoria(lineas[inicio]),
+                    "nombre": extraer_nombre(lineas[inicio]),
+                })
+            bloques.append((inicio, j + 1, cid))
+            i = j + 1
+        else:
+            i = j
+
+    alternativas_por_id = defaultdict(list)
+    agregadas = 0
+    sin_coincidencia = 0
+    for canal in canales_fuente:
+        url = (canal.get("url") or "").strip()
+        if not url or url in urls:
+            continue
+        cid = canal_id(canal)
+        if not cid or cid not in ids_latam:
+            continue
+        candidatos = existentes.get(cid, [])
+        if not candidatos:
+            sin_coincidencia += 1
+            continue
+
+        base = candidatos[0]
+        # Quita sufijos anteriores correctamente (paréntesis o corchetes).
+        nombre_base = re.sub(
+            r"\s*(?:\[\s*opc(?:ión)?\s*\d+\s*\]|\(\s*opci[oó]n\s*\d+\s*\))\s*$",
+            "",
+            base["nombre"],
+            flags=re.I,
+        ).strip()
+        numero = len(candidatos) + len(alternativas_por_id[cid]) + 1
+        extinf = re.sub(
+            r",(.*)$",
+            lambda m: f",{nombre_base} (OPCIÓN {numero})",
+            base["extinf"],
+            count=1,
+        )
+        bloque = [extinf]
+        bloque.extend(canal.get("extras", []))
+        bloque.append(url)
+        alternativas_por_id[cid].append(bloque)
+        urls.add(url)
+        agregadas += 1
+
+    if not alternativas_por_id:
+        return lineas, {
+            "fuente_ok": True,
+            "agregadas": 0,
+            "sin_coincidencia": sin_coincidencia,
+        }
+
+    # Reconstruye los bloques originales y coloca las opciones inmediatamente
+    # después del primer canal base equivalente. El resto de la lista no se mueve.
+    salida = []
+    insertados = set()
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j < len(lineas) and url_es_valida(lineas[j].strip()):
+            url = lineas[j].strip()
+            cid = extraer_pluto_id(url)
+            if not cid:
+                match = re.search(r'tvg-id="([a-f0-9]{24})"', lineas[inicio], re.I)
+                cid = match.group(1) if match else ""
+            cid = cid.lower()
+            salida.extend(lineas[inicio:j + 1])
+            if cid in alternativas_por_id and cid not in insertados:
+                for bloque in alternativas_por_id[cid]:
+                    salida.extend(bloque)
+                insertados.add(cid)
+            i = j + 1
+        else:
+            salida.append(lineas[i])
+            i += 1
+
+    return salida, {
+        "fuente_ok": True,
+        "agregadas": agregadas,
+        "sin_coincidencia": sin_coincidencia,
+    }
+
+def escribir_principal_atomico(texto):
+    """Escribe en temporal, valida y reemplaza de forma atómica."""
+    temporal = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            newline="\n",
+            dir=str(PRINCIPAL.parent),
+            prefix=PRINCIPAL.name + ".",
+            suffix=".tmp",
+            delete=False,
+        ) as archivo:
+            temporal = archivo.name
+            archivo.write(texto)
+            archivo.flush()
+            os.fsync(archivo.fileno())
+
+        contenido = Path(temporal).read_text(encoding="utf-8")
+        if not contenido.startswith("#EXTM3U"):
+            raise RuntimeError("Temporal inválido: falta #EXTM3U.")
+        cantidad = sum(1 for linea in contenido.splitlines() if linea.startswith("#EXTINF"))
+        if cantidad == 0:
+            raise RuntimeError("Temporal inválido: no contiene canales.")
+        urls = [linea.strip() for linea in contenido.splitlines() if url_es_valida(linea.strip())]
+        if len(urls) != len(set(urls)):
+            raise RuntimeError("Temporal inválido: contiene URLs duplicadas.")
+        os.replace(temporal, PRINCIPAL)
+        temporal = None
+        return cantidad
+    finally:
+        if temporal and os.path.exists(temporal):
+            os.unlink(temporal)
+
+
 def aplicar_reconexion_por_canal(lineas):
     """Añade directivas opcionales de reconexión a cada entrada no-Pluto.
 
@@ -1900,6 +2106,92 @@ def aplicar_reconexion_por_canal(lineas):
         i = j
     return salida, agregados
 
+
+
+def aplicar_ajustes_referencia(lineas):
+    """Aplica las exclusiones y ubicaciones fijas definidas por la referencia."""
+    prefijo = []
+    bloques = []
+    avatar = []
+    eliminados_pluto_es_anime = 0
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        bloque = lineas[inicio:j]
+        extinf = bloque[0]
+        categoria = normalizar(extraer_categoria(extinf))
+        nombre = extraer_nombre(extinf)
+        if categoria == "anime" and "[pluto es]" in normalizar(nombre):
+            eliminados_pluto_es_anime += 1
+            i = j
+            continue
+        if categoria == "anime" and normalizar(nombre).startswith("avatar: la leyenda de aang"):
+            bloque[0] = reemplazar_categoria(extinf, "Infantiles")
+            avatar.append(bloque)
+        else:
+            bloques.append(bloque)
+        i = j
+
+    # Avatar va en Infantiles, inmediatamente antes de Baby Shark como en la referencia.
+    if avatar:
+        posicion = next(
+            (idx for idx, bloque in enumerate(bloques)
+             if bloque[0].startswith("#EXTINF")
+             and normalizar(extraer_categoria(bloque[0])) == "infantiles"
+             and "baby shark" in normalizar(extraer_nombre(bloque[0]))),
+            None,
+        )
+        if posicion is None:
+            posiciones_infantiles = [
+                idx for idx, bloque in enumerate(bloques)
+                if bloque[0].startswith("#EXTINF")
+                and normalizar(extraer_categoria(bloque[0])) == "infantiles"
+            ]
+            if not posiciones_infantiles:
+                raise RuntimeError("No existe la categoría Infantiles para ubicar Avatar.")
+            posicion = posiciones_infantiles[-1] + 1
+        bloques[posicion:posicion] = avatar
+
+    xumo_url = "https://d4whmvwm0rdvi.cloudfront.net/10007/99951318/hls/master.m3u8?ads.xumo_channelId=99951318&ads.asnw=169843&ads.afid=405342864&ads.sfid=19647852&ads.csid=xumo_web_NBCUAmericanNinjaWarrior_ssai_cro&ads._fw_is_lat=0&ads._fw_us_privacy=&ads._fw_coppa=0&ads._fw_did=a5090924-15b1-4b7f-b6cd-2f06e2ba51e1&ads._fw_vcid2=512116:a5090924-15b1-4b7f-b6cd-2f06e2ba51e1&ads._fw_app_bundle=web.xumo.com&ads._fw_app_store_url=&ads._fw_content_category=&ads._fw_content_genre=&ads._fw_content_language=en&ads._fw_content_rating=&ads._fw_deviceMake=GitHubAction&ads._fw_device_model=PythonScript&ads._fw_deviceType=3-Connected_TV&ads.appVersion=1.0.0&ads.appName=XumoPlay&ads.xumo_contentId=4063&ads.xumo_contentName=NBCUAmericanNinjaWarrior&ads.xumo_providerId=4063&ads.xumo_providerName=NBCUAmericanNinjaWarrior&ads.channelId=99951318"
+    xumo_logo = "https://raw.githubusercontent.com/RoqueDJ/iptv-svg/main/1792421696158.png"
+    xumo_ya_existe = any(
+        any(linea.strip() == xumo_url for linea in bloque)
+        for bloque in bloques
+    )
+    if not xumo_ya_existe:
+        posiciones_competencia = [
+            idx for idx, bloque in enumerate(bloques)
+            if bloque[0].startswith("#EXTINF")
+            and normalizar(extraer_categoria(bloque[0])) == "competencia"
+        ]
+        if not posiciones_competencia:
+            raise RuntimeError("No existe la categoría Competencia para agregar American Ninja Warrior.")
+        nuevo = [
+            f'#EXTINF:-1 tvg-logo="{xumo_logo}" group-title="Competencia",American Ninja Warrior',
+            "#EXTVLCOPT:http-reconnect=true",
+            "#EXTVLCOPT:network-caching=5000",
+            xumo_url,
+        ]
+        bloques.insert(posiciones_competencia[-1] + 1, nuevo)
+
+    salida = list(prefijo)
+    for bloque in bloques:
+        salida.extend(bloque)
+    print(
+        "Ajustes de referencia: "
+        f"Pluto ES retirados de Anime={eliminados_pluto_es_anime}; "
+        f"Avatar ubicados en Infantiles={len(avatar)}; "
+        f"American Ninja Warrior presente={int(xumo_ya_existe or not xumo_ya_existe)}."
+    )
+    return salida
 
 def main():
     print("=" * 72)
@@ -2029,6 +2321,12 @@ def main():
                     if destino is None:
                         omitidos_regla_especial += 1
                         continue
+                elif fuente == FUENTE_MAGMA:
+                    destino = determinar_destino_magma(
+                        canal.get("categoria", ""),
+                        canal.get("nombre", ""),
+                        categorias,
+                    )
                 else:
                     destino = determinar_destino(
                         canal.get("categoria", ""),
@@ -2078,6 +2376,14 @@ def main():
             sin_categoria = 0
 
             for canal in canales:
+                # La referencia excluye Pluto España de Anime, pero conserva
+                # Pluto ES en sus otras categorías.
+                if (
+                    "pluto_es.m3u" in fuente.lower()
+                    and normalizar(canal.get("categoria", "")) == "anime"
+                ):
+                    continue
+
                 destino = determinar_destino_pluto(
                     canal.get("categoria", ""),
                     canal.get("nombre", ""),
@@ -2134,6 +2440,14 @@ def main():
     # 6) Insertar primero los canales nuevos dentro de sus carpetas existentes.
     # Regla estricta: las fuentes nunca crean categorías nuevas.
     lineas = insertar_bloques(lineas, bloques_nuevos)
+
+    # Pluto MX externo: alternativas de canales equivalentes ya existentes.
+    lineas, pluto_alternativas = integrar_alternativas_pluto(lineas, session)
+    print(
+        "Pluto MX alternativas: "
+        f"{pluto_alternativas['agregadas']} agregadas; "
+        f"{pluto_alternativas['sin_coincidencia']} sin coincidencia."
+    )
 
     # 7) Consolidar Pluto por identidad aplicando LATAM > ES > MX.
     lineas, pluto_prioridad_eliminados = deduplicar_pluto_por_prioridad(
@@ -2358,6 +2672,10 @@ def main():
             + ", ".join(sorted(repetidas_post))
         )
 
+    # Aplicar las correcciones fijas de la referencia antes de publicar.
+    lineas = aplicar_ajustes_referencia(lineas)
+    total_final = sum(1 for x in lineas if x.startswith("#EXTINF"))
+
     # SOLO AHORA se publica la principal: aplicar las directivas sobre la
     # representación final, para que ninguna transformación posterior las
     # elimine. Pluto queda excluido por diseño.
@@ -2369,11 +2687,11 @@ def main():
     if not texto_final.endswith("\n"):
         texto_final += "\n"
 
-    PRINCIPAL.write_text(
-        texto_final,
-        encoding="utf-8",
-        newline="\n",
-    )
+    canales_escritos = escribir_principal_atomico(texto_final)
+    if canales_escritos != total_final:
+        raise RuntimeError(
+            f"VALIDACION ATOMICA FALLIDA: esperados {total_final}, escritos {canales_escritos}."
+        )
 
     # Validación final después del autorreparo: una representación por ID
     # aceptado es suficiente; no se exige conservar cada JWT regional.
