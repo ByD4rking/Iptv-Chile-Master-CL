@@ -2909,6 +2909,7 @@ def agrupar_alternativas_por_identidad(lineas):
             extinf = set_attr(extinf, "tvg-id", item["id"])
             extinf = set_attr(extinf, "tvg-name", canonical_tvg)
             extinf = set_attr(extinf, "tvg-logo", canonical_logo)
+            extinf = set_attr(extinf, "logo", canonical_logo)
             label = base if not normalizados else f"{base} [Opción {len(normalizados) + 1}]"
             raw[0] = re.sub(r",.*$", "," + label, extinf)
             normalizados.append(raw)
