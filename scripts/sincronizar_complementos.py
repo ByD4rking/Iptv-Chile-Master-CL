@@ -100,7 +100,7 @@ def _is_los_pitufos(extinf: str) -> bool:
 
 
 def _is_los_pitufos_es(extinf: str) -> bool:
-    """Solo identifica la variante española no funcional que se pidió retirar."""
+    """Identifica la variante española por etiqueta explícita."""
     for value in (_attr(extinf, "tvg-name"), ap.extraer_nombre(extinf)):
         normalized = ap.normalizar(value)
         if normalized.startswith("los pitufos ") and normalized.split()[-1].strip("()[]{}.,") in {"es", "espana"}:
@@ -108,6 +108,13 @@ def _is_los_pitufos_es(extinf: str) -> bool:
         if normalized in {"los pitufos pluto es", "los pitufos pluto espana"}:
             return True
     return False
+
+
+def _is_los_pitufos_es_channel(extinf: str, url: str = "") -> bool:
+    """Identifica Los Pitufos España por etiqueta o región de la URL."""
+    return _is_los_pitufos_es(extinf) or (
+        _is_los_pitufos(extinf) and _is_pluto_es_url(url)
+    )
 
 
 def _source_priority(source: str) -> int:
@@ -488,7 +495,8 @@ def quitar_los_pitufos_es(lines: list[str]) -> list[str]:
         while cursor < len(lines) and lines[cursor].startswith("#") and not lines[cursor].startswith("#EXTINF:"):
             cursor += 1
         end = cursor + 1 if cursor < len(lines) and ap.url_es_valida(lines[cursor].strip()) else cursor
-        if not _is_los_pitufos_es(lines[start]):
+        url = lines[cursor].strip() if cursor < len(lines) and ap.url_es_valida(lines[cursor].strip()) else ""
+        if not _is_los_pitufos_es_channel(lines[start], url):
             result.extend(lines[start:end])
         index = end
     return result
@@ -602,7 +610,7 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             continue
 
         for channel in parsed:
-            if _is_los_pitufos_es(channel.get("extinf", "")):
+            if _is_los_pitufos_es_channel(channel.get("extinf", ""), channel.get("url", "")):
                 continue
             if (
                 ap.normalizar(channel.get("categoria", "")) == "anime"
