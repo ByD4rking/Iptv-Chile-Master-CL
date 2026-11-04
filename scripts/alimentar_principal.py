@@ -96,7 +96,7 @@ def normalizar_nombre_canal(value):
     value = re.sub(r"\s*\|\s*(?:cl|co|chile)\s*$", "", value, flags=re.I)
     value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value, flags=re.I)
     value = re.sub(
-        r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es)|hd|sd|fhd|uhd)$",
+        r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es))$",
         "",
         value,
         flags=re.I,
