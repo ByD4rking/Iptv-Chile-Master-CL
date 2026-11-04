@@ -191,6 +191,69 @@ NOMBRES_RESOLUCION_POR_URL = {
     "http://190.61.101.11:7050/play/a08d/index.m3u8?hls": "Cartoonito HD",
 }
 
+TVG_NAMES_POR_URL = {
+    "https://nosignal1.antenaplay.ro/hls/fightbox-hd/index.m3u8": "FightBox",
+    "http://181.78.79.131:8000/play/a0tj": "Cartoon Network",
+    "http://190.108.83.69:8000/play/a08g/index.m3u8": "Cartoon Network",
+    "http://186.148.182.83:8000/play/a09z/index.m3u8": "Cartoon Network",
+    "http://181.224.255.210:8001/play/a0py/index.m3u8?hls": "Cartoon Network SD",
+    "http://186.33.26.18:8000/play/a0sv/index.m3u8": "Cartoonito",
+    "http://181.224.255.210:8001/play/a0pv/index.m3u8?hls": "Discovery Kids",
+    "http://186.148.196.100:8000/play/a00s": "Discovery Kids",
+    "http://181.143.237.211:85/tsfile/live/1066_1.m3u8?key=txiptv&playlive=1&authid=0": "Discovery Kids",
+    "http://186.148.184.22:8000/play/a0l3/index.m3u8": "Discovery Kids HD",
+    "http://205.235.6.29:8000/play/a0zp/index.m3u8?hls": "Disney Channel",
+    "http://181.224.255.210:8001/play/a0oe/index.m3u8?hls": "Disney Channel",
+    "http://181.225.190.242:8000/play/a01e": "Disney Channel",
+    "http://45.186.254.75:8000/play/a0ck/index.m3u8": "Disney Channel",
+    "http://181.143.237.211:85/tsfile/live/1063_1.m3u8?key=txiptv&playlive=1&authid=0": "Disney Channel",
+    "http://181.225.190.242:8000/play/a01f": "Disney Jr HD",
+    "http://181.224.255.210:8001/play/a0ny/index.m3u8?hls": "Disney Jr HD",
+    "http://205.235.6.29:8000/play/a0zj/index.m3u8?hls": "Disney Jr HD",
+    "http://181.224.255.210:8001/play/a0fm/index.m3u8?hls": "Nickelodeon",
+    "http://181.224.255.210:8001/play/a0ol/index.m3u8?hls": "Nickelodeon",
+    "http://181.224.200.5:2277/play/a0bm/index.m3u8": "Nickelodeon",
+    "http://186.33.26.18:8000/play/a0qv/index.m3u8": "Nickelodeon",
+    "http://181.143.237.211:85/tsfile/live/1071_1.m3u8?key=txiptv&playlive=1&authid=0": "Nickelodeon",
+    "http://190.61.101.11:7050/play/a08d/index.m3u8?hls": "",
+    "http://45.228.234.62:8000/play/a032/index.m3u8": "A&E HD",
+    "http://45.186.106.207:8000/play/a01n/index.m3u8": "A&E HD",
+    "http://181.143.237.211:85/tsfile/live/1049_1.m3u8?key=txiptv&playlive=1&authid=0": "A&E HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/247.m3u8": "Discovery Channel HD",
+    "http://45.5.117.99:8000/play/a049/index.m3u8": "Discovery Channel HD",
+    "http://181.78.211.244:8000/play/a08i/index.m3u8": "Discovery Channel SD",
+    "http://181.78.8.199:8000/play/a071/index.m3u8": "Discovery Home & Health HD",
+    "http://179.60.224.196:8000/play/a0ey/index.m3u8": "Discovery Home & Health HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/274.m3u8": "Discovery Turbo HD",
+    "http://181.79.86.130:8000/play/a042/index.m3u8": "Discovery Turbo HD",
+    "http://181.119.177.253:8000/play/a04k/index.m3u8": "Discovery Turbo HD",
+    "http://186.148.196.100:8000/play/a00r": "Discovery Turbo SD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/558.m3u8": "History Channel HD",
+    "http://186.33.47.113:8000/play/a08d/index.m3u8": "History Channel HD",
+    "http://201.174.175.3:8000/play/a0ra/index.m3u8?hls": "History Channel HD",
+    "http://45.167.2.101:8000/play/a0ny/index.m3u8": "History Channel HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/703.m3u8": "Nat Geo HD",
+    "http://181.224.200.5:2277/play/5684/index.m3u8": "Nat Geo HD",
+    "http://45.5.118.152:8000/play/a01w/index.m3u8": "Nat Geo SD",
+    "http://181.225.190.242:8000/play/a03e": "TLC HD",
+    "http://179.60.224.196:8000/play/a0f3/index.m3u8": "TLC HD",
+    "http://186.148.196.100:8000/play/a00p": "TLC SD",
+    "http://186.33.0.57:8000/play/a069/index.m3u8": "FOX ESA HD",
+    "http://tv.m3uts.xyz/stream/secure/KtMxQzuk/464.m3u8": "FOX Sports Premium",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/463.m3u8": "FOX Sports Premium HD",
+    "http://181.225.190.242:8000/play/a03r": "Win Sports HD",
+    "http://190.217.66.92:8000/play/a0fh/index.m3u8u?hls": "Win Sports HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/386.m3u8": "ESPN 3 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1104.m3u8": "ESPN 5 HD",
+    "http://181.119.177.253:8000/play/a04y/index.m3u8": "ESPN 5 HD",
+    "http://200.59.191.177:8000/play/a0p2/index.m3u8?hls": "ESPN 7",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/400.m3u8": "ESPN HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/375.m3u8": "ESPN 2 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1105.m3u8": "ESPN 6 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1106.m3u8": "ESPN 7 HD",
+}
+
+
 def corregir_resoluciones_por_url(lineas):
     """Aplica HD/SD solo cuando la URL coincide exactamente con la M3U de referencia."""
     salida = list(lineas)
@@ -224,17 +287,12 @@ def corregir_resoluciones_por_url(lineas):
         if nuevo != actual and "," in extinf:
             linea_actualizada = extinf.rsplit(",", 1)[0] + "," + nuevo
             corregidos += 1
-        # Actualizar tvg-name solo en la señal base. Las opciones conservan su
-        # identidad EPG original para no desplazar el orden histórico de la familia.
-        tiene_opcion = bool(re.search(
-            r"\s*(?:\[\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\]|\(\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\))\s*$",
-            actual,
-            re.I,
-        ))
-        if (not tiene_opcion or nombre_base == "FightBox HD") and re.search(r'\btvg-name="[^"]*"', linea_actualizada, re.I):
+        # Restaurar el tvg-name de referencia por URL para conservar EPG y orden histórico.
+        tvg_name = TVG_NAMES_POR_URL.get(salida[j].strip(), nombre_base)
+        if tvg_name and re.search(r'\btvg-name="[^"]*"', linea_actualizada, re.I):
             linea_actualizada = re.sub(
                 r'\btvg-name="[^"]*"',
-                f'tvg-name="{nombre_base}"',
+                f'tvg-name="{tvg_name}"',
                 linea_actualizada,
                 count=1,
                 flags=re.I,
