@@ -3171,7 +3171,7 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
     }
 
 def ordenar_anime_alfabeticamente(lineas):
-    """Ordena Anime por nombre canónico y mantiene sus opciones consecutivas."""
+    """Ordena Anime por franquicia y saga; mantiene opciones contiguas."""
     prefijo, bloques = [], []
     i = 0
     while i < len(lineas):
@@ -3196,17 +3196,45 @@ def ordenar_anime_alfabeticamente(lineas):
         )
         opcion = int(match.group(1) or match.group(2)) if match else 1
         base = nombre[:match.start()].strip() if match else nombre
+        canon = normalizar(base)
+        familia, saga, alias = canon, 0, 0
+
+        if canon.startswith("dragon ball"):
+            familia = "dragon ball"
+            if "pelicul" in canon or "movie" in canon:
+                saga = 4
+            elif "dragon ball / dragon ball z" in canon:
+                saga = 0.5
+            elif re.search(r"\bgt\b", canon):
+                saga = 3
+            elif re.search(r"\bsuper\b", canon):
+                saga = 2
+            elif re.search(r"\bz\b", canon):
+                saga = 1
+        elif canon.startswith("naruto") or canon.startswith("boruto"):
+            familia = "naruto"
+            if "pelicul" in canon or "movie" in canon:
+                saga = 3
+            elif canon.startswith("boruto"):
+                saga = 2
+            elif "shippuden" in canon:
+                saga = 1
+        elif "super campeones" in canon or "captain tsubasa" in canon:
+            familia = "super campeones"
+            alias = 0 if "super campeones" in canon else 1
+        elif "caballeros del zodiaco" in canon or "saint seiya" in canon:
+            familia = "caballeros del zodiaco"
+
         bloques.append({
             "lineas": raw,
             "anime": normalizar(extraer_categoria(raw[0])) == "anime",
-            "clave": (normalizar_nombre_canal(base), opcion, normalizar(nombre)),
-            "orden": len(bloques),
+            "clave": (familia, saga, alias, opcion, canon, len(bloques)),
         })
         i = j
 
     anime = sorted(
         (bloque for bloque in bloques if bloque["anime"]),
-        key=lambda bloque: (*bloque["clave"], bloque["orden"]),
+        key=lambda bloque: bloque["clave"],
     )
     siguiente = iter(anime)
     salida = list(prefijo)
@@ -3215,6 +3243,33 @@ def ordenar_anime_alfabeticamente(lineas):
         salida.extend(elegido["lineas"])
     return salida
 
+
+def mover_paises_al_final(lineas):
+    """Mueve las categorías-país al final sin alterar sus canales ni su orden interno."""
+    prefijo, bloques = [], []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        raw = lineas[inicio:j]
+        categoria = normalizar(extraer_categoria(raw[0]))
+        es_pais = categoria in PAISES_ORDEN_FINAL or categoria.startswith("el salvador")
+        bloques.append({"lineas": raw, "pais": es_pais})
+        i = j
+
+    normales = [b for b in bloques if not b["pais"]]
+    paises = [b for b in bloques if b["pais"]]
+    salida = list(prefijo)
+    for bloque in normales + paises:
+        salida.extend(bloque["lineas"])
+    return salida
 
 def ordenar_bloques_magma_y_originales(lineas, session):
     """
