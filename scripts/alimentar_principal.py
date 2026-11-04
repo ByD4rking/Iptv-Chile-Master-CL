@@ -119,6 +119,14 @@ def seleccionar_canal_fear_factor(canales):
         and url_es_valida(canal.get("url", ""))
     ), None)
 
+
+def determinar_categoria_fear_factor(categorias):
+    """Fear Factor pertenece exclusivamente a la carpeta Competencia."""
+    destino = buscar_categoria_existente("Competencia", categorias)
+    if not destino:
+        raise RuntimeError("La categoría Competencia no existe; Fear Factor no se insertará en otra carpeta.")
+    return destino
+
 def url_es_valida(url):
     return bool(re.match(r"^https?://", url.strip(), re.I))
 
@@ -3609,9 +3617,7 @@ def main():
             logo = re.search(r'tvg-logo="([^"]+)"', canal.get("extinf", ""), re.I)
             if not logo or not url_es_valida(logo.group(1)):
                 raise RuntimeError("Fear Factor no trae logo HTTP(S) válido.")
-            destino = buscar_categoria_existente("Series", categorias)
-            if not destino:
-                raise RuntimeError("La categoría Series no existe; no se crean categorías nuevas.")
+            destino = determinar_categoria_fear_factor(categorias)
             url_fear = canal["url"].strip()
             logo_fear = logo.group(1).strip()
             existente = False
@@ -3635,14 +3641,14 @@ def main():
                 lineas[indice_extinf] = extinf
                 existente = True
             if existente:
-                print("  -> Fear Factor existente actualizado: Series + logo oficial de la fuente.")
+                print("  -> Fear Factor existente actualizado: Competencia + logo oficial de la fuente.")
             else:
                 urls = mapa_urls_principal(lineas)
                 urls.update(item["bloque"][-1].strip() for item in bloques_nuevos
                             if item.get("bloque") and url_es_valida(item["bloque"][-1].strip()))
                 if agregar_bloque(canal, destino, urls, bloques_nuevos):
                     agregados_normales += 1
-                    print("  -> Fear Factor agregado a Series con URL y logo fuente.")
+                    print("  -> Fear Factor agregado a Competencia con URL y logo fuente.")
                 else:
                     print("  -> Fear Factor omitido: URL ya presente en un bloque pendiente.")
         except Exception as error_fear:
