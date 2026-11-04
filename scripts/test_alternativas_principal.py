@@ -354,6 +354,10 @@ class TestAlternativasPrincipal(unittest.TestCase):
         restored, stats = ap.restaurar_logos_historicos(current, previous)
         self.assertIn('tvg-logo="https://logo.example/peppa.png"', restored[1])
         self.assertEqual(stats["lista_anterior"], 1)
+
+    def test_iptvsv_chichicasteca_maps_only_to_existing_guatemala(self):
+        self.assertEqual(ap.determinar_destino_iptvsv("TV Chichicasteca", "", ["Guatemala"]), "Guatemala")
+        self.assertIsNone(ap.determinar_destino_iptvsv("TV Chichicasteca", "", ["CHILE TV"]))
     def test_spanish_country_has_priority_over_anime_thematic_category(self):
         categories = ["Anime", "España"]
         self.assertEqual(ap.determinar_destino("Anime", "Canal Anime", "espana", categories), "España")
