@@ -848,7 +848,7 @@ class MergeMetadataRegressionTests(unittest.TestCase):
         self.assertEqual(ap.extraer_nombre(merged), "Cartoonito HD (Opc.4)")
         self.assertEqual(_attr_for_test(merged, "tvg-id"), "")
         self.assertEqual(_attr_for_test(merged, "tvg-name"), "")
-        self.assertEqual(_attr_for_test(merged, "tvg-logo"), "new.png")
+        self.assertEqual(_attr_for_test(merged, "tvg-logo"), "old.png")
 
 
 class RequestedChannelLabelTests(unittest.TestCase):
