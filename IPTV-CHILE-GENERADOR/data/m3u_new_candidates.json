@@ -3,7 +3,7 @@
   "mode": "candidate_inventory_only",
   "source": "IPTV-CHILE-GENERADOR.m3u",
   "published_automatically": false,
-  "count": 185,
+  "count": 195,
   "candidates": [
     {
       "name": "Disney Jr. Latin America South (1080p)",
@@ -258,6 +258,74 @@
       "safe_to_publish_automatically": false
     },
     {
+      "name": "EnerGeek (1080p)",
+      "tvg_name": "EnerGeek (1080p)",
+      "tvg_id": "a2048bdccbc2fe4f327e",
+      "logo": "https://cdn.energeek.cl/logos/EG-Retro-2025_pfp.png",
+      "groups": [
+        "Animation"
+      ],
+      "url": "https://cl-2.backend.energeek.cl/bkp/egretroweb/index.m3u8?token=IPTVgh26",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Anime",
+        "profile": "anime",
+        "confidence": 30,
+        "matched_terms": [
+          "animation"
+        ],
+        "matches": [
+          {
+            "profile": "anime",
+            "category": "Anime",
+            "score": 2,
+            "matched_terms": [
+              "animation"
+            ]
+          }
+        ]
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
+      "name": "EnerGeek FAN (1080p)",
+      "tvg_name": "EnerGeek FAN (1080p)",
+      "tvg_id": "67d6892f14e2159daa35",
+      "logo": "https://cdn.energeek.cl/logos/EG-Fan-2025_pfp.png",
+      "groups": [
+        "Animation"
+      ],
+      "url": "https://cl-2.backend.energeek.cl/bkp/egfan/mobile/index.m3u8?token=IPTVgh26",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Anime",
+        "profile": "anime",
+        "confidence": 30,
+        "matched_terms": [
+          "animation"
+        ],
+        "matches": [
+          {
+            "profile": "anime",
+            "category": "Anime",
+            "score": 2,
+            "matched_terms": [
+              "animation"
+            ]
+          }
+        ]
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
       "name": "ETC TV (1080p)",
       "tvg_name": "ETC TV (1080p)",
       "tvg_id": "d21df815d109d470c4de",
@@ -438,6 +506,29 @@
         "Religious"
       ],
       "url": "https://live-evg10.tv360.bitel.com.pe/bitel/alasdeaguilaSRT/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
+      "name": "ADN TV (720p)",
+      "tvg_name": "ADN TV (720p)",
+      "tvg_id": "f2a618c8588e4062d247",
+      "logo": "https://i.imgur.com/AVfTwNw.png",
+      "groups": [
+        "News"
+      ],
+      "url": "https://redirector.rudo.video/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/adntv/adntv.smil/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       },
@@ -982,29 +1073,6 @@
       "safe_to_publish_automatically": false
     },
     {
-      "name": "Central TV (Chile) (720p)",
-      "tvg_name": "Central TV (Chile) (720p)",
-      "tvg_id": "c06b052f1896618f5a7a",
-      "logo": "https://cdn.m3u.cl/logo/1706_Central_TV.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://freya.mivideo.pro/centraltv/video.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      },
-      "origin": "IPTV-CHILE-GENERADOR.m3u",
-      "classification": {
-        "category": "Sin clasificar",
-        "profile": null,
-        "confidence": 0,
-        "matched_terms": [],
-        "matches": []
-      },
-      "requires_validation": true,
-      "safe_to_publish_automatically": false
-    },
-    {
       "name": "Chile Channel (720p)",
       "tvg_name": "Chile Channel (720p)",
       "tvg_id": "83e05b185658111755ed",
@@ -1060,6 +1128,29 @@
         "Culture"
       ],
       "url": "https://v2.tustreaming.cl/chiloered/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
+      "name": "China Channel (720p)",
+      "tvg_name": "China Channel (720p)",
+      "tvg_id": "b3fae0e020c6f740bf77",
+      "logo": "https://cdn.m3u.cl/logo/1769_China_Channel.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v2.tustreaming.cl/chinachannel/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       },
@@ -1167,6 +1258,29 @@
       "safe_to_publish_automatically": false
     },
     {
+      "name": "Comedy Central Latin America (1080p)",
+      "tvg_name": "Comedy Central Latin America (1080p)",
+      "tvg_id": "d822304b74ef75e17ae7",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Comedy_Central_2018.svg/960px-Comedy_Central_2018.svg.png",
+      "groups": [
+        "Comedy"
+      ],
+      "url": "http://15.204.246.24:8080/ComedyCentralHD/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
       "name": "Concepcion TV (720p)",
       "tvg_name": "Concepcion TV (720p)",
       "tvg_id": "9711eb40ddad61b79f83",
@@ -1236,6 +1350,29 @@
       "safe_to_publish_automatically": false
     },
     {
+      "name": "CRTV (Chile) (720p)",
+      "tvg_name": "CRTV (Chile) (720p)",
+      "tvg_id": "f9036fdbff38d9141603",
+      "logo": "https://i2.paste.pics/bf68b159547597c39574aec9dd7c626a.png",
+      "groups": [
+        "Sports"
+      ],
+      "url": "https://stmv2.voxtvhd.com.br/crtvchile/crtvchile/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
       "name": "Dance FM (720p)",
       "tvg_name": "Dance FM (720p)",
       "tvg_id": "ef777b1197c462484ff4",
@@ -1290,6 +1427,29 @@
         "General"
       ],
       "url": "https://unlimited2-cl-isp.dps.live/decimatv/decimatv.smil/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
+      "name": "Docevision (720p)",
+      "tvg_name": "Docevision (720p)",
+      "tvg_id": "ff28283b68ed390a5686",
+      "logo": "https://cdn.m3u.cl/logo/1759_Docevision.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://live20.bozztv.com/giatvplayout7/giatv-208729/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       },
@@ -1466,6 +1626,52 @@
       "safe_to_publish_automatically": false
     },
     {
+      "name": "En Linea Maule (720p)",
+      "tvg_name": "En Linea Maule (720p)",
+      "tvg_id": "a6460ea9d89b12e74c14",
+      "logo": "https://enlineamaule.cl/wp-content/uploads/2025/08/En-linea-Maule841351465.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v2.tustreaming.cl/enlineamauletv/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
+      "name": "EnerGeek Radio (1080p)",
+      "tvg_name": "EnerGeek Radio (1080p)",
+      "tvg_id": "1dcddc288b223b149330",
+      "logo": "https://cdn.energeek.cl/logos/EG-Radio-2025_pfp.png",
+      "groups": [
+        "Music"
+      ],
+      "url": "https://cl-2.backend.energeek.cl/bkp/egradio/mobile/index.m3u8?token=IPTVgh26",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
       "name": "Enfoque Digital TV",
       "tvg_name": "Enfoque Digital TV",
       "tvg_id": "762ef1db3091263eec52",
@@ -1589,6 +1795,29 @@
         "Religious"
       ],
       "url": "https://multimedia.fortalezatv.cl/video/video.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
+      "name": "Frecuencia 7 TV (720p)",
+      "tvg_name": "Frecuencia 7 TV (720p)",
+      "tvg_id": "d420fcd6a9641275fa32",
+      "logo": "https://i.imgur.com/ZhwmWXD.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v2.tustreaming.cl/frecuencia7/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       },
@@ -2294,6 +2523,29 @@
       "safe_to_publish_automatically": false
     },
     {
+      "name": "Nina TV (720p)",
+      "tvg_name": "Nina TV (720p)",
+      "tvg_id": "afb0f71f7cc01a896520",
+      "logo": "https://cdn.m3u.cl/logo/1552_Nina_TV.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://tv1.ninatv.cl/hls/stream.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
       "name": "Nuevo Tiempo TV (720p)",
       "tvg_name": "Nuevo Tiempo TV (720p)",
       "tvg_id": "351ded065366b98e1e96",
@@ -2593,6 +2845,29 @@
       "safe_to_publish_automatically": false
     },
     {
+      "name": "Radio Ancoa TV (720p)",
+      "tvg_name": "Radio Ancoa TV (720p)",
+      "tvg_id": "4d91a53c57b613882bd7",
+      "logo": "https://cdn.m3u.cl/logo/406_Radio_Ancoa_TV.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v2.tustreaming.cl/radioancoatv/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
       "name": "Radio Armonia TV (720p)",
       "tvg_name": "Radio Armonia TV (720p)",
       "tvg_id": "4cfe8c7dffe941bb9513",
@@ -2731,14 +3006,14 @@
       "safe_to_publish_automatically": false
     },
     {
-      "name": "Radio La Serena TV (720p)",
-      "tvg_name": "Radio La Serena TV (720p)",
-      "tvg_id": "dd7eeb8e59a328ded73f",
-      "logo": "https://i.imgur.com/65ftM3v.png",
+      "name": "Radio Nuble (720p)",
+      "tvg_name": "Radio Nuble (720p)",
+      "tvg_id": "5e733b30f2981a58ce6c",
+      "logo": "https://cdn.m3u.cl/logo/870_Radio_Nuble.png",
       "groups": [
-        "Music"
+        "General"
       ],
-      "url": "https://5ff3d9babae13.streamlock.net/chrgkqgkyb/chrgkqgkyb/playlist.m3u8",
+      "url": "https://tv.telselec.cl:3376/live/nublefmlive.m3u8",
       "headers": {
         "http-reconnect": "true"
       },
@@ -3306,29 +3581,6 @@
       "safe_to_publish_automatically": false
     },
     {
-      "name": "Sextavision (1080p)",
-      "tvg_name": "Sextavision (1080p)",
-      "tvg_id": "abd0444ed6930a911ef5",
-      "logo": "https://i.imgur.com/mwUZBU9.png",
-      "groups": [
-        "Undefined"
-      ],
-      "url": "https://5ff3d9babae13.streamlock.net/fzkqsdfray/fzkqsdfray/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      },
-      "origin": "IPTV-CHILE-GENERADOR.m3u",
-      "classification": {
-        "category": "Sin clasificar",
-        "profile": null,
-        "confidence": 0,
-        "matched_terms": [],
-        "matches": []
-      },
-      "requires_validation": true,
-      "safe_to_publish_automatically": false
-    },
-    {
       "name": "Solo Bailalo (480p)",
       "tvg_name": "Solo Bailalo (480p)",
       "tvg_id": "c553beedbc2a043fb60c",
@@ -3698,29 +3950,6 @@
       "safe_to_publish_automatically": false
     },
     {
-      "name": "Tevex (1080p)",
-      "tvg_name": "Tevex (1080p)",
-      "tvg_id": "1084d90b4cf5458fcb62",
-      "logo": "https://i.imgur.com/FnInQRd.png",
-      "groups": [
-        "Business"
-      ],
-      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      },
-      "origin": "IPTV-CHILE-GENERADOR.m3u",
-      "classification": {
-        "category": "Sin clasificar",
-        "profile": null,
-        "confidence": 0,
-        "matched_terms": [],
-        "matches": []
-      },
-      "requires_validation": true,
-      "safe_to_publish_automatically": false
-    },
-    {
       "name": "Thema Television (1080p)",
       "tvg_name": "Thema Television (1080p)",
       "tvg_id": "06d8395608fb18997ce1",
@@ -3821,6 +4050,29 @@
         "Travel"
       ],
       "url": "https://stmv3.voxtvhd.com.br/turismotraveltv/turismotraveltv/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
+      "name": "Turno (720p)",
+      "tvg_name": "Turno (720p)",
+      "tvg_id": "92ebe9dd4bc51ccb1961",
+      "logo": "https://i.imgur.com/XuSeHBt.png",
+      "groups": [
+        "News"
+      ],
+      "url": "https://redirector.dps.live/hls/turno/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       },
@@ -4066,29 +4318,6 @@
       "safe_to_publish_automatically": false
     },
     {
-      "name": "TVO San Vicente (720p)",
-      "tvg_name": "TVO San Vicente (720p)",
-      "tvg_id": "2466adeed6aff9893d49",
-      "logo": "https://i.imgur.com/PCVWtHd.png",
-      "groups": [
-        "Undefined"
-      ],
-      "url": "https://5ff3d9babae13.streamlock.net/8014/8014/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      },
-      "origin": "IPTV-CHILE-GENERADOR.m3u",
-      "classification": {
-        "category": "Sin clasificar",
-        "profile": null,
-        "confidence": 0,
-        "matched_terms": [],
-        "matches": []
-      },
-      "requires_validation": true,
-      "safe_to_publish_automatically": false
-    },
-    {
       "name": "TVR (1080p)",
       "tvg_name": "TVR (1080p)",
       "tvg_id": "1d36be87f8ada23c462b",
@@ -4304,6 +4533,29 @@
         "Undefined"
       ],
       "url": "http://45.170.130.224:8000/play/a025/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      },
+      "origin": "IPTV-CHILE-GENERADOR.m3u",
+      "classification": {
+        "category": "Sin clasificar",
+        "profile": null,
+        "confidence": 0,
+        "matched_terms": [],
+        "matches": []
+      },
+      "requires_validation": true,
+      "safe_to_publish_automatically": false
+    },
+    {
+      "name": "Vision Plus TV (1080i)",
+      "tvg_name": "Vision Plus TV (1080i)",
+      "tvg_id": "98d541312d50d4ad927e",
+      "logo": "https://i.imgur.com/mpNcG5F.png",
+      "groups": [
+        "Undefined"
+      ],
+      "url": "https://5ff3d9babae13.streamlock.net/jwagpqxehu/jwagpqxehu/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       },
