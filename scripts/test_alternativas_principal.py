@@ -475,9 +475,9 @@ class TestAlternativasPrincipal(unittest.TestCase):
         ])
         self.assertEqual(changed, 4)
         self.assertIn('tvg-name="FightBox HD"', parsed[0][0])
-        self.assertIn('tvg-name="Disney Channel HD"', parsed[1][0])
-        self.assertIn('tvg-name="Discovery Channel SD"', parsed[2][0])
-        self.assertIn('tvg-name="Win Sports SD"', parsed[3][0])
+        self.assertIn('tvg-name="Disney Channel [Opción 2]"', parsed[1][0])
+        self.assertIn('tvg-name="Discovery Channel HD [Opción 3]"', parsed[2][0])
+        self.assertIn('tvg-name="Win Sports HD [Opción 2]"', parsed[3][0])
 
     def test_family_logo_restore_fills_only_missing_and_never_overwrites(self):
         lines = [
