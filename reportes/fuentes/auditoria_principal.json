@@ -1,18 +1,21 @@
 {
   "schema_version": 1,
   "scope": "principal",
-  "checked_at": "2026-11-04T00:01:00.677557+00:00",
-  "sources_configured": 65,
-  "sources_checked": 63,
+  "checked_at": "2026-11-04T01:50:10.405330+00:00",
+  "sources_configured": 63,
+  "sources_checked": 61,
   "sources_failed": 2,
-  "changed_sources": 0,
-  "new_sources": 63,
-  "total_added_channels": 0,
-  "total_removed_channels": 0,
-  "total_changed_stream_urls": 0,
+  "changed_sources": 7,
+  "new_sources": 0,
+  "total_added_channels": 29,
+  "total_removed_channels": 37,
+  "total_changed_stream_urls": 11,
   "total_source_url_changes": 0,
   "configured_source_url_changes": [],
-  "removed_sources": [],
+  "removed_sources": [
+    "GOD/M3UCL-XXX",
+    "PRINCIPAL/M3UCL-XXX"
+  ],
   "errors": [
     {
       "source": "PRINCIPAL/M3UCL-LATAM",
@@ -28,443 +31,1603 @@
   "changes": [
     {
       "source": "GOD/DEARBULUT-BEST",
-      "status": "baseline",
-      "channels": 10322,
-      "url": "https://dearbulut.github.io/iptv/playlists/best.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://dearbulut.github.io/iptv/playlists/best.m3u",
+      "new_source_url": "https://dearbulut.github.io/iptv/playlists/best.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/DEARBULUT-ESPANOL",
-      "status": "baseline",
-      "channels": 2354,
-      "url": "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
+      "new_source_url": "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/DEARBULUT-ONLINE",
-      "status": "baseline",
-      "channels": 8479,
-      "url": "https://dearbulut.github.io/iptv/playlists/online.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://dearbulut.github.io/iptv/playlists/online.m3u",
+      "new_source_url": "https://dearbulut.github.io/iptv/playlists/online.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/FREE-TV",
-      "status": "baseline",
-      "channels": 2055,
-      "url": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+      "new_source_url": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/FREECASTHUB-PUBLIC",
-      "status": "baseline",
-      "channels": 108,
-      "url": "https://raw.githubusercontent.com/freecasthub/public-iptv/main/playlist.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/freecasthub/public-iptv/main/playlist.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/freecasthub/public-iptv/main/playlist.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-AMER",
-      "status": "baseline",
-      "channels": 4265,
-      "url": "https://iptv-org.github.io/iptv/regions/amer.m3u",
+      "status": "changed",
+      "source_url_changed": false,
+      "old_source_url": "https://iptv-org.github.io/iptv/regions/amer.m3u",
+      "new_source_url": "https://iptv-org.github.io/iptv/regions/amer.m3u",
+      "added_channels": 1,
+      "removed_channels": 2,
+      "renamed_channels": 2,
+      "changed_stream_urls": 1,
+      "changed_categories": 0,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
+      "samples": {
+        "added": [
+          "MCMTop.fr@SD"
+        ],
+        "removed": [
+          "FoxSports2.ar@SD",
+          "TheFilmDetective.us@SD"
+        ],
+        "renamed": [
+          {
+            "key": "FoxSports2.us@HD",
+            "before_fingerprint": "dc70f9f536f30451",
+            "after_fingerprint": "0f528c3ad19eddb9"
+          },
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "3e5900a6a1e3eaf6",
+            "after_fingerprint": "88b564c8e60a9c5f"
+          }
+        ],
+        "stream_urls": [
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "56f52ea37af594eb",
+            "after_fingerprint": "0d3dcad00c9291ae"
+          }
+        ],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-CATEGORIES",
-      "status": "baseline",
-      "channels": 12087,
-      "url": "https://iptv-org.github.io/iptv/index.category.m3u",
+      "status": "changed",
+      "source_url_changed": false,
+      "old_source_url": "https://iptv-org.github.io/iptv/index.category.m3u",
+      "new_source_url": "https://iptv-org.github.io/iptv/index.category.m3u",
+      "added_channels": 6,
+      "removed_channels": 10,
+      "renamed_channels": 6,
+      "changed_stream_urls": 3,
+      "changed_categories": 0,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
+      "samples": {
+        "added": [
+          "CineStarActionBulgaria.bg@SD",
+          "MCMTop.fr@SD",
+          "PrimaTV.ro@SD",
+          "TVP1.pl@HD",
+          "TVP2.pl@HD",
+          "Travelxp.in@4KCzechia"
+        ],
+        "removed": [
+          "AntenaPlayEvents.ro@SD",
+          "AsiaExpressNonStop.ro@SD",
+          "FoxSports2.ar@SD",
+          "HalloweenNonStop.ro@SD",
+          "Insulanonstop.ro@SD",
+          "NHBollyGold.in@HD",
+          "NHLAntenaPlay.ro@SD",
+          "StarMovies.in@HD",
+          "TheFilmDetective.us@SD",
+          "V2BEATTV.uk@SD"
+        ],
+        "renamed": [
+          {
+            "key": "FoxSports2.us@HD",
+            "before_fingerprint": "dc70f9f536f30451",
+            "after_fingerprint": "0f528c3ad19eddb9"
+          },
+          {
+            "key": "MCMTop.ru@SD",
+            "before_fingerprint": "1280419229910e19",
+            "after_fingerprint": "8bcf4110008c6cf1"
+          },
+          {
+            "key": "Polsat.pl@SD",
+            "before_fingerprint": "48a019e7740fa9d4",
+            "after_fingerprint": "b4e660ce989be077"
+          },
+          {
+            "key": "PrimaTV.it@SD",
+            "before_fingerprint": "365ee4e9d04c4073",
+            "after_fingerprint": "66f2454730853aba"
+          },
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "3e5900a6a1e3eaf6",
+            "after_fingerprint": "88b564c8e60a9c5f"
+          },
+          {
+            "key": "bTV.bg@SD",
+            "before_fingerprint": "7270d33a68c76963",
+            "after_fingerprint": "f32cfdc645c2a5f3"
+          }
+        ],
+        "stream_urls": [
+          {
+            "key": "Polsat.pl@SD",
+            "before_fingerprint": "7cc9dc77f59a7a4d",
+            "after_fingerprint": "ebae4dcea38efe01"
+          },
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "56f52ea37af594eb",
+            "after_fingerprint": "0d3dcad00c9291ae"
+          },
+          {
+            "key": "bTV.bg@SD",
+            "before_fingerprint": "01fa73d45d7b4a0c",
+            "after_fingerprint": "c646df63b398077c"
+          }
+        ],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-COUNTRIES",
-      "status": "baseline",
-      "channels": 12947,
-      "url": "https://iptv-org.github.io/iptv/index.country.m3u",
+      "status": "changed",
+      "source_url_changed": false,
+      "old_source_url": "https://iptv-org.github.io/iptv/index.country.m3u",
+      "new_source_url": "https://iptv-org.github.io/iptv/index.country.m3u",
+      "added_channels": 16,
+      "removed_channels": 10,
+      "renamed_channels": 6,
+      "changed_stream_urls": 3,
+      "changed_categories": 0,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
+      "samples": {
+        "added": [
+          "CineStarActionBulgaria.bg@SD",
+          "MCMTop.fr@SD",
+          "MCMTop.fr@SD#2",
+          "MCMTop.fr@SD#3",
+          "MCMTop.fr@SD#4",
+          "MCMTop.fr@SD#5",
+          "MCMTop.fr@SD#6",
+          "MCMTop.fr@SD#7",
+          "PrimaTV.ro@SD",
+          "RadioChisinau.md@SD#2",
+          "RadioChisinau.md@SD#3",
+          "TVP1.pl@HD",
+          "TVP2.pl@HD",
+          "Travelxp.in@4KCzechia",
+          "Travelxp.in@4KCzechia#2",
+          "Travelxp.in@4KCzechia#3"
+        ],
+        "removed": [
+          "AntenaPlayEvents.ro@SD",
+          "AsiaExpressNonStop.ro@SD",
+          "FoxSports2.ar@SD",
+          "HalloweenNonStop.ro@SD",
+          "Insulanonstop.ro@SD",
+          "NHBollyGold.in@HD",
+          "NHLAntenaPlay.ro@SD",
+          "StarMovies.in@HD",
+          "TheFilmDetective.us@SD",
+          "V2BEATTV.uk@SD"
+        ],
+        "renamed": [
+          {
+            "key": "FoxSports2.us@HD",
+            "before_fingerprint": "dc70f9f536f30451",
+            "after_fingerprint": "0f528c3ad19eddb9"
+          },
+          {
+            "key": "MCMTop.ru@SD",
+            "before_fingerprint": "1280419229910e19",
+            "after_fingerprint": "8bcf4110008c6cf1"
+          },
+          {
+            "key": "Polsat.pl@SD",
+            "before_fingerprint": "48a019e7740fa9d4",
+            "after_fingerprint": "b4e660ce989be077"
+          },
+          {
+            "key": "PrimaTV.it@SD",
+            "before_fingerprint": "365ee4e9d04c4073",
+            "after_fingerprint": "66f2454730853aba"
+          },
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "3e5900a6a1e3eaf6",
+            "after_fingerprint": "88b564c8e60a9c5f"
+          },
+          {
+            "key": "bTV.bg@SD",
+            "before_fingerprint": "7270d33a68c76963",
+            "after_fingerprint": "f32cfdc645c2a5f3"
+          }
+        ],
+        "stream_urls": [
+          {
+            "key": "Polsat.pl@SD",
+            "before_fingerprint": "7cc9dc77f59a7a4d",
+            "after_fingerprint": "ebae4dcea38efe01"
+          },
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "56f52ea37af594eb",
+            "after_fingerprint": "0d3dcad00c9291ae"
+          },
+          {
+            "key": "bTV.bg@SD",
+            "before_fingerprint": "01fa73d45d7b4a0c",
+            "after_fingerprint": "c646df63b398077c"
+          }
+        ],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-SERIES",
-      "status": "baseline",
-      "channels": 524,
-      "url": "https://iptv-org.github.io/iptv/categories/series.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://iptv-org.github.io/iptv/categories/series.m3u",
+      "new_source_url": "https://iptv-org.github.io/iptv/categories/series.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-SPA",
-      "status": "baseline",
-      "channels": 2402,
-      "url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
+      "status": "changed",
+      "source_url_changed": false,
+      "old_source_url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
+      "new_source_url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
+      "added_channels": 0,
+      "removed_channels": 1,
+      "renamed_channels": 1,
+      "changed_stream_urls": 1,
+      "changed_categories": 0,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
+      "samples": {
+        "added": [],
+        "removed": [
+          "FoxSports2.ar@SD"
+        ],
+        "renamed": [
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "3e5900a6a1e3eaf6",
+            "after_fingerprint": "88b564c8e60a9c5f"
+          }
+        ],
+        "stream_urls": [
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "56f52ea37af594eb",
+            "after_fingerprint": "0d3dcad00c9291ae"
+          }
+        ],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-SPORTS",
-      "status": "baseline",
-      "channels": 479,
-      "url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
+      "status": "changed",
+      "source_url_changed": false,
+      "old_source_url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
+      "new_source_url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
+      "added_channels": 0,
+      "removed_channels": 3,
+      "renamed_channels": 1,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
+      "samples": {
+        "added": [],
+        "removed": [
+          "AntenaPlayEvents.ro@SD",
+          "FoxSports2.ar@SD",
+          "NHLAntenaPlay.ro@SD"
+        ],
+        "renamed": [
+          {
+            "key": "FoxSports2.us@HD",
+            "before_fingerprint": "dc70f9f536f30451",
+            "after_fingerprint": "0f528c3ad19eddb9"
+          }
+        ],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-TOTAL",
-      "status": "baseline",
-      "channels": 11389,
-      "url": "https://iptv-org.github.io/iptv/index.m3u",
+      "status": "changed",
+      "source_url_changed": false,
+      "old_source_url": "https://iptv-org.github.io/iptv/index.m3u",
+      "new_source_url": "https://iptv-org.github.io/iptv/index.m3u",
+      "added_channels": 6,
+      "removed_channels": 10,
+      "renamed_channels": 6,
+      "changed_stream_urls": 3,
+      "changed_categories": 0,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
+      "samples": {
+        "added": [
+          "CineStarActionBulgaria.bg@SD",
+          "MCMTop.fr@SD",
+          "PrimaTV.ro@SD",
+          "TVP1.pl@HD",
+          "TVP2.pl@HD",
+          "Travelxp.in@4KCzechia"
+        ],
+        "removed": [
+          "AntenaPlayEvents.ro@SD",
+          "AsiaExpressNonStop.ro@SD",
+          "FoxSports2.ar@SD",
+          "HalloweenNonStop.ro@SD",
+          "Insulanonstop.ro@SD",
+          "NHBollyGold.in@HD",
+          "NHLAntenaPlay.ro@SD",
+          "StarMovies.in@HD",
+          "TheFilmDetective.us@SD",
+          "V2BEATTV.uk@SD"
+        ],
+        "renamed": [
+          {
+            "key": "FoxSports2.us@HD",
+            "before_fingerprint": "dc70f9f536f30451",
+            "after_fingerprint": "0f528c3ad19eddb9"
+          },
+          {
+            "key": "MCMTop.ru@SD",
+            "before_fingerprint": "1280419229910e19",
+            "after_fingerprint": "8bcf4110008c6cf1"
+          },
+          {
+            "key": "Polsat.pl@SD",
+            "before_fingerprint": "48a019e7740fa9d4",
+            "after_fingerprint": "b4e660ce989be077"
+          },
+          {
+            "key": "PrimaTV.it@SD",
+            "before_fingerprint": "365ee4e9d04c4073",
+            "after_fingerprint": "66f2454730853aba"
+          },
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "3e5900a6a1e3eaf6",
+            "after_fingerprint": "88b564c8e60a9c5f"
+          },
+          {
+            "key": "bTV.bg@SD",
+            "before_fingerprint": "7270d33a68c76963",
+            "after_fingerprint": "f32cfdc645c2a5f3"
+          }
+        ],
+        "stream_urls": [
+          {
+            "key": "Polsat.pl@SD",
+            "before_fingerprint": "7cc9dc77f59a7a4d",
+            "after_fingerprint": "ebae4dcea38efe01"
+          },
+          {
+            "key": "TelevisionTarapoto.pe@SD",
+            "before_fingerprint": "56f52ea37af594eb",
+            "after_fingerprint": "0d3dcad00c9291ae"
+          },
+          {
+            "key": "bTV.bg@SD",
+            "before_fingerprint": "01fa73d45d7b4a0c",
+            "after_fingerprint": "c646df63b398077c"
+          }
+        ],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-US",
-      "status": "baseline",
-      "channels": 1495,
-      "url": "https://iptv-org.github.io/iptv/countries/us.m3u",
+      "status": "changed",
+      "source_url_changed": false,
+      "old_source_url": "https://iptv-org.github.io/iptv/countries/us.m3u",
+      "new_source_url": "https://iptv-org.github.io/iptv/countries/us.m3u",
+      "added_channels": 0,
+      "removed_channels": 1,
+      "renamed_channels": 1,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
+      "samples": {
+        "added": [],
+        "removed": [
+          "TheFilmDetective.us@SD"
+        ],
+        "renamed": [
+          {
+            "key": "FoxSports2.us@HD",
+            "before_fingerprint": "dc70f9f536f30451",
+            "after_fingerprint": "0f528c3ad19eddb9"
+          }
+        ],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/JMIGUE-IPTVSV",
-      "status": "baseline",
-      "channels": 1876,
-      "url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-AR",
-      "status": "baseline",
-      "channels": 147,
-      "url": "https://m3u.cl/lista/AR.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/AR.m3u",
+      "new_source_url": "https://m3u.cl/lista/AR.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-BO",
-      "status": "baseline",
-      "channels": 6,
-      "url": "https://m3u.cl/lista/BO.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/BO.m3u",
+      "new_source_url": "https://m3u.cl/lista/BO.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-BR",
-      "status": "baseline",
-      "channels": 67,
-      "url": "https://m3u.cl/lista/BR.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/BR.m3u",
+      "new_source_url": "https://m3u.cl/lista/BR.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-CL",
-      "status": "baseline",
-      "channels": 392,
-      "url": "https://m3u.cl/lista/CL.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/CL.m3u",
+      "new_source_url": "https://m3u.cl/lista/CL.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-CO",
-      "status": "baseline",
-      "channels": 43,
-      "url": "https://m3u.cl/lista/CO.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/CO.m3u",
+      "new_source_url": "https://m3u.cl/lista/CO.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-CR",
-      "status": "baseline",
-      "channels": 42,
-      "url": "https://m3u.cl/lista/CR.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/CR.m3u",
+      "new_source_url": "https://m3u.cl/lista/CR.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-DO",
-      "status": "baseline",
-      "channels": 78,
-      "url": "https://m3u.cl/lista/DO.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/DO.m3u",
+      "new_source_url": "https://m3u.cl/lista/DO.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-EC",
-      "status": "baseline",
-      "channels": 24,
-      "url": "https://m3u.cl/lista/EC.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/EC.m3u",
+      "new_source_url": "https://m3u.cl/lista/EC.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-ES",
-      "status": "baseline",
-      "channels": 58,
-      "url": "https://m3u.cl/lista/ES.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/ES.m3u",
+      "new_source_url": "https://m3u.cl/lista/ES.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-MUSICA",
-      "status": "baseline",
-      "channels": 92,
-      "url": "https://m3u.cl/lista/musica.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/musica.m3u",
+      "new_source_url": "https://m3u.cl/lista/musica.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-MX",
-      "status": "baseline",
-      "channels": 58,
-      "url": "https://m3u.cl/lista/MX.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/MX.m3u",
+      "new_source_url": "https://m3u.cl/lista/MX.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-PE",
-      "status": "baseline",
-      "channels": 52,
-      "url": "https://m3u.cl/lista/PE.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/PE.m3u",
+      "new_source_url": "https://m3u.cl/lista/PE.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-PY",
-      "status": "baseline",
-      "channels": 22,
-      "url": "https://m3u.cl/lista/PY.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/PY.m3u",
+      "new_source_url": "https://m3u.cl/lista/PY.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-RELIGIOSOS",
-      "status": "baseline",
-      "channels": 91,
-      "url": "https://m3u.cl/lista/religiosos.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/religiosos.m3u",
+      "new_source_url": "https://m3u.cl/lista/religiosos.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-TOP",
-      "status": "baseline",
-      "channels": 194,
-      "url": "https://m3u.cl/lista/top.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/top.m3u",
+      "new_source_url": "https://m3u.cl/lista/top.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-TOTAL",
-      "status": "baseline",
-      "channels": 1091,
-      "url": "https://m3u.cl/lista/total.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/total.m3u",
+      "new_source_url": "https://m3u.cl/lista/total.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/M3UCL-VE",
-      "status": "baseline",
-      "channels": 50,
-      "url": "https://m3u.cl/lista/VE.m3u",
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-XXX",
-      "status": "baseline",
-      "channels": 27,
-      "url": "https://m3u.cl/lista/XXX.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/VE.m3u",
+      "new_source_url": "https://m3u.cl/lista/VE.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/PLUTO-AR",
-      "status": "baseline",
-      "channels": 201,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/PLUTO-BR",
-      "status": "baseline",
-      "channels": 193,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/PLUTO-CL",
-      "status": "baseline",
-      "channels": 201,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/PLUTO-ES",
-      "status": "baseline",
-      "channels": 153,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/PLUTO-LATAM",
-      "status": "baseline",
-      "channels": 209,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/PLUTO-MX",
-      "status": "baseline",
-      "channels": 206,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "GOD/PLUTO-US",
-      "status": "baseline",
-      "channels": 465,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": true
     },
     {
       "source": "PRINCIPAL/JMIGUE-IPTVSV",
-      "status": "baseline",
-      "channels": 1876,
-      "url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-AR",
-      "status": "baseline",
-      "channels": 147,
-      "url": "https://m3u.cl/lista/AR.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/AR.m3u",
+      "new_source_url": "https://m3u.cl/lista/AR.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-BO",
-      "status": "baseline",
-      "channels": 6,
-      "url": "https://m3u.cl/lista/BO.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/BO.m3u",
+      "new_source_url": "https://m3u.cl/lista/BO.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-BR",
-      "status": "baseline",
-      "channels": 67,
-      "url": "https://m3u.cl/lista/BR.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/BR.m3u",
+      "new_source_url": "https://m3u.cl/lista/BR.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-CL",
-      "status": "baseline",
-      "channels": 392,
-      "url": "https://m3u.cl/lista/CL.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/CL.m3u",
+      "new_source_url": "https://m3u.cl/lista/CL.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-CO",
-      "status": "baseline",
-      "channels": 43,
-      "url": "https://m3u.cl/lista/CO.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/CO.m3u",
+      "new_source_url": "https://m3u.cl/lista/CO.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-CR",
-      "status": "baseline",
-      "channels": 42,
-      "url": "https://m3u.cl/lista/CR.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/CR.m3u",
+      "new_source_url": "https://m3u.cl/lista/CR.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-DO",
-      "status": "baseline",
-      "channels": 78,
-      "url": "https://m3u.cl/lista/DO.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/DO.m3u",
+      "new_source_url": "https://m3u.cl/lista/DO.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-EC",
-      "status": "baseline",
-      "channels": 24,
-      "url": "https://m3u.cl/lista/EC.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/EC.m3u",
+      "new_source_url": "https://m3u.cl/lista/EC.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-ES",
-      "status": "baseline",
-      "channels": 58,
-      "url": "https://m3u.cl/lista/ES.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/ES.m3u",
+      "new_source_url": "https://m3u.cl/lista/ES.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-MUSICA",
-      "status": "baseline",
-      "channels": 92,
-      "url": "https://m3u.cl/lista/musica.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/musica.m3u",
+      "new_source_url": "https://m3u.cl/lista/musica.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-MX",
-      "status": "baseline",
-      "channels": 58,
-      "url": "https://m3u.cl/lista/MX.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/MX.m3u",
+      "new_source_url": "https://m3u.cl/lista/MX.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-PE",
-      "status": "baseline",
-      "channels": 52,
-      "url": "https://m3u.cl/lista/PE.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/PE.m3u",
+      "new_source_url": "https://m3u.cl/lista/PE.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-PY",
-      "status": "baseline",
-      "channels": 22,
-      "url": "https://m3u.cl/lista/PY.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/PY.m3u",
+      "new_source_url": "https://m3u.cl/lista/PY.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-RELIGIOSOS",
-      "status": "baseline",
-      "channels": 91,
-      "url": "https://m3u.cl/lista/religiosos.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/religiosos.m3u",
+      "new_source_url": "https://m3u.cl/lista/religiosos.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-TOP",
-      "status": "baseline",
-      "channels": 194,
-      "url": "https://m3u.cl/lista/top.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/top.m3u",
+      "new_source_url": "https://m3u.cl/lista/top.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-TOTAL",
-      "status": "baseline",
-      "channels": 1091,
-      "url": "https://m3u.cl/lista/total.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/total.m3u",
+      "new_source_url": "https://m3u.cl/lista/total.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/M3UCL-VE",
-      "status": "baseline",
-      "channels": 50,
-      "url": "https://m3u.cl/lista/VE.m3u",
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-XXX",
-      "status": "baseline",
-      "channels": 27,
-      "url": "https://m3u.cl/lista/XXX.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://m3u.cl/lista/VE.m3u",
+      "new_source_url": "https://m3u.cl/lista/VE.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/PLUTO-ES",
-      "status": "baseline",
-      "channels": 153,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/PLUTO-LATAM",
-      "status": "baseline",
-      "channels": 209,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/PLUTO-MX",
-      "status": "baseline",
-      "channels": 206,
-      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/RAYDER-MAGMA",
-      "status": "baseline",
-      "channels": 220,
-      "url": "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     },
     {
       "source": "PRINCIPAL/SPECIAL-PLUTO_MX_ALTERNATIVES",
-      "status": "baseline",
-      "channels": 193,
-      "url": "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
+      "status": "unchanged",
+      "source_url_changed": false,
+      "old_source_url": "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
+      "new_source_url": "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
+      "samples": {
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
+        "categories": []
+      },
       "readonly": false
     }
   ],
