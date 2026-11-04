@@ -1019,5 +1019,65 @@ class AlternativeGroupingRegressionTests(unittest.TestCase):
         self.assertEqual(len(tvg_names), 1)
 
 
+    def test_hd_sd_variants_are_not_grouped_as_alternatives(self):
+        lines = ["#EXTM3U"] + (
+            entry("", "Cine / Películas", "Cine Marvel", "https://cine.example/sd.m3u8")
+            + entry("", "Cine / Películas", "Cine Marvel HD", "https://cine.example/hd.m3u8")
+        )
+        output = _group_and_label_alternatives(lines, {})
+        names = [ap.extraer_nombre(line) for line in output if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["Cine Marvel", "Cine Marvel HD"])
+
+    def test_visible_resolution_wins_over_stale_tvg_name(self):
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-name="Cine Marvel" group-title="Cine",Cine Marvel',
+            "https://cine.example/marvel.m3u8",
+            '#EXTINF:-1 tvg-name="Cine Marvel" group-title="Cine",Cine Marvel HD',
+            "https://cine.example/marvel-hd.m3u8",
+        ]
+        output = _group_and_label_alternatives(lines, {})
+        names = [ap.extraer_nombre(line) for line in output if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["Cine Marvel", "Cine Marvel HD"])
+
+    def test_alternative_group_anchors_at_first_historical_url(self):
+        lines = ["#EXTM3U"] + (
+            entry("espn2", "ESPN", "ESPN 2 [Opción 2]", "https://sports.example/espn2-alt.m3u8")
+            + entry("espn3", "ESPN", "ESPN 3", "https://sports.example/espn3.m3u8")
+            + entry("espn2", "ESPN", "ESPN 2", "https://sports.example/espn2-main.m3u8")
+        )
+        output = _group_and_label_alternatives(lines, {})
+        names = [ap.extraer_nombre(line) for line in output if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["ESPN 2", "ESPN 2 [Opción 2]", "ESPN 3"])
+
+    def test_orphan_option_is_promoted_to_base_name(self):
+        lines = ["#EXTM3U"] + entry("344", "ESPN", "ESPN 2 [Opción 2]", "https://sports.example/espn2.m3u8")
+        output = _group_and_label_alternatives(lines, {})
+        names = [ap.extraer_nombre(line) for line in output if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["ESPN 2"])
+
+    def test_exact_url_keeps_historical_position_when_tvg_id_changes(self):
+        main_url = "https://sports.example/espn2-main.m3u8"
+        alt_url = "https://sports.example/espn2-alt.m3u8"
+        lines = ["#EXTM3U"] + (
+            entry("", "ESPN", "ESPN 2", main_url)
+            + entry("espn3", "ESPN", "ESPN 3", "https://sports.example/espn3.m3u8")
+            + entry("3746", "ESPN", "ESPN 2 HD [Opción 3]", alt_url)
+        )
+        source = candidate("3746", "ESPN", "ESPN 2 HD", main_url, source=ap.FUENTE_MAGMA)
+        output, _ = reconcile_lines(lines, [source])
+        main_index = output.index(main_url)
+        extinf_index = max(i for i in range(main_index) if output[i].startswith("#EXTINF"))
+        self.assertEqual(ap.extraer_nombre(output[extinf_index]), "ESPN 2 HD")
+        self.assertLess(main_index, output.index("https://sports.example/espn3.m3u8"))
+
+    def test_identity_audit_uses_url_when_visible_name_has_multiple_ids(self):
+        name_to_ids = {"espn2": {"344", "3746"}}
+        original = {"id": "", "name": "ESPN 2", "tvg_name": "ESPN 2", "url": "https://sports.example/espn2.m3u8"}
+        updated = {"id": "3746", "name": "ESPN 2 HD", "tvg_name": "ESPN 2 HD", "url": "https://sports.example/espn2.m3u8"}
+        alternative = {"id": "344", "name": "ESPN 2", "tvg_name": "ESPN 2", "url": "https://sports.example/espn2-alt.m3u8"}
+        self.assertEqual(identity_key(original, name_to_ids), identity_key(updated, name_to_ids))
+        self.assertNotEqual(identity_key(original, name_to_ids), identity_key(alternative, name_to_ids))
+
 if __name__ == "__main__":
     unittest.main()
