@@ -288,37 +288,61 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(tvg_names[0], tvg_names[1])
         self.assertEqual(parsed[1][0].split(",", 1)[1], "Solo TV [Opción 2]")
 
-    def test_grouping_unifies_logo_and_tvg_logo_across_alternatives(self):
+    def test_grouping_preserves_each_alternative_logo_independently(self):
         lines = ["#EXTM3U"]
         lines += [
-            '#EXTINF:-1 group-title="Infantiles" tvg-name="Discovery Kids" tvg-logo="https://logo.example/canonical.png",Discovery Kids',
+            '#EXTINF:-1 group-title="Infantiles" tvg-name="Discovery Kids" tvg-logo="https://logo.example/one.png" logo="https://logo.example/one.png",Discovery Kids',
             "https://a.example/discovery-1.m3u8",
-            '#EXTINF:-1 logo="https://logo.example/old.png" group-title="Infantiles" tvg-name="Discovery Kids" tvg-logo="https://logo.example/canonical.png",Discovery Kids',
+            '#EXTINF:-1 group-title="Infantiles" tvg-name="Discovery Kids" tvg-logo="https://logo.example/two.png" logo="https://logo.example/two.png",Discovery Kids',
             "https://a.example/discovery-2.m3u8",
         ]
-        output = ap.agrupar_alternativas_por_identidad(lines)
-        parsed = self.entries(output)
+        parsed = self.entries(ap.agrupar_alternativas_por_identidad(lines))
         self.assertEqual(len(parsed), 2)
-        for item in parsed:
-            self.assertIn('tvg-logo="https://logo.example/canonical.png"', item[0])
-            self.assertIn('logo="https://logo.example/canonical.png"', item[0])
+        self.assertIn('tvg-logo="https://logo.example/one.png"', parsed[0][0])
+        self.assertIn('logo="https://logo.example/one.png"', parsed[0][0])
+        self.assertIn('tvg-logo="https://logo.example/two.png"', parsed[1][0])
+        self.assertIn('logo="https://logo.example/two.png"', parsed[1][0])
 
-    def test_final_orchestrator_grouping_updates_logo_without_overwriting_tvg_logo(self):
-        logo = "https://logo.example/disney.png"
+    def test_final_orchestrator_grouping_preserves_individual_logos(self):
         lines = ["#EXTM3U"]
         lines += [
-            f'#EXTINF:-1 group-title="Infantiles" tvg-name="Disney Channel" tvg-logo="{logo}" logo="{logo}",Disney Channel',
+            '#EXTINF:-1 group-title="Infantiles" tvg-name="Disney Channel" tvg-logo="https://logo.example/disney.png",Disney Channel',
             "https://a.example/disney-1.m3u8",
-            f'#EXTINF:-1 logo="https://logo.example/old.png" group-title="Infantiles" tvg-name="Disney Channel" tvg-logo="{logo}",Disney Channel',
+            '#EXTINF:-1 group-title="Infantiles" tvg-name="Disney Channel" tvg-logo="https://logo.example/disney-alt.png",Disney Channel',
             "https://a.example/disney-2.m3u8",
         ]
-        output = sc._group_and_label_alternatives(lines, {})
-        parsed = self.entries(output)
+        parsed = self.entries(sc._group_and_label_alternatives(lines, {}))
         self.assertEqual(len(parsed), 2)
-        for item in parsed:
-            self.assertIn(f'tvg-logo="{logo}"', item[0])
-            self.assertIn(f'logo="{logo}"', item[0])
+        self.assertIn('tvg-logo="https://logo.example/disney.png"', parsed[0][0])
+        self.assertIn('tvg-logo="https://logo.example/disney-alt.png"', parsed[1][0])
 
+
+    def test_hd_sd_variants_remain_separate(self):
+        lines = ["#EXTM3U"]
+        lines += block("", "Cine / Películas", "Cine Marvel", "https://cine.example/sd.m3u8")
+        lines += block("", "Cine / Películas", "Cine Marvel HD", "https://cine.example/hd.m3u8")
+        parsed = self.entries(ap.agrupar_alternativas_por_identidad(lines))
+        names = [item[0].split(",", 1)[1] for item in parsed]
+        self.assertEqual(names, ["Cine Marvel", "Cine Marvel HD"])
+
+    def test_restaurar_logos_historicos_recovers_missing_but_never_overwrites_existing(self):
+        old = ["#EXTM3U",
+            '#EXTINF:-1 tvg-id="channel.one" tvg-logo="https://logo.example/old.png" group-title="Series",Canal Uno',
+            "https://old.example/one.m3u8"]
+        current = ["#EXTM3U",
+            '#EXTINF:-1 tvg-id="channel.one" group-title="Series",Canal Uno',
+            "https://new.example/one.m3u8",
+            '#EXTINF:-1 tvg-id="channel.one" tvg-logo="https://logo.example/current.png" group-title="Series",Canal Uno [Opción 2]',
+            "https://new.example/two.m3u8"]
+        restored, stats = ap.restaurar_logos_historicos(current, old)
+        self.assertIn('tvg-logo="https://logo.example/old.png"', restored[1])
+        self.assertIn('tvg-logo="https://logo.example/current.png"', restored[3])
+        self.assertEqual(stats["lista_anterior"], 1)
+
+    def test_spanish_country_has_priority_over_anime_thematic_category(self):
+        categories = ["Anime", "España"]
+        self.assertEqual(ap.determinar_destino("Anime", "Canal Anime", "espana", categories), "España")
+        self.assertEqual(ap.destino_especial_total_otros("Anime España", "TOTAL", categories), "España")
     def test_parenthetical_opc_suffix_is_preserved_as_variant_name(self):
         self.assertEqual(sc._without_option_suffix("Cartoonito HD (Opc.3)"), "Cartoonito HD (Opc.3)")
         self.assertEqual(ap.normalizar_nombre_canal("Cartoonito HD (Opc.3)"),
