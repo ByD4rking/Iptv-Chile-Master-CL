@@ -191,8 +191,8 @@ def corregir_resoluciones_por_url(lineas):
             nuevo = nombre_base
         else:
             opcion = re.search(
-                r"(\\s*(?:\\[\\s*(?:opci[oó]n|opc\\.?)\\s*\\d+\\s*\\]|"
-                r"\\(\\s*(?:opci[oó]n|opc\\.?)\\s*\\d+\\s*\\))\\s*$)",
+                r"(\s*(?:\[\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\]|"
+                r"\(\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\))\s*$)",
                 actual,
                 re.I,
             )
