@@ -134,6 +134,11 @@ NOMBRES_RESOLUCION_POR_URL = {
     "http://181.78.79.131:8000/play/a0tj": "Cartoon Network HD",
     "http://190.108.83.69:8000/play/a08g/index.m3u8": "Cartoon Network HD",
     "http://186.148.182.83:8000/play/a09z/index.m3u8": "Cartoon Network SD",
+    "http://181.224.255.210:8001/play/a0py/index.m3u8?hls": "Cartoon Network SD",
+    "http://181.78.211.244:8000/play/a08i/index.m3u8": "Discovery Channel SD",
+    "http://186.148.196.100:8000/play/a00r": "Discovery Turbo SD",
+    "http://45.5.118.152:8000/play/a01w/index.m3u8": "Nat Geo SD",
+    "http://186.148.196.100:8000/play/a00p": "TLC SD",
     "http://186.33.26.18:8000/play/a0sv/index.m3u8": "Cartoonito SD",
     "http://181.224.255.210:8001/play/a0pv/index.m3u8?hls": "Discovery Kids SD",
     "http://186.148.196.100:8000/play/a00s": "Discovery Kids SD",
@@ -201,8 +206,14 @@ def corregir_resoluciones_por_url(lineas):
         if nuevo != actual and "," in extinf:
             linea_actualizada = extinf.rsplit(",", 1)[0] + "," + nuevo
             corregidos += 1
-        # Mantener tvg-name coherente con la calidad de la señal, sin el sufijo de opción.
-        if re.search(r'\btvg-name="[^"]*"', linea_actualizada, re.I):
+        # Actualizar tvg-name solo en la señal base. Las opciones conservan su
+        # identidad EPG original para no desplazar el orden histórico de la familia.
+        tiene_opcion = bool(re.search(
+            r"\s*(?:\[\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\]|\(\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\))\s*$",
+            actual,
+            re.I,
+        ))
+        if (not tiene_opcion or nombre_base == "FightBox HD") and re.search(r'\btvg-name="[^"]*"', linea_actualizada, re.I):
             linea_actualizada = re.sub(
                 r'\btvg-name="[^"]*"',
                 f'tvg-name="{nombre_base}"',
