@@ -475,6 +475,17 @@ class TestAlternativasPrincipal(unittest.TestCase):
         ])
         self.assertEqual(changed, 4)
 
+    def test_family_logo_restore_fills_only_missing_and_never_overwrites(self):
+        lines = ["#EXTM3U"]
+        lines += block('tvg-logo="https://logo.example/fox.png" logo="https://logo.example/fox.png"', "Deportes", "FOX Sports Premium", "https://stream.example/fox.m3u8")
+        lines += block("", "Deportes", "FOX Sports Premium HD [Opción 2]", "https://stream.example/fox-hd.m3u8")
+        lines += block('tvg-logo="https://logo.example/other.png"', "Deportes", "Canal Diferente", "https://stream.example/other.m3u8")
+        output, restored = ap.restaurar_logos_de_familia(lines)
+        parsed = self.entries(output)
+        self.assertEqual(restored, 1)
+        self.assertIn('tvg-logo="https://logo.example/fox.png"', parsed[1][0])
+        self.assertIn('tvg-logo="https://logo.example/other.png"', parsed[2][0])
+
     def test_fear_factor_selection_only_exact_name_and_valid_url(self):
         channels = [
             {"nombre": "Fear Factor Latino", "url": "https://source.example/other.m3u8", "extinf": '#EXTINF:-1 group-title="Series",Fear Factor Latino'},
