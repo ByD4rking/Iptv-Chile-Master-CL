@@ -461,5 +461,44 @@ class TestAlternativasPrincipal(unittest.TestCase):
         names = [ap.extraer_nombre(line) for line in restored if line.startswith("#EXTINF")]
         self.assertEqual(names, ["12TV Alicante", "Beyblade"])
 
+    def test_anime_sagas_are_grouped_in_requested_order(self):
+        lines = ["#EXTM3U"]
+        for name, url in [
+            ("Dragon Ball Z", "https://x.example/dbz.m3u8"),
+            ("Naruto Shippuden", "https://x.example/shippuden.m3u8"),
+            ("Dragon Ball [Opción 3]", "https://x.example/db3.m3u8"),
+            ("Captain Tsubasa", "https://x.example/tsubasa.m3u8"),
+            ("Dragon Ball GT", "https://x.example/dbgt.m3u8"),
+            ("Boruto: Naruto Next Generations", "https://x.example/boruto.m3u8"),
+            ("Super Campeones", "https://x.example/supercampeones.m3u8"),
+            ("Naruto (Peliculas)", "https://x.example/narutomovies.m3u8"),
+            ("Dragon Ball", "https://x.example/db.m3u8"),
+            ("Dragon Ball Super", "https://x.example/dbsuper.m3u8"),
+            ("Dragon Ball Peliculas", "https://x.example/dbmovies.m3u8"),
+            ("Naruto", "https://x.example/naruto.m3u8"),
+        ]:
+            lines += block("", "Anime", name, url)
+        output = ap.ordenar_anime_alfabeticamente(lines)
+        names = [item[0].split(",", 1)[1] for item in self.entries(output)]
+        self.assertEqual(names, [
+            "Dragon Ball", "Dragon Ball [Opción 3]", "Dragon Ball Z",
+            "Dragon Ball Super", "Dragon Ball GT", "Dragon Ball Peliculas",
+            "Naruto", "Naruto Shippuden", "Boruto: Naruto Next Generations",
+            "Naruto (Peliculas)", "Super Campeones", "Captain Tsubasa",
+        ])
+
+    def test_country_categories_are_moved_to_the_end(self):
+        lines = ["#EXTM3U"]
+        lines += block("", "CHILE TV", "Canal Chile", "https://x.example/cl.m3u8")
+        lines += block("", "España", "Canal España", "https://x.example/es.m3u8")
+        lines += block("", "Anime", "Anime", "https://x.example/anime.m3u8")
+        lines += block("", "Argentina", "Canal Argentina", "https://x.example/ar.m3u8")
+        output = ap.mover_paises_al_final(lines)
+        categories = [
+            re.search(r'group-title="([^"]*)"', item[0], re.I).group(1)
+            for item in self.entries(output)
+        ]
+        self.assertEqual(categories, ["CHILE TV", "Anime", "España", "Argentina"])
+
 if __name__ == "__main__":
     unittest.main()
