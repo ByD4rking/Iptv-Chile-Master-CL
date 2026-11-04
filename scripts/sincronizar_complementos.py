@@ -282,7 +282,8 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
 
     # Detectar canales base que tienen una variante explícita de resolución.
     resolution_bases = set()
-    for (_, canonical_name), items in grouped.items():
+    for group_key, items in grouped.items():
+        canonical_name = group_key[-1]
         for item in items:
             display = ap.extraer_nombre(item["extinf"])
             if re.search(r"\s+(?:HD|SD|FHD|UHD)$", display, re.I):
