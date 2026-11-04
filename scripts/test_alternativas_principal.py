@@ -368,6 +368,7 @@ class TestAlternativasPrincipal(unittest.TestCase):
         lines += block("", "Anime", "Beyblade (España)", "https://example.test/beyblade-es.m3u8")
         lines += block("", "Anime", "Anime Vision Classics (España)[Opc.1]", "https://example.test/animevision-es.m3u8")
         lines += block("", "Anime", "Dragon Ball LATAM", "https://example.test/dragon-latam.m3u8")
+        lines += block("", "España", "Canal España", "https://example.test/espana.m3u8")
         output = ap.aplicar_ajustes_referencia(lines, set())
         parsed = self.entries(output)
         spanish_names = [item[0].split(",", 1)[1] for item in parsed if 'group-title="España"' in item[0]]
