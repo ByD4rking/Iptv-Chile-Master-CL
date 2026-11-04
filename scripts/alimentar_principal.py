@@ -2775,6 +2775,8 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
     prefijo, bloques, avatar = [], [], []
     prioritarios = {"popeye": [], "los pitufos": [], "heidi": []}
     eliminados_pluto_es_anime = eliminados_pitufos_es = 0
+    categorias_existentes = categorias_de_lineas(lineas)
+    movidos_espana_desde_anime = 0
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
@@ -2825,6 +2827,19 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
             eliminados_pluto_es_anime += 1
             i = j
             continue
+
+        country_match = re.search(r'tvg-country="([^"]*)"', bloque[0], re.I)
+        country_value = normalizar(country_match.group(1)) if country_match else ""
+        es_canal_de_espana = (
+            bool(re.search(r"\\b(?:españa|spain)\\b", nombre_completo))
+            or country_value in {"es", "espana", "spain"}
+        )
+        if categoria == "anime" and es_canal_de_espana:
+            destino_espana = buscar_categoria_existente("España", categorias_existentes)
+            if destino_espana:
+                bloque[0] = reemplazar_categoria(bloque[0], destino_espana)
+                categoria = normalizar(destino_espana)
+                movidos_espana_desde_anime += 1
 
         if "delmi" in nombre_completo and (
             "v2" in nombre_completo or "version 2" in nombre_completo or nombre_completo.endswith(" 2")
