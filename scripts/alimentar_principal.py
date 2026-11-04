@@ -2233,10 +2233,18 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                 extinf = bloque["lineas"][0]
                 categoria_actual = categoria_canonica(extraer_categoria(extinf))
                 channel_id, nombre = identidad(extinf)
-                ranks = (
-                    list(orden_por_categoria_id.get((categoria_actual, channel_id), []))
-                    if channel_id else []
-                )
+                # La URL exacta es la identidad más fuerte para conservar posición:
+                # el proveedor puede cambiar tvg-id o corregir el nombre visible.
+                url_candidates = orden_por_categoria_url.get(
+                    (categoria_actual, bloque["url"].strip()),
+                    [],
+                ) if bloque.get("url") else []
+                ranks = url_candidates if len(url_candidates) == 1 else []
+                if not ranks:
+                    ranks = (
+                        list(orden_por_categoria_id.get((categoria_actual, channel_id), []))
+                        if channel_id else []
+                    )
                 if ranks:
                     # Un tvg-id puede ser reasignado por una fuente aunque solo
                     # exista una aparición histórica. El ID por sí solo no basta:
