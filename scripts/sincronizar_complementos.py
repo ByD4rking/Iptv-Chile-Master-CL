@@ -1251,6 +1251,12 @@ def synchronize_once() -> dict:
         manifest = {}
 
     updated, changes = reconcile_lines(original, candidates, manifest)
+    # La sincronización puede normalizar tvg-name desde fuentes alternativas.
+    # Reaplicar después las resoluciones respaldadas por URL exacta y los logos seguros.
+    updated, resoluciones_corregidas = ap.corregir_resoluciones_por_url(updated)
+    updated, logos_restaurados = ap.restaurar_logos_de_familia(updated)
+    changes["resoluciones_sd_hd_corregidas"] = resoluciones_corregidas
+    changes["logos_familia_restaurados"] = logos_restaurados
     text = "\n".join(updated).rstrip("\n") + "\n"
     if not text.startswith("#EXTM3U\n") or not any(line.startswith("#EXTINF:") for line in updated):
         raise RuntimeError("La sincronización produjo una M3U inválida; se conserva el archivo original.")
