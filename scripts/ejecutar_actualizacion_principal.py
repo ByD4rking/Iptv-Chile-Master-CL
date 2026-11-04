@@ -113,9 +113,13 @@ def main():
     except Exception as error:
         print(f"[ORQUESTADOR] Catálogo Pluto no disponible para logos: {error}")
         pluto_por_id, pluto_por_nombre = {}, {}
+    # GOD se consulta solo como catálogo histórico de logos; nunca se escribe ni modifica.
+    god_path = ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"
+    god_lines = god_path.read_text(encoding="utf-8-sig").splitlines() if god_path.is_file() else []
+    referencias_logos = original_lines + god_lines
     ordered_lines, logo_stats = alimentador.restaurar_logos_historicos(
         ordered_lines,
-        original_lines,
+        referencias_logos,
         pluto_por_id,
         pluto_por_nombre,
     )
