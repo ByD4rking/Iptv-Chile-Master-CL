@@ -235,6 +235,7 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
         "el salvador": "EL Salvador",
         "el salvador - tcs": "EL Salvador",
         "el salvador local": "EL Salvador",
+        "tv chichicasteca": "Guatemala",  # excepción explícita hacia carpeta existente.
         "documentales": "Documentales y Cultura",
         "infantil": "Infantiles",
         "teen": "Infantiles",
