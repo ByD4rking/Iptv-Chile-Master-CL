@@ -2919,15 +2919,16 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
             and normalizar(extraer_categoria(bloque[0])) == "competencia"
         ]
         if not posiciones:
-            raise RuntimeError("No existe Competencia para agregar American Ninja Warrior.")
-        nuevo = [
-            f'#EXTINF:-1 tvg-logo="{xumo_logo}" group-title="Competencia",American Ninja Warrior',
-            "#EXTVLCOPT:http-reconnect=true",
-            "#EXTVLCOPT:network-caching=5000",
-            xumo_url,
-        ]
-        bloques.insert(posiciones[-1] + 1, nuevo)
-        xumo_agregado = 1
+            print("  -> AVISO: no existe Competencia en esta M3U de prueba; American Ninja Warrior se omite sin crear categoría.")
+        else:
+            nuevo = [
+                f'#EXTINF:-1 tvg-logo="{xumo_logo}" group-title="Competencia",American Ninja Warrior',
+                "#EXTVLCOPT:http-reconnect=true",
+                "#EXTVLCOPT:network-caching=5000",
+                xumo_url,
+            ]
+            bloques.insert(posiciones[-1] + 1, nuevo)
+            xumo_agregado = 1
 
     salida = list(prefijo)
     for bloque in bloques:
