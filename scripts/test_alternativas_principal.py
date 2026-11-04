@@ -339,6 +339,21 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertIn('tvg-logo="https://logo.example/current.png"', restored[3])
         self.assertEqual(stats["lista_anterior"], 1)
 
+
+    def test_restaurar_logos_uses_historical_reference_even_if_category_changed(self):
+        previous = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-logo="https://logo.example/peppa.png" group-title="Infantil",Peppa Pig',
+            "https://old.example/peppa.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 group-title="Infantiles",Peppa Pig',
+            "https://new.example/peppa.m3u8",
+        ]
+        restored, stats = ap.restaurar_logos_historicos(current, previous)
+        self.assertIn('tvg-logo="https://logo.example/peppa.png"', restored[1])
+        self.assertEqual(stats["lista_anterior"], 1)
     def test_spanish_country_has_priority_over_anime_thematic_category(self):
         categories = ["Anime", "España"]
         self.assertEqual(ap.determinar_destino("Anime", "Canal Anime", "espana", categories), "España")
