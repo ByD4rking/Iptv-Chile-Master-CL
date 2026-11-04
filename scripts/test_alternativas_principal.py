@@ -476,10 +476,15 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(changed, 4)
 
     def test_family_logo_restore_fills_only_missing_and_never_overwrites(self):
-        lines = ["#EXTM3U"]
-        lines += block('tvg-logo="https://logo.example/fox.png" logo="https://logo.example/fox.png"', "Deportes", "FOX Sports Premium", "https://stream.example/fox.m3u8")
-        lines += block("", "Deportes", "FOX Sports Premium HD [Opción 2]", "https://stream.example/fox-hd.m3u8")
-        lines += block('tvg-logo="https://logo.example/other.png"', "Deportes", "Canal Diferente", "https://stream.example/other.m3u8")
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-logo="https://logo.example/fox.png" logo="https://logo.example/fox.png" group-title="Deportes",FOX Sports Premium',
+            "https://stream.example/fox.m3u8",
+            '#EXTINF:-1 group-title="Deportes",FOX Sports Premium HD [Opción 2]',
+            "https://stream.example/fox-hd.m3u8",
+            '#EXTINF:-1 tvg-logo="https://logo.example/other.png" group-title="Deportes",Canal Diferente',
+            "https://stream.example/other.m3u8",
+        ]
         output, restored = ap.restaurar_logos_de_familia(lines)
         parsed = self.entries(output)
         self.assertEqual(restored, 1)
