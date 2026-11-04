@@ -1028,6 +1028,32 @@ class AlternativeGroupingRegressionTests(unittest.TestCase):
         names = [ap.extraer_nombre(line) for line in output if line.startswith("#EXTINF")]
         self.assertEqual(names, ["Cine Marvel", "Cine Marvel HD"])
 
+    def test_magma_resolution_names_keep_distinct_sync_identity(self):
+        cases = [
+            ("El Chavo del 8", "El Chavo del 8 HD"),
+            ("Malcolm", "Malcolm HD"),
+            ("Cine Acción", "Cine Acción HD"),
+            ("Cine Acción Sagas", "Cine Acción Sagas HD"),
+            ("Cine Comedia 1", "Cine Comedia 1 HD"),
+            ("Cine Comedia 2", "Cine Comedia 2 HD"),
+            ("Cine Terror", "Cine Terror HD"),
+            ("Cine Terror Sagas", "Cine Terror Sagas HD"),
+            ("Cine Zombis", "Cine Zombis HD"),
+            ("Cine Ficción/Fantasía 2", "Cine Ficción/Fantasía 2 HD"),
+            ("Cine Ficción/Fantasía", "Cine Ficción/Fantasía HD"),
+            ("Cine Romance", "Cine Romance HD"),
+            ("Cine Marvel", "Cine Marvel HD"),
+            ("Cine Infantil", "Cine Infantil HD"),
+        ]
+        for normal, hd in cases:
+            normal_extinf = f'#EXTINF:-1 tvg-name="{normal}" group-title="Cine",{normal}'
+            # La fuente puede repetir el tvg-name base aunque el nombre visible sea HD.
+            hd_extinf = f'#EXTINF:-1 tvg-name="{normal}" group-title="Cine",{hd}'
+            self.assertNotEqual(
+                _identity({"extinf": normal_extinf, "url": "https://magma.example/normal.m3u8"}),
+                _identity({"extinf": hd_extinf, "url": "https://magma.example/hd.m3u8"}),
+            )
+
     def test_visible_resolution_wins_over_stale_tvg_name(self):
         lines = [
             "#EXTM3U",

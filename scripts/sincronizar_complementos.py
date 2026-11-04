@@ -67,7 +67,9 @@ def _identity(channel: dict, *, pluto: bool = False) -> str:
         channel_id = _valid_tvg_id(_attr(extinf, "tvg-id"))
     if channel_id:
         return "id:" + ap.normalizar(channel_id)
-    name = _base_channel_name(_attr(extinf, "tvg-name") or channel.get("nombre", ""))
+    # El nombre visible manda: tvg-name puede venir repetido y obsoleto entre SD/HD.
+    visible_name = ap.extraer_nombre(extinf) or channel.get("nombre", "")
+    name = _base_channel_name(visible_name or _attr(extinf, "tvg-name"))
     return "name:" + name if name else ""
 
 
@@ -85,7 +87,7 @@ def _base_channel_name(name: str) -> str:
         name,
         flags=re.I,
     )
-    name = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", name, flags=re.I)
+    # HD/SD/FHD/UHD identifican señales distintas: no eliminar la resolución.
     return ap.normalizar(name)
 
 
