@@ -37,7 +37,6 @@ FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
 PAIS_POR_FUENTE = {
-    "/XXX.m3u": "xxx",
     "/religiosos.m3u": "religiosos",
     "/musica.m3u": "musica",
     "/LATAM.m3u": "latam",
@@ -407,10 +406,6 @@ def reclasificar_iptvsv_existente(lineas, canales, categorias):
 def determinar_destino(categoria, nombre, pais_fuente, categorias):
     texto = normalizar(f"{categoria or ''} {nombre or ''}")
 
-    # Reglas fijas de M3U.CL: estas fuentes tienen destino propio.
-    if pais_fuente == "xxx":
-        return buscar_categoria_existente("XXX+18", categorias)
-
     if pais_fuente == "religiosos":
         return buscar_categoria_existente("RELIGIOSOS", categorias)
 
@@ -473,9 +468,7 @@ def determinar_destino_magma(categoria, nombre, categorias):
 
 
 def canal_excluido_pluto_es(fuente, canal):
-    """Excluye solo Anime y Los Pitufos desde la fuente regional Pluto ES."""
-    if "pluto_es.m3u" not in (fuente or "").lower():
-        return False
+    """Aplica exclusiones regionales explícitas sin borrar versiones LATAM."""
     categoria = normalizar(canal.get("categoria", ""))
     extinf = canal.get("extinf", "")
     tvg_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
@@ -483,7 +476,19 @@ def canal_excluido_pluto_es(fuente, canal):
         (tvg_name.group(1) if tvg_name else "") + " " +
         (canal.get("nombre") or extraer_nombre(extinf))
     )
-    return categoria == "anime" or "los pitufos" in nombre
+    fuente_es = "pluto_es.m3u" in (fuente or "").lower()
+    variante_espana = bool(re.search(r"\b(?:españa|spain)\b", nombre))
+    pitufo_es = (
+        ("pitufo tv" in nombre or "los pitufos" in nombre)
+        and bool(re.search(r"\b(?:es|españa|spain)\b", nombre))
+    )
+    if categoria == "anime" and variante_espana:
+        return True
+    if pitufo_es:
+        return True
+    if fuente_es and (categoria == "anime" or "los pitufos" in nombre):
+        return True
+    return False
 
 
 def determinar_destino_pluto(categoria, nombre, categorias):
@@ -1663,7 +1668,6 @@ def ordenar_y_normalizar_carpetas(lineas):
       - TEEN se unifica en INFANTILES.
       - NOTICIAS se unifica en INFORMATIVOS.
       - Las carpetas de países, incluido El Salvador - TCS, quedan al final.
-      - XXX+18 queda después de todas las carpetas de países, como último.
       - Dentro de cada carpeta se conserva el orden actual de sus canales.
     """
     bloques = []
@@ -1845,7 +1849,6 @@ def ordenar_y_normalizar_carpetas(lineas):
 
     # Los países NO se ordenan con el orden antiguo: se mandan todos al
     # final conservando entre ellos el orden de primera aparición ACTUAL.
-    # XXX+18 queda absolutamente al final.
     el_salvador_orden = min((g["primera_orden"] for g in grupos.values() if normalizar(g["categoria"]).startswith("el salvador")), default=10**9)
 
     def prioridad(cat_key, primera_orden):
@@ -1855,8 +1858,6 @@ def ordenar_y_normalizar_carpetas(lineas):
             return (100, el_salvador_orden)
         if cat_key in PAISES_ORDEN_FINAL:
             return (100, primera_orden)
-        if cat_key.startswith("xxx"):
-            return (110, 0)
         return (50, primera_orden)
 
     grupos_ordenados = sorted(
@@ -3316,6 +3317,9 @@ def main():
             omitidos_regla_especial = 0
             canales_destinados = []
             for canal in canales:
+                if canal_excluido_pluto_es(fuente, canal):
+                    omitidos_regla_especial += 1
+                    continue
                 if fuente_es_iptvsv:
                     destino = determinar_destino_iptvsv(
                         canal.get("categoria", ""),

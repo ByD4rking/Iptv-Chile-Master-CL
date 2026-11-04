@@ -264,18 +264,6 @@ def clasificar(grupo, nombre):
     texto = f"{g} {n}"
 
     # --------------------------------------------------------
-    # ADULTOS
-    #
-    # IMPORTANTE:
-    # Ya NO existe una carpeta general ADULTOS.
-    #
-    # El contenido adulto solamente entra mediante:
-    # XXX.m3u -> XXX.+18.ADULTO
-    #
-    # Por eso NO se clasifica automÃ¡ticamente por nombre.
-    # --------------------------------------------------------
-
-    # --------------------------------------------------------
     # ANIME
     # --------------------------------------------------------
 
@@ -671,13 +659,6 @@ def grupos_para_fuente(
     codigo = detectar_codigo_pais_desde_fuente(
         fuente
     )
-
-    # ========================================================
-    # XXX
-    # ========================================================
-
-    if archivo == "xxx.m3u":
-        return ["XXX.+18.ADULTO"]
 
     # ========================================================
     # RELIGIOSOS
@@ -1154,12 +1135,6 @@ ORDEN_GRUPOS = [
     "ESTILO DE VIDA",
     "ENTRETENIMIENTO",
     "OTROS",
-
-    # --------------------------------------------------------
-    # XXX SIEMPRE AL FINAL
-    # --------------------------------------------------------
-
-    "XXX.+18.ADULTO",
 ]
 
 
@@ -1177,12 +1152,6 @@ def ordenar_grupos(grupos):
     }
 
     def clave(grupo):
-
-        if grupo == "XXX.+18.ADULTO":
-            return (
-                999999,
-                grupo,
-            )
 
         return (
             posicion.get(
@@ -1620,82 +1589,63 @@ def main():
     )
 
     print(
-        "6. XXX.m3u se convierte en "
-        "XXX.+18.ADULTO."
-    )
-
-    print(
-        "7. XXX.+18.ADULTO queda SIEMPRE "
-        "como Ãºltimo grupo."
-    )
-
-    print(
-        "8. Pluto ES/MX/CL/AR puede aparecer "
+        "6. Pluto ES/MX/CL/AR puede aparecer "
         "en PLUTO TV + paÃ­s + temÃ¡tica."
     )
 
     print(
-        "9. Pluto DE/FR/IT/GB/US/CA/BR/NO/SE/DK "
+        "7. Pluto DE/FR/IT/GB/US/CA/BR/NO/SE/DK "
         "va SOLAMENTE a su paÃ­s."
     )
 
     print(
-        "10. Los Pluto que van solamente a su paÃ­s "
+        "8. Los Pluto que van solamente a su paÃ­s "
         "NO se agregan a PLUTO TV."
     )
 
     print(
-        "11. Si un Pluto tiene una URL repetida "
+        "9. Si un Pluto tiene una URL repetida "
         "dentro de ese paÃ­s, se omite."
     )
 
     print(
-        "12. Si un Pluto tiene una URL diferente "
+        "10. Si un Pluto tiene una URL diferente "
         "para el mismo canal, se conserva como "
         "alternativa [OPC.X]."
     )
 
     print(
-        "13. Una URL puede existir en varias carpetas "
+        "11. Una URL puede existir en varias carpetas "
         "cuando las reglas lo permiten."
     )
 
     print(
-        "14. South Park NO se fuerza a ANIME por "
+        "12. South Park NO se fuerza a ANIME por "
         "el nombre del canal."
     )
 
     print(
-        "15. Si South Park pertenece a una fuente "
+        "13. Si South Park pertenece a una fuente "
         "clasificada como ANIME, queda al final "
         "de ANIME."
     )
 
     print(
-        "16. Popeye y contenido infantil reconocido "
+        "14. Popeye y contenido infantil reconocido "
         "van a INFANTIL."
     )
 
     print(
-        "17. Competition/Competencia va a "
+        "15. Competition/Competencia va a "
         "ENTRETENIMIENTO."
     )
 
     print(
-        "18. No se crea la carpeta general ADULTOS."
+        "16. La salida se escribe en UTF-8."
     )
 
     print(
-        "19. El contenido de XXX.m3u se mantiene "
-        "exclusivamente en XXX.+18.ADULTO."
-    )
-
-    print(
-        "20. La salida se escribe en UTF-8."
-    )
-
-    print(
-        "21. El GOD original NO se reemplaza."
+        "17. El GOD original NO se reemplaza."
     )
 
     print()
