@@ -448,5 +448,18 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(selected["nombre"], "Fear Factor")
         self.assertEqual(selected["url"], "https://source.example/fear-factor.m3u8")
 
+    def test_restore_order_prefers_exact_url_when_tvg_id_or_name_changes(self):
+        before = ["#EXTM3U"] + (
+            block("", "España", "12TV Alicante", "https://order.example/12tv.m3u8")
+            + block("beyblade-old", "España", "Beyblade España", "https://order.example/beyblade.m3u8")
+        )
+        after = ["#EXTM3U"] + (
+            block("beyblade-new", "España", "Beyblade", "https://order.example/beyblade.m3u8")
+            + block("", "España", "12TV Alicante", "https://order.example/12tv.m3u8")
+        )
+        restored = ap.restaurar_orden_original_por_categoria(after, before)
+        names = [ap.extraer_nombre(line) for line in restored if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["12TV Alicante", "Beyblade"])
+
 if __name__ == "__main__":
     unittest.main()
