@@ -55,7 +55,8 @@ def base_name(value: str) -> str:
         value,
         flags=re.I,
     )
-    value = re.sub(r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es)|hd|sd|fhd|uhd)$", "", value, flags=re.I)
+    # Las resoluciones son variantes independientes, no sufijos descartables.
+    value = re.sub(r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es))$", "", value, flags=re.I)
     return norm(value)
 
 
@@ -90,7 +91,13 @@ def parse_entries(path: Path) -> list[dict]:
                 url = candidate_url
                 break
         category = group_match.group(1).strip() if group_match else ""
+        country_match = re.search(r'tvg-country="([^"]*)"', line, re.I)
+        country_value = norm(country_match.group(1)) if country_match else ""
         full_name = norm(tvg_name_raw + " " + display_raw)
+        is_spanish_country = (
+            country_value in {"es", "espana", "spain"}
+            or bool(re.search(r"\\b(?:españa|spain)\\b", full_name))
+        )
         is_pitufos = channel_name_key(tvg_name_raw).startswith("lospitufos") or channel_name_key(display_raw).startswith("lospitufos")
         # La etiqueta España/Español no convierte por sí sola una señal en
         # Pluto ES. Conservar señales españolas de otros proveedores; excluir
@@ -120,6 +127,7 @@ def parse_entries(path: Path) -> list[dict]:
             "is_pitufos": is_pitufos,
             "is_pitufos_es": is_pitufos_es,
             "is_es_anime": is_es_anime,
+            "is_spanish_country": is_spanish_country,
             "category": category,
             "url": url,
             "position": len(entries),
@@ -508,6 +516,26 @@ def main(args: argparse.Namespace) -> None:
                 f"longitudes={len(expected_order)}/{len(actual_order)}"
             )
 
+
+    # Todo logo existente en la versión anterior debe sobrevivir a la actualización.
+    old_logo_by_url = defaultdict(set)
+    old_logo_by_id = defaultdict(set)
+    for item in before:
+        if item.get("logo"):
+            if item.get("url"):
+                old_logo_by_url[item["url"]].add(item["logo"])
+            if item.get("id"):
+                old_logo_by_id[item["id"]].add(item["logo"])
+    for item in after_playable:
+        previous = old_logo_by_url.get(item.get("url", ""), set())
+        if len(previous) == 1:
+            expected_logo = next(iter(previous))
+            if item.get("logo") != expected_logo:
+                raise AssertionError(f"Logo histórico cambiado para {item['display_raw']}: {expected_logo} -> {item.get('logo')}")
+            continue
+        previous_id = old_logo_by_id.get(item.get("id", ""), set()) if item.get("id") else set()
+        if len(previous_id) == 1 and item.get("logo") != next(iter(previous_id)):
+            raise AssertionError(f"Logo histórico perdido al actualizar URL de {item['display_raw']}")
     # Anime tiene orden alfabético solicitado; las alternativas se ordenan
     # junto a su canal base y no cuentan como nombres independientes.
     anime_order = [
@@ -517,6 +545,17 @@ def main(args: argparse.Namespace) -> None:
     ]
     if anime_order != sorted(anime_order):
         raise AssertionError("Anime no quedó ordenado alfabéticamente.")
+
+    # Canales identificados como España no pueden permanecer en Anime.
+    spanish_anime = [
+        item for item in after_playable
+        if norm(item["category"]) == "anime" and item.get("is_spanish_country")
+    ]
+    if spanish_anime:
+        raise AssertionError(
+            "Canales de España permanecen en Anime: "
+            + repr([(item["display_raw"], item["url"]) for item in spanish_anime[:20]])
+        )
 
     # Verificar el orden de los tres canales prioritarios dentro de Infantiles.
     infantiles = [
@@ -557,9 +596,7 @@ def main(args: argparse.Namespace) -> None:
         tvg_names = {item["tvg_name"] for item in group if item["tvg_name"]}
         if len(tvg_names) > 1:
             raise AssertionError(f"Alternativas con tvg-name diferentes para {key}: {tvg_names}")
-        logos = {item["logo"] for item in group if item["logo"]}
-        if len(logos) > 1:
-            raise AssertionError(f"Alternativas con logos diferentes para {key}: {logos}")
+        # Cada alternativa conserva su logo propio; no se exige un logo común.
         for option_index, item in enumerate(group, start=1):
             if option_index == 1 and item["is_option"]:
                 raise AssertionError(f"La URL principal tiene etiqueta de opción: {key}")
