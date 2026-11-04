@@ -405,5 +405,47 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(positions, list(range(positions[0], positions[0] + len(positions))))
 
 
+    def test_exact_url_restores_source_display_name_without_tvg_id(self):
+        url = "https://cine.example/cine-marvel-hd.m3u8"
+        lines = ["#EXTM3U"] + block("", "Cine / Películas", "Cine Marvel [Opción 2]", url)
+        source = {
+            "extinf": "#EXTINF:-1 tvg-name=\"Cine Marvel HD\" group-title=\"Cine / Películas\",Cine Marvel HD",
+            "nombre": "Cine Marvel HD",
+            "categoria": "Cine / Películas",
+            "url": url,
+            "extras": [],
+        }
+        output, stats = ap.sincronizar_enlaces_existentes(lines, [(source, "Cine / Películas")])
+        extinf = next(line for line in output if line.startswith("#EXTINF"))
+        self.assertEqual(ap.extraer_nombre(extinf), "Cine Marvel HD")
+        self.assertIn("tvg-name=\"Cine Marvel HD\"", extinf)
+        self.assertEqual(stats["nombres_actualizados"], 1)
+        regrouped = ap.agrupar_alternativas_por_identidad(output)
+        names = [ap.extraer_nombre(line) for line in regrouped if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["Cine Marvel HD"])
+
+    def test_exact_url_does_not_overwrite_non_resolution_option_label(self):
+        url = "https://sports.example/espn2.m3u8"
+        lines = ["#EXTM3U"] + block("", "Deportes", "ESPN2 [Opción 2]", url)
+        source = {
+            "extinf": "#EXTINF:-1 group-title=\"Deportes\",ESPN2",
+            "nombre": "ESPN2",
+            "categoria": "Deportes",
+            "url": url,
+            "extras": [],
+        }
+        output, _ = ap.sincronizar_enlaces_existentes(lines, [(source, "Deportes")])
+        extinf = next(line for line in output if line.startswith("#EXTINF"))
+        self.assertEqual(ap.extraer_nombre(extinf), "ESPN2 [Opción 2]")
+
+    def test_fear_factor_selection_only_exact_name_and_valid_url(self):
+        channels = [
+            {"nombre": "Fear Factor Latino", "url": "https://source.example/other.m3u8", "extinf": '#EXTINF:-1 group-title="Series",Fear Factor Latino'},
+            {"nombre": "Fear Factor", "url": "https://source.example/fear-factor.m3u8", "extinf": '#EXTINF:-1 tvg-logo="https://logo.example/fear-factor.png" group-title="Series",Fear Factor'},
+        ]
+        selected = ap.seleccionar_canal_fear_factor(channels)
+        self.assertEqual(selected["nombre"], "Fear Factor")
+        self.assertEqual(selected["url"], "https://source.example/fear-factor.m3u8")
+
 if __name__ == "__main__":
     unittest.main()
