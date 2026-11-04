@@ -107,6 +107,18 @@ def main():
     )
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
+    # Restaurar logos perdidos desde la versión anterior y el catálogo oficial Pluto.
+    try:
+        pluto_por_id, pluto_por_nombre, _, _ = alimentador.cargar_catalogo_pluto_propio(session)
+    except Exception as error:
+        print(f"[ORQUESTADOR] Catálogo Pluto no disponible para logos: {error}")
+        pluto_por_id, pluto_por_nombre = {}, {}
+    ordered_lines, logo_stats = alimentador.restaurar_logos_historicos(
+        ordered_lines,
+        original_lines,
+        pluto_por_id,
+        pluto_por_nombre,
+    )
     ids_pluto_orden = (
         alimentador.obtener_ids_pluto_existentes(original_lines)
         | alimentador.obtener_ids_pluto_existentes(ordered_lines)
