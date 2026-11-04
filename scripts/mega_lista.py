@@ -264,18 +264,6 @@ def clasificar(grupo, nombre):
     texto = f"{g} {n}"
 
     # --------------------------------------------------------
-    # ADULTOS
-    #
-    # IMPORTANTE:
-    # Ya NO existe una carpeta general ADULTOS.
-    #
-    # El contenido adulto solamente entra mediante:
-    # XXX.m3u -> XXX.+18.ADULTO
-    #
-    # Por eso NO se clasifica automÃ¡ticamente por nombre.
-    # --------------------------------------------------------
-
-    # --------------------------------------------------------
     # ANIME
     # --------------------------------------------------------
 
@@ -671,13 +659,6 @@ def grupos_para_fuente(
     codigo = detectar_codigo_pais_desde_fuente(
         fuente
     )
-
-    # ========================================================
-    # XXX
-    # ========================================================
-
-    if archivo == "xxx.m3u":
-        return ["XXX.+18.ADULTO"]
 
     # ========================================================
     # RELIGIOSOS
@@ -1155,11 +1136,6 @@ ORDEN_GRUPOS = [
     "ENTRETENIMIENTO",
     "OTROS",
 
-    # --------------------------------------------------------
-    # XXX SIEMPRE AL FINAL
-    # --------------------------------------------------------
-
-    "XXX.+18.ADULTO",
 ]
 
 
@@ -1177,12 +1153,6 @@ def ordenar_grupos(grupos):
     }
 
     def clave(grupo):
-
-        if grupo == "XXX.+18.ADULTO":
-            return (
-                999999,
-                grupo,
-            )
 
         return (
             posicion.get(
@@ -1620,16 +1590,6 @@ def main():
     )
 
     print(
-        "6. XXX.m3u se convierte en "
-        "XXX.+18.ADULTO."
-    )
-
-    print(
-        "7. XXX.+18.ADULTO queda SIEMPRE "
-        "como Ãºltimo grupo."
-    )
-
-    print(
         "8. Pluto ES/MX/CL/AR puede aparecer "
         "en PLUTO TV + paÃ­s + temÃ¡tica."
     )
@@ -1679,15 +1639,6 @@ def main():
     print(
         "17. Competition/Competencia va a "
         "ENTRETENIMIENTO."
-    )
-
-    print(
-        "18. No se crea la carpeta general ADULTOS."
-    )
-
-    print(
-        "19. El contenido de XXX.m3u se mantiene "
-        "exclusivamente en XXX.+18.ADULTO."
     )
 
     print(

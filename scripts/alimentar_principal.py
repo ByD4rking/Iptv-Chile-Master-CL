@@ -37,7 +37,6 @@ FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
 PAIS_POR_FUENTE = {
-    "/XXX.m3u": "xxx",
     "/religiosos.m3u": "religiosos",
     "/musica.m3u": "musica",
     "/LATAM.m3u": "latam",
@@ -406,10 +405,6 @@ def reclasificar_iptvsv_existente(lineas, canales, categorias):
 
 def determinar_destino(categoria, nombre, pais_fuente, categorias):
     texto = normalizar(f"{categoria or ''} {nombre or ''}")
-
-    # Reglas fijas de M3U.CL: estas fuentes tienen destino propio.
-    if pais_fuente == "xxx":
-        return buscar_categoria_existente("XXX+18", categorias)
 
     if pais_fuente == "religiosos":
         return buscar_categoria_existente("RELIGIOSOS", categorias)
@@ -1663,7 +1658,6 @@ def ordenar_y_normalizar_carpetas(lineas):
       - TEEN se unifica en INFANTILES.
       - NOTICIAS se unifica en INFORMATIVOS.
       - Las carpetas de países, incluido El Salvador - TCS, quedan al final.
-      - XXX+18 queda después de todas las carpetas de países, como último.
       - Dentro de cada carpeta se conserva el orden actual de sus canales.
     """
     bloques = []
@@ -1845,7 +1839,6 @@ def ordenar_y_normalizar_carpetas(lineas):
 
     # Los países NO se ordenan con el orden antiguo: se mandan todos al
     # final conservando entre ellos el orden de primera aparición ACTUAL.
-    # XXX+18 queda absolutamente al final.
     el_salvador_orden = min((g["primera_orden"] for g in grupos.values() if normalizar(g["categoria"]).startswith("el salvador")), default=10**9)
 
     def prioridad(cat_key, primera_orden):
@@ -1855,8 +1848,6 @@ def ordenar_y_normalizar_carpetas(lineas):
             return (100, el_salvador_orden)
         if cat_key in PAISES_ORDEN_FINAL:
             return (100, primera_orden)
-        if cat_key.startswith("xxx"):
-            return (110, 0)
         return (50, primera_orden)
 
     grupos_ordenados = sorted(
