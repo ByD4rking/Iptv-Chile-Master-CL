@@ -197,9 +197,20 @@ def corregir_resoluciones_por_url(lineas):
                 re.I,
             )
             nuevo = nombre_base + (opcion.group(1) if opcion else "")
+        linea_actualizada = extinf
         if nuevo != actual and "," in extinf:
-            salida[i] = extinf.rsplit(",", 1)[0] + "," + nuevo
+            linea_actualizada = extinf.rsplit(",", 1)[0] + "," + nuevo
             corregidos += 1
+        # Mantener tvg-name coherente con la calidad de la señal, sin el sufijo de opción.
+        if re.search(r'\\btvg-name="[^"]*"', linea_actualizada, re.I):
+            linea_actualizada = re.sub(
+                r'\\btvg-name="[^"]*"',
+                f'tvg-name="{nombre_base}"',
+                linea_actualizada,
+                count=1,
+                flags=re.I,
+            )
+        salida[i] = linea_actualizada
     return salida, corregidos
 
 def _base_nombre_para_logo(nombre):
