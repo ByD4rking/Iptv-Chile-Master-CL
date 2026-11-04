@@ -1,0 +1,472 @@
+{
+  "schema_version": 1,
+  "scope": "principal",
+  "checked_at": "2026-11-04T00:01:00.677557+00:00",
+  "sources_configured": 65,
+  "sources_checked": 63,
+  "sources_failed": 2,
+  "changed_sources": 0,
+  "new_sources": 63,
+  "total_added_channels": 0,
+  "total_removed_channels": 0,
+  "total_changed_stream_urls": 0,
+  "total_source_url_changes": 0,
+  "configured_source_url_changes": [],
+  "removed_sources": [],
+  "errors": [
+    {
+      "source": "PRINCIPAL/M3UCL-LATAM",
+      "url": "https://m3u.cl/lista/LATAM.m3u",
+      "error": "ValueError: respuesta no contiene cabecera #EXTM3U"
+    },
+    {
+      "source": "GOD/M3UCL-LATAM",
+      "url": "https://m3u.cl/lista/LATAM.m3u",
+      "error": "ValueError: respuesta no contiene cabecera #EXTM3U"
+    }
+  ],
+  "changes": [
+    {
+      "source": "GOD/DEARBULUT-BEST",
+      "status": "baseline",
+      "channels": 10322,
+      "url": "https://dearbulut.github.io/iptv/playlists/best.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/DEARBULUT-ESPANOL",
+      "status": "baseline",
+      "channels": 2354,
+      "url": "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/DEARBULUT-ONLINE",
+      "status": "baseline",
+      "channels": 8479,
+      "url": "https://dearbulut.github.io/iptv/playlists/online.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/FREE-TV",
+      "status": "baseline",
+      "channels": 2055,
+      "url": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+      "readonly": true
+    },
+    {
+      "source": "GOD/FREECASTHUB-PUBLIC",
+      "status": "baseline",
+      "channels": 108,
+      "url": "https://raw.githubusercontent.com/freecasthub/public-iptv/main/playlist.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/IPTV-ORG-AMER",
+      "status": "baseline",
+      "channels": 4265,
+      "url": "https://iptv-org.github.io/iptv/regions/amer.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/IPTV-ORG-CATEGORIES",
+      "status": "baseline",
+      "channels": 12087,
+      "url": "https://iptv-org.github.io/iptv/index.category.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/IPTV-ORG-COUNTRIES",
+      "status": "baseline",
+      "channels": 12947,
+      "url": "https://iptv-org.github.io/iptv/index.country.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/IPTV-ORG-SERIES",
+      "status": "baseline",
+      "channels": 524,
+      "url": "https://iptv-org.github.io/iptv/categories/series.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/IPTV-ORG-SPA",
+      "status": "baseline",
+      "channels": 2402,
+      "url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/IPTV-ORG-SPORTS",
+      "status": "baseline",
+      "channels": 479,
+      "url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/IPTV-ORG-TOTAL",
+      "status": "baseline",
+      "channels": 11389,
+      "url": "https://iptv-org.github.io/iptv/index.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/IPTV-ORG-US",
+      "status": "baseline",
+      "channels": 1495,
+      "url": "https://iptv-org.github.io/iptv/countries/us.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/JMIGUE-IPTVSV",
+      "status": "baseline",
+      "channels": 1876,
+      "url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-AR",
+      "status": "baseline",
+      "channels": 147,
+      "url": "https://m3u.cl/lista/AR.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-BO",
+      "status": "baseline",
+      "channels": 6,
+      "url": "https://m3u.cl/lista/BO.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-BR",
+      "status": "baseline",
+      "channels": 67,
+      "url": "https://m3u.cl/lista/BR.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-CL",
+      "status": "baseline",
+      "channels": 392,
+      "url": "https://m3u.cl/lista/CL.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-CO",
+      "status": "baseline",
+      "channels": 43,
+      "url": "https://m3u.cl/lista/CO.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-CR",
+      "status": "baseline",
+      "channels": 42,
+      "url": "https://m3u.cl/lista/CR.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-DO",
+      "status": "baseline",
+      "channels": 78,
+      "url": "https://m3u.cl/lista/DO.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-EC",
+      "status": "baseline",
+      "channels": 24,
+      "url": "https://m3u.cl/lista/EC.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-ES",
+      "status": "baseline",
+      "channels": 58,
+      "url": "https://m3u.cl/lista/ES.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-MUSICA",
+      "status": "baseline",
+      "channels": 92,
+      "url": "https://m3u.cl/lista/musica.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-MX",
+      "status": "baseline",
+      "channels": 58,
+      "url": "https://m3u.cl/lista/MX.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-PE",
+      "status": "baseline",
+      "channels": 52,
+      "url": "https://m3u.cl/lista/PE.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-PY",
+      "status": "baseline",
+      "channels": 22,
+      "url": "https://m3u.cl/lista/PY.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-RELIGIOSOS",
+      "status": "baseline",
+      "channels": 91,
+      "url": "https://m3u.cl/lista/religiosos.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-TOP",
+      "status": "baseline",
+      "channels": 194,
+      "url": "https://m3u.cl/lista/top.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-TOTAL",
+      "status": "baseline",
+      "channels": 1091,
+      "url": "https://m3u.cl/lista/total.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-VE",
+      "status": "baseline",
+      "channels": 50,
+      "url": "https://m3u.cl/lista/VE.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/M3UCL-XXX",
+      "status": "baseline",
+      "channels": 27,
+      "url": "https://m3u.cl/lista/XXX.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/PLUTO-AR",
+      "status": "baseline",
+      "channels": 201,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_ar.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/PLUTO-BR",
+      "status": "baseline",
+      "channels": 193,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_br.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/PLUTO-CL",
+      "status": "baseline",
+      "channels": 201,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_cl.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/PLUTO-ES",
+      "status": "baseline",
+      "channels": 153,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/PLUTO-LATAM",
+      "status": "baseline",
+      "channels": 209,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/PLUTO-MX",
+      "status": "baseline",
+      "channels": 206,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "readonly": true
+    },
+    {
+      "source": "GOD/PLUTO-US",
+      "status": "baseline",
+      "channels": 465,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_us.m3u",
+      "readonly": true
+    },
+    {
+      "source": "PRINCIPAL/JMIGUE-IPTVSV",
+      "status": "baseline",
+      "channels": 1876,
+      "url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-AR",
+      "status": "baseline",
+      "channels": 147,
+      "url": "https://m3u.cl/lista/AR.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-BO",
+      "status": "baseline",
+      "channels": 6,
+      "url": "https://m3u.cl/lista/BO.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-BR",
+      "status": "baseline",
+      "channels": 67,
+      "url": "https://m3u.cl/lista/BR.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-CL",
+      "status": "baseline",
+      "channels": 392,
+      "url": "https://m3u.cl/lista/CL.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-CO",
+      "status": "baseline",
+      "channels": 43,
+      "url": "https://m3u.cl/lista/CO.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-CR",
+      "status": "baseline",
+      "channels": 42,
+      "url": "https://m3u.cl/lista/CR.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-DO",
+      "status": "baseline",
+      "channels": 78,
+      "url": "https://m3u.cl/lista/DO.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-EC",
+      "status": "baseline",
+      "channels": 24,
+      "url": "https://m3u.cl/lista/EC.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-ES",
+      "status": "baseline",
+      "channels": 58,
+      "url": "https://m3u.cl/lista/ES.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-MUSICA",
+      "status": "baseline",
+      "channels": 92,
+      "url": "https://m3u.cl/lista/musica.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-MX",
+      "status": "baseline",
+      "channels": 58,
+      "url": "https://m3u.cl/lista/MX.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-PE",
+      "status": "baseline",
+      "channels": 52,
+      "url": "https://m3u.cl/lista/PE.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-PY",
+      "status": "baseline",
+      "channels": 22,
+      "url": "https://m3u.cl/lista/PY.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-RELIGIOSOS",
+      "status": "baseline",
+      "channels": 91,
+      "url": "https://m3u.cl/lista/religiosos.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-TOP",
+      "status": "baseline",
+      "channels": 194,
+      "url": "https://m3u.cl/lista/top.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-TOTAL",
+      "status": "baseline",
+      "channels": 1091,
+      "url": "https://m3u.cl/lista/total.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-VE",
+      "status": "baseline",
+      "channels": 50,
+      "url": "https://m3u.cl/lista/VE.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-XXX",
+      "status": "baseline",
+      "channels": 27,
+      "url": "https://m3u.cl/lista/XXX.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/PLUTO-ES",
+      "status": "baseline",
+      "channels": 153,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_es.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/PLUTO-LATAM",
+      "status": "baseline",
+      "channels": 209,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_latam.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/PLUTO-MX",
+      "status": "baseline",
+      "channels": 206,
+      "url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/refs/heads/main/pluto/output/playlists/pluto_mx.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/RAYDER-MAGMA",
+      "status": "baseline",
+      "channels": 220,
+      "url": "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u",
+      "readonly": false
+    },
+    {
+      "source": "PRINCIPAL/SPECIAL-PLUTO_MX_ALTERNATIVES",
+      "status": "baseline",
+      "channels": 193,
+      "url": "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u",
+      "readonly": false
+    }
+  ],
+  "god_read_only": true
+}
