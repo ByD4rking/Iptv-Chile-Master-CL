@@ -1047,7 +1047,8 @@ class AlternativeGroupingRegressionTests(unittest.TestCase):
         ]
         for normal, hd in cases:
             normal_extinf = f'#EXTINF:-1 tvg-name="{normal}" group-title="Cine",{normal}'
-            hd_extinf = f'#EXTINF:-1 tvg-name="{hd}" group-title="Cine",{hd}'
+            # La fuente puede repetir el tvg-name base aunque el nombre visible sea HD.
+            hd_extinf = f'#EXTINF:-1 tvg-name="{normal}" group-title="Cine",{hd}'
             self.assertNotEqual(
                 _identity({"extinf": normal_extinf, "url": "https://magma.example/normal.m3u8"}),
                 _identity({"extinf": hd_extinf, "url": "https://magma.example/hd.m3u8"}),
