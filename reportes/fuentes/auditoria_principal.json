@@ -1,21 +1,18 @@
 {
   "schema_version": 1,
   "scope": "principal",
-  "checked_at": "2026-11-04T01:50:10.405330+00:00",
+  "checked_at": "2026-11-04T02:43:02.684098+00:00",
   "sources_configured": 63,
   "sources_checked": 61,
   "sources_failed": 2,
-  "changed_sources": 7,
+  "changed_sources": 0,
   "new_sources": 0,
-  "total_added_channels": 29,
-  "total_removed_channels": 37,
-  "total_changed_stream_urls": 11,
+  "total_added_channels": 0,
+  "total_removed_channels": 0,
+  "total_changed_stream_urls": 0,
   "total_source_url_changes": 0,
   "configured_source_url_changes": [],
-  "removed_sources": [
-    "GOD/M3UCL-XXX",
-    "PRINCIPAL/M3UCL-XXX"
-  ],
+  "removed_sources": [],
   "errors": [
     {
       "source": "PRINCIPAL/M3UCL-LATAM",
@@ -141,228 +138,66 @@
     },
     {
       "source": "GOD/IPTV-ORG-AMER",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/regions/amer.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/regions/amer.m3u",
-      "added_channels": 1,
-      "removed_channels": 2,
-      "renamed_channels": 2,
-      "changed_stream_urls": 1,
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "MCMTop.fr@SD"
-        ],
-        "removed": [
-          "FoxSports2.ar@SD",
-          "TheFilmDetective.us@SD"
-        ],
-        "renamed": [
-          {
-            "key": "FoxSports2.us@HD",
-            "before_fingerprint": "dc70f9f536f30451",
-            "after_fingerprint": "0f528c3ad19eddb9"
-          },
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "3e5900a6a1e3eaf6",
-            "after_fingerprint": "88b564c8e60a9c5f"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "56f52ea37af594eb",
-            "after_fingerprint": "0d3dcad00c9291ae"
-          }
-        ],
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-CATEGORIES",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/index.category.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/index.category.m3u",
-      "added_channels": 6,
-      "removed_channels": 10,
-      "renamed_channels": 6,
-      "changed_stream_urls": 3,
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "CineStarActionBulgaria.bg@SD",
-          "MCMTop.fr@SD",
-          "PrimaTV.ro@SD",
-          "TVP1.pl@HD",
-          "TVP2.pl@HD",
-          "Travelxp.in@4KCzechia"
-        ],
-        "removed": [
-          "AntenaPlayEvents.ro@SD",
-          "AsiaExpressNonStop.ro@SD",
-          "FoxSports2.ar@SD",
-          "HalloweenNonStop.ro@SD",
-          "Insulanonstop.ro@SD",
-          "NHBollyGold.in@HD",
-          "NHLAntenaPlay.ro@SD",
-          "StarMovies.in@HD",
-          "TheFilmDetective.us@SD",
-          "V2BEATTV.uk@SD"
-        ],
-        "renamed": [
-          {
-            "key": "FoxSports2.us@HD",
-            "before_fingerprint": "dc70f9f536f30451",
-            "after_fingerprint": "0f528c3ad19eddb9"
-          },
-          {
-            "key": "MCMTop.ru@SD",
-            "before_fingerprint": "1280419229910e19",
-            "after_fingerprint": "8bcf4110008c6cf1"
-          },
-          {
-            "key": "Polsat.pl@SD",
-            "before_fingerprint": "48a019e7740fa9d4",
-            "after_fingerprint": "b4e660ce989be077"
-          },
-          {
-            "key": "PrimaTV.it@SD",
-            "before_fingerprint": "365ee4e9d04c4073",
-            "after_fingerprint": "66f2454730853aba"
-          },
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "3e5900a6a1e3eaf6",
-            "after_fingerprint": "88b564c8e60a9c5f"
-          },
-          {
-            "key": "bTV.bg@SD",
-            "before_fingerprint": "7270d33a68c76963",
-            "after_fingerprint": "f32cfdc645c2a5f3"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "Polsat.pl@SD",
-            "before_fingerprint": "7cc9dc77f59a7a4d",
-            "after_fingerprint": "ebae4dcea38efe01"
-          },
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "56f52ea37af594eb",
-            "after_fingerprint": "0d3dcad00c9291ae"
-          },
-          {
-            "key": "bTV.bg@SD",
-            "before_fingerprint": "01fa73d45d7b4a0c",
-            "after_fingerprint": "c646df63b398077c"
-          }
-        ],
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-COUNTRIES",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/index.country.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/index.country.m3u",
-      "added_channels": 16,
-      "removed_channels": 10,
-      "renamed_channels": 6,
-      "changed_stream_urls": 3,
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "CineStarActionBulgaria.bg@SD",
-          "MCMTop.fr@SD",
-          "MCMTop.fr@SD#2",
-          "MCMTop.fr@SD#3",
-          "MCMTop.fr@SD#4",
-          "MCMTop.fr@SD#5",
-          "MCMTop.fr@SD#6",
-          "MCMTop.fr@SD#7",
-          "PrimaTV.ro@SD",
-          "RadioChisinau.md@SD#2",
-          "RadioChisinau.md@SD#3",
-          "TVP1.pl@HD",
-          "TVP2.pl@HD",
-          "Travelxp.in@4KCzechia",
-          "Travelxp.in@4KCzechia#2",
-          "Travelxp.in@4KCzechia#3"
-        ],
-        "removed": [
-          "AntenaPlayEvents.ro@SD",
-          "AsiaExpressNonStop.ro@SD",
-          "FoxSports2.ar@SD",
-          "HalloweenNonStop.ro@SD",
-          "Insulanonstop.ro@SD",
-          "NHBollyGold.in@HD",
-          "NHLAntenaPlay.ro@SD",
-          "StarMovies.in@HD",
-          "TheFilmDetective.us@SD",
-          "V2BEATTV.uk@SD"
-        ],
-        "renamed": [
-          {
-            "key": "FoxSports2.us@HD",
-            "before_fingerprint": "dc70f9f536f30451",
-            "after_fingerprint": "0f528c3ad19eddb9"
-          },
-          {
-            "key": "MCMTop.ru@SD",
-            "before_fingerprint": "1280419229910e19",
-            "after_fingerprint": "8bcf4110008c6cf1"
-          },
-          {
-            "key": "Polsat.pl@SD",
-            "before_fingerprint": "48a019e7740fa9d4",
-            "after_fingerprint": "b4e660ce989be077"
-          },
-          {
-            "key": "PrimaTV.it@SD",
-            "before_fingerprint": "365ee4e9d04c4073",
-            "after_fingerprint": "66f2454730853aba"
-          },
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "3e5900a6a1e3eaf6",
-            "after_fingerprint": "88b564c8e60a9c5f"
-          },
-          {
-            "key": "bTV.bg@SD",
-            "before_fingerprint": "7270d33a68c76963",
-            "after_fingerprint": "f32cfdc645c2a5f3"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "Polsat.pl@SD",
-            "before_fingerprint": "7cc9dc77f59a7a4d",
-            "after_fingerprint": "ebae4dcea38efe01"
-          },
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "56f52ea37af594eb",
-            "after_fingerprint": "0d3dcad00c9291ae"
-          },
-          {
-            "key": "bTV.bg@SD",
-            "before_fingerprint": "01fa73d45d7b4a0c",
-            "after_fingerprint": "c646df63b398077c"
-          }
-        ],
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
@@ -391,67 +226,43 @@
     },
     {
       "source": "GOD/IPTV-ORG-SPA",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
       "added_channels": 0,
-      "removed_channels": 1,
-      "renamed_channels": 1,
-      "changed_stream_urls": 1,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
         "added": [],
-        "removed": [
-          "FoxSports2.ar@SD"
-        ],
-        "renamed": [
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "3e5900a6a1e3eaf6",
-            "after_fingerprint": "88b564c8e60a9c5f"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "56f52ea37af594eb",
-            "after_fingerprint": "0d3dcad00c9291ae"
-          }
-        ],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-SPORTS",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
       "added_channels": 0,
-      "removed_channels": 3,
-      "renamed_channels": 1,
+      "removed_channels": 0,
+      "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
         "added": [],
-        "removed": [
-          "AntenaPlayEvents.ro@SD",
-          "FoxSports2.ar@SD",
-          "NHLAntenaPlay.ro@SD"
-        ],
-        "renamed": [
-          {
-            "key": "FoxSports2.us@HD",
-            "before_fingerprint": "dc70f9f536f30451",
-            "after_fingerprint": "0f528c3ad19eddb9"
-          }
-        ],
+        "removed": [],
+        "renamed": [],
         "stream_urls": [],
         "categories": []
       },
@@ -459,116 +270,43 @@
     },
     {
       "source": "GOD/IPTV-ORG-TOTAL",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/index.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/index.m3u",
-      "added_channels": 6,
-      "removed_channels": 10,
-      "renamed_channels": 6,
-      "changed_stream_urls": 3,
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "CineStarActionBulgaria.bg@SD",
-          "MCMTop.fr@SD",
-          "PrimaTV.ro@SD",
-          "TVP1.pl@HD",
-          "TVP2.pl@HD",
-          "Travelxp.in@4KCzechia"
-        ],
-        "removed": [
-          "AntenaPlayEvents.ro@SD",
-          "AsiaExpressNonStop.ro@SD",
-          "FoxSports2.ar@SD",
-          "HalloweenNonStop.ro@SD",
-          "Insulanonstop.ro@SD",
-          "NHBollyGold.in@HD",
-          "NHLAntenaPlay.ro@SD",
-          "StarMovies.in@HD",
-          "TheFilmDetective.us@SD",
-          "V2BEATTV.uk@SD"
-        ],
-        "renamed": [
-          {
-            "key": "FoxSports2.us@HD",
-            "before_fingerprint": "dc70f9f536f30451",
-            "after_fingerprint": "0f528c3ad19eddb9"
-          },
-          {
-            "key": "MCMTop.ru@SD",
-            "before_fingerprint": "1280419229910e19",
-            "after_fingerprint": "8bcf4110008c6cf1"
-          },
-          {
-            "key": "Polsat.pl@SD",
-            "before_fingerprint": "48a019e7740fa9d4",
-            "after_fingerprint": "b4e660ce989be077"
-          },
-          {
-            "key": "PrimaTV.it@SD",
-            "before_fingerprint": "365ee4e9d04c4073",
-            "after_fingerprint": "66f2454730853aba"
-          },
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "3e5900a6a1e3eaf6",
-            "after_fingerprint": "88b564c8e60a9c5f"
-          },
-          {
-            "key": "bTV.bg@SD",
-            "before_fingerprint": "7270d33a68c76963",
-            "after_fingerprint": "f32cfdc645c2a5f3"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "Polsat.pl@SD",
-            "before_fingerprint": "7cc9dc77f59a7a4d",
-            "after_fingerprint": "ebae4dcea38efe01"
-          },
-          {
-            "key": "TelevisionTarapoto.pe@SD",
-            "before_fingerprint": "56f52ea37af594eb",
-            "after_fingerprint": "0d3dcad00c9291ae"
-          },
-          {
-            "key": "bTV.bg@SD",
-            "before_fingerprint": "01fa73d45d7b4a0c",
-            "after_fingerprint": "c646df63b398077c"
-          }
-        ],
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-US",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/countries/us.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/countries/us.m3u",
       "added_channels": 0,
-      "removed_channels": 1,
-      "renamed_channels": 1,
+      "removed_channels": 0,
+      "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
         "added": [],
-        "removed": [
-          "TheFilmDetective.us@SD"
-        ],
-        "renamed": [
-          {
-            "key": "FoxSports2.us@HD",
-            "before_fingerprint": "dc70f9f536f30451",
-            "after_fingerprint": "0f528c3ad19eddb9"
-          }
-        ],
+        "removed": [],
+        "renamed": [],
         "stream_urls": [],
         "categories": []
       },
