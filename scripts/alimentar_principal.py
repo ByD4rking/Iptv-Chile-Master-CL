@@ -127,6 +127,81 @@ def determinar_categoria_fear_factor(categorias):
         raise RuntimeError("La categoría Competencia no existe; Fear Factor no se insertará en otra carpeta.")
     return destino
 
+# Correcciones de resolución respaldadas por coincidencia exacta de URL con la M3U de referencia.
+# Solo cambia el nombre de presentación; nunca modifica URL, categoría ni logos.
+NOMBRES_RESOLUCION_POR_URL = {
+    "https://nosignal1.antenaplay.ro/hls/fightbox-hd/index.m3u8": "FightBox HD",
+    "http://181.78.79.131:8000/play/a0tj": "Cartoon Network HD",
+    "http://190.108.83.69:8000/play/a08g/index.m3u8": "Cartoon Network HD",
+    "http://186.148.182.83:8000/play/a09z/index.m3u8": "Cartoon Network SD",
+    "http://186.33.26.18:8000/play/a0sv/index.m3u8": "Cartoonito SD",
+    "http://181.224.255.210:8001/play/a0pv/index.m3u8?hls": "Discovery Kids SD",
+    "http://186.148.196.100:8000/play/a00s": "Discovery Kids SD",
+    "http://181.143.237.211:85/tsfile/live/1066_1.m3u8?key=txiptv&playlive=1&authid=0": "Discovery Kids SD",
+    "http://205.235.6.29:8000/play/a0zp/index.m3u8?hls": "Disney Channel HD",
+    "http://181.224.255.210:8001/play/a0oe/index.m3u8?hls": "Disney Channel HD",
+    "http://181.225.190.242:8000/play/a01e": "Disney Channel HD",
+    "http://45.186.254.75:8000/play/a0ck/index.m3u8": "Disney Channel HD",
+    "http://181.143.237.211:85/tsfile/live/1063_1.m3u8?key=txiptv&playlive=1&authid=0": "Disney Channel SD",
+    "http://181.224.255.210:8001/play/a0ny/index.m3u8?hls": "Disney Jr SD",
+    "http://205.235.6.29:8000/play/a0zj/index.m3u8?hls": "Disney Jr SD",
+    "http://181.224.255.210:8001/play/a0fm/index.m3u8?hls": "Nickelodeon HD",
+    "http://181.224.255.210:8001/play/a0ol/index.m3u8?hls": "Nickelodeon HD",
+    "http://181.224.200.5:2277/play/a0bm/index.m3u8": "Nickelodeon HD",
+    "http://186.33.26.18:8000/play/a0qv/index.m3u8": "Nickelodeon HD",
+    "http://181.143.237.211:85/tsfile/live/1071_1.m3u8?key=txiptv&playlive=1&authid=0": "Nickelodeon SD",
+    "http://179.60.224.196:8000/play/a0ey/index.m3u8": "Discovery Home & Health SD",
+    "http://45.5.117.99:8000/play/a049/index.m3u8": "Discovery Channel SD",
+    "http://181.79.86.130:8000/play/a042/index.m3u8": "Discovery Turbo SD",
+    "http://181.119.177.253:8000/play/a04k/index.m3u8": "Discovery Turbo SD",
+    "http://186.33.47.113:8000/play/a08d/index.m3u8": "History Channel SD",
+    "http://201.174.175.3:8000/play/a0ra/index.m3u8?hls": "History Channel SD",
+    "http://45.167.2.101:8000/play/a0ny/index.m3u8": "History Channel SD",
+    "http://181.224.200.5:2277/play/5684/index.m3u8": "Nat Geo SD",
+    "http://179.60.224.196:8000/play/a0f3/index.m3u8": "TLC SD",
+    "http://45.186.106.207:8000/play/a01n/index.m3u8": "A&E SD",
+    "http://181.143.237.211:85/tsfile/live/1049_1.m3u8?key=txiptv&playlive=1&authid=0": "A&E SD",
+    "http://181.119.177.253:8000/play/a04y/index.m3u8": "ESPN 5 SD",
+    "http://186.33.0.57:8000/play/a069/index.m3u8": "FOX ESA HD",
+    "http://tv.m3uts.xyz/stream/secure/KtMxQzuk/464.m3u8": "FOX Sports Premium HD",
+    "http://190.217.66.92:8000/play/a0fh/index.m3u8u?hls": "Win Sports SD",
+    "http://200.59.191.177:8000/play/a0p2/index.m3u8?hls": "ESPN 7 HD",
+}
+
+def corregir_resoluciones_por_url(lineas):
+    """Aplica HD/SD solo cuando la URL coincide exactamente con la M3U de referencia."""
+    salida = list(lineas)
+    corregidos = 0
+    for i, extinf in enumerate(salida):
+        if not extinf.startswith("#EXTINF"):
+            continue
+        j = i + 1
+        while j < len(salida) and not salida[j].startswith("#EXTINF"):
+            if url_es_valida(salida[j].strip()):
+                break
+            j += 1
+        if j >= len(salida) or not url_es_valida(salida[j].strip()):
+            continue
+        nombre_base = NOMBRES_RESOLUCION_POR_URL.get(salida[j].strip())
+        if not nombre_base:
+            continue
+        actual = extraer_nombre(extinf)
+        # FightBox HD es una señal distinta, no una alternativa numerada.
+        if nombre_base == "FightBox HD":
+            nuevo = nombre_base
+        else:
+            opcion = re.search(
+                r"(\\s*(?:\\[\\s*(?:opci[oó]n|opc\\.?)\\s*\\d+\\s*\\]|"
+                r"\\(\\s*(?:opci[oó]n|opc\\.?)\\s*\\d+\\s*\\))\\s*$)",
+                actual,
+                re.I,
+            )
+            nuevo = nombre_base + (opcion.group(1) if opcion else "")
+        if nuevo != actual and "," in extinf:
+            salida[i] = extinf.rsplit(",", 1)[0] + "," + nuevo
+            corregidos += 1
+    return salida, corregidos
+
 def url_es_valida(url):
     return bool(re.match(r"^https?://", url.strip(), re.I))
 
@@ -4116,6 +4191,8 @@ def main():
 
     # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+    lineas, resoluciones_corregidas = corregir_resoluciones_por_url(lineas)
+    print(f"Resoluciones SD/HD corregidas por URL exacta: {resoluciones_corregidas}")
     validar_orden_canales(
         lineas_iniciales,
         lineas,
