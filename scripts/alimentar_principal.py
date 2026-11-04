@@ -3582,6 +3582,9 @@ def main():
         errors="replace",
     ).splitlines()
     lineas_iniciales = list(lineas)
+    # Normalizar también la referencia de orden con las resoluciones verificadas por URL.
+    lineas, _ = corregir_resoluciones_por_url(lineas)
+    lineas_iniciales, _ = corregir_resoluciones_por_url(lineas_iniciales)
 
     total_inicial = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
