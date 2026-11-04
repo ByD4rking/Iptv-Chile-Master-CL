@@ -4064,6 +4064,9 @@ def main():
             "Entretenimiento / Cine / Series",
             "Infantiles",
             "Anime",
+            # España recibe canales reclasificados desde Anime; la restauración
+            # conserva el orden de URLs, pero su validación por nombre es ambigua.
+            "España",
         },
         ids_pluto_omitidos=ids_pluto_orden_protegidos,
     )
