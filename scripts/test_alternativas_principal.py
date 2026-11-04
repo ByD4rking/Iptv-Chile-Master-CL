@@ -368,6 +368,7 @@ class TestAlternativasPrincipal(unittest.TestCase):
         lines += block("", "Anime", "Beyblade (España)", "https://example.test/beyblade-es.m3u8")
         lines += block("", "Anime", "Anime Vision Classics (España)[Opc.1]", "https://example.test/animevision-es.m3u8")
         lines += block("", "Anime", "Dragon Ball LATAM", "https://example.test/dragon-latam.m3u8")
+        lines += block("", "España", "Canal España", "https://example.test/espana.m3u8")
         output = ap.aplicar_ajustes_referencia(lines, set())
         parsed = self.entries(output)
         spanish_names = [item[0].split(",", 1)[1] for item in parsed if 'group-title="España"' in item[0]]
@@ -404,6 +405,61 @@ class TestAlternativasPrincipal(unittest.TestCase):
         ]
         self.assertEqual(positions, list(range(positions[0], positions[0] + len(positions))))
 
+
+    def test_exact_url_restores_source_display_name_without_tvg_id(self):
+        url = "https://cine.example/cine-marvel-hd.m3u8"
+        lines = ["#EXTM3U"] + block("", "Cine / Películas", "Cine Marvel [Opción 2]", url)
+        source = {
+            "extinf": "#EXTINF:-1 tvg-name=\"Cine Marvel HD\" group-title=\"Cine / Películas\",Cine Marvel HD",
+            "nombre": "Cine Marvel HD",
+            "categoria": "Cine / Películas",
+            "url": url,
+            "extras": [],
+        }
+        output, stats = ap.sincronizar_enlaces_existentes(lines, [(source, "Cine / Películas")])
+        extinf = next(line for line in output if line.startswith("#EXTINF"))
+        self.assertEqual(ap.extraer_nombre(extinf), "Cine Marvel HD")
+        self.assertIn("tvg-name=\"Cine Marvel HD\"", extinf)
+        self.assertEqual(stats["nombres_actualizados"], 1)
+        regrouped = ap.agrupar_alternativas_por_identidad(output)
+        names = [ap.extraer_nombre(line) for line in regrouped if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["Cine Marvel HD"])
+
+    def test_exact_url_does_not_overwrite_non_resolution_option_label(self):
+        url = "https://sports.example/espn2.m3u8"
+        lines = ["#EXTM3U"] + block("", "Deportes", "ESPN2 [Opción 2]", url)
+        source = {
+            "extinf": "#EXTINF:-1 group-title=\"Deportes\",ESPN2",
+            "nombre": "ESPN2",
+            "categoria": "Deportes",
+            "url": url,
+            "extras": [],
+        }
+        output, _ = ap.sincronizar_enlaces_existentes(lines, [(source, "Deportes")])
+        extinf = next(line for line in output if line.startswith("#EXTINF"))
+        self.assertEqual(ap.extraer_nombre(extinf), "ESPN2 [Opción 2]")
+
+    def test_fear_factor_selection_only_exact_name_and_valid_url(self):
+        channels = [
+            {"nombre": "Fear Factor Latino", "url": "https://source.example/other.m3u8", "extinf": '#EXTINF:-1 group-title="Series",Fear Factor Latino'},
+            {"nombre": "Fear Factor", "url": "https://source.example/fear-factor.m3u8", "extinf": '#EXTINF:-1 tvg-logo="https://logo.example/fear-factor.png" group-title="Series",Fear Factor'},
+        ]
+        selected = ap.seleccionar_canal_fear_factor(channels)
+        self.assertEqual(selected["nombre"], "Fear Factor")
+        self.assertEqual(selected["url"], "https://source.example/fear-factor.m3u8")
+
+    def test_restore_order_prefers_exact_url_when_tvg_id_or_name_changes(self):
+        before = ["#EXTM3U"] + (
+            block("", "España", "12TV Alicante", "https://order.example/12tv.m3u8")
+            + block("beyblade-old", "España", "Beyblade España", "https://order.example/beyblade.m3u8")
+        )
+        after = ["#EXTM3U"] + (
+            block("beyblade-new", "España", "Beyblade", "https://order.example/beyblade.m3u8")
+            + block("", "España", "12TV Alicante", "https://order.example/12tv.m3u8")
+        )
+        restored = ap.restaurar_orden_original_por_categoria(after, before)
+        names = [ap.extraer_nombre(line) for line in restored if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["12TV Alicante", "Beyblade"])
 
 if __name__ == "__main__":
     unittest.main()

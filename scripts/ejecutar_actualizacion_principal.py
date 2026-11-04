@@ -75,6 +75,8 @@ def main():
             "Infantiles",
             "Anime",
             "CHILE TV",
+            # España recibe reclasificaciones regionales desde Anime.
+            "España",
         },
     )
 
@@ -134,6 +136,8 @@ def main():
             "Entretenimiento / Cine / Series",
             "Infantiles",
             "Anime",
+            # España recibe reclasificaciones regionales desde Anime.
+            "España",
         },
         ids_pluto_omitidos=ids_pluto_orden,
     )

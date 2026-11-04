@@ -204,6 +204,11 @@ def identity_key(item: dict, name_to_ids: dict[str, set[str]]) -> str:
     if len(mapped_ids) == 1:
         return "id:" + next(iter(mapped_ids))
     if len(mapped_ids) > 1 and name_key:
+        # El mismo nombre puede representar SD/HD con IDs distintos. Si la
+        # URL coincide, conservar esa identidad evita falsos cambios de orden.
+        url = str(item.get("url") or "").strip()
+        if url:
+            return "url:" + url
         return "name:" + name_key
     if valid_id:
         return "id:" + valid_id
@@ -476,6 +481,8 @@ def main(args: argparse.Namespace) -> None:
             norm("Entretenimiento / Cine / Series"),
             norm("Infantiles"),
             norm("Anime"),
+            # España recibe reclasificaciones regionales; se audita integridad global, no orden nominal.
+            norm("España"),
         }:
             continue
         after_keys = after_by_category.get(category, [])
