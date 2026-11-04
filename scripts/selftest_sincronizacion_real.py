@@ -96,7 +96,7 @@ def parse_entries(path: Path) -> list[dict]:
         full_name = norm(tvg_name_raw + " " + display_raw)
         is_spanish_country = (
             country_value in {"es", "espana", "spain"}
-            or bool(re.search(r"\\b(?:españa|spain)\\b", full_name))
+            or bool(re.search(r"\b(?:espana|españa|spain)\b", full_name))
         )
         is_pitufos = channel_name_key(tvg_name_raw).startswith("lospitufos") or channel_name_key(display_raw).startswith("lospitufos")
         # La etiqueta España/Español no convierte por sí sola una señal en
