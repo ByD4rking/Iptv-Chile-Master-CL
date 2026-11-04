@@ -2831,7 +2831,7 @@ def aplicar_ajustes_referencia(lineas, ids_pluto_es_anime=None):
         country_match = re.search(r'tvg-country="([^"]*)"', bloque[0], re.I)
         country_value = normalizar(country_match.group(1)) if country_match else ""
         es_canal_de_espana = (
-            bool(re.search(r"\\b(?:españa|spain)\\b", nombre_completo))
+            bool(re.search(r"\b(?:espana|españa|spain)\b", nombre_completo))
             or country_value in {"es", "espana", "spain"}
         )
         if categoria == "anime" and es_canal_de_espana:
