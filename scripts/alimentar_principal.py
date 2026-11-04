@@ -202,9 +202,9 @@ def corregir_resoluciones_por_url(lineas):
             linea_actualizada = extinf.rsplit(",", 1)[0] + "," + nuevo
             corregidos += 1
         # Mantener tvg-name coherente con la calidad de la señal, sin el sufijo de opción.
-        if re.search(r'\\btvg-name="[^"]*"', linea_actualizada, re.I):
+        if re.search(r'\btvg-name="[^"]*"', linea_actualizada, re.I):
             linea_actualizada = re.sub(
-                r'\\btvg-name="[^"]*"',
+                r'\btvg-name="[^"]*"',
                 f'tvg-name="{nombre_base}"',
                 linea_actualizada,
                 count=1,
