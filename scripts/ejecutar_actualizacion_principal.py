@@ -125,6 +125,8 @@ def main():
         pluto_por_id,
         pluto_por_nombre,
     )
+    # Último blindaje de orden: España y todos los países deben quedar al final.
+    ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
     ids_pluto_orden = (
         alimentador.obtener_ids_pluto_existentes(original_lines)
         | alimentador.obtener_ids_pluto_existentes(ordered_lines)
