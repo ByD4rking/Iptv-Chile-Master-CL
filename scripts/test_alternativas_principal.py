@@ -343,6 +343,19 @@ class TestAlternativasPrincipal(unittest.TestCase):
         categories = ["Anime", "España"]
         self.assertEqual(ap.determinar_destino("Anime", "Canal Anime", "espana", categories), "España")
         self.assertEqual(ap.destino_especial_total_otros("Anime España", "TOTAL", categories), "España")
+
+    def test_spanish_country_channels_are_moved_out_of_anime(self):
+        lines = ["#EXTM3U"]
+        lines += block("", "Anime", "Beyblade (España)", "https://example.test/beyblade-es.m3u8")
+        lines += block("", "Anime", "Anime Vision Classics (España)[Opc.1]", "https://example.test/animevision-es.m3u8")
+        lines += block("", "Anime", "Dragon Ball LATAM", "https://example.test/dragon-latam.m3u8")
+        output = ap.aplicar_ajustes_referencia(lines, set())
+        parsed = self.entries(output)
+        spanish_names = [item[0].split(",", 1)[1] for item in parsed if 'group-title="España"' in item[0]]
+        anime_names = [item[0].split(",", 1)[1] for item in parsed if 'group-title="Anime"' in item[0]]
+        self.assertIn("Beyblade (España)", spanish_names)
+        self.assertIn("Anime Vision Classics (España)[Opc.1]", spanish_names)
+        self.assertIn("Dragon Ball LATAM", anime_names)
     def test_parenthetical_opc_suffix_is_preserved_as_variant_name(self):
         self.assertEqual(sc._without_option_suffix("Cartoonito HD (Opc.3)"), "Cartoonito HD (Opc.3)")
         self.assertEqual(ap.normalizar_nombre_canal("Cartoonito HD (Opc.3)"),
