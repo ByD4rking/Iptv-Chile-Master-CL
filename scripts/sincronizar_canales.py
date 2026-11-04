@@ -42,12 +42,16 @@ def sincronizar_enlaces_existentes(
 
     sources_by_id: dict[str, list[dict]] = defaultdict(list)
     sources_by_name: dict[tuple[str, str], list[dict]] = defaultdict(list)
+    sources_by_url: dict[str, list[dict]] = defaultdict(list)
     for canal, destino in canales_destinados:
         item = {"canal": canal, "destino": destino}
         cid = source_id(canal)
         name = source_name(canal)
         if cid:
             sources_by_id[cid].append(item)
+        url = str(canal.get("url") or "").strip()
+        if url:
+            sources_by_url[url].append(item)
         if name and destino:
             sources_by_name[(normalizar(destino), name)].append(item)
 
@@ -91,8 +95,15 @@ def sincronizar_enlaces_existentes(
     for block in blocks:
         candidate = None
         same_id = False
+        same_url = False
 
-        if block["id"]:
+        # La URL exacta prevalece cuando cambia el nombre visible o falta tvg-id.
+        url_candidates = sources_by_url.get(block["url"], [])
+        if len(url_candidates) == 1:
+            candidate = url_candidates[0]
+            same_url = True
+
+        if candidate is None and block["id"]:
             candidates = sources_by_id.get(block["id"], [])
             unique_urls = {
                 str(item["canal"].get("url") or "").strip()
@@ -133,34 +144,49 @@ def sincronizar_enlaces_existentes(
             url_counts[new_url] += 1
             stats["urls_actualizadas"] += 1
 
-        if same_id:
+        if same_id or same_url:
             new_display_name = source_display_name(canal)
             current_extinf = lineas[block["extinf_index"]]
             current_name = extraer_nombre(current_extinf)
-            if new_display_name and normalizar(new_display_name) != normalizar(current_name):
+            actualizar_nombre = same_id
+            if same_url and not same_id and new_display_name:
+                # Por URL exacta solo reparamos una etiqueta de resolución perdida
+                # (HD/SD/FHD/UHD); no renombramos masivamente canales homónimos.
+                current_base = re.sub(r"\s*\[(?:opc(?:ión)?\.?\s*\d+|v\d+)\]$", "", current_name, flags=re.I).strip()
+                source_resolution = re.search(r"\s+(?:HD|SD|FHD|UHD)$", new_display_name, re.I)
+                source_base = re.sub(r"\s+(?:HD|SD|FHD|UHD)$", "", new_display_name, flags=re.I).strip()
+                current_base = re.sub(r"\s+(?:HD|SD|FHD|UHD)$", "", current_base, flags=re.I).strip()
+                actualizar_nombre = bool(source_resolution and normalizar(source_base) == normalizar(current_base))
+            if actualizar_nombre and new_display_name and normalizar(new_display_name) != normalizar(current_name):
                 option_suffix = re.search(
                     r"(\s*\[(?:opc(?:ión)?\.?\s*\d+|v\d+)\])$",
                     current_name,
                     re.I,
                 )
                 display = new_display_name
-                if option_suffix and option_suffix.group(1).lower() not in display.lower():
+                if same_id and not same_url and option_suffix and option_suffix.group(1).lower() not in display.lower():
                     display += option_suffix.group(1)
                 if "," in current_extinf:
                     current_extinf = current_extinf.rsplit(",", 1)[0] + "," + display
                 source_tvg_name = re.search(
-                    r'tvg-name="([^"]*)"',
+                    "tvg-name=\"([^\"]*)\"",
                     str(canal.get("extinf") or ""),
                     re.I,
                 )
-                if source_tvg_name:
-                    current_extinf = re.sub(
-                        r'tvg-name="[^"]*"',
-                        lambda _: f'tvg-name="{source_tvg_name.group(1)}"',
-                        current_extinf,
-                        count=1,
-                        flags=re.I,
-                    )
+                tvg_name_value = source_tvg_name.group(1) if source_tvg_name else (new_display_name if same_url else "")
+                if tvg_name_value:
+                    if re.search("tvg-name=\"[^\"]*\"", current_extinf, re.I):
+                        current_extinf = re.sub(
+                            "tvg-name=\"[^\"]*\"",
+                            "tvg-name=\"" + tvg_name_value + "\"",
+                            current_extinf,
+                            count=1,
+                            flags=re.I,
+                        )
+                    else:
+                        comma = current_extinf.find(",")
+                        if comma >= 0:
+                            current_extinf = current_extinf[:comma].rstrip() + " tvg-name=\"" + tvg_name_value + "\"" + current_extinf[comma:]
                 lineas[block["extinf_index"]] = current_extinf
                 stats["nombres_actualizados"] += 1
 
