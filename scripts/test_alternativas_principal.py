@@ -458,6 +458,23 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertIn('tvg-logo="https://logo.example/fightbox-sd.png"', parsed[0][0])
         self.assertIn('tvg-logo="https://logo.example/fightbox-hd.png"', parsed[1][0])
 
+    def test_resolution_overrides_follow_exact_reference_urls(self):
+        lines = ["#EXTM3U"]
+        lines += block("", "Deportes", "FightBox [Opción 2]", "https://nosignal1.antenaplay.ro/hls/fightbox-hd/index.m3u8")
+        lines += block("", "Infantiles", "Disney Channel [Opción 2]", "http://205.235.6.29:8000/play/a0zp/index.m3u8?hls")
+        lines += block("", "Documentales y Cultura", "Discovery Channel HD [Opción 3]", "http://45.5.117.99:8000/play/a049/index.m3u8")
+        lines += block("", "Deportes", "Win Sports HD [Opción 2]", "http://190.217.66.92:8000/play/a0fh/index.m3u8u?hls")
+        output, changed = ap.corregir_resoluciones_por_url(lines)
+        parsed = self.entries(output)
+        names = [ap.extraer_nombre(item[0]) for item in parsed]
+        self.assertEqual(names, [
+            "FightBox HD",
+            "Disney Channel HD [Opción 2]",
+            "Discovery Channel SD [Opción 3]",
+            "Win Sports SD [Opción 2]",
+        ])
+        self.assertEqual(changed, 4)
+
     def test_fear_factor_selection_only_exact_name_and_valid_url(self):
         channels = [
             {"nombre": "Fear Factor Latino", "url": "https://source.example/other.m3u8", "extinf": '#EXTINF:-1 group-title="Series",Fear Factor Latino'},
