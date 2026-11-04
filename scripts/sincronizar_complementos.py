@@ -179,7 +179,7 @@ def _canonical_channel_name(channel: dict) -> str:
     )
     value = re.sub(
         r"\s*(?:[-–—|•]\s*)?(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?|"
-        r"espanol|españa|spanish|hd|sd|fhd|uhd)$",
+        r")$",
         "",
         value,
         flags=re.I,
@@ -232,7 +232,7 @@ def _clean_channel_display(value: str) -> str:
     )
     value = re.sub(
         r"\s*(?:[-–—|•]\s*)?(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?|"
-        r"espanol|españa|spanish)$",
+        r")$",
         "",
         value,
         flags=re.I,
