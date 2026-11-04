@@ -1028,6 +1028,19 @@ class AlternativeGroupingRegressionTests(unittest.TestCase):
         names = [ap.extraer_nombre(line) for line in output if line.startswith("#EXTINF")]
         self.assertEqual(names, ["Cine Marvel", "Cine Marvel HD"])
 
+    def test_magma_resolution_names_keep_distinct_sync_identity(self):
+        cases = [
+            ("Cine Marvel", "Cine Marvel HD"),
+            ("Cine Romance", "Cine Romance HD"),
+        ]
+        for normal, hd in cases:
+            normal_extinf = f'#EXTINF:-1 tvg-name="{normal}" group-title="Cine",{normal}'
+            hd_extinf = f'#EXTINF:-1 tvg-name="{hd}" group-title="Cine",{hd}'
+            self.assertNotEqual(
+                _identity({"extinf": normal_extinf, "url": "https://magma.example/normal.m3u8"}),
+                _identity({"extinf": hd_extinf, "url": "https://magma.example/hd.m3u8"}),
+            )
+
     def test_visible_resolution_wins_over_stale_tvg_name(self):
         lines = [
             "#EXTM3U",
