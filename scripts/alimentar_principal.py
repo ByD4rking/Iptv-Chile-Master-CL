@@ -119,6 +119,252 @@ def seleccionar_canal_fear_factor(canales):
         and url_es_valida(canal.get("url", ""))
     ), None)
 
+
+def determinar_categoria_fear_factor(categorias):
+    """Fear Factor pertenece exclusivamente a la carpeta Competencia."""
+    destino = buscar_categoria_existente("Competencia", categorias)
+    if not destino:
+        raise RuntimeError("La categoría Competencia no existe; Fear Factor no se insertará en otra carpeta.")
+    return destino
+
+# Correcciones de resolución respaldadas por coincidencia exacta de URL con la M3U de referencia.
+# Solo cambia el nombre de presentación; nunca modifica URL, categoría ni logos.
+NOMBRES_RESOLUCION_POR_URL = {
+    "https://nosignal1.antenaplay.ro/hls/fightbox-hd/index.m3u8": "FightBox HD",
+    "http://181.78.79.131:8000/play/a0tj": "Cartoon Network HD",
+    "http://190.108.83.69:8000/play/a08g/index.m3u8": "Cartoon Network HD",
+    "http://186.148.182.83:8000/play/a09z/index.m3u8": "Cartoon Network SD",
+    "http://181.224.255.210:8001/play/a0py/index.m3u8?hls": "Cartoon Network SD",
+    "http://181.78.211.244:8000/play/a08i/index.m3u8": "Discovery Channel SD",
+    "http://186.148.196.100:8000/play/a00r": "Discovery Turbo SD",
+    "http://45.5.118.152:8000/play/a01w/index.m3u8": "Nat Geo SD",
+    "http://186.148.196.100:8000/play/a00p": "TLC SD",
+    "http://186.33.26.18:8000/play/a0sv/index.m3u8": "Cartoonito SD",
+    "http://181.224.255.210:8001/play/a0pv/index.m3u8?hls": "Discovery Kids SD",
+    "http://186.148.196.100:8000/play/a00s": "Discovery Kids SD",
+    "http://181.143.237.211:85/tsfile/live/1066_1.m3u8?key=txiptv&playlive=1&authid=0": "Discovery Kids SD",
+    "http://205.235.6.29:8000/play/a0zp/index.m3u8?hls": "Disney Channel HD",
+    "http://181.224.255.210:8001/play/a0oe/index.m3u8?hls": "Disney Channel HD",
+    "http://181.225.190.242:8000/play/a01e": "Disney Channel HD",
+    "http://45.186.254.75:8000/play/a0ck/index.m3u8": "Disney Channel HD",
+    "http://181.143.237.211:85/tsfile/live/1063_1.m3u8?key=txiptv&playlive=1&authid=0": "Disney Channel SD",
+    "http://181.224.255.210:8001/play/a0ny/index.m3u8?hls": "Disney Jr SD",
+    "http://205.235.6.29:8000/play/a0zj/index.m3u8?hls": "Disney Jr SD",
+    "http://181.224.255.210:8001/play/a0fm/index.m3u8?hls": "Nickelodeon HD",
+    "http://181.224.255.210:8001/play/a0ol/index.m3u8?hls": "Nickelodeon HD",
+    "http://181.224.200.5:2277/play/a0bm/index.m3u8": "Nickelodeon HD",
+    "http://186.33.26.18:8000/play/a0qv/index.m3u8": "Nickelodeon HD",
+    "http://181.143.237.211:85/tsfile/live/1071_1.m3u8?key=txiptv&playlive=1&authid=0": "Nickelodeon SD",
+    "http://179.60.224.196:8000/play/a0ey/index.m3u8": "Discovery Home & Health SD",
+    "http://45.5.117.99:8000/play/a049/index.m3u8": "Discovery Channel SD",
+    "http://181.79.86.130:8000/play/a042/index.m3u8": "Discovery Turbo SD",
+    "http://181.119.177.253:8000/play/a04k/index.m3u8": "Discovery Turbo SD",
+    "http://186.33.47.113:8000/play/a08d/index.m3u8": "History Channel SD",
+    "http://201.174.175.3:8000/play/a0ra/index.m3u8?hls": "History Channel SD",
+    "http://45.167.2.101:8000/play/a0ny/index.m3u8": "History Channel SD",
+    "http://181.224.200.5:2277/play/5684/index.m3u8": "Nat Geo SD",
+    "http://179.60.224.196:8000/play/a0f3/index.m3u8": "TLC SD",
+    "http://45.186.106.207:8000/play/a01n/index.m3u8": "A&E SD",
+    "http://181.143.237.211:85/tsfile/live/1049_1.m3u8?key=txiptv&playlive=1&authid=0": "A&E SD",
+    "http://181.119.177.253:8000/play/a04y/index.m3u8": "ESPN 5 SD",
+    "http://186.33.0.57:8000/play/a069/index.m3u8": "FOX ESA HD",
+    "http://tv.m3uts.xyz/stream/secure/KtMxQzuk/464.m3u8": "FOX Sports Premium HD",
+    "http://190.217.66.92:8000/play/a0fh/index.m3u8u?hls": "Win Sports SD",
+    "http://200.59.191.177:8000/play/a0p2/index.m3u8?hls": "ESPN 7 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1106.m3u8": "ESPN 7 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/247.m3u8": "Discovery Channel HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/274.m3u8": "Discovery Turbo HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/558.m3u8": "History Channel HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/703.m3u8": "Nat Geo HD",
+    "http://181.225.190.242:8000/play/a03e": "TLC HD",
+    "http://181.225.190.242:8000/play/a03r": "Win Sports HD",
+    "http://181.225.190.242:8000/play/a01f": "Disney Jr HD",
+    "http://181.78.8.199:8000/play/a071/index.m3u8": "Discovery Home & Health HD",
+    "http://45.228.234.62:8000/play/a032/index.m3u8": "A&E HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1104.m3u8": "ESPN 5 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1105.m3u8": "ESPN 6 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/386.m3u8": "ESPN 3 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/375.m3u8": "ESPN 2 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/400.m3u8": "ESPN HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/463.m3u8": "FOX Sports Premium HD",
+    "http://186.148.184.22:8000/play/a0l3/index.m3u8": "Discovery Kids HD",
+    "http://190.61.101.11:7050/play/a08d/index.m3u8?hls": "Cartoonito HD",
+}
+
+TVG_NAMES_POR_URL = {
+    "https://nosignal1.antenaplay.ro/hls/fightbox-hd/index.m3u8": "FightBox",
+    "http://181.78.79.131:8000/play/a0tj": "Cartoon Network",
+    "http://190.108.83.69:8000/play/a08g/index.m3u8": "Cartoon Network",
+    "http://186.148.182.83:8000/play/a09z/index.m3u8": "Cartoon Network",
+    "http://181.224.255.210:8001/play/a0py/index.m3u8?hls": "Cartoon Network SD",
+    "http://186.33.26.18:8000/play/a0sv/index.m3u8": "Cartoonito",
+    "http://181.224.255.210:8001/play/a0pv/index.m3u8?hls": "Discovery Kids",
+    "http://186.148.196.100:8000/play/a00s": "Discovery Kids",
+    "http://181.143.237.211:85/tsfile/live/1066_1.m3u8?key=txiptv&playlive=1&authid=0": "Discovery Kids",
+    "http://186.148.184.22:8000/play/a0l3/index.m3u8": "Discovery Kids HD",
+    "http://205.235.6.29:8000/play/a0zp/index.m3u8?hls": "Disney Channel",
+    "http://181.224.255.210:8001/play/a0oe/index.m3u8?hls": "Disney Channel",
+    "http://181.225.190.242:8000/play/a01e": "Disney Channel",
+    "http://45.186.254.75:8000/play/a0ck/index.m3u8": "Disney Channel",
+    "http://181.143.237.211:85/tsfile/live/1063_1.m3u8?key=txiptv&playlive=1&authid=0": "Disney Channel",
+    "http://181.225.190.242:8000/play/a01f": "Disney Jr HD",
+    "http://181.224.255.210:8001/play/a0ny/index.m3u8?hls": "Disney Jr HD",
+    "http://205.235.6.29:8000/play/a0zj/index.m3u8?hls": "Disney Jr HD",
+    "http://181.224.255.210:8001/play/a0fm/index.m3u8?hls": "Nickelodeon",
+    "http://181.224.255.210:8001/play/a0ol/index.m3u8?hls": "Nickelodeon",
+    "http://181.224.200.5:2277/play/a0bm/index.m3u8": "Nickelodeon",
+    "http://186.33.26.18:8000/play/a0qv/index.m3u8": "Nickelodeon",
+    "http://181.143.237.211:85/tsfile/live/1071_1.m3u8?key=txiptv&playlive=1&authid=0": "Nickelodeon",
+    "http://190.61.101.11:7050/play/a08d/index.m3u8?hls": "",
+    "http://45.228.234.62:8000/play/a032/index.m3u8": "A&E HD",
+    "http://45.186.106.207:8000/play/a01n/index.m3u8": "A&E HD",
+    "http://181.143.237.211:85/tsfile/live/1049_1.m3u8?key=txiptv&playlive=1&authid=0": "A&E HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/247.m3u8": "Discovery Channel HD",
+    "http://45.5.117.99:8000/play/a049/index.m3u8": "Discovery Channel HD",
+    "http://181.78.211.244:8000/play/a08i/index.m3u8": "Discovery Channel SD",
+    "http://181.78.8.199:8000/play/a071/index.m3u8": "Discovery Home & Health HD",
+    "http://179.60.224.196:8000/play/a0ey/index.m3u8": "Discovery Home & Health HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/274.m3u8": "Discovery Turbo HD",
+    "http://181.79.86.130:8000/play/a042/index.m3u8": "Discovery Turbo HD",
+    "http://181.119.177.253:8000/play/a04k/index.m3u8": "Discovery Turbo HD",
+    "http://186.148.196.100:8000/play/a00r": "Discovery Turbo SD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/558.m3u8": "History Channel HD",
+    "http://186.33.47.113:8000/play/a08d/index.m3u8": "History Channel HD",
+    "http://201.174.175.3:8000/play/a0ra/index.m3u8?hls": "History Channel HD",
+    "http://45.167.2.101:8000/play/a0ny/index.m3u8": "History Channel HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/703.m3u8": "Nat Geo HD",
+    "http://181.224.200.5:2277/play/5684/index.m3u8": "Nat Geo HD",
+    "http://45.5.118.152:8000/play/a01w/index.m3u8": "Nat Geo SD",
+    "http://181.225.190.242:8000/play/a03e": "TLC HD",
+    "http://179.60.224.196:8000/play/a0f3/index.m3u8": "TLC HD",
+    "http://186.148.196.100:8000/play/a00p": "TLC SD",
+    "http://186.33.0.57:8000/play/a069/index.m3u8": "FOX ESA HD",
+    "http://tv.m3uts.xyz/stream/secure/KtMxQzuk/464.m3u8": "FOX Sports Premium",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/463.m3u8": "FOX Sports Premium HD",
+    "http://181.225.190.242:8000/play/a03r": "Win Sports HD",
+    "http://190.217.66.92:8000/play/a0fh/index.m3u8u?hls": "Win Sports HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/386.m3u8": "ESPN 3 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1104.m3u8": "ESPN 5 HD",
+    "http://181.119.177.253:8000/play/a04y/index.m3u8": "ESPN 5 HD",
+    "http://200.59.191.177:8000/play/a0p2/index.m3u8?hls": "ESPN 7",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/400.m3u8": "ESPN HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/375.m3u8": "ESPN 2 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1105.m3u8": "ESPN 6 HD",
+    "http://m3u.tvcluboficial.com/free/ReachBot/Kip/1106.m3u8": "ESPN 7 HD",
+}
+
+
+def corregir_resoluciones_por_url(lineas):
+    """Aplica HD/SD solo cuando la URL coincide exactamente con la M3U de referencia."""
+    salida = list(lineas)
+    corregidos = 0
+    for i, extinf in enumerate(salida):
+        if not extinf.startswith("#EXTINF"):
+            continue
+        j = i + 1
+        while j < len(salida) and not salida[j].startswith("#EXTINF"):
+            if url_es_valida(salida[j].strip()):
+                break
+            j += 1
+        if j >= len(salida) or not url_es_valida(salida[j].strip()):
+            continue
+        nombre_base = NOMBRES_RESOLUCION_POR_URL.get(salida[j].strip())
+        if not nombre_base:
+            continue
+        actual = extraer_nombre(extinf)
+        # FightBox HD es una señal distinta, no una alternativa numerada.
+        if nombre_base == "FightBox HD":
+            nuevo = nombre_base
+        else:
+            opcion = re.search(
+                r"(\s*(?:\[\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\]|"
+                r"\(\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\))\s*$)",
+                actual,
+                re.I,
+            )
+            nuevo = nombre_base + (opcion.group(1) if opcion else "")
+        linea_actualizada = extinf
+        if nuevo != actual and "," in extinf:
+            linea_actualizada = extinf.rsplit(",", 1)[0] + "," + nuevo
+            corregidos += 1
+        # Restaurar el tvg-name de referencia por URL para conservar EPG y orden histórico.
+        tvg_name = TVG_NAMES_POR_URL.get(salida[j].strip(), nombre_base)
+        if tvg_name and re.search(r'\btvg-name="[^"]*"', linea_actualizada, re.I):
+            linea_actualizada = re.sub(
+                r'\btvg-name="[^"]*"',
+                f'tvg-name="{tvg_name}"',
+                linea_actualizada,
+                count=1,
+                flags=re.I,
+            )
+        salida[i] = linea_actualizada
+    return salida, corregidos
+
+def _base_nombre_para_logo(nombre):
+    nombre = re.sub(
+        r"\s*(?:\[\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\]|\(\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\))\s*$",
+        "",
+        nombre,
+        flags=re.I,
+    )
+    nombre = re.sub(r"\s+(?:HD|SD|FHD|UHD)\s*$", "", nombre, flags=re.I)
+    return normalizar(nombre.strip())
+
+
+def restaurar_logos_de_familia(lineas):
+    """Completa logos ausentes solo con una URL única ya usada por la misma familia."""
+    salida = list(lineas)
+    bloques = []
+    logos_por_familia = defaultdict(set)
+    i = 0
+    while i < len(salida):
+        if not salida[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        j = i + 1
+        while j < len(salida) and not salida[j].startswith("#EXTINF"):
+            j += 1
+        extinf = salida[i]
+        nombre = extraer_nombre(extinf)
+        familia = _base_nombre_para_logo(nombre)
+        logos = []
+        for clave in ("tvg-logo", "logo"):
+            m = re.search(r'(?<![\w-])' + clave + r'="([^"]*)"', extinf, re.I)
+            if m and url_es_valida(m.group(1).strip()):
+                logos.append(m.group(1).strip())
+        logo_valido = next(iter(set(logos)), "")
+        if logo_valido:
+            logos_por_familia[familia].add(logo_valido)
+        bloques.append((i, familia, logo_valido))
+        i = j
+
+    restaurados = 0
+    for indice, familia, logo_valido in bloques:
+        if logo_valido:
+            continue
+        candidatos = logos_por_familia.get(familia, set())
+        if len(candidatos) != 1:
+            continue
+        logo = next(iter(candidatos))
+        extinf = salida[indice]
+        # No sobrescribir URLs no vacías ni logos que ya funcionan.
+        if re.search(r'(?<![\w-])tvg-logo="(?!")[^"]+"', extinf, re.I):
+            continue
+        if re.search(r'(?<![\w-])logo="(?!")[^"]+"', extinf, re.I):
+            continue
+        if re.search(r'(?<![\w-])tvg-logo=""', extinf, re.I):
+            extinf = re.sub(r'(?<![\w-])tvg-logo=""', f'tvg-logo="{logo}"', extinf, count=1, flags=re.I)
+        else:
+            extinf = extinf.replace(",", f' tvg-logo="{logo}",', 1)
+        if not re.search(r'(?<![\w-])logo="[^"]*"', extinf, re.I):
+            extinf = extinf.replace(",", f' logo="{logo}",', 1)
+        elif re.search(r'(?<![\w-])logo=""', extinf, re.I):
+            extinf = re.sub(r'(?<![\w-])logo=""', f'logo="{logo}"', extinf, count=1, flags=re.I)
+        salida[indice] = extinf
+        restaurados += 1
+    return salida, restaurados
+
+
 def url_es_valida(url):
     return bool(re.match(r"^https?://", url.strip(), re.I))
 
@@ -3423,6 +3669,9 @@ def main():
         errors="replace",
     ).splitlines()
     lineas_iniciales = list(lineas)
+    # Normalizar también la referencia de orden con las resoluciones verificadas por URL.
+    lineas, _ = corregir_resoluciones_por_url(lineas)
+    lineas_iniciales, _ = corregir_resoluciones_por_url(lineas_iniciales)
 
     total_inicial = sum(1 for x in lineas if x.startswith("#EXTINF"))
 
@@ -3609,9 +3858,7 @@ def main():
             logo = re.search(r'tvg-logo="([^"]+)"', canal.get("extinf", ""), re.I)
             if not logo or not url_es_valida(logo.group(1)):
                 raise RuntimeError("Fear Factor no trae logo HTTP(S) válido.")
-            destino = buscar_categoria_existente("Series", categorias)
-            if not destino:
-                raise RuntimeError("La categoría Series no existe; no se crean categorías nuevas.")
+            destino = determinar_categoria_fear_factor(categorias)
             url_fear = canal["url"].strip()
             logo_fear = logo.group(1).strip()
             existente = False
@@ -3635,14 +3882,14 @@ def main():
                 lineas[indice_extinf] = extinf
                 existente = True
             if existente:
-                print("  -> Fear Factor existente actualizado: Series + logo oficial de la fuente.")
+                print("  -> Fear Factor existente actualizado: Competencia + logo oficial de la fuente.")
             else:
                 urls = mapa_urls_principal(lineas)
                 urls.update(item["bloque"][-1].strip() for item in bloques_nuevos
                             if item.get("bloque") and url_es_valida(item["bloque"][-1].strip()))
                 if agregar_bloque(canal, destino, urls, bloques_nuevos):
                     agregados_normales += 1
-                    print("  -> Fear Factor agregado a Series con URL y logo fuente.")
+                    print("  -> Fear Factor agregado a Competencia con URL y logo fuente.")
                 else:
                     print("  -> Fear Factor omitido: URL ya presente en un bloque pendiente.")
         except Exception as error_fear:
@@ -4110,6 +4357,10 @@ def main():
 
     # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+    lineas, resoluciones_corregidas = corregir_resoluciones_por_url(lineas)
+    print(f"Resoluciones SD/HD corregidas por URL exacta: {resoluciones_corregidas}")
+    lineas, logos_familia_restaurados = restaurar_logos_de_familia(lineas)
+    print(f"Logos recuperados por familia sin sobrescribir existentes: {logos_familia_restaurados}")
     validar_orden_canales(
         lineas_iniciales,
         lineas,

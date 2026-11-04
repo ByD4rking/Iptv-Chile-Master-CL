@@ -439,6 +439,62 @@ class TestAlternativasPrincipal(unittest.TestCase):
         extinf = next(line for line in output if line.startswith("#EXTINF"))
         self.assertEqual(ap.extraer_nombre(extinf), "ESPN2 [Opción 2]")
 
+    def test_fear_factor_is_always_assigned_to_competencia(self):
+        self.assertEqual(ap.determinar_categoria_fear_factor(["Series", "Competencia"]), "Competencia")
+        self.assertEqual(ap.determinar_categoria_fear_factor(["competencia", "Series"]), "competencia")
+        with self.assertRaisesRegex(RuntimeError, "Competencia"):
+            ap.determinar_categoria_fear_factor(["Series", "Deportes"])
+
+    def test_fightbox_sd_and_hd_keep_distinct_names_and_logos(self):
+        lines = ["#EXTM3U"]
+        lines += [
+            '#EXTINF:-1 group-title="Deportes" tvg-logo="https://logo.example/fightbox-sd.png",FightBox',
+            "https://stream.example/fightbox-sd.m3u8",
+            '#EXTINF:-1 group-title="Deportes" tvg-logo="https://logo.example/fightbox-hd.png",FightBox HD',
+            "https://stream.example/fightbox-hd.m3u8",
+        ]
+        parsed = self.entries(ap.agrupar_alternativas_por_identidad(lines))
+        self.assertEqual([ap.extraer_nombre(item[0]) for item in parsed], ["FightBox", "FightBox HD"])
+        self.assertIn('tvg-logo="https://logo.example/fightbox-sd.png"', parsed[0][0])
+        self.assertIn('tvg-logo="https://logo.example/fightbox-hd.png"', parsed[1][0])
+
+    def test_resolution_overrides_follow_exact_reference_urls(self):
+        lines = ["#EXTM3U"]
+        lines += block("", "Deportes", "FightBox [Opción 2]", "https://nosignal1.antenaplay.ro/hls/fightbox-hd/index.m3u8")
+        lines += block("", "Infantiles", "Disney Channel [Opción 2]", "http://205.235.6.29:8000/play/a0zp/index.m3u8?hls")
+        lines += block("", "Documentales y Cultura", "Discovery Channel HD [Opción 3]", "http://45.5.117.99:8000/play/a049/index.m3u8")
+        lines += block("", "Deportes", "Win Sports HD [Opción 2]", "http://190.217.66.92:8000/play/a0fh/index.m3u8u?hls")
+        output, changed = ap.corregir_resoluciones_por_url(lines)
+        parsed = self.entries(output)
+        names = [ap.extraer_nombre(item[0]) for item in parsed]
+        self.assertEqual(names, [
+            "FightBox HD",
+            "Disney Channel HD [Opción 2]",
+            "Discovery Channel SD [Opción 3]",
+            "Win Sports SD [Opción 2]",
+        ])
+        self.assertEqual(changed, 4)
+        self.assertIn('tvg-name="FightBox HD"', parsed[0][0])
+        self.assertIn('tvg-name="Disney Channel [Opción 2]"', parsed[1][0])
+        self.assertIn('tvg-name="Discovery Channel HD [Opción 3]"', parsed[2][0])
+        self.assertIn('tvg-name="Win Sports HD [Opción 2]"', parsed[3][0])
+
+    def test_family_logo_restore_fills_only_missing_and_never_overwrites(self):
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-logo="https://logo.example/fox.png" logo="https://logo.example/fox.png" group-title="Deportes",FOX Sports Premium',
+            "https://stream.example/fox.m3u8",
+            '#EXTINF:-1 group-title="Deportes",FOX Sports Premium HD [Opción 2]',
+            "https://stream.example/fox-hd.m3u8",
+            '#EXTINF:-1 tvg-logo="https://logo.example/other.png" group-title="Deportes",Canal Diferente',
+            "https://stream.example/other.m3u8",
+        ]
+        output, restored = ap.restaurar_logos_de_familia(lines)
+        parsed = self.entries(output)
+        self.assertEqual(restored, 1)
+        self.assertIn('tvg-logo="https://logo.example/fox.png"', parsed[1][0])
+        self.assertIn('tvg-logo="https://logo.example/other.png"', parsed[2][0])
+
     def test_fear_factor_selection_only_exact_name_and_valid_url(self):
         channels = [
             {"nombre": "Fear Factor Latino", "url": "https://source.example/other.m3u8", "extinf": '#EXTINF:-1 group-title="Series",Fear Factor Latino'},
