@@ -164,8 +164,8 @@ def _canonical_channel_name(channel: dict) -> str:
     # escriben distinto para dos URLs del mismo canal (p. ej. CYGTVCL).
     # Por eso el display-name tiene prioridad; tvg-name queda como respaldo.
     value = (
-        channel.get("nombre", "")
-        or ap.extraer_nombre(channel.get("extinf", ""))
+        ap.extraer_nombre(channel.get("extinf", ""))
+        or channel.get("nombre", "")
         or _attr(channel.get("extinf", ""), "tvg-name")
     )
     value = _without_option_suffix(value)
@@ -299,7 +299,7 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             for item in group
             if _valid_tvg_id(_attr(item["extinf"], "tvg-id"))
         }
-        if not canonical_name or len(group) < 2 or len(group_ids) > 1:
+        if not canonical_name or len(group_ids) > 1:
             extinf = block["extinf"]
             clean_display = _clean_channel_display_preserving_option(ap.extraer_nombre(extinf))
             extinf = _set_display_name(extinf, clean_display)
@@ -310,21 +310,20 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             block["raw"] = [extinf] + block["extras"] + [block["url"]]
             ordered.append(block)
             continue
-        # Anclar el grupo en la posición histórica del canal principal,
-        # no en la primera alternativa que aparezca antes en la M3U.
-        # Así las opciones quedan contiguas sin adelantar el canal base.
-        anchor = next(
-            (
-                item for item in group
-                if not re.search(
-                    r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|"
-                    r"\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
-                    ap.extraer_nombre(item["extinf"]),
-                    re.I,
-                )
-            ),
-            group[0],
-        )
+        if len(group) < 2:
+            # Una opción huérfana sin otra URL recupera el nombre base.
+            extinf = block["extinf"]
+            clean_display = _clean_channel_display(ap.extraer_nombre(extinf))
+            extinf = _set_display_name(extinf, clean_display)
+            clean_tvg_name = _clean_channel_display(_attr(extinf, "tvg-name"))
+            if clean_tvg_name:
+                extinf = _set_attr(extinf, "tvg-name", clean_tvg_name)
+            block["extinf"] = extinf
+            block["raw"] = [extinf] + block["extras"] + [block["url"]]
+            ordered.append(block)
+            continue
+        # Anclar en la primera URL histórica del grupo para no mover canales.
+        anchor = group[0]
         if block is not anchor or group_key in emitted:
             continue
         emitted.add(group_key)
@@ -341,9 +340,17 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             continue
 
         primary = unique[0]
-        base_display = _clean_channel_display(ap.extraer_nombre(primary["extinf"]))
+        base_item = next((
+            item for item in group
+            if not re.search(
+                r"(?:\[\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\]|\(\s*(?:opc(?:ion)?\.?|option)\s*\d+\s*\))$",
+                ap.extraer_nombre(item["extinf"]),
+                re.I,
+            )
+        ), group[0])
+        base_display = _clean_channel_display(ap.extraer_nombre(base_item["extinf"]))
         if not base_display:
-            base_display = _clean_channel_display(_attr(primary["extinf"], "tvg-name"))
+            base_display = _clean_channel_display(_attr(base_item["extinf"], "tvg-name"))
         base_tvg_name = next(
             (
                 _clean_channel_display(_attr(item["extinf"], "tvg-name"))
@@ -438,7 +445,15 @@ def _set_attr(extinf: str, key: str, value: str) -> str:
     return extinf[:comma].rstrip() + " " + replacement + extinf[comma:]
 
 
-def _merge_extinf(current: str, source: str, destination: str) -> str:
+def _is_resolution_name_correction(current_display: str, source_display: str) -> bool:
+    if not re.search(r"\s+(?:HD|SD|FHD|UHD)$", source_display or "", re.I):
+        return False
+    current_base = re.sub(r"\s*\[(?:opc(?:ion)?\.?|option)\s*\d+\]$", "", current_display or "", flags=re.I).strip()
+    current_base = re.sub(r"\s+(?:HD|SD|FHD|UHD)$", "", current_base, flags=re.I).strip()
+    source_base = re.sub(r"\s+(?:HD|SD|FHD|UHD)$", "", source_display, flags=re.I).strip()
+    return bool(current_base and ap.normalizar(current_base) == ap.normalizar(source_base))
+
+def _merge_extinf(current: str, source: str, destination: str, allow_resolution_name_update: bool = False) -> str:
     """Actualiza categoría/logos sin sobrescribir la identidad ya existente."""
     result = current
     existing_id = _valid_tvg_id(_attr(current, "tvg-id"))
@@ -451,13 +466,16 @@ def _merge_extinf(current: str, source: str, destination: str) -> str:
     # que en la maestra está identificada como Opc.4; no deben renombrarla.
     existing_tvg_name = _attr(current, "tvg-name")
     source_name = _attr(source, "tvg-name")
-    if not existing_tvg_name and not ap.extraer_nombre(current) and source_name:
-        result = _set_attr(result, "tvg-name", _clean_channel_display(source_name))
-
     existing_display = ap.extraer_nombre(current)
     source_display = ap.extraer_nombre(source)
-    if not existing_display and source_display:
+    if allow_resolution_name_update and _is_resolution_name_correction(existing_display, source_display):
         result = _set_display_name(result, _clean_channel_display(source_display))
+        result = _set_attr(result, "tvg-name", _clean_channel_display(source_name or source_display))
+    else:
+        if not existing_tvg_name and not existing_display and source_name:
+            result = _set_attr(result, "tvg-name", _clean_channel_display(source_name))
+        if not existing_display and source_display:
+            result = _set_display_name(result, _clean_channel_display(source_display))
 
     # Un cambio de URL/nombre/categoría no autoriza cambiar el icono existente.
     current_logo = _attr(result, "tvg-logo") or _attr(result, "logo")
@@ -953,18 +971,18 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             _attr(first.get("extinf", ""), "tvg-name") or first.get("nombre", "")
         )
         match = None
-        if identity.startswith("id:"):
+        # URL exacta primero: si cambia tvg-id, el bloque conserva su posición histórica.
+        exact_matches = [
+            main_by_url[item["url"].strip()]
+            for item in group
+            if item["url"].strip() in main_by_url
+        ]
+        if exact_matches:
+            match = exact_matches[0]
+        if match is None and identity.startswith("id:"):
             matches = main_by_id.get(identity, [])
             if matches:
                 match = next((idx for idx in matches if idx not in updated_indices), matches[0])
-        if match is None:
-            exact_matches = [
-                main_by_url[item["url"].strip()]
-                for item in group
-                if item["url"].strip() in main_by_url
-            ]
-            if exact_matches:
-                match = exact_matches[0]
         if match is None:
             canonical_name = _canonical_channel_name(first)
             canonical_matches = main_by_canonical_name.get(canonical_name, [])
@@ -1083,6 +1101,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                     block["extinf"],
                     selected.get("extinf", ""),
                     destination,
+                    allow_resolution_name_update=(idx == primary_match and old_url == source_url),
                 )
                 if idx == primary_match and old_url != source_url:
                     block["url"] = source_url
