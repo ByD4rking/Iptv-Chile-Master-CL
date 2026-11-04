@@ -468,9 +468,7 @@ def determinar_destino_magma(categoria, nombre, categorias):
 
 
 def canal_excluido_pluto_es(fuente, canal):
-    """Excluye solo Anime y Los Pitufos desde la fuente regional Pluto ES."""
-    if "pluto_es.m3u" not in (fuente or "").lower():
-        return False
+    """Aplica exclusiones regionales explícitas sin borrar versiones LATAM."""
     categoria = normalizar(canal.get("categoria", ""))
     extinf = canal.get("extinf", "")
     tvg_name = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
@@ -478,7 +476,19 @@ def canal_excluido_pluto_es(fuente, canal):
         (tvg_name.group(1) if tvg_name else "") + " " +
         (canal.get("nombre") or extraer_nombre(extinf))
     )
-    return categoria == "anime" or "los pitufos" in nombre
+    fuente_es = "pluto_es.m3u" in (fuente or "").lower()
+    variante_espana = bool(re.search(r"\b(?:españa|spain)\b", nombre))
+    pitufo_es = (
+        ("pitufo tv" in nombre or "los pitufos" in nombre)
+        and bool(re.search(r"\b(?:es|españa|spain)\b", nombre))
+    )
+    if categoria == "anime" and variante_espana:
+        return True
+    if pitufo_es:
+        return True
+    if fuente_es and (categoria == "anime" or "los pitufos" in nombre):
+        return True
+    return False
 
 
 def determinar_destino_pluto(categoria, nombre, categorias):
@@ -3307,6 +3317,9 @@ def main():
             omitidos_regla_especial = 0
             canales_destinados = []
             for canal in canales:
+                if canal_excluido_pluto_es(fuente, canal):
+                    omitidos_regla_especial += 1
+                    continue
                 if fuente_es_iptvsv:
                     destino = determinar_destino_iptvsv(
                         canal.get("categoria", ""),
