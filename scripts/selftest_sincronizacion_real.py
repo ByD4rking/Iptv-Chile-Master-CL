@@ -481,6 +481,8 @@ def main(args: argparse.Namespace) -> None:
             norm("Entretenimiento / Cine / Series"),
             norm("Infantiles"),
             norm("Anime"),
+            # España recibe reclasificaciones regionales; se audita integridad global, no orden nominal.
+            norm("España"),
         }:
             continue
         after_keys = after_by_category.get(category, [])
