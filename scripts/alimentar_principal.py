@@ -1106,6 +1106,11 @@ def limpiar_pluto_antiguo(lineas, session):
 def destino_especial_total_otros(nombre, categoria, categorias):
     """Clasifica entradas heredadas de TOTAL/OTROS y evita recrear esas carpetas."""
     texto = normalizar(f"{categoria or ''} {nombre or ''}")
+    # Una marca explícita de país tiene prioridad sobre la temática.
+    if re.search(r"\b(españa|espana|spain)\b", texto):
+        destino_es = buscar_categoria_existente("España", categorias)
+        if destino_es:
+            return destino_es
     reglas = [
         (r"\b(anime|animacion|anime station|anime zone)\b", "Anime"),
         (r"\b(infantil|kids|kid|junior|nick jr|rugrats|bob esponja|babyfirst|chiquilines|dreiko)\b", "Infantiles"),
@@ -2939,7 +2944,8 @@ def agrupar_alternativas_por_identidad(lineas):
             r"\s*(?:\[\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\]|\(\s*(?:magna|magma|pluto(?:\s*tv)?(?:\s*(?:latam|mx|es|españa))?)\s*\))\s*$",
             "", display_base, flags=re.I,
         ).strip()
-        canonical_base = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", display_base, flags=re.I).strip()
+        # HD/SD/FHD/UHD son variantes distintas y no deben fusionarse.
+        canonical_base = display_base
         id_match = re.search(r'tvg-id="([^"]*)"', extinf, re.I)
         tvg_name_match = re.search(r'tvg-name="([^"]*)"', extinf, re.I)
         logo_match = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
@@ -2969,7 +2975,6 @@ def agrupar_alternativas_por_identidad(lineas):
         base = next((item["display"] for item in grupo if item["display"]), "")
         canonical_id = next((item["id"] for item in grupo if item["id"]), "")
         canonical_tvg = next((item["tvg_name"] for item in grupo if item["tvg_name"]), base)
-        canonical_logo = next((item["logo"] for item in grupo if item["logo"]), "")
         normalizados, seen_urls = [], set()
         for item in grupo:
             if item["url"] in seen_urls:
@@ -2990,8 +2995,11 @@ def agrupar_alternativas_por_identidad(lineas):
             # el guardia de orden debe poder reconocerla por nombre.
             extinf = set_attr(extinf, "tvg-id", item["id"])
             extinf = set_attr(extinf, "tvg-name", canonical_tvg)
-            extinf = set_attr(extinf, "tvg-logo", canonical_logo)
-            extinf = set_attr(extinf, "logo", canonical_logo)
+            # Los logos son independientes por URL/opción: nunca copiarlos ni sobrescribirlos.
+            current_logo = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+            legacy_logo = re.search(r'(?<![\\w-])logo="([^"]*)"', extinf, re.I)
+            if (not current_logo or not current_logo.group(1).strip()) and legacy_logo and legacy_logo.group(1).strip():
+                extinf = set_attr(extinf, "tvg-logo", legacy_logo.group(1).strip())
             label = base if not normalizados else f"{base} [Opción {len(normalizados) + 1}]"
             raw[0] = re.sub(r",.*$", "," + label, extinf)
             normalizados.append(raw)
