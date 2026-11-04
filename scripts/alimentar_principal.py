@@ -17,6 +17,7 @@ _SPECIAL_SOURCES = _SOURCE_SETTINGS["special_sources"]
 FUENTE_IPTVSV = _SPECIAL_SOURCES["iptvsv"]
 FUENTE_MAGMA = _SPECIAL_SOURCES["magma"]
 FUENTE_PLUTO_ALTERNATIVAS = _SPECIAL_SOURCES["pluto_mx_alternatives"]
+FUENTE_FEAR_FACTOR = _SPECIAL_SOURCES.get("fear_factor", "")
 
 # Identidad histórica de Pluto TV Anime España; se mantiene fuera de Anime.
 PLUTO_ES_ANIME_IDS_HISTORICOS = {"608035b8d8705f0007260287"}
@@ -109,6 +110,14 @@ def tvg_id_valido(value):
     value = normalizar(value)
     return value if value and value not in TVG_IDS_INVALIDOS else ""
 
+
+def seleccionar_canal_fear_factor(canales):
+    """Selecciona exclusivamente Fear Factor con URL HTTP(S) reproducible."""
+    return next((
+        canal for canal in canales
+        if normalizar(canal.get("nombre", "")) == "fear factor"
+        and url_es_valida(canal.get("url", ""))
+    ), None)
 
 def url_es_valida(url):
     return bool(re.match(r"^https?://", url.strip(), re.I))
@@ -3511,6 +3520,59 @@ def main():
             print(f"  -> ERROR: {e}")
 
     # --------------------------------------------------------
+    # FUENTE COMPLEMENTARIA DE UN SOLO CANAL: FEAR FACTOR (no importar el resto del catálogo).
+    if FUENTE_FEAR_FACTOR:
+        print(f"\n[CANAL ÚNICO] Fear Factor <- {FUENTE_FEAR_FACTOR}")
+        try:
+            respuesta = session.get(FUENTE_FEAR_FACTOR, timeout=30)
+            respuesta.raise_for_status()
+            canal = seleccionar_canal_fear_factor(parsear_m3u(respuesta.text))
+            if not canal:
+                raise RuntimeError("No existe bloque reproducible con nombre exacto Fear Factor.")
+            logo = re.search(r'tvg-logo="([^"]+)"', canal.get("extinf", ""), re.I)
+            if not logo or not url_es_valida(logo.group(1)):
+                raise RuntimeError("Fear Factor no trae logo HTTP(S) válido.")
+            destino = buscar_categoria_existente("Series", categorias)
+            if not destino:
+                raise RuntimeError("La categoría Series no existe; no se crean categorías nuevas.")
+            url_fear = canal["url"].strip()
+            logo_fear = logo.group(1).strip()
+            existente = False
+            for indice_url, linea_url in enumerate(lineas):
+                if linea_url.strip() != url_fear:
+                    continue
+                indice_extinf = indice_url - 1
+                while indice_extinf >= 0 and not lineas[indice_extinf].startswith("#EXTINF"):
+                    indice_extinf -= 1
+                if indice_extinf < 0:
+                    continue
+                extinf = lineas[indice_extinf]
+                if re.search("tvg-logo=\"[^\"]*\"", extinf, re.I):
+                    extinf = re.sub("tvg-logo=\"[^\"]*\"", "tvg-logo=\"" + logo_fear + "\"", extinf, count=1, flags=re.I)
+                else:
+                    coma = extinf.find(",")
+                    extinf = extinf[:coma].rstrip() + " tvg-logo=\"" + logo_fear + "\"" + extinf[coma:]
+                extinf = reemplazar_categoria(extinf, destino)
+                if "," in extinf:
+                    extinf = extinf.rsplit(",", 1)[0] + ",Fear Factor"
+                lineas[indice_extinf] = extinf
+                existente = True
+            if existente:
+                print("  -> Fear Factor existente actualizado: Series + logo oficial de la fuente.")
+            else:
+                urls = mapa_urls_principal(lineas)
+                urls.update(item["bloque"][-1].strip() for item in bloques_nuevos
+                            if item.get("bloque") and url_es_valida(item["bloque"][-1].strip()))
+                if agregar_bloque(canal, destino, urls, bloques_nuevos):
+                    agregados_normales += 1
+                    print("  -> Fear Factor agregado a Series con URL y logo fuente.")
+                else:
+                    print("  -> Fear Factor omitido: URL ya presente en un bloque pendiente.")
+        except Exception as error_fear:
+            errores += 1
+            print(f"  -> ERROR Fear Factor: {error_fear}")
+    # --------------------------------------------------------
+
     # PLUTO: proceso independiente.
     # --------------------------------------------------------
     print("\n" + "=" * 72)
