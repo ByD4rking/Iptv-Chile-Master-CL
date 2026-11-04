@@ -3081,7 +3081,13 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
         return extinf[:coma].rstrip() + " " + reemplazo + extinf[coma:] if coma >= 0 else extinf
 
     anteriores = bloques(referencia)
-    por_id, por_url, por_nombre = defaultdict(set), defaultdict(set), defaultdict(set)
+    por_id, por_url, por_nombre, por_nombre_global = (
+        defaultdict(set), defaultdict(set), defaultdict(set), defaultdict(set)
+    )
+    pluto_nombre_normalizado = {
+        normalizar_nombre_canal(canal.get("nombre") or clave): canal
+        for clave, canal in pluto_por_nombre.items()
+    }
     for item in anteriores:
         if not item["logo"] or not url_es_valida(item["logo"]):
             continue
@@ -3091,6 +3097,8 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
             por_url[item["url"]].add(item["logo"])
         if item["category"] and item["name"]:
             por_nombre[(item["category"], item["name"])].add(item["logo"])
+        if item["name"]:
+            por_nombre_global[item["name"]].add(item["logo"])
 
     restaurados_anteriores = 0
     restaurados_pluto = 0
@@ -3112,12 +3120,16 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
             candidatos = por_nombre.get((item["category"], item["name"]), set())
             if len(candidatos) == 1:
                 logo = next(iter(candidatos))
+        if not logo and item["name"]:
+            candidatos = por_nombre_global.get(item["name"], set())
+            if len(candidatos) == 1:
+                logo = next(iter(candidatos))
         if logo:
             restaurados_anteriores += 1
         else:
             canal = pluto_por_id.get(item["id"]) if item["id"] else None
             if canal is None and item["name"]:
-                canal = pluto_por_nombre.get(item["name"])
+                canal = pluto_nombre_normalizado.get(item["name"])
             if canal:
                 m_logo = re.search(r'tvg-logo="([^"]+)"', canal.get("extinf", ""), re.I)
                 if m_logo and url_es_valida(m_logo.group(1).strip()):
