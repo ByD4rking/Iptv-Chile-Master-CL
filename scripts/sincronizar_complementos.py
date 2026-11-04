@@ -85,7 +85,7 @@ def _base_channel_name(name: str) -> str:
         name,
         flags=re.I,
     )
-    name = re.sub(r"\s+(?:hd|sd|fhd|uhd)$", "", name, flags=re.I)
+    # HD/SD/FHD/UHD identifican señales distintas: no eliminar la resolución.
     return ap.normalizar(name)
 
 
