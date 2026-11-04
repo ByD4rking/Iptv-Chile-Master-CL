@@ -202,6 +202,71 @@ def corregir_resoluciones_por_url(lineas):
             corregidos += 1
     return salida, corregidos
 
+def _base_nombre_para_logo(nombre):
+    nombre = re.sub(
+        r"\s*(?:\[\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\]|\(\s*(?:opci[oó]n|opc\.?)\s*\d+\s*\))\s*$",
+        "",
+        nombre,
+        flags=re.I,
+    )
+    nombre = re.sub(r"\s+(?:HD|SD|FHD|UHD)\s*$", "", nombre, flags=re.I)
+    return normalizar(nombre.strip())
+
+
+def restaurar_logos_de_familia(lineas):
+    """Completa logos ausentes solo con una URL única ya usada por la misma familia."""
+    salida = list(lineas)
+    bloques = []
+    logos_por_familia = defaultdict(set)
+    i = 0
+    while i < len(salida):
+        if not salida[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        j = i + 1
+        while j < len(salida) and not salida[j].startswith("#EXTINF"):
+            j += 1
+        extinf = salida[i]
+        nombre = extraer_nombre(extinf)
+        familia = _base_nombre_para_logo(nombre)
+        logos = []
+        for clave in ("tvg-logo", "logo"):
+            m = re.search(r'(?<![\w-])' + clave + r'="([^"]*)"', extinf, re.I)
+            if m and url_es_valida(m.group(1).strip()):
+                logos.append(m.group(1).strip())
+        logo_valido = next(iter(set(logos)), "")
+        if logo_valido:
+            logos_por_familia[familia].add(logo_valido)
+        bloques.append((i, familia, logo_valido))
+        i = j
+
+    restaurados = 0
+    for indice, familia, logo_valido in bloques:
+        if logo_valido:
+            continue
+        candidatos = logos_por_familia.get(familia, set())
+        if len(candidatos) != 1:
+            continue
+        logo = next(iter(candidatos))
+        extinf = salida[indice]
+        # No sobrescribir URLs no vacías ni logos que ya funcionan.
+        if re.search(r'(?<![\w-])tvg-logo="(?!")[^"]+"', extinf, re.I):
+            continue
+        if re.search(r'(?<![\w-])logo="(?!")[^"]+"', extinf, re.I):
+            continue
+        if re.search(r'(?<![\w-])tvg-logo=""', extinf, re.I):
+            extinf = re.sub(r'(?<![\w-])tvg-logo=""', f'tvg-logo="{logo}"', extinf, count=1, flags=re.I)
+        else:
+            extinf = extinf.replace(",", f' tvg-logo="{logo}",', 1)
+        if not re.search(r'(?<![\w-])logo="[^"]*"', extinf, re.I):
+            extinf = extinf.replace(",", f' logo="{logo}",', 1)
+        elif re.search(r'(?<![\w-])logo=""', extinf, re.I):
+            extinf = re.sub(r'(?<![\w-])logo=""', f'logo="{logo}"', extinf, count=1, flags=re.I)
+        salida[indice] = extinf
+        restaurados += 1
+    return salida, restaurados
+
+
 def url_es_valida(url):
     return bool(re.match(r"^https?://", url.strip(), re.I))
 
@@ -4193,6 +4258,8 @@ def main():
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
     lineas, resoluciones_corregidas = corregir_resoluciones_por_url(lineas)
     print(f"Resoluciones SD/HD corregidas por URL exacta: {resoluciones_corregidas}")
+    lineas, logos_familia_restaurados = restaurar_logos_de_familia(lineas)
+    print(f"Logos recuperados por familia sin sobrescribir existentes: {logos_familia_restaurados}")
     validar_orden_canales(
         lineas_iniciales,
         lineas,
