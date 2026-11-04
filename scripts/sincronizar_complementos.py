@@ -373,14 +373,6 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
             (ap.extraer_categoria(item["extinf"]) for item in unique if ap.extraer_categoria(item["extinf"])),
             "",
         )
-        logo = next(
-            (
-                _attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo")
-                for item in unique
-                if _attr(item["extinf"], "tvg-logo") or _attr(item["extinf"], "logo")
-            ),
-            "",
-        )
         for option_index, item in enumerate(unique, start=1):
             extinf = item["extinf"]
             if channel_id:
@@ -389,9 +381,9 @@ def _group_and_label_alternatives(lines: list[str], url_priority: dict[str, int]
                 extinf = _set_attr(extinf, "tvg-name", base_tvg_name)
             if category:
                 extinf = _set_attr(extinf, "group-title", category)
-            if logo:
-                extinf = _set_attr(extinf, "tvg-logo", logo)
-                extinf = _set_attr(extinf, "logo", logo)
+            # Cada alternativa conserva sus propios logos; solo migrar logo= a tvg-logo si falta.
+            if not _attr(extinf, "tvg-logo") and _attr(extinf, "logo"):
+                extinf = _set_attr(extinf, "tvg-logo", _attr(extinf, "logo"))
             label = base_display if option_index == 1 else f"{base_display} [Opción {option_index}]"
             extinf = _set_display_name(extinf, label)
             item["extinf"] = extinf
@@ -467,7 +459,16 @@ def _merge_extinf(current: str, source: str, destination: str) -> str:
     if not existing_display and source_display:
         result = _set_display_name(result, _clean_channel_display(source_display))
 
-    for key in ("tvg-logo", "logo", "tvg-language", "tvg-country", "tvg-chno"):
+    # Un cambio de URL/nombre/categoría no autoriza cambiar el icono existente.
+    current_logo = _attr(result, "tvg-logo") or _attr(result, "logo")
+    if not _attr(result, "tvg-logo") and current_logo:
+        result = _set_attr(result, "tvg-logo", current_logo)
+    elif not current_logo:
+        source_logo = _attr(source, "tvg-logo") or _attr(source, "logo")
+        if source_logo:
+            result = _set_attr(result, "tvg-logo", source_logo)
+
+    for key in ("tvg-language", "tvg-country", "tvg-chno"):
         value = _attr(source, key)
         if value:
             result = _set_attr(result, key, value)
