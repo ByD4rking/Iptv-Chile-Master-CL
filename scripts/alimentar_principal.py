@@ -3056,10 +3056,11 @@ def agrupar_alternativas_por_identidad(lineas):
 
 
 
-def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None):
+def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None):
     """Restaura solo logos ausentes desde la M3U anterior y el catálogo Pluto."""
     pluto_por_id = pluto_por_id or {}
     pluto_por_nombre = pluto_por_nombre or {}
+    logos_por_url_prioritarios = logos_por_url_prioritarios or {}
 
     def bloques(datos):
         resultado = []
