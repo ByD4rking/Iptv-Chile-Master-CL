@@ -3174,8 +3174,8 @@ def clave_orden_anime(nombre, indice=0):
     """Clave canónica: franquicia alfabética, saga en orden narrativo y opciones juntas."""
     nombre = (nombre or "").strip()
     match = re.search(
-        r"\\s*(?:\\[\\s*(?:opci[oó]n|opc)\\s*\\.?\\s*(\\d+)\\s*\\]|"
-        r"\\(\\s*(?:opci[oó]n|opc)\\s*\\.?\\s*(\\d+)\\s*\\))$",
+        r"\s*(?:\[\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\]|"
+        r"\(\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\))$",
         nombre,
         re.I,
     )
@@ -3190,11 +3190,11 @@ def clave_orden_anime(nombre, indice=0):
             saga = 4
         elif "dragon ball / dragon ball z" in canon:
             saga = 0.5
-        elif re.search(r"\\bgt\\b", canon):
+        elif re.search(r"\bgt\b", canon):
             saga = 3
-        elif re.search(r"\\bsuper\\b", canon):
+        elif re.search(r"\bsuper\b", canon):
             saga = 2
-        elif re.search(r"\\bz\\b", canon):
+        elif re.search(r"\bz\b", canon):
             saga = 1
     elif canon.startswith("naruto") or canon.startswith("boruto"):
         familia = "naruto"
