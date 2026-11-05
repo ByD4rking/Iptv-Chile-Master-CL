@@ -4188,7 +4188,7 @@ def main():
             ruta_god.read_text(encoding="utf-8-sig", errors="replace").splitlines()
         )
     lineas, logos_restaurados = restaurar_logos_historicos(
-        lineas, referencias_logos, pluto_por_id, pluto_por_nombre
+        lineas, referencias_logos, pluto_por_id, pluto_por_nombre, logos_historicos
     )
     # Ordenar Anime por franquicia/saga al final para que ninguna etapa posterior lo desordene.
     lineas = ordenar_anime_alfabeticamente(lineas)
