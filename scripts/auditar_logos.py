@@ -96,15 +96,22 @@ def main():
         f"- URLs únicas revisadas: **{len(by_url)}**",
         f"- Canales sin URL de logo: **{len(missing)}**",
         f"- URLs correctas: **{counts['OK']}**",
+        f"- Logos genéricos de relleno: **{counts['PLACEHOLDER']}**",
         f"- URLs confirmadas como rotas (404/410 repetido): **{counts['BROKEN']}**",
         f"- URLs no concluyentes (403, 429, 5xx, bloqueo o tipo ambiguo): **{counts['INCONCLUSIVE']}**", "",
         "> Esta auditoría no modifica ni elimina logos. Los fallos temporales o bloqueos no se clasifican como enlaces rotos.", "",
         "## Resultado por categoría", "",
-        "| Categoría | OK | Rotas confirmadas | No concluyentes |",
-        "|---|---:|---:|---:|",
+        "| Categoría | OK | Placeholder | Rotas confirmadas | No concluyentes |",
+        "|---|---:|---:|---:|---:|",
     ]
     for group, values in sorted(category_counts.items()):
-        report.append(f"| {group} | {values['OK']} | {values['BROKEN']} | {values['INCONCLUSIVE']} |")
+        report.append(f"| {group} | {values['OK']} | {values['PLACEHOLDER']} | {values['BROKEN']} | {values['INCONCLUSIVE']} |")
+    report += ["", "## Logos genéricos de relleno (no son logos reales)", ""]
+    if not placeholder_rows:
+        report.append("No se detectaron placeholders genéricos.")
+    else:
+        for row, result in sorted(placeholder_rows, key=lambda item: (item[0]["group"], item[0]["name"])):
+            report.append(f"- **{row['group']} / {row['name']}** — {row['logo']}")
     report += ["", "## Enlaces confirmados como rotos", ""]
     if not broken_rows:
         report.append("No se detectaron respuestas 404/410 repetidas.")
@@ -124,7 +131,7 @@ def main():
         for row in missing:
             report.append(f"- **{row['group']} / {row['name']}** (línea {row['line']})")
     output.write_text("\n".join(report) + "\n", encoding="utf-8")
-    print(f"Canales: {len(rows)} | URLs únicas: {len(by_url)} | OK: {counts['OK']} | rotas confirmadas: {counts['BROKEN']} | no concluyentes: {counts['INCONCLUSIVE']} | sin logo: {len(missing)}")
+    print(f"Canales: {len(rows)} | URLs únicas: {len(by_url)} | OK: {counts['OK']} | placeholders: {counts['PLACEHOLDER']} | rotas confirmadas: {counts['BROKEN']} | no concluyentes: {counts['INCONCLUSIVE']} | sin logo: {len(missing)}")
     print(f"Reporte: {output}")
 
 if __name__ == "__main__":
