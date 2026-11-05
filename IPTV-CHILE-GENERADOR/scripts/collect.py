@@ -2,7 +2,7 @@ import hashlib
 import json
 import re
 import unicodedata
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -32,6 +32,19 @@ def load_json(path, default):
 
 def save_json(path, data):
     atomic_write_json(path, data)
+
+
+def is_transient_source_error(error):
+    """Errores temporales no deben alimentar la cuarentena de una fuente."""
+    message = str(error or "").lower()
+    match = re.search(r"http(?: error)?\\s+(\\d{3})", message)
+    if match and int(match.group(1)) in {401, 403, 408, 425, 429, 500, 502, 503, 504}:
+        return True
+    return any(token in message for token in (
+        "timed out", "timeout", "temporary failure", "connection reset",
+        "connection refused", "remote end closed", "network is unreachable",
+        "temporary name resolution",
+    ))
 
 
 def prune_source_health(health, sources):
@@ -243,11 +256,21 @@ def main():
                 quarantined = datetime.fromisoformat(quarantine_until.replace("Z", "+00:00")) > datetime.now(timezone.utc)
             except ValueError:
                 quarantined = False
-        if quarantined and not force_source_probe:
+        probe_due = True
+        if quarantined:
+            last_probe = str(state.get("last_probe") or "").strip()
+            if last_probe:
+                try:
+                    previous_probe = datetime.fromisoformat(last_probe.replace("Z", "+00:00"))
+                    probe_due = (datetime.now(timezone.utc) - previous_probe) >= timedelta(hours=6)
+                except ValueError:
+                    probe_due = True
+        if quarantined and not force_source_probe and not probe_due:
             state["last_skip"] = checked_at
-            state["last_skip_reason"] = "cuarentena_por_fallos_persistentes"
-            print(f"[QUARANTINE] {name}: se omite hasta {quarantine_until}")
+            state["last_skip_reason"] = "esperando_sondeo_de_recuperacion"
+            print(f"[QUARANTINE] {name}: próximo sondeo de recuperación en ventana de 6 h.")
             continue
+        state["last_probe"] = checked_at
         state["checks"] += 1
         try:
             entries = parse_m3u(read_source(source), name, priority)
@@ -265,14 +288,19 @@ def main():
         except Exception as error:
             message = str(error)
             print(f"[ERROR] {name}: {message}")
-            state["failures"] += 1
-            state["consecutive_failures"] += 1
-            state["last_failure"] = checked_at
             state["last_error"] = message
-            if state["consecutive_failures"] >= SOURCE_QUARANTINE_AFTER:
-                from datetime import timedelta
-                state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=SOURCE_QUARANTINE_HOURS)).isoformat()
-                print(f"[QUARANTINE] {name}: {state['consecutive_failures']} fallos consecutivos; pausa hasta {state['quarantine_until']}")
+            if is_transient_source_error(message):
+                state["last_transient_error"] = message
+                state["last_transient_at"] = checked_at
+                print(f"[TRANSIENT] {name}: fallo temporal; no suma para cuarentena.")
+            else:
+                state["failures"] += 1
+                state["consecutive_failures"] += 1
+                state["last_failure"] = checked_at
+                if state["consecutive_failures"] >= SOURCE_QUARANTINE_AFTER:
+                    from datetime import timedelta
+                    state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=SOURCE_QUARANTINE_HOURS)).isoformat()
+                    print(f"[QUARANTINE] {name}: {state['consecutive_failures']} fallos persistentes; pausa hasta {state['quarantine_until']}")
 
     if not successful_sources:
         raise SystemExit("Ninguna fuente independiente respondió correctamente (las fuentes en cuarentena no cuentan como fuente disponible).")

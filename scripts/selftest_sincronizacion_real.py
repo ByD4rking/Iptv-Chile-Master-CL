@@ -546,12 +546,12 @@ def main(args: argparse.Namespace) -> None:
     # Anime tiene orden alfabético solicitado; las alternativas se ordenan
     # junto a su canal base y no cuentan como nombres independientes.
     anime_order = [
-        channel_name_key(item["display_raw"])
+        ap.clave_orden_anime(item["display_raw"])
         for item in after
         if norm(item["category"]) == "anime" and not item["is_option"]
     ]
     if anime_order != sorted(anime_order):
-        raise AssertionError("Anime no quedó ordenado alfabéticamente.")
+        raise AssertionError("Anime no quedó ordenado por franquicia y saga.")
 
     # Canales identificados como España no pueden permanecer en Anime.
     spanish_anime = [

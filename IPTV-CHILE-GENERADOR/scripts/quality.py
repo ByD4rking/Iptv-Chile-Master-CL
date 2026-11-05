@@ -24,6 +24,20 @@ ENDPOINT_QUARANTINE_HOURS = 24
 RETRIES = 3
 RETRY_BACKOFF_SECONDS = (0.8, 1.8, 3.5)
 RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
+TRANSIENT_HTTP = {401, 403, 408, 425, 429, 500, 502, 503, 504}
+
+
+def is_transient_failure(error):
+    """No penaliza bloqueos, límites ni fallos de red como si el canal estuviera muerto."""
+    message = str(error or "").lower()
+    match = re.search(r"http(?: error)?\s+(\d{3})", message)
+    if match and int(match.group(1)) in TRANSIENT_HTTP:
+        return True
+    return any(token in message for token in (
+        "timed out", "timeout", "temporary failure", "connection reset",
+        "connection refused", "remote end closed", "network is unreachable",
+        "name or service not known", "temporary name resolution",
+    ))
 
 
 def quality_key(item, status_item, source_priority):
@@ -433,10 +447,13 @@ def inspect_url(item):
         "variant_index": None,
         "variant_count": None,
         "error": None,
+        "failure_class": "unknown",
+        "failure_confirmed": False,
     }
 
     if not url:
         result["error"] = "URL vacía"
+        result["failure_class"] = "invalid_input"
         return result
 
     try:
@@ -478,6 +495,21 @@ def inspect_url(item):
     except Exception as error:
         result["error"] = str(error)
 
+    failure_text = result.get("error") or result.get("playback_error") or ""
+    if result.get("playback_ok"):
+        result["failure_class"] = "healthy"
+    elif is_transient_failure(failure_text):
+        result["failure_class"] = "transient"
+    elif re.search(r"http(?: error)?\\s+(?:404|410)\\b", failure_text, re.I):
+        # 404/410 requieren repetición entre ejecuciones; nunca eliminan el canal.
+        result["failure_class"] = "not_found_candidate"
+        result["failure_confirmed"] = True
+    elif result.get("playback_checked"):
+        result["failure_class"] = "playback_invalid"
+        result["failure_confirmed"] = True
+    else:
+        result["failure_class"] = "unclassified"
+
     return result
 
 
@@ -497,7 +529,7 @@ def main():
         except Exception:
             endpoint_health = {}
 
-    from datetime import datetime, timezone
+    from datetime import datetime, timezone, timedelta
     now = datetime.now(timezone.utc)
     tasks = []
     skipped_quarantine = []
@@ -512,10 +544,21 @@ def main():
                     quarantined = datetime.fromisoformat(until.replace("Z", "+00:00")) > now
                 except ValueError:
                     quarantined = False
+            # La cuarentena no es permanente: se vuelve a sondear cada 6 h.
+            # Si el stream se recupera, el resultado positivo limpia el estado.
+            probe_due = True
             if quarantined:
+                last_probe = str(state.get("last_probe") or "").strip()
+                if last_probe:
+                    try:
+                        previous_probe = datetime.fromisoformat(last_probe.replace("Z", "+00:00"))
+                        probe_due = (now - previous_probe) >= timedelta(hours=6)
+                    except ValueError:
+                        probe_due = True
+            if quarantined and not probe_due:
                 skipped_quarantine.append((channel, source, state))
             else:
-                tasks.append({"channel": channel, "source": source})
+                tasks.append({"channel": channel, "source": source, "was_quarantined": quarantined})
     total = len(tasks) + len(skipped_quarantine)
 
     print("=" * 60)
@@ -599,20 +642,26 @@ def main():
         # mantener siempre: checks == successes + failures.
         if result.get("quarantined"):
             continue
-        state["checks"] = int(state.get("checks") or 0) + 1
+        state["last_probe"] = checked_at
         if result["playback_ok"]:
+            state["checks"] = int(state.get("checks") or 0) + 1
             state["successes"] = int(state.get("successes") or 0) + 1
             state["consecutive_failures"] = 0
             state["last_success"] = checked_at
             state["last_error"] = None
             state["quarantine_until"] = None
-        else:
+        elif result.get("failure_confirmed"):
+            state["checks"] = int(state.get("checks") or 0) + 1
             state["failures"] = int(state.get("failures") or 0) + 1
             state["consecutive_failures"] = int(state.get("consecutive_failures") or 0) + 1
             state["last_failure"] = checked_at
             state["last_error"] = result.get("error") or result.get("playback_error")
             if state["consecutive_failures"] >= ENDPOINT_QUARANTINE_AFTER:
                 state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=ENDPOINT_QUARANTINE_HOURS)).isoformat()
+        else:
+            # Un 403, timeout, 5xx o error de red no suma fallos consecutivos.
+            state["last_transient_error"] = result.get("error") or result.get("playback_error")
+            state["last_transient_at"] = checked_at
         result["endpoint_consecutive_failures"] = state["consecutive_failures"]
         result["endpoint_checks"] = int(state.get("checks") or 0)
         result["endpoint_successes"] = int(state.get("successes") or 0)

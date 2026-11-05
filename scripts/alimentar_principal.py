@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import re
 import unicodedata
 import requests
@@ -3055,10 +3056,11 @@ def agrupar_alternativas_por_identidad(lineas):
 
 
 
-def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None):
+def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None):
     """Restaura solo logos ausentes desde la M3U anterior y el catálogo Pluto."""
     pluto_por_id = pluto_por_id or {}
     pluto_por_nombre = pluto_por_nombre or {}
+    logos_por_url_prioritarios = logos_por_url_prioritarios or {}
 
     def bloques(datos):
         resultado = []
@@ -3129,8 +3131,11 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
         if actual and actual.group(1).strip() and url_es_valida(actual.group(1).strip()):
             continue
 
+        # La playlist anterior tiene prioridad solo con coincidencia exacta de URL.
+        logo = logos_por_url_prioritarios.get(item["url"], "") if item["url"] else ""
         legado = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
-        logo = legado.group(1).strip() if legado else ""
+        if not logo:
+            logo = legado.group(1).strip() if legado else ""
         if not logo and item["url"] and len(por_url.get(item["url"], set())) == 1:
             logo = next(iter(por_url[item["url"]]))
         if not logo and item["id"] and len(por_id.get(item["id"], set())) == 1:
@@ -3170,6 +3175,49 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
         "sin_referencia": pendientes,
     }
 
+def clave_orden_anime(nombre, indice=0):
+    """Clave canónica: franquicia alfabética, saga en orden narrativo y opciones juntas."""
+    nombre = (nombre or "").strip()
+    match = re.search(
+        r"\s*(?:\[\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\]|"
+        r"\(\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\))$",
+        nombre,
+        re.I,
+    )
+    opcion = int(match.group(1) or match.group(2)) if match else 1
+    base = nombre[:match.start()].strip() if match else nombre
+    canon = normalizar(base)
+    familia, saga, alias = canon, 0, 0
+
+    if canon.startswith("dragon ball"):
+        familia = "dragon ball"
+        if "pelicul" in canon or "movie" in canon:
+            saga = 4
+        elif "dragon ball / dragon ball z" in canon:
+            saga = 0.5
+        elif re.search(r"\bgt\b", canon):
+            saga = 3
+        elif re.search(r"\bsuper\b", canon):
+            saga = 2
+        elif re.search(r"\bz\b", canon):
+            saga = 1
+    elif canon.startswith("naruto") or canon.startswith("boruto"):
+        familia = "naruto"
+        if "pelicul" in canon or "movie" in canon:
+            saga = 3
+        elif canon.startswith("boruto"):
+            saga = 2
+        elif "shippuden" in canon:
+            saga = 1
+    elif "super campeones" in canon or "captain tsubasa" in canon:
+        familia = "super campeones"
+        alias = 0 if "super campeones" in canon else 1
+    elif "caballeros del zodiaco" in canon or "saint seiya" in canon:
+        familia = "caballeros del zodiaco"
+
+    return (familia, saga, alias, opcion, canon, indice)
+
+
 def ordenar_anime_alfabeticamente(lineas):
     """Ordena Anime por franquicia y saga; mantiene opciones contiguas."""
     prefijo, bloques = [], []
@@ -3178,7 +3226,7 @@ def ordenar_anime_alfabeticamente(lineas):
         if not lineas[i].startswith("#EXTINF"):
             if not bloques:
                 prefijo.append(lineas[i])
-            elif bloques:
+            else:
                 bloques[-1]["lineas"].append(lineas[i])
             i += 1
             continue
@@ -3187,48 +3235,10 @@ def ordenar_anime_alfabeticamente(lineas):
         while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
             j += 1
         raw = list(lineas[inicio:j])
-        nombre = extraer_nombre(raw[0])
-        match = re.search(
-            r"\s*(?:\[\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\]|"
-            r"\(\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\))$",
-            nombre,
-            re.I,
-        )
-        opcion = int(match.group(1) or match.group(2)) if match else 1
-        base = nombre[:match.start()].strip() if match else nombre
-        canon = normalizar(base)
-        familia, saga, alias = canon, 0, 0
-
-        if canon.startswith("dragon ball"):
-            familia = "dragon ball"
-            if "pelicul" in canon or "movie" in canon:
-                saga = 4
-            elif "dragon ball / dragon ball z" in canon:
-                saga = 0.5
-            elif re.search(r"\bgt\b", canon):
-                saga = 3
-            elif re.search(r"\bsuper\b", canon):
-                saga = 2
-            elif re.search(r"\bz\b", canon):
-                saga = 1
-        elif canon.startswith("naruto") or canon.startswith("boruto"):
-            familia = "naruto"
-            if "pelicul" in canon or "movie" in canon:
-                saga = 3
-            elif canon.startswith("boruto"):
-                saga = 2
-            elif "shippuden" in canon:
-                saga = 1
-        elif "super campeones" in canon or "captain tsubasa" in canon:
-            familia = "super campeones"
-            alias = 0 if "super campeones" in canon else 1
-        elif "caballeros del zodiaco" in canon or "saint seiya" in canon:
-            familia = "caballeros del zodiaco"
-
         bloques.append({
             "lineas": raw,
             "anime": normalizar(extraer_categoria(raw[0])) == "anime",
-            "clave": (familia, saga, alias, opcion, canon, len(bloques)),
+            "clave": clave_orden_anime(extraer_nombre(raw[0]), len(bloques)),
         })
         i = j
 
@@ -3242,7 +3252,6 @@ def ordenar_anime_alfabeticamente(lineas):
         elegido = next(siguiente) if bloque["anime"] else bloque
         salida.extend(elegido["lineas"])
     return salida
-
 
 def mover_paises_al_final(lineas):
     """Mueve las categorías-país al final sin alterar sus canales ni su orden interno."""
@@ -3491,12 +3500,14 @@ def main():
     # --------------------------------------------------------
     # FUENTES COLABORADORAS
     # --------------------------------------------------------
+    referencias_canales_logo = []
     for i, fuente in enumerate(FUENTES, 1):
         print(f"\n[FUENTE {i}/{len(FUENTES)}] {fuente}")
         try:
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
+            referencias_canales_logo.extend(canales)
             if fuente_es_iptvsv := es_fuente_iptvsv(fuente):
                 # Primero sincronizar group-title de las URLs que ya existen.
                 # Validar antes de esta reconciliación bloqueaba toda la fuente
@@ -3604,14 +3615,16 @@ def main():
             respuesta = session.get(FUENTE_FEAR_FACTOR, timeout=30)
             respuesta.raise_for_status()
             canal = seleccionar_canal_fear_factor(parsear_m3u(respuesta.text))
+            if canal:
+                referencias_canales_logo.append(canal)
             if not canal:
                 raise RuntimeError("No existe bloque reproducible con nombre exacto Fear Factor.")
             logo = re.search(r'tvg-logo="([^"]+)"', canal.get("extinf", ""), re.I)
             if not logo or not url_es_valida(logo.group(1)):
                 raise RuntimeError("Fear Factor no trae logo HTTP(S) válido.")
-            destino = buscar_categoria_existente("Series", categorias)
+            destino = buscar_categoria_existente("Competencia", categorias)
             if not destino:
-                raise RuntimeError("La categoría Series no existe; no se crean categorías nuevas.")
+                raise RuntimeError("La categoría Competencia no existe; no se crean categorías nuevas.")
             url_fear = canal["url"].strip()
             logo_fear = logo.group(1).strip()
             existente = False
@@ -3635,14 +3648,14 @@ def main():
                 lineas[indice_extinf] = extinf
                 existente = True
             if existente:
-                print("  -> Fear Factor existente actualizado: Series + logo oficial de la fuente.")
+                print("  -> Fear Factor existente actualizado: Competencia + logo oficial de la fuente.")
             else:
                 urls = mapa_urls_principal(lineas)
                 urls.update(item["bloque"][-1].strip() for item in bloques_nuevos
                             if item.get("bloque") and url_es_valida(item["bloque"][-1].strip()))
                 if agregar_bloque(canal, destino, urls, bloques_nuevos):
                     agregados_normales += 1
-                    print("  -> Fear Factor agregado a Series con URL y logo fuente.")
+                    print("  -> Fear Factor agregado a Competencia con URL y logo fuente.")
                 else:
                     print("  -> Fear Factor omitido: URL ya presente en un bloque pendiente.")
         except Exception as error_fear:
@@ -3662,6 +3675,7 @@ def main():
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
+            referencias_canales_logo.extend(canales)
             nuevos = 0
             sin_categoria = 0
 
@@ -4110,6 +4124,75 @@ def main():
 
     # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+    # Reutilizar también los logos verificados que llegan en las fuentes Pluto propias.
+    # Solo se aceptan identidades/nombres con un único logo candidato, para no cruzar marcas.
+    logos_pluto_por_id = defaultdict(set)
+    logos_pluto_por_nombre = defaultdict(set)
+    canal_pluto_por_id = {}
+    canal_pluto_por_nombre = {}
+    for candidatos in canales_pluto_fuentes_por_id.values():
+        for canal_pluto in candidatos:
+            extinf_pluto = canal_pluto.get("extinf", "")
+            match_id = re.search(r'tvg-id="([^"]+)"', extinf_pluto, re.I)
+            match_logo = re.search(r'tvg-logo="([^"]+)"', extinf_pluto, re.I)
+            logo_pluto = match_logo.group(1).strip() if match_logo else ""
+            if not url_es_valida(logo_pluto):
+                continue
+            nombre_pluto = normalizar_nombre_canal(
+                canal_pluto.get("nombre") or extraer_nombre(extinf_pluto)
+            )
+            if match_id:
+                id_pluto = match_id.group(1).strip().lower()
+                logos_pluto_por_id[id_pluto].add(logo_pluto)
+                canal_pluto_por_id[id_pluto] = canal_pluto
+            if nombre_pluto:
+                logos_pluto_por_nombre[nombre_pluto].add(logo_pluto)
+                canal_pluto_por_nombre[nombre_pluto] = canal_pluto
+
+    pluto_por_id = {
+        ident: canal_pluto_por_id[ident]
+        for ident, logos in logos_pluto_por_id.items()
+        if len(logos) == 1
+    }
+    pluto_por_nombre = {
+        nombre: canal_pluto_por_nombre[nombre]
+        for nombre, logos in logos_pluto_por_nombre.items()
+        if len(logos) == 1
+    }
+    # Referencias de logos: lista de entrada + copia histórica GOD en solo lectura.
+    # GOD nunca se escribe ni se modifica; solo sirve para recuperar metadatos ausentes.
+    referencias_logos = list(lineas_iniciales)
+    logos_historicos = {}
+    archivo_referencias = BASE / "scripts" / "logo_references.json"
+    if archivo_referencias.is_file():
+        try:
+            datos_referencias = json.loads(
+                archivo_referencias.read_text(encoding="utf-8")
+            )
+            logos_historicos = {
+                url: logo
+                for url, logo in datos_referencias.get("logos", {}).items()
+                if url_es_valida(url) and url_es_valida(logo)
+            }
+            print(f"Referencias históricas exactas de logo cargadas: {len(logos_historicos)}")
+        except (OSError, ValueError, TypeError) as error_referencias:
+            print(f"ADVERTENCIA: no se pudieron cargar referencias históricas de logos: {error_referencias}")
+    for canal_ref in referencias_canales_logo:
+        extinf_ref = str(canal_ref.get("extinf") or "").strip()
+        url_ref = str(canal_ref.get("url") or "").strip()
+        if extinf_ref.startswith("#EXTINF") and url_es_valida(url_ref):
+            referencias_logos.extend((extinf_ref, url_ref))
+    ruta_god = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
+    if ruta_god.is_file():
+        referencias_logos.extend(
+            ruta_god.read_text(encoding="utf-8-sig", errors="replace").splitlines()
+        )
+    lineas, logos_restaurados = restaurar_logos_historicos(
+        lineas, referencias_logos, pluto_por_id, pluto_por_nombre, logos_historicos
+    )
+    # Ordenar Anime por franquicia/saga al final para que ninguna etapa posterior lo desordene.
+    lineas = ordenar_anime_alfabeticamente(lineas)
+    print(f"Restauración de logos desde la lista de entrada: {logos_restaurados}")
     validar_orden_canales(
         lineas_iniciales,
         lineas,
