@@ -124,6 +124,7 @@ def main():
         referencias_logos,
         pluto_por_id,
         pluto_por_nombre,
+        logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
     )
     # Último blindaje de orden: España y todos los países deben quedar al final.
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)

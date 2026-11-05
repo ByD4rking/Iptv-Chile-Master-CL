@@ -340,6 +340,35 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertEqual(stats["lista_anterior"], 1)
 
 
+    def test_restaurar_logos_protects_existing_valid_logo_by_exact_stream_url(self):
+        original = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-logo="https://stable.example/logo.png" group-title="Series",Canal Estable',
+            "https://stream.example/stable.m3u8",
+        ]
+        incoming = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-logo="https://wrong.example/logo.png" group-title="Series",Canal Estable',
+            "https://stream.example/stable.m3u8",
+        ]
+        locked = ap.extraer_logos_bloqueados_por_url(original)
+        restored, stats = ap.restaurar_logos_historicos(
+            incoming, original, logos_bloqueados_por_url=locked
+        )
+        self.assertIn('tvg-logo="https://stable.example/logo.png"', restored[1])
+        self.assertNotIn('tvg-logo="https://wrong.example/logo.png"', restored[1])
+        self.assertEqual(stats["protegidos"], 1)
+
+    def test_logo_lock_requires_unique_valid_logo_for_exact_url(self):
+        conflicting = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-logo="https://one.example/logo.png",Canal',
+            "https://stream.example/canal.m3u8",
+            '#EXTINF:-1 tvg-logo="https://two.example/logo.png",Canal [Opción 2]',
+            "https://stream.example/canal.m3u8",
+        ]
+        self.assertEqual(ap.extraer_logos_bloqueados_por_url(conflicting), {})
+
     def test_restaurar_logos_uses_historical_reference_even_if_category_changed(self):
         previous = [
             "#EXTM3U",
