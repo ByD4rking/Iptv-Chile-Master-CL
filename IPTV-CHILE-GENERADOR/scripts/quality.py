@@ -529,7 +529,7 @@ def main():
         except Exception:
             endpoint_health = {}
 
-    from datetime import datetime, timezone
+    from datetime import datetime, timezone, timedelta
     now = datetime.now(timezone.utc)
     tasks = []
     skipped_quarantine = []
@@ -544,9 +544,21 @@ def main():
                     quarantined = datetime.fromisoformat(until.replace("Z", "+00:00")) > now
                 except ValueError:
                     quarantined = False
-            # La cuarentena no es una exclusión permanente: se revalida en cada
-            # ejecución. Si el stream volvió, el resultado positivo limpia el estado.
-            tasks.append({"channel": channel, "source": source, "was_quarantined": quarantined})
+            # La cuarentena no es permanente: se vuelve a sondear cada 6 h.
+            # Si el stream se recupera, el resultado positivo limpia el estado.
+            probe_due = True
+            if quarantined:
+                last_probe = str(state.get("last_probe") or "").strip()
+                if last_probe:
+                    try:
+                        previous_probe = datetime.fromisoformat(last_probe.replace("Z", "+00:00"))
+                        probe_due = (now - previous_probe) >= timedelta(hours=6)
+                    except ValueError:
+                        probe_due = True
+            if quarantined and not probe_due:
+                skipped_quarantine.append((channel, source, state))
+            else:
+                tasks.append({"channel": channel, "source": source, "was_quarantined": quarantined})
     total = len(tasks) + len(skipped_quarantine)
 
     print("=" * 60)
@@ -630,6 +642,7 @@ def main():
         # mantener siempre: checks == successes + failures.
         if result.get("quarantined"):
             continue
+        state["last_probe"] = checked_at
         if result["playback_ok"]:
             state["checks"] = int(state.get("checks") or 0) + 1
             state["successes"] = int(state.get("successes") or 0) + 1
