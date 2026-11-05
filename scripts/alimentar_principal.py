@@ -4110,6 +4110,11 @@ def main():
 
     # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
+    # Restaurar únicamente logos verificables que se hayan perdido durante esta ejecución.
+    lineas, logos_restaurados = restaurar_logos_historicos(lineas, lineas_iniciales)
+    # Ordenar Anime por franquicia/saga al final para que ninguna etapa posterior lo desordene.
+    lineas = ordenar_anime_alfabeticamente(lineas)
+    print(f"Restauración de logos desde la lista de entrada: {logos_restaurados}")
     validar_orden_canales(
         lineas_iniciales,
         lineas,
