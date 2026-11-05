@@ -3495,12 +3495,14 @@ def main():
     # --------------------------------------------------------
     # FUENTES COLABORADORAS
     # --------------------------------------------------------
+    referencias_canales_logo = []
     for i, fuente in enumerate(FUENTES, 1):
         print(f"\n[FUENTE {i}/{len(FUENTES)}] {fuente}")
         try:
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
+            referencias_canales_logo.extend(canales)
             if fuente_es_iptvsv := es_fuente_iptvsv(fuente):
                 # Primero sincronizar group-title de las URLs que ya existen.
                 # Validar antes de esta reconciliación bloqueaba toda la fuente
@@ -3608,6 +3610,8 @@ def main():
             respuesta = session.get(FUENTE_FEAR_FACTOR, timeout=30)
             respuesta.raise_for_status()
             canal = seleccionar_canal_fear_factor(parsear_m3u(respuesta.text))
+            if canal:
+                referencias_canales_logo.append(canal)
             if not canal:
                 raise RuntimeError("No existe bloque reproducible con nombre exacto Fear Factor.")
             logo = re.search(r'tvg-logo="([^"]+)"', canal.get("extinf", ""), re.I)
@@ -3666,6 +3670,7 @@ def main():
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
+            referencias_canales_logo.extend(canales)
             nuevos = 0
             sin_categoria = 0
 
@@ -4152,6 +4157,11 @@ def main():
     # Referencias de logos: lista de entrada + copia histórica GOD en solo lectura.
     # GOD nunca se escribe ni se modifica; solo sirve para recuperar metadatos ausentes.
     referencias_logos = list(lineas_iniciales)
+    for canal_ref in referencias_canales_logo:
+        extinf_ref = str(canal_ref.get("extinf") or "").strip()
+        url_ref = str(canal_ref.get("url") or "").strip()
+        if extinf_ref.startswith("#EXTINF") and url_es_valida(url_ref):
+            referencias_logos.extend((extinf_ref, url_ref))
     ruta_god = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
     if ruta_god.is_file():
         referencias_logos.extend(
