@@ -3170,6 +3170,49 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
         "sin_referencia": pendientes,
     }
 
+def clave_orden_anime(nombre, indice=0):
+    """Clave canónica: franquicia alfabética, saga en orden narrativo y opciones juntas."""
+    nombre = (nombre or "").strip()
+    match = re.search(
+        r"\\s*(?:\\[\\s*(?:opci[oó]n|opc)\\s*\\.?\\s*(\\d+)\\s*\\]|"
+        r"\\(\\s*(?:opci[oó]n|opc)\\s*\\.?\\s*(\\d+)\\s*\\))$",
+        nombre,
+        re.I,
+    )
+    opcion = int(match.group(1) or match.group(2)) if match else 1
+    base = nombre[:match.start()].strip() if match else nombre
+    canon = normalizar(base)
+    familia, saga, alias = canon, 0, 0
+
+    if canon.startswith("dragon ball"):
+        familia = "dragon ball"
+        if "pelicul" in canon or "movie" in canon:
+            saga = 4
+        elif "dragon ball / dragon ball z" in canon:
+            saga = 0.5
+        elif re.search(r"\\bgt\\b", canon):
+            saga = 3
+        elif re.search(r"\\bsuper\\b", canon):
+            saga = 2
+        elif re.search(r"\\bz\\b", canon):
+            saga = 1
+    elif canon.startswith("naruto") or canon.startswith("boruto"):
+        familia = "naruto"
+        if "pelicul" in canon or "movie" in canon:
+            saga = 3
+        elif canon.startswith("boruto"):
+            saga = 2
+        elif "shippuden" in canon:
+            saga = 1
+    elif "super campeones" in canon or "captain tsubasa" in canon:
+        familia = "super campeones"
+        alias = 0 if "super campeones" in canon else 1
+    elif "caballeros del zodiaco" in canon or "saint seiya" in canon:
+        familia = "caballeros del zodiaco"
+
+    return (familia, saga, alias, opcion, canon, indice)
+
+
 def ordenar_anime_alfabeticamente(lineas):
     """Ordena Anime por franquicia y saga; mantiene opciones contiguas."""
     prefijo, bloques = [], []
@@ -3178,7 +3221,7 @@ def ordenar_anime_alfabeticamente(lineas):
         if not lineas[i].startswith("#EXTINF"):
             if not bloques:
                 prefijo.append(lineas[i])
-            elif bloques:
+            else:
                 bloques[-1]["lineas"].append(lineas[i])
             i += 1
             continue
@@ -3187,48 +3230,10 @@ def ordenar_anime_alfabeticamente(lineas):
         while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
             j += 1
         raw = list(lineas[inicio:j])
-        nombre = extraer_nombre(raw[0])
-        match = re.search(
-            r"\s*(?:\[\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\]|"
-            r"\(\s*(?:opci[oó]n|opc)\s*\.?\s*(\d+)\s*\))$",
-            nombre,
-            re.I,
-        )
-        opcion = int(match.group(1) or match.group(2)) if match else 1
-        base = nombre[:match.start()].strip() if match else nombre
-        canon = normalizar(base)
-        familia, saga, alias = canon, 0, 0
-
-        if canon.startswith("dragon ball"):
-            familia = "dragon ball"
-            if "pelicul" in canon or "movie" in canon:
-                saga = 4
-            elif "dragon ball / dragon ball z" in canon:
-                saga = 0.5
-            elif re.search(r"\bgt\b", canon):
-                saga = 3
-            elif re.search(r"\bsuper\b", canon):
-                saga = 2
-            elif re.search(r"\bz\b", canon):
-                saga = 1
-        elif canon.startswith("naruto") or canon.startswith("boruto"):
-            familia = "naruto"
-            if "pelicul" in canon or "movie" in canon:
-                saga = 3
-            elif canon.startswith("boruto"):
-                saga = 2
-            elif "shippuden" in canon:
-                saga = 1
-        elif "super campeones" in canon or "captain tsubasa" in canon:
-            familia = "super campeones"
-            alias = 0 if "super campeones" in canon else 1
-        elif "caballeros del zodiaco" in canon or "saint seiya" in canon:
-            familia = "caballeros del zodiaco"
-
         bloques.append({
             "lineas": raw,
             "anime": normalizar(extraer_categoria(raw[0])) == "anime",
-            "clave": (familia, saga, alias, opcion, canon, len(bloques)),
+            "clave": clave_orden_anime(extraer_nombre(raw[0]), len(bloques)),
         })
         i = j
 
@@ -3242,7 +3247,6 @@ def ordenar_anime_alfabeticamente(lineas):
         elegido = next(siguiente) if bloque["anime"] else bloque
         salida.extend(elegido["lineas"])
     return salida
-
 
 def mover_paises_al_final(lineas):
     """Mueve las categorías-país al final sin alterar sus canales ni su orden interno."""
