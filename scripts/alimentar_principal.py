@@ -4114,8 +4114,45 @@ def main():
 
     # Aplicar las directivas de reconexión a la representación final.
     lineas, reconexiones_agregadas = aplicar_reconexion_por_canal(lineas)
-    # Restaurar únicamente logos verificables que se hayan perdido durante esta ejecución.
-    lineas, logos_restaurados = restaurar_logos_historicos(lineas, lineas_iniciales)
+    # Reutilizar también los logos verificados que llegan en las fuentes Pluto propias.
+    # Solo se aceptan identidades/nombres con un único logo candidato, para no cruzar marcas.
+    logos_pluto_por_id = defaultdict(set)
+    logos_pluto_por_nombre = defaultdict(set)
+    canal_pluto_por_id = {}
+    canal_pluto_por_nombre = {}
+    for candidatos in canales_pluto_fuentes_por_id.values():
+        for canal_pluto in candidatos:
+            extinf_pluto = canal_pluto.get("extinf", "")
+            match_id = re.search(r'tvg-id="([^"]+)"', extinf_pluto, re.I)
+            match_logo = re.search(r'tvg-logo="([^"]+)"', extinf_pluto, re.I)
+            logo_pluto = match_logo.group(1).strip() if match_logo else ""
+            if not url_es_valida(logo_pluto):
+                continue
+            nombre_pluto = normalizar_nombre_canal(
+                canal_pluto.get("nombre") or extraer_nombre(extinf_pluto)
+            )
+            if match_id:
+                id_pluto = match_id.group(1).strip().lower()
+                logos_pluto_por_id[id_pluto].add(logo_pluto)
+                canal_pluto_por_id[id_pluto] = canal_pluto
+            if nombre_pluto:
+                logos_pluto_por_nombre[nombre_pluto].add(logo_pluto)
+                canal_pluto_por_nombre[nombre_pluto] = canal_pluto
+
+    pluto_por_id = {
+        ident: canal_pluto_por_id[ident]
+        for ident, logos in logos_pluto_por_id.items()
+        if len(logos) == 1
+    }
+    pluto_por_nombre = {
+        nombre: canal_pluto_por_nombre[nombre]
+        for nombre, logos in logos_pluto_por_nombre.items()
+        if len(logos) == 1
+    }
+    # Restaurar únicamente logos verificables desde la lista de entrada y Pluto.
+    lineas, logos_restaurados = restaurar_logos_historicos(
+        lineas, lineas_iniciales, pluto_por_id, pluto_por_nombre
+    )
     # Ordenar Anime por franquicia/saga al final para que ninguna etapa posterior lo desordene.
     lineas = ordenar_anime_alfabeticamente(lineas)
     print(f"Restauración de logos desde la lista de entrada: {logos_restaurados}")
