@@ -20,19 +20,6 @@
   "duplicates": [],
   "entries": [
     {
-      "name": "EnerGeek (1080p)",
-      "tvg_name": "EnerGeek (1080p)",
-      "tvg_id": "a2048bdccbc2fe4f327e",
-      "logo": "https://cdn.energeek.cl/logos/EG-Retro-2025_pfp.png",
-      "groups": [
-        "Animation"
-      ],
-      "url": "https://cl-2.backend.energeek.cl/bkp/egretroweb/index.m3u8?token=IPTVgh26",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "EnerGeek FAN (1080p)",
       "tvg_name": "EnerGeek FAN (1080p)",
       "tvg_id": "67d6892f14e2159daa35",
@@ -40,7 +27,7 @@
       "groups": [
         "Animation"
       ],
-      "url": "https://cl-2.backend.energeek.cl/bkp/egfanweb/index.m3u8?token=W3bEnerG33k2026",
+      "url": "https://cl-2.backend.energeek.cl/bkp/egfan/mobile/index.m3u8?token=IPTVgh26",
       "headers": {
         "http-reconnect": "true"
       }
@@ -73,6 +60,20 @@
       }
     },
     {
+      "name": "Disney Channel Latin America Panregional HD (1080p)",
+      "tvg_name": "Disney Channel Latin America Panregional HD (1080p)",
+      "tvg_id": "3edae84f39aee2c4e642",
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/f/ff/2024_Disney_Channel_text_logo.svg",
+      "groups": [
+        "Animation",
+        "Kids"
+      ],
+      "url": "http://45.134.141.161:2200/ARG/Disney_Channel/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Disney Jr. Latin America South (1080p)",
       "tvg_name": "Disney Jr. Latin America South (1080p)",
       "tvg_id": "4e0ace05c5a09adb118f",
@@ -87,15 +88,14 @@
       }
     },
     {
-      "name": "Disney Jr. Latin America South HD (1080p)",
-      "tvg_name": "Disney Jr. Latin America South HD (1080p)",
-      "tvg_id": "f78cd4092c7ff4e90c11",
-      "logo": "https://upload.wikimedia.org/wikipedia/commons/e/e3/2024_Disney_Jr._Logo.svg",
+      "name": "Tevex (1080p)",
+      "tvg_name": "Tevex (1080p)",
+      "tvg_id": "1084d90b4cf5458fcb62",
+      "logo": "https://i.imgur.com/FnInQRd.png",
       "groups": [
-        "Animation",
-        "Kids"
+        "Business"
       ],
-      "url": "http://45.134.141.161:2200/ARG/Disney_Junior/index.m3u8",
+      "url": "https://v2.tustreaming.cl/tevex/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -134,7 +134,7 @@
       "groups": [
         "Comedy"
       ],
-      "url": "https://barinaslive1.boldmss.com/COMEDY/COMEDY.isml/COMEDY.m3u8",
+      "url": "http://15.204.246.24:8080/ComedyCentralHD/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -148,6 +148,19 @@
         "Culture"
       ],
       "url": "https://origin.dpsgo.com/ssai/event/GI-9cp_bT8KcerLpZwkuhw/master.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Chiloe Red 25 (720p)",
+      "tvg_name": "Chiloe Red 25 (720p)",
+      "tvg_id": "100f3506d4735afb1eca",
+      "logo": "https://i.imgur.com/3tqrImm.png",
+      "groups": [
+        "Culture"
+      ],
+      "url": "https://v2.tustreaming.cl/chiloered/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -400,19 +413,6 @@
       }
     },
     {
-      "name": "Zona Play TV (720p)",
-      "tvg_name": "Zona Play TV (720p)",
-      "tvg_id": "6b0a38a6d3001b3ee053",
-      "logo": "https://i.imgur.com/GewcpHv.png",
-      "groups": [
-        "Entertainment"
-      ],
-      "url": "https://tv1.mediacp.eu:3131/live/dilxbgxylive.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Chile Channel (720p)",
       "tvg_name": "Chile Channel (720p)",
       "tvg_id": "83e05b185658111755ed",
@@ -578,6 +578,19 @@
         "General"
       ],
       "url": "http://15.204.246.24:8080/CHVHD/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "China Channel (720p)",
+      "tvg_name": "China Channel (720p)",
+      "tvg_id": "b3fae0e020c6f740bf77",
+      "logo": "https://cdn.m3u.cl/logo/1769_China_Channel.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v2.tustreaming.cl/chinachannel/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -817,19 +830,6 @@
       }
     },
     {
-      "name": "La Metro TV (1080p)",
-      "tvg_name": "La Metro TV (1080p)",
-      "tvg_id": "835a1b9714b398daeec3",
-      "logo": "https://i.imgur.com/0aoI5Zd.jpeg",
-      "groups": [
-        "General"
-      ],
-      "url": "https://jireh-8-hls-video-us-isp.dps.live/hls-video/931b584451fa6dd1313ee66efbfd5802e3f3bcea/metropolitanatv/metropolitanatv.smil/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "La Popular TV",
       "tvg_name": "La Popular TV",
       "tvg_id": "9ea9527157d330a243df",
@@ -864,6 +864,19 @@
         "General"
       ],
       "url": "https://5eaccbab48461.streamlock.net:1936/8242/ngrp:8242_all/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Marga Marga TV (720p)",
+      "tvg_name": "Marga Marga TV (720p)",
+      "tvg_id": "bf7b9b7e13ceafa66b30",
+      "logo": "https://i.imgur.com/4cg51eE.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://v1.tustreaming.cl/margamargatv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -916,19 +929,6 @@
         "General"
       ],
       "url": "https://video.ipstream.cl:3710/hybrid/play.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "Nina TV (720p)",
-      "tvg_name": "Nina TV (720p)",
-      "tvg_id": "afb0f71f7cc01a896520",
-      "logo": "https://cdn.m3u.cl/logo/1552_Nina_TV.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://tv1.ninatv.cl/hls/stream.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1038,6 +1038,19 @@
       }
     },
     {
+      "name": "Radio Nuble (720p)",
+      "tvg_name": "Radio Nuble (720p)",
+      "tvg_id": "5e733b30f2981a58ce6c",
+      "logo": "https://cdn.m3u.cl/logo/870_Radio_Nuble.png",
+      "groups": [
+        "General"
+      ],
+      "url": "https://tv.telselec.cl:3376/live/nublefmlive.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Radio Panoramica (720p)",
       "tvg_name": "Radio Panoramica (720p)",
       "tvg_id": "f9d76478561210c3ae35",
@@ -1116,19 +1129,6 @@
       }
     },
     {
-      "name": "Radio Vida Curico (720p)",
-      "tvg_name": "Radio Vida Curico (720p)",
-      "tvg_id": "5d99099aa551a98a5f7f",
-      "logo": "https://cdn.m3u.cl/logo/167_Radio_Vida_Curico.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v2.tustreaming.cl/radiovidacurico/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Rial TV (720p)",
       "tvg_name": "Rial TV (720p)",
       "tvg_id": "6ae2d1284850ddbf205e",
@@ -1137,19 +1137,6 @@
         "General"
       ],
       "url": "https://5eaccbab48461.streamlock.net:1936/8124/8124/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "San Nicolas TV (720p)",
-      "tvg_name": "San Nicolas TV (720p)",
-      "tvg_id": "fd581de913d049017a2f",
-      "logo": "https://i.imgur.com/z94YCpH.png",
-      "groups": [
-        "General"
-      ],
-      "url": "https://v4.tustreaming.cl/sannicolastv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1332,6 +1319,19 @@
         "Kids"
       ],
       "url": "http://186.148.196.100:8000/play/a00d",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Wapp (720p)",
+      "tvg_name": "Wapp (720p)",
+      "tvg_id": "8ba0e1dd0d0865d7f79f",
+      "logo": "https://i.imgur.com/Bv1yJ1d.png",
+      "groups": [
+        "Lifestyle"
+      ],
+      "url": "https://stream.wapptv.cl/video/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -1689,6 +1689,19 @@
       }
     },
     {
+      "name": "Atacama Noticias (720p) [Not 24/7]",
+      "tvg_name": "Atacama Noticias (720p) [Not 24/7]",
+      "tvg_id": "09d3ecb42296552fb4bc",
+      "logo": "https://i.imgur.com/Avx4Ecf.png",
+      "groups": [
+        "News"
+      ],
+      "url": "https://v2.tustreaming.cl/atacamanoticias/index.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
       "name": "Contivision (720p)",
       "tvg_name": "Contivision (720p)",
       "tvg_id": "b9afcdd32f1315c11124",
@@ -1806,19 +1819,6 @@
       }
     },
     {
-      "name": "Turno (720p)",
-      "tvg_name": "Turno (720p)",
-      "tvg_id": "92ebe9dd4bc51ccb1961",
-      "logo": "https://i.imgur.com/XuSeHBt.png",
-      "groups": [
-        "News"
-      ],
-      "url": "https://redirector.dps.live/hls/turno/playlist.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Agricultura TV (1080p)",
       "tvg_name": "Agricultura TV (1080p)",
       "tvg_id": "e44c1e70a8828bdd29bd",
@@ -1879,19 +1879,6 @@
         "Religious"
       ],
       "url": "https://multimedia.fortalezatv.cl/video/video.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
-      "name": "ISA TV",
-      "tvg_name": "ISA TV",
-      "tvg_id": "f3158a288aedc6f67e97",
-      "logo": "https://i.imgur.com/24qGdyn.jpeg",
-      "groups": [
-        "Religious"
-      ],
-      "url": "https://scl.edge.grupoz.cl/isatv/live/playlist.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -2157,19 +2144,6 @@
       }
     },
     {
-      "name": "Canal Latino 54 (360p)",
-      "tvg_name": "Canal Latino 54 (360p)",
-      "tvg_id": "331cd87b44ea71dd73d2",
-      "logo": "https://i.imgur.com/mKUQoX7.png",
-      "groups": [
-        "Undefined"
-      ],
-      "url": "https://videostream.chileservidores.com:8081/latina/index.m3u8",
-      "headers": {
-        "http-reconnect": "true"
-      }
-    },
-    {
       "name": "Canal Survision Alerce (720p)",
       "tvg_name": "Canal Survision Alerce (720p)",
       "tvg_id": "0f1c04ed60e7973ca445",
@@ -2243,6 +2217,19 @@
         "Undefined"
       ],
       "url": "https://pantera1-100gb-cl-movistar.dps.live/pucontv/pucontv.smil/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "Radio America TV (720p)",
+      "tvg_name": "Radio America TV (720p)",
+      "tvg_id": "55a3f16404afea8da664",
+      "logo": "https://i.imgur.com/8DXWU8z.png",
+      "groups": [
+        "Undefined"
+      ],
+      "url": "https://v2.tustreaming.cl/americamovil/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
@@ -2451,6 +2438,19 @@
         "Undefined"
       ],
       "url": "https://unlimited1-us.dps.live/tvr/tvr.smil/playlist.m3u8",
+      "headers": {
+        "http-reconnect": "true"
+      }
+    },
+    {
+      "name": "UTV (Chile) (720p)",
+      "tvg_name": "UTV (Chile) (720p)",
+      "tvg_id": "edf812335af3f37e3cbd",
+      "logo": "https://i.imgur.com/ZJNSpfZ.png",
+      "groups": [
+        "Undefined"
+      ],
+      "url": "https://v2.tustreaming.cl/utv/index.m3u8",
       "headers": {
         "http-reconnect": "true"
       }
