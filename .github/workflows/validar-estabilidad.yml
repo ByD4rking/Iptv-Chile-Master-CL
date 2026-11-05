@@ -52,6 +52,9 @@ jobs:
       - name: Instalar dependencias del verificador M3U
         run: python -m pip install requests urllib3
 
+      - name: Auditar disponibilidad real de todos los logos de la lista principal
+        run: python scripts/auditar_logos.py --m3u IPTV-CHILE-MAESTRA_CORREGIDO.m3u --output reportes/logos/REPORTE.md --workers 16
+
       - name: Generar y auditar la lista principal en el runner (sin publicar)
         run: |
           python scripts/alimentar_principal.py
@@ -116,3 +119,11 @@ jobs:
 
       - name: Revisar espacios y cambios mal formados
         run: git diff --check
+      - name: Publicar reporte de auditoría de logos como artefacto
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auditoria-logos-principal
+          path: reportes/logos/REPORTE.md
+          if-no-files-found: warn
+          retention-days: 7
