@@ -23,6 +23,9 @@ def parse_playlist(path: Path):
     return rows
 
 def probe(url: str):
+    host = urlsplit(url).netloc.lower()
+    if host in ("dummyimage.com", "placehold.co", "via.placeholder.com"):
+        return ("PLACEHOLDER", 200, "image/png", host, "imagen genérica, no es el logo del canal")
     last = None
     for attempt in range(2):
         try:
@@ -74,7 +77,7 @@ def main():
             results[futures[future]] = future.result()
     counts = Counter(result[0] for result in results.values())
     category_counts = defaultdict(Counter)
-    broken_rows, inconclusive_rows = [], []
+    broken_rows, inconclusive_rows, placeholder_rows = [], [], []
     for url, linked_rows in by_url.items():
         status = results[url][0]
         for row in linked_rows:
@@ -83,6 +86,8 @@ def main():
                 broken_rows.append((row, results[url]))
             elif status == "INCONCLUSIVE":
                 inconclusive_rows.append((row, results[url]))
+            elif status == "PLACEHOLDER":
+                placeholder_rows.append((row, results[url]))
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     report = [
