@@ -3131,8 +3131,11 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
         if actual and actual.group(1).strip() and url_es_valida(actual.group(1).strip()):
             continue
 
+        # La playlist anterior tiene prioridad solo con coincidencia exacta de URL.
+        logo = logos_por_url_prioritarios.get(item["url"], "") if item["url"] else ""
         legado = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
-        logo = legado.group(1).strip() if legado else ""
+        if not logo:
+            logo = legado.group(1).strip() if legado else ""
         if not logo and item["url"] and len(por_url.get(item["url"], set())) == 1:
             logo = next(iter(por_url[item["url"]]))
         if not logo and item["id"] and len(por_id.get(item["id"], set())) == 1:
