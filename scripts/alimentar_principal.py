@@ -4162,19 +4162,18 @@ def main():
     # Referencias de logos: lista de entrada + copia histórica GOD en solo lectura.
     # GOD nunca se escribe ni se modifica; solo sirve para recuperar metadatos ausentes.
     referencias_logos = list(lineas_iniciales)
+    logos_historicos = {}
     archivo_referencias = BASE / "scripts" / "logo_references.json"
     if archivo_referencias.is_file():
         try:
             datos_referencias = json.loads(
                 archivo_referencias.read_text(encoding="utf-8")
             )
-            logos_historicos = datos_referencias.get("logos", {})
-            for url_historica, logo_historico in logos_historicos.items():
-                if url_es_valida(url_historica) and url_es_valida(logo_historico):
-                    referencias_logos.extend((
-                        f'#EXTINF:-1 tvg-logo="{logo_historico}",Referencia histórica',
-                        url_historica,
-                    ))
+            logos_historicos = {
+                url: logo
+                for url, logo in datos_referencias.get("logos", {}).items()
+                if url_es_valida(url) and url_es_valida(logo)
+            }
             print(f"Referencias históricas exactas de logo cargadas: {len(logos_historicos)}")
         except (OSError, ValueError, TypeError) as error_referencias:
             print(f"ADVERTENCIA: no se pudieron cargar referencias históricas de logos: {error_referencias}")
