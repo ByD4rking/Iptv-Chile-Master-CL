@@ -4149,9 +4149,16 @@ def main():
         for nombre, logos in logos_pluto_por_nombre.items()
         if len(logos) == 1
     }
-    # Restaurar únicamente logos verificables desde la lista de entrada y Pluto.
+    # Referencias de logos: lista de entrada + copia histórica GOD en solo lectura.
+    # GOD nunca se escribe ni se modifica; solo sirve para recuperar metadatos ausentes.
+    referencias_logos = list(lineas_iniciales)
+    ruta_god = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
+    if ruta_god.is_file():
+        referencias_logos.extend(
+            ruta_god.read_text(encoding="utf-8-sig", errors="replace").splitlines()
+        )
     lineas, logos_restaurados = restaurar_logos_historicos(
-        lineas, lineas_iniciales, pluto_por_id, pluto_por_nombre
+        lineas, referencias_logos, pluto_por_id, pluto_por_nombre
     )
     # Ordenar Anime por franquicia/saga al final para que ninguna etapa posterior lo desordene.
     lineas = ordenar_anime_alfabeticamente(lineas)
