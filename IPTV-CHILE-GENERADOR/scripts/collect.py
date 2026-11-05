@@ -2,7 +2,7 @@ import hashlib
 import json
 import re
 import unicodedata
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -256,11 +256,21 @@ def main():
                 quarantined = datetime.fromisoformat(quarantine_until.replace("Z", "+00:00")) > datetime.now(timezone.utc)
             except ValueError:
                 quarantined = False
-        if quarantined and not force_source_probe:
+        probe_due = True
+        if quarantined:
+            last_probe = str(state.get("last_probe") or "").strip()
+            if last_probe:
+                try:
+                    previous_probe = datetime.fromisoformat(last_probe.replace("Z", "+00:00"))
+                    probe_due = (datetime.now(timezone.utc) - previous_probe) >= timedelta(hours=6)
+                except ValueError:
+                    probe_due = True
+        if quarantined and not force_source_probe and not probe_due:
             state["last_skip"] = checked_at
-            state["last_skip_reason"] = "cuarentena_por_fallos_persistentes"
-            print(f"[QUARANTINE] {name}: se omite hasta {quarantine_until}")
+            state["last_skip_reason"] = "esperando_sondeo_de_recuperacion"
+            print(f"[QUARANTINE] {name}: próximo sondeo de recuperación en ventana de 6 h.")
             continue
+        state["last_probe"] = checked_at
         state["checks"] += 1
         try:
             entries = parse_m3u(read_source(source), name, priority)
