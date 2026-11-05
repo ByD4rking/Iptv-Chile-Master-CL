@@ -34,6 +34,19 @@ def save_json(path, data):
     atomic_write_json(path, data)
 
 
+def is_transient_source_error(error):
+    """Errores temporales no deben alimentar la cuarentena de una fuente."""
+    message = str(error or "").lower()
+    match = re.search(r"http(?: error)?\\s+(\\d{3})", message)
+    if match and int(match.group(1)) in {401, 403, 408, 425, 429, 500, 502, 503, 504}:
+        return True
+    return any(token in message for token in (
+        "timed out", "timeout", "temporary failure", "connection reset",
+        "connection refused", "remote end closed", "network is unreachable",
+        "temporary name resolution",
+    ))
+
+
 def prune_source_health(health, sources):
     """Drop health records for sources no longer configured."""
     configured_names = {
@@ -265,14 +278,19 @@ def main():
         except Exception as error:
             message = str(error)
             print(f"[ERROR] {name}: {message}")
-            state["failures"] += 1
-            state["consecutive_failures"] += 1
-            state["last_failure"] = checked_at
             state["last_error"] = message
-            if state["consecutive_failures"] >= SOURCE_QUARANTINE_AFTER:
-                from datetime import timedelta
-                state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=SOURCE_QUARANTINE_HOURS)).isoformat()
-                print(f"[QUARANTINE] {name}: {state['consecutive_failures']} fallos consecutivos; pausa hasta {state['quarantine_until']}")
+            if is_transient_source_error(message):
+                state["last_transient_error"] = message
+                state["last_transient_at"] = checked_at
+                print(f"[TRANSIENT] {name}: fallo temporal; no suma para cuarentena.")
+            else:
+                state["failures"] += 1
+                state["consecutive_failures"] += 1
+                state["last_failure"] = checked_at
+                if state["consecutive_failures"] >= SOURCE_QUARANTINE_AFTER:
+                    from datetime import timedelta
+                    state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=SOURCE_QUARANTINE_HOURS)).isoformat()
+                    print(f"[QUARANTINE] {name}: {state['consecutive_failures']} fallos persistentes; pausa hasta {state['quarantine_until']}")
 
     if not successful_sources:
         raise SystemExit("Ninguna fuente independiente respondió correctamente (las fuentes en cuarentena no cuentan como fuente disponible).")
