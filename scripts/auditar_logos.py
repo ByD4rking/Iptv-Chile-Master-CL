@@ -26,7 +26,10 @@ def probe(url: str):
     last = None
     for attempt in range(2):
         try:
-            with requests.get(url, headers={"User-Agent": USER_AGENT, "Range": "bytes=0-2047"},
+            headers = {"User-Agent": USER_AGENT}
+            if attempt == 0:
+                headers["Range"] = "bytes=0-2047"
+            with requests.get(url, headers=headers,
                              timeout=(6, 12), allow_redirects=True, stream=True) as response:
                 status = response.status_code
                 content_type = response.headers.get("Content-Type", "").split(";", 1)[0].lower()
