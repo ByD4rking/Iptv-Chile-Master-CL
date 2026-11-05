@@ -3056,9 +3056,32 @@ def agrupar_alternativas_por_identidad(lineas):
 
 
 
-def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None):
-    """Restaura solo logos ausentes desde la M3U anterior y el catálogo Pluto."""
+def extraer_logos_bloqueados_por_url(lineas):
+    """Captura logos válidos de la principal por URL exacta; ignora conflictos."""
+    candidatos = defaultdict(set)
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        url = next((x.strip() for x in lineas[i + 1:j] if url_es_valida(x.strip())), "")
+        match = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+        logo = match.group(1).strip() if match else ""
+        if url and url_es_valida(logo):
+            candidatos[url].add(logo)
+        i = j
+    # Si una misma URL ya tiene logos contradictorios, no se congela ninguno.
+    return {url: next(iter(logos)) for url, logos in candidatos.items() if len(logos) == 1}
+
+
+def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None, logos_bloqueados_por_url=None):
+    """Restaura logos y protege los logos válidos de la principal por URL exacta."""
     pluto_por_id = pluto_por_id or {}
+    logos_bloqueados_por_url = logos_bloqueados_por_url or {}
     pluto_por_nombre = pluto_por_nombre or {}
     logos_por_url_prioritarios = logos_por_url_prioritarios or {}
 
@@ -3123,11 +3146,19 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
 
     restaurados_anteriores = 0
     restaurados_pluto = 0
+    protegidos = 0
     pendientes = 0
     salida = list(lineas)
     for item in bloques(salida):
         extinf = salida[item["index"]]
         actual = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+        logo_bloqueado = logos_bloqueados_por_url.get(item["url"], "") if item["url"] else ""
+        if logo_bloqueado and url_es_valida(logo_bloqueado):
+            logo_actual = actual.group(1).strip() if actual else ""
+            if logo_actual != logo_bloqueado:
+                salida[item["index"]] = poner_logo(extinf, logo_bloqueado)
+                protegidos += 1
+            continue
         if actual and actual.group(1).strip() and url_es_valida(actual.group(1).strip()):
             continue
 
@@ -3172,6 +3203,7 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
     return salida, {
         "lista_anterior": restaurados_anteriores,
         "pluto": restaurados_pluto,
+        "protegidos": protegidos,
         "sin_referencia": pendientes,
     }
 
@@ -4188,7 +4220,8 @@ def main():
             ruta_god.read_text(encoding="utf-8-sig", errors="replace").splitlines()
         )
     lineas, logos_restaurados = restaurar_logos_historicos(
-        lineas, referencias_logos, pluto_por_id, pluto_por_nombre, logos_historicos
+        lineas, referencias_logos, pluto_por_id, pluto_por_nombre, logos_historicos,
+        logos_bloqueados_por_url=extraer_logos_bloqueados_por_url(lineas_iniciales),
     )
     # Ordenar Anime por franquicia/saga al final para que ninguna etapa posterior lo desordene.
     lineas = ordenar_anime_alfabeticamente(lineas)
