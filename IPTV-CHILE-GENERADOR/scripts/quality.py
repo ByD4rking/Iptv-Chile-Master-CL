@@ -30,7 +30,7 @@ TRANSIENT_HTTP = {401, 403, 408, 425, 429, 500, 502, 503, 504}
 def is_transient_failure(error):
     """No penaliza bloqueos, límites ni fallos de red como si el canal estuviera muerto."""
     message = str(error or "").lower()
-    match = re.search(r"http(?: error)?\\s+(\\d{3})", message)
+    match = re.search(r"http(?: error)?\s+(\d{3})", message)
     if match and int(match.group(1)) in TRANSIENT_HTTP:
         return True
     return any(token in message for token in (
@@ -630,14 +630,15 @@ def main():
         # mantener siempre: checks == successes + failures.
         if result.get("quarantined"):
             continue
-        state["checks"] = int(state.get("checks") or 0) + 1
         if result["playback_ok"]:
+            state["checks"] = int(state.get("checks") or 0) + 1
             state["successes"] = int(state.get("successes") or 0) + 1
             state["consecutive_failures"] = 0
             state["last_success"] = checked_at
             state["last_error"] = None
             state["quarantine_until"] = None
         elif result.get("failure_confirmed"):
+            state["checks"] = int(state.get("checks") or 0) + 1
             state["failures"] = int(state.get("failures") or 0) + 1
             state["consecutive_failures"] = int(state.get("consecutive_failures") or 0) + 1
             state["last_failure"] = checked_at
