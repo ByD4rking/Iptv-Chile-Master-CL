@@ -52,13 +52,16 @@ jobs:
       - name: Instalar dependencias del verificador M3U
         run: python -m pip install requests urllib3
 
-      - name: Auditar disponibilidad real de todos los logos de la lista principal
-        run: python scripts/auditar_logos.py --m3u IPTV-CHILE-MAESTRA_CORREGIDO.m3u --output reportes/logos/REPORTE.md --workers 16
-
       - name: Generar y auditar la lista principal en el runner (sin publicar)
         run: |
           python scripts/alimentar_principal.py
           python -m unittest discover -s scripts -p 'test_alternativas_principal.py' -v
+
+      - name: Proteger familias y canales con logos corregidos
+        run: python -m unittest discover -s scripts -p 'test_logo_integrity.py' -v
+
+      - name: Auditar estrictamente todos los logos de la lista generada
+        run: python scripts/auditar_logos.py --m3u IPTV-CHILE-MAESTRA_CORREGIDO.m3u --output reportes/logos/REPORTE.md --workers 16 --fail-on-defects
 
       - name: Guardar M3U generada para inspección
         if: always()
