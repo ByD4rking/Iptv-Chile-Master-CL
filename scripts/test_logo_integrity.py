@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 PLAYLIST = Path(__file__).resolve().parents[1] / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
-ATTR = re.compile(r'\\b(tvg-logo|logo)="([^"]*)"')
+ATTR = re.compile(r'\b(tvg-logo|logo)="([^"]*)"')
 
 def load_rows():
     rows = []
@@ -13,9 +13,10 @@ def load_rows():
         if not line.startswith("#EXTINF:"):
             continue
         attrs = {key: value for key, value in ATTR.findall(line)}
+        group = re.search(r'\bgroup-title="([^"]*)"', line)
         rows.append({
             "name": line.split(",", 1)[1].strip() if "," in line else "",
-            "group": (re.search(r'\\bgroup-title="([^"]*)"', line) or [None, ""])[1],
+            "group": group.group(1) if group else "",
             "logo": attrs.get("tvg-logo") or attrs.get("logo") or "",
         })
     return rows
