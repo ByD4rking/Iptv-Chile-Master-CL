@@ -61,6 +61,7 @@ def main():
     parser.add_argument("--m3u", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--workers", type=int, default=16)
+    parser.add_argument("--fail-on-defects", action="store_true", help="falla si hay logos ausentes, placeholders o URLs 404/410 confirmadas")
     args = parser.parse_args()
     rows = parse_playlist(Path(args.m3u))
     by_url = defaultdict(list)
@@ -133,6 +134,8 @@ def main():
     output.write_text("\n".join(report) + "\n", encoding="utf-8")
     print(f"Canales: {len(rows)} | URLs únicas: {len(by_url)} | OK: {counts['OK']} | placeholders: {counts['PLACEHOLDER']} | rotas confirmadas: {counts['BROKEN']} | no concluyentes: {counts['INCONCLUSIVE']} | sin logo: {len(missing)}")
     print(f"Reporte: {output}")
+    if args.fail_on_defects and (missing or placeholder_rows or broken_rows):
+        raise SystemExit("FALLO: hay logos ausentes, placeholders o URLs 404/410 confirmadas. Revisa el reporte.")
 
 if __name__ == "__main__":
     main()
