@@ -148,17 +148,13 @@ def main():
         for item in rechazados_magma
         if item["channel"].get("url", "").strip()
     }
-    if urls_rechazadas_magma:
-        antes = sum(1 for line in ordered_lines if line.startswith("#EXTINF"))
-        ordered_lines = _remove_rejected_magma_cinema(
-            ordered_lines,
-            urls_rechazadas_magma,
-        )
-        despues = sum(1 for line in ordered_lines if line.startswith("#EXTINF"))
-        print(
-            "[ORQUESTADOR] MAGMA Cine/Películas retirados por calidad: "
-            f"{antes - despues}"
-        )
+    # No eliminar canales históricos por URL: la M3U no registra de forma
+    # fiable su procedencia y una URL compartida podría afectar otra entrada.
+    # Los nuevos candidatos MAGMA no conformes ya se bloquean en sincronización.
+    print(
+        "[ORQUESTADOR] Canales existentes preservados; "
+        "nuevas importaciones MAGMA no conformes bloqueadas."
+    )
     print(
         "[ORQUESTADOR] Regla MAGMA Cine/Películas: "
         f"{len(rechazados_magma)} rechazados por resolución/formato; "
