@@ -166,7 +166,7 @@ jobs:
           echo "La lista principal M3U es válida."
 
       - name: Probar filtro estricto MAGMA 1080p 16:9
-        run: python -m unittest scripts.test_calidad_magma_cine -v
+        run: python -m unittest discover -s scripts -p 'test_calidad_magma_cine.py' -v
 
       - name: Selftest Health Score principal
         run: |
