@@ -58,7 +58,7 @@ jobs:
             scripts/test_calidad_magma_cine.py
 
       - name: Probar filtro MAGMA 1080p 16:9
-        run: python -m unittest scripts.test_calidad_magma_cine -v
+        run: python -m unittest discover -s scripts -p 'test_calidad_magma_cine.py' -v
 
       - name: Ejecutar pruebas unitarias de sincronización
         run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
