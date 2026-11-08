@@ -15,6 +15,11 @@ from pathlib import Path
 import requests
 
 import alimentar_principal as ap
+from calidad_magma_cine import (
+    audit_and_filter_channels as _audit_magma_cinema,
+    probe_stream as _probe_magma_stream,
+    remove_rejected_cinema_blocks as _remove_rejected_magma_cinema,
+)
 
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
@@ -658,7 +663,7 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
     ordered.extend(FUENTES_PLUTO_COMPLETAS)
 
     candidates: list[dict] = []
-    stats = {"fuentes_ok": 0, "fuentes_error": 0, "canales_fuente": 0, "sin_categoria": 0}
+    stats = {"fuentes_ok": 0, "fuentes_error": 0, "canales_fuente": 0, "sin_categoria": 0, "magma_cine_rejected_urls": [], "magma_cine_unverified": 0}
     for source_url in ordered:
         try:
             response = session.get(source_url, timeout=TIMEOUT)
@@ -669,6 +674,23 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
             parsed = ap.parsear_m3u(body)
             if not parsed:
                 raise ValueError("fuente sin entradas M3U válidas")
+            if source_url == ap.FUENTE_MAGMA:
+                parsed, rejected_quality, unverified_quality = _audit_magma_cinema(
+                    parsed,
+                    probe=lambda url: _probe_magma_stream(url, session=session),
+                )
+                stats["magma_cine_rejected_urls"].extend(
+                    item["channel"].get("url", "").strip()
+                    for item in rejected_quality
+                    if item["channel"].get("url", "").strip()
+                )
+                stats["magma_cine_unverified"] += len(unverified_quality)
+                print(
+                    "[SYNC] MAGMA Cine/Películas: "
+                    f"{sum(1 for item in parsed if ap.normalizar(item.get('categoria', '')) in {'cine / peliculas', 'cine / peliculas premium'})} "
+                    f"aceptados 1080p 16:9; {len(rejected_quality)} rechazados; "
+                    f"{len(unverified_quality)} sin verificar."
+                )
             stats["fuentes_ok"] += 1
         except Exception as exc:
             stats["fuentes_error"] += 1
@@ -1251,6 +1273,10 @@ def synchronize_once() -> dict:
         manifest = {}
 
     updated, changes = reconcile_lines(original, candidates, manifest)
+    # Los MAGMA rechazados se bloquean al importar/actualizar candidatos.
+    # No borrar bloques ya existentes: la M3U no conserva procedencia fiable
+    # y una URL compartida podría pertenecer a un canal histórico ajeno a MAGMA.
+    source_stats.pop("magma_cine_rejected_urls", None)
     text = "\n".join(updated).rstrip("\n") + "\n"
     if not text.startswith("#EXTM3U\n") or not any(line.startswith("#EXTINF:") for line in updated):
         raise RuntimeError("La sincronización produjo una M3U inválida; se conserva el archivo original.")

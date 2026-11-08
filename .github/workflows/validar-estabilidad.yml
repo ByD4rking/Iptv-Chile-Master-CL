@@ -43,6 +43,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Instalar FFmpeg para validar MAGMA Cine/Películas
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Instalar dependencias del verificador Pluto
         run: python -m pip install -r pluto/requirements.txt
 
@@ -86,6 +89,9 @@ jobs:
 
       - name: Ejecutar selftest de Pluto y margen JWT
         run: python pluto/src/selftest.py
+
+      - name: Probar filtro MAGMA 1080p 16:9
+        run: python -m unittest discover -s scripts -p 'test_calidad_magma_cine.py' -v
 
       - name: Pruebas unitarias de sincronización complementaria
         run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v

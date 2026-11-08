@@ -7,6 +7,11 @@ import sys
 import requests
 
 import alimentar_principal as alimentador
+from calidad_magma_cine import (
+    audit_and_filter_channels as _audit_magma_cinema,
+    probe_stream as _probe_magma_stream,
+    remove_rejected_cinema_blocks as _remove_rejected_magma_cinema,
+)
 from sincronizar_complementos import (
     _group_and_label_alternatives,
     _prioritize_infantiles,
@@ -128,6 +133,34 @@ def main():
     )
     # Último blindaje de orden: España y todos los países deben quedar al final.
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
+
+    # La restauración del orden histórico puede recuperar bloques previos.
+    # Reaplicar al final la regla estricta solo a URLs de Cine/Películas MAGMA.
+    respuesta_magma = session.get(alimentador.FUENTE_MAGMA, timeout=30)
+    respuesta_magma.raise_for_status()
+    canales_magma = alimentador.parsear_m3u(respuesta_magma.text)
+    _, rechazados_magma, no_verificados_magma = _audit_magma_cinema(
+        canales_magma,
+        probe=lambda url: _probe_magma_stream(url, session=session),
+    )
+    urls_rechazadas_magma = {
+        item["channel"].get("url", "").strip()
+        for item in rechazados_magma
+        if item["channel"].get("url", "").strip()
+    }
+    # No eliminar canales históricos por URL: la M3U no registra de forma
+    # fiable su procedencia y una URL compartida podría afectar otra entrada.
+    # Los nuevos candidatos MAGMA no conformes ya se bloquean en sincronización.
+    print(
+        "[ORQUESTADOR] Canales existentes preservados; "
+        "nuevas importaciones MAGMA no conformes bloqueadas."
+    )
+    print(
+        "[ORQUESTADOR] Regla MAGMA Cine/Películas: "
+        f"{len(rechazados_magma)} rechazados por resolución/formato; "
+        f"{len(no_verificados_magma)} sin verificar y conservados sin cambios."
+    )
+
     ids_pluto_orden = (
         alimentador.obtener_ids_pluto_existentes(original_lines)
         | alimentador.obtener_ids_pluto_existentes(ordered_lines)
