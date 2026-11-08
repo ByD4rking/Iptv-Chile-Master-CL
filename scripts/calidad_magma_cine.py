@@ -108,7 +108,18 @@ def probe_stream(url: str, session: requests.Session | None = None) -> dict:
             return {"status": "unknown", "reason": "playlist-demasiado-grande"}
         text = body.decode("utf-8", errors="replace")
         if "#EXTM3U" not in text:
-            return {"status": "unknown", "reason": "respuesta-no-es-m3u8"}
+            # Algunos endpoints .m3u8 redirigen a un medio directo. Intentar
+            # medir el recurso final antes de clasificarlo como no verificable.
+            direct_result = _probe_variant(final_url)
+            if direct_result.get("status") != "unknown":
+                return direct_result
+            return {
+                "status": "unknown",
+                "reason": "respuesta-no-es-m3u8",
+                "http_status": response.status_code,
+                "content_type": content_type,
+                "ffprobe_reason": direct_result.get("reason"),
+            }
         lines = text.splitlines()
         variants = []
         for index, line in enumerate(lines):
