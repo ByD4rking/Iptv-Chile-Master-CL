@@ -43,6 +43,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Instalar FFmpeg para validar MAGMA Cine/Películas
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Instalar dependencias del verificador Pluto
         run: python -m pip install -r pluto/requirements.txt
 
