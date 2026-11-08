@@ -53,6 +53,9 @@ jobs:
       - name: Auditar cambios de canales y URLs de Principal y GOD (solo lectura)
         run: python scripts/auditar_fuentes.py --scope principal
 
+      - name: Instalar FFmpeg para verificar resolución y aspecto de MAGMA Cine/Películas
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Instalar dependencias
         run: |
           python -m pip install --upgrade pip
@@ -75,6 +78,8 @@ jobs:
             scripts/mega_lista.py \
             scripts/generar_reporte.py \
             scripts/health_principal.py \
+            scripts/calidad_magma_cine.py \
+            scripts/test_calidad_magma_cine.py \
             scripts/selftest_health_principal.py \
             scripts/selftest_reconexion_principal.py \
             scripts/auditar_fuentes.py \
@@ -159,6 +164,9 @@ jobs:
           done
 
           echo "La lista principal M3U es válida."
+
+      - name: Probar filtro estricto MAGMA 1080p 16:9
+        run: python -m unittest scripts.test_calidad_magma_cine -v
 
       - name: Selftest Health Score principal
         run: |
