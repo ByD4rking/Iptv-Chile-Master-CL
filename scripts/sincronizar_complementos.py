@@ -1273,12 +1273,9 @@ def synchronize_once() -> dict:
         manifest = {}
 
     updated, changes = reconcile_lines(original, candidates, manifest)
-    rejected_magma_urls = set(source_stats.get("magma_cine_rejected_urls", []))
-    if rejected_magma_urls:
-        before_count = sum(1 for line in updated if line.startswith("#EXTINF"))
-        updated = _remove_rejected_magma_cinema(updated, rejected_magma_urls)
-        after_count = sum(1 for line in updated if line.startswith("#EXTINF"))
-        changes["magma_cine_rechazados_retirados"] = before_count - after_count
+    # Los MAGMA rechazados se bloquean al importar/actualizar candidatos.
+    # No borrar bloques ya existentes: la M3U no conserva procedencia fiable
+    # y una URL compartida podría pertenecer a un canal histórico ajeno a MAGMA.
     source_stats.pop("magma_cine_rejected_urls", None)
     text = "\n".join(updated).rstrip("\n") + "\n"
     if not text.startswith("#EXTM3U\n") or not any(line.startswith("#EXTINF:") for line in updated):
