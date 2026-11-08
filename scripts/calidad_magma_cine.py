@@ -148,6 +148,13 @@ def _is_cinema(channel: dict) -> bool:
     return category in CINE_CATEGORIES
 
 
+_QUALITY_CACHE: dict[str, dict] = {}
+
+
+def clear_probe_cache() -> None:
+    _QUALITY_CACHE.clear()
+
+
 def audit_and_filter_channels(channels: list[dict], probe=probe_stream) -> tuple[list[dict], list[dict], list[dict]]:
     """Devuelve canales permitidos, rechazados y no verificados."""
     allowed, rejected, unverified = [], [], []
@@ -155,7 +162,10 @@ def audit_and_filter_channels(channels: list[dict], probe=probe_stream) -> tuple
         if not _is_cinema(channel):
             allowed.append(channel)
             continue
-        result = probe(str(channel.get("url", "")).strip())
+        url = str(channel.get("url", "")).strip()
+        if url not in _QUALITY_CACHE:
+            _QUALITY_CACHE[url] = probe(url)
+        result = dict(_QUALITY_CACHE[url])
         item = {"channel": channel, **result}
         if result.get("status") == "accept":
             allowed.append(channel)
