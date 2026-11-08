@@ -10,6 +10,8 @@ on:
       - "scripts/ejecutar_actualizacion_principal.py"
       - "scripts/test_sincronizar_complementos.py"
       - "scripts/selftest_sincronizacion_real.py"
+      - "scripts/calidad_magma_cine.py"
+      - "scripts/test_calidad_magma_cine.py"
       - ".github/workflows/validar-sincronizacion.yml"
   push:
     branches:
@@ -38,8 +40,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Instalar dependencias
-        run: python -m pip install requests
+      - name: Instalar FFmpeg y dependencias
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install requests
 
       - name: Validar sintaxis
         run: |
@@ -48,7 +53,12 @@ jobs:
             scripts/sincronizar_complementos.py \
             scripts/ejecutar_actualizacion_principal.py \
             scripts/test_sincronizar_complementos.py \
-            scripts/selftest_sincronizacion_real.py
+            scripts/selftest_sincronizacion_real.py \
+            scripts/calidad_magma_cine.py \
+            scripts/test_calidad_magma_cine.py
+
+      - name: Probar filtro MAGMA 1080p 16:9
+        run: python -m unittest scripts.test_calidad_magma_cine -v
 
       - name: Ejecutar pruebas unitarias de sincronización
         run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
