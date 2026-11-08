@@ -17,7 +17,10 @@ import requests
 UA = "Mozilla/5.0 (compatible; IPTV-MAGMA-Quality/1.0)"
 TIMEOUT = 10
 MAX_PLAYLIST_BYTES = 512 * 1024
-CINE_CATEGORIES = {"cine / peliculas", "cine / peliculas premium"}
+CINE_CATEGORIES = {
+    "cine / peliculas", "cine / películas",
+    "cine / peliculas premium", "cine / películas premium",
+}
 
 
 def _ratio(value: str | None) -> tuple[int, int] | None:
