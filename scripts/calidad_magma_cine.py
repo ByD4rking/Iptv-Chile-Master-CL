@@ -101,7 +101,7 @@ def probe_stream(url: str, session: requests.Session | None = None) -> dict:
         if not is_playlist:
             response.close()
             return _probe_variant(url)
-        body = response.raw.read(MAX_PLAYLIST_BYTES + 1)
+        body = response.raw.read(MAX_PLAYLIST_BYTES + 1, decode_content=True)
         final_url = response.url
         response.close()
         if len(body) > MAX_PLAYLIST_BYTES:
