@@ -5,6 +5,11 @@ import unicodedata
 import requests
 from collections import defaultdict
 from sincronizar_canales import sincronizar_enlaces_existentes as _sincronizar_enlaces_existentes
+from calidad_magma_cine import (
+    audit_and_filter_channels as _audit_magma_cinema,
+    probe_stream as _probe_magma_stream,
+    remove_rejected_cinema_blocks as _remove_rejected_magma_cinema,
+)
 
 BASE = Path(__file__).resolve().parent.parent
 PRINCIPAL = BASE / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
@@ -3539,6 +3544,40 @@ def main():
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
+            if fuente == FUENTE_MAGMA:
+                canales, rechazados_calidad, no_verificados_calidad = _audit_magma_cinema(
+                    canales,
+                    probe=lambda url: _probe_magma_stream(url, session=session),
+                )
+                urls_rechazadas_calidad = {
+                    item["channel"].get("url", "").strip()
+                    for item in rechazados_calidad
+                    if item["channel"].get("url", "").strip()
+                }
+                if urls_rechazadas_calidad:
+                    lineas = _remove_rejected_magma_cinema(
+                        lineas,
+                        urls_rechazadas_calidad,
+                    )
+                print(
+                    "  -> MAGMA Cine/Películas calidad: "
+                    f"{sum(1 for item in canales if item.get('categoria', '').strip().lower() in {'cine / peliculas', 'cine / peliculas premium'})} aceptados 1080p 16:9; "
+                    f"{len(rechazados_calidad)} rechazados y retirados por calidad; "
+                    f"{len(no_verificados_calidad)} sin verificación (no se borran)."
+                )
+                for item in rechazados_calidad:
+                    print(
+                        "     RECHAZADO: "
+                        f"{item['channel'].get('nombre', '')} -> "
+                        f"{item.get('reason', 'calidad-no-valida')} "
+                        f"({item.get('resolution') or 'resolución desconocida'}, "
+                        f"{item.get('display_aspect_ratio') or 'DAR desconocido'})"
+                    )
+                for item in no_verificados_calidad:
+                    print(
+                        "     SIN VERIFICAR: "
+                        f"{item['channel'].get('nombre', '')} -> {item.get('reason', 'sin-datos')}"
+                    )
             referencias_canales_logo.extend(canales)
             if fuente_es_iptvsv := es_fuente_iptvsv(fuente):
                 # Primero sincronizar group-title de las URLs que ya existen.
