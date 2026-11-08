@@ -14,7 +14,7 @@ from urllib.parse import urljoin
 
 import requests
 
-UA = "Mozilla/5.0 (compatible; IPTV-MAGMA-Quality/1.0)"
+UA = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36"
 TIMEOUT = 10
 MAX_PLAYLIST_BYTES = 512 * 1024
 CINE_CATEGORIES = {
