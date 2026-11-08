@@ -3561,7 +3561,7 @@ def main():
                     )
                 print(
                     "  -> MAGMA Cine/Películas calidad: "
-                    f"{sum(1 for item in canales if item.get('categoria', '').strip().lower() in {'cine / peliculas', 'cine / peliculas premium'})} aceptados 1080p 16:9; "
+                    f"{sum(1 for item in canales if item.get('categoria', '').strip().lower() in {'cine / peliculas', 'cine / películas', 'cine / peliculas premium', 'cine / películas premium'})} aceptados 1080p 16:9; "
                     f"{len(rechazados_calidad)} rechazados y retirados por calidad; "
                     f"{len(no_verificados_calidad)} sin verificación (no se borran)."
                 )
