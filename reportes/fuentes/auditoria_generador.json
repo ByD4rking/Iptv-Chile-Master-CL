@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
   "scope": "generador",
-  "checked_at": "2026-11-11T19:45:34.351427+00:00",
+  "checked_at": "2026-11-12T20:13:07.066781+00:00",
   "sources_configured": 32,
   "sources_checked": 30,
   "sources_failed": 2,
-  "changed_sources": 14,
+  "changed_sources": 15,
   "new_sources": 0,
-  "total_added_channels": 16,
-  "total_removed_channels": 5,
-  "total_changed_stream_urls": 2118,
+  "total_added_channels": 29,
+  "total_removed_channels": 9,
+  "total_changed_stream_urls": 2130,
   "total_source_url_changes": 0,
   "configured_source_url_changes": [],
   "removed_sources": [],
@@ -33,48 +33,51 @@
       "old_source_url": "https://dearbulut.github.io/iptv/playlists/country/cl.m3u",
       "new_source_url": "https://dearbulut.github.io/iptv/playlists/country/cl.m3u",
       "added_channels": 0,
-      "removed_channels": 1,
+      "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 6,
+      "changed_stream_urls": 7,
       "changed_categories": 0,
       "content_hash_changed": true,
-      "channel_order_changed": true,
+      "channel_order_changed": false,
       "samples": {
         "added": [],
-        "removed": [
-          "TVChile.cl"
-        ],
+        "removed": [],
         "renamed": [],
         "stream_urls": [
           {
-            "key": "EPATV.cl",
-            "before_fingerprint": "86c947085bf2ac5c",
-            "after_fingerprint": "166542d134f04e73"
+            "key": "LaRed.cl",
+            "before_fingerprint": "4f127412ef91fd47",
+            "after_fingerprint": "054ee491de5c7cec"
+          },
+          {
+            "key": "Mega.cl",
+            "before_fingerprint": "89e5df3bcb70ef2f",
+            "after_fingerprint": "31d0eecb29dd51e9"
           },
           {
             "key": "RadioAmericaTV.cl",
-            "before_fingerprint": "333872383ce8b4ed",
-            "after_fingerprint": "55a3f16404afea8d"
+            "before_fingerprint": "55a3f16404afea8d",
+            "after_fingerprint": "333872383ce8b4ed"
           },
           {
-            "key": "SoloBailalo.cl",
-            "before_fingerprint": "76d5c52b52ecbeb9",
-            "after_fingerprint": "c553beedbc2a043f"
-          },
-          {
-            "key": "TNTSports.cl",
-            "before_fingerprint": "9a222ab8d62278dd",
-            "after_fingerprint": "e549a0072674a2b7"
+            "key": "RadioSuyaiTV.cl",
+            "before_fingerprint": "945df91a0df765e4",
+            "after_fingerprint": "f3114774ec0838e2"
           },
           {
             "key": "TNTSportsPremium.cl",
-            "before_fingerprint": "8bf6ac528c4fbdb7",
-            "after_fingerprint": "010b88d5208bc5cc"
+            "before_fingerprint": "010b88d5208bc5cc",
+            "after_fingerprint": "8bf6ac528c4fbdb7"
           },
           {
             "key": "Tevex.cl",
-            "before_fingerprint": "44fc1dc774e011de",
-            "after_fingerprint": "1084d90b4cf5458f"
+            "before_fingerprint": "1084d90b4cf5458f",
+            "after_fingerprint": "44fc1dc774e011de"
+          },
+          {
+            "key": "VClassicTV.cl",
+            "before_fingerprint": "8badcb8029b4bfea",
+            "after_fingerprint": "678d74a4d02a90d2"
           }
         ],
         "categories": []
@@ -88,19 +91,39 @@
       "old_source_url": "https://iptv-org.github.io/iptv/countries/cl.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/countries/cl.m3u",
       "added_channels": 0,
-      "removed_channels": 1,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
+      "removed_channels": 0,
+      "renamed_channels": 2,
+      "changed_stream_urls": 2,
       "changed_categories": 0,
       "content_hash_changed": true,
-      "channel_order_changed": true,
+      "channel_order_changed": false,
       "samples": {
         "added": [],
-        "removed": [
-          "TVChile.cl@SD"
+        "removed": [],
+        "renamed": [
+          {
+            "key": "LaRed.cl@SD",
+            "before_fingerprint": "a119552cfbb9c25b",
+            "after_fingerprint": "eeef03d0ace6c1a1"
+          },
+          {
+            "key": "TNTSportsPremium.cl@HD",
+            "before_fingerprint": "e0416f14aa3e0928",
+            "after_fingerprint": "5dada5bf65b7a18f"
+          }
         ],
-        "renamed": [],
-        "stream_urls": [],
+        "stream_urls": [
+          {
+            "key": "LaRed.cl@SD",
+            "before_fingerprint": "4f127412ef91fd47",
+            "after_fingerprint": "054ee491de5c7cec"
+          },
+          {
+            "key": "TNTSportsPremium.cl@HD",
+            "before_fingerprint": "010b88d5208bc5cc",
+            "after_fingerprint": "c8aa5972d26fe972"
+          }
+        ],
         "categories": []
       },
       "readonly": false
@@ -111,175 +134,180 @@
       "source_url_changed": false,
       "old_source_url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
       "new_source_url": "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u",
-      "added_channels": 3,
-      "removed_channels": 3,
+      "added_channels": 7,
+      "removed_channels": 4,
       "renamed_channels": 0,
-      "changed_stream_urls": 50,
+      "changed_stream_urls": 55,
       "changed_categories": 0,
       "content_hash_changed": true,
       "channel_order_changed": true,
       "samples": {
         "added": [
-          "shinchan (espana)[twitch]|anime",
-          "yu-gi-oh! (espana)[twitch]|anime",
-          "yu-gi-oh! (latino)[twitch]|anime"
+          "claro sports 2 hd (mexico) [opc.2]|deportes",
+          "claro sports 2 hd (mexico) [opc.3]|deportes",
+          "claro sports 2 hd (mexico)|deportes",
+          "claro sports hd (mexico) [opc.2]|deportes",
+          "claro sports hd (mexico) [opc.3]|deportes",
+          "claro sports hd (mexico)|deportes",
+          "l1 max [opc.3]|deportes"
         ],
         "removed": [
-          "delmi tv|anime",
-          "shinchan (espana)|anime",
-          "zyoon tv sd (chile)|anime"
+          "claro sports (mexico)|deportes",
+          "claro sports sd (opc.2)|deportes",
+          "claro sports sd|deportes",
+          "l1 max [opc.2]|deportes#2"
         ],
         "renamed": [],
         "stream_urls": [
           {
-            "key": "alternativa tv [no 24/7](colombia - huasco - atacama)|entretenimiento / cine / series",
-            "before_fingerprint": "13d4870a2a05f2ef",
-            "after_fingerprint": "cefb645d9a316b11"
+            "key": "alternativa tv [no 24/7]|cine / peliculas",
+            "before_fingerprint": "b87cc16bc082bd48",
+            "after_fingerprint": "67f546145e99142c"
           },
           {
-            "key": "anime presente|anime",
-            "before_fingerprint": "a93348968d3a4d17",
-            "after_fingerprint": "1e5b667bca8cb09a"
+            "key": "american tv|entretenimiento / cine / series",
+            "before_fingerprint": "d12496c3bc085883",
+            "after_fingerprint": "6a0c47f300690227"
           },
           {
-            "key": "anime station (america latina) [no 24/7]|anime",
-            "before_fingerprint": "a6c7c3c12fbd4e26",
-            "after_fingerprint": "6476d3c73429003c"
+            "key": "apanines tv|entretenimiento / cine / series",
+            "before_fingerprint": "935ede8e7aa6251e",
+            "after_fingerprint": "a2522769e18384f8"
           },
           {
-            "key": "buenos aires tv|entretenimiento / cine / series",
-            "before_fingerprint": "b885aab44ef9567a",
-            "after_fingerprint": "555245b6e55dc0c3"
+            "key": "canal 58 hd [no 24/7]|el salvador",
+            "before_fingerprint": "956bd68e0795d7d1",
+            "after_fingerprint": "dd4f4d968e718de8"
           },
           {
-            "key": "canal 24 multivision [no 24/7]|bolivia",
-            "before_fingerprint": "9dc63a8be72d0e6b",
-            "after_fingerprint": "69334eabe0ab77ec"
+            "key": "canal grande television [no 24/7][opc.2]|venezuela",
+            "before_fingerprint": "e554c465fd21f6b6",
+            "after_fingerprint": "58791fe386f9b58a"
           },
           {
-            "key": "canal 3 kmk tv (costa rica - los pinos)|entretenimiento / cine / series",
-            "before_fingerprint": "e4d000c76446bd73",
-            "after_fingerprint": "4767485a09843f76"
+            "key": "casa grande tv|entretenimiento / cine / series",
+            "before_fingerprint": "d4d531c1a89a6adc",
+            "after_fingerprint": "a413052eb3d062a2"
           },
           {
-            "key": "canal 69 tv [no 24/7]|cine / peliculas",
-            "before_fingerprint": "a41ac96dfe42d14b",
-            "after_fingerprint": "8641e5fdd547e0ef"
+            "key": "contactv [no 24/7]|entretenimiento / cine / series",
+            "before_fingerprint": "8566251ff4c92417",
+            "after_fingerprint": "c66b132070de18f0"
           },
           {
-            "key": "canal lms|infantiles",
-            "before_fingerprint": "1135b03bd15e0a4f",
-            "after_fingerprint": "a97d203ba9d4f198"
+            "key": "del este tv hd|entretenimiento / cine / series",
+            "before_fingerprint": "350863fc4137d7eb",
+            "after_fingerprint": "d30ad5c05690e4ae"
           },
           {
-            "key": "canal locomotion - segunda senal [no 24/7]|anime",
-            "before_fingerprint": "89bf2cf588873e8f",
-            "after_fingerprint": "21c4c4b33393b6e5"
+            "key": "el 70 tv [no 24/7](rep. dominicana)|cine / peliculas",
+            "before_fingerprint": "2611c0742cb4bd53",
+            "after_fingerprint": "8c24791ce79152d8"
           },
           {
-            "key": "canal locomotion - segunda senal [opc.2][no 24/7]|anime",
-            "before_fingerprint": "46d25e850653b015",
-            "after_fingerprint": "da41fb3d57bd3ca6"
+            "key": "el mago tv 2|entretenimiento / cine / series",
+            "before_fingerprint": "dea39d6e557cf402",
+            "after_fingerprint": "d07a62273a266cde"
           },
           {
-            "key": "canal pyc hd (ibague)|colombia",
-            "before_fingerprint": "5069582902332129",
-            "after_fingerprint": "54b6dd31b716202e"
+            "key": "fabian vision [no 24/7]|cine / peliculas",
+            "before_fingerprint": "b13f7959b63a2b03",
+            "after_fingerprint": "f67a8ec6b070de6a"
           },
           {
-            "key": "chespirito tv|entretenimiento / cine / series",
-            "before_fingerprint": "455435d15565881b",
-            "after_fingerprint": "e9129d3e88cc42e1"
+            "key": "gogoplay max [no 24/7]|bolivia",
+            "before_fingerprint": "dd279ff217e9e84e",
+            "after_fingerprint": "c54c61fc2cc5b632"
           },
           {
-            "key": "cine de terror espanol|cine / peliculas",
-            "before_fingerprint": "239babbb166319be",
-            "after_fingerprint": "31efe52ea8f45525"
+            "key": "gogoplay sd [no 24/7][opc.2]|bolivia",
+            "before_fingerprint": "64c5563ae6495486",
+            "after_fingerprint": "165d21feeacdd070"
           },
           {
-            "key": "cine53 [no 24/7]|cine / peliculas",
-            "before_fingerprint": "c9eb323d8086bf85",
-            "after_fingerprint": "b414ae029062313d"
+            "key": "gogoplay tve [no 24/7][opc.2]|bolivia",
+            "before_fingerprint": "78bd666cf2ed4d8a",
+            "after_fingerprint": "0e29f39904f9c847"
           },
           {
-            "key": "death note - elfen lied|anime",
-            "before_fingerprint": "e0e8999fc9864ca3",
-            "after_fingerprint": "b3608ba08fd30b01"
+            "key": "interconnect|entretenimiento / cine / series",
+            "before_fingerprint": "ca2132ee9ba6829c",
+            "after_fingerprint": "b8ea3d0d8876ef2f"
           },
           {
-            "key": "dragon ball / dragon ball z (america latina)|anime",
-            "before_fingerprint": "45d04c13f636ce05",
-            "after_fingerprint": "81de7486c7dd1032"
+            "key": "ipersonica|cine / peliculas",
+            "before_fingerprint": "7ade68b239cb0bfa",
+            "after_fingerprint": "1ae76daab3dea61b"
           },
           {
-            "key": "dragon ball peliculas (america latina)|anime",
-            "before_fingerprint": "85231771cfa07558",
-            "after_fingerprint": "fb66fb50040dfef5"
+            "key": "kpop tv play|doramas / asia",
+            "before_fingerprint": "4889d62a5cc07a73",
+            "after_fingerprint": "abbf5b5e89425b1f"
           },
           {
-            "key": "dragon ball super (america latina)|anime",
-            "before_fingerprint": "f068faa9d8e36105",
-            "after_fingerprint": "a8fc4273d10bc29f"
+            "key": "l1 max|deportes",
+            "before_fingerprint": "cbcf2ff9ff7e4b79",
+            "after_fingerprint": "8a52fa7ed1f35c95"
           },
           {
-            "key": "el chavo tv|entretenimiento / cine / series",
-            "before_fingerprint": "d87987b44599d01b",
-            "after_fingerprint": "759618965cde1681"
+            "key": "los simpson latino opc. 2|entretenimiento / cine / series",
+            "before_fingerprint": "7d3bad646d9d8dea",
+            "after_fingerprint": "09b0f372a0afa413"
           },
           {
-            "key": "gex tv [no 24/7](costa rica)|musica",
-            "before_fingerprint": "213282f8f314e3ad",
-            "after_fingerprint": "13172c2ace3ef792"
+            "key": "los simpson latino|entretenimiento / cine / series",
+            "before_fingerprint": "01ca1172171dacd9",
+            "after_fingerprint": "ea416171fca5ee41"
           },
           {
-            "key": "laika channel (es)|infantiles",
-            "before_fingerprint": "0dd11c55fc7c4141",
-            "after_fingerprint": "23f9098decea6fbf"
+            "key": "magic kids [no 24/7]|infantiles",
+            "before_fingerprint": "6b4e167ed2b072b5",
+            "after_fingerprint": "e3270f410054e036"
           },
           {
-            "key": "macross tv|anime",
-            "before_fingerprint": "1225e3282e5e365d",
-            "after_fingerprint": "38149486bad45983"
+            "key": "max channel [no 24/7]|entretenimiento / cine / series",
+            "before_fingerprint": "0976effe39e792f3",
+            "after_fingerprint": "4a594eb3a106cf3a"
           },
           {
-            "key": "max2 tv|cine / peliculas",
-            "before_fingerprint": "1201c4a4781d591e",
-            "after_fingerprint": "846773d0dfc5a639"
+            "key": "mcu tv [no 24/7]|cine / peliculas",
+            "before_fingerprint": "de3dcbcc080033fc",
+            "after_fingerprint": "77be611e65983b8b"
           },
           {
-            "key": "maxc comedy tv|cine / peliculas",
-            "before_fingerprint": "3bf06009e29afbf7",
-            "after_fingerprint": "c11919a2ba942131"
+            "key": "mega tv hd (arequipa)|peru",
+            "before_fingerprint": "bc1f3251828690ed",
+            "after_fingerprint": "0508e422148d0f27"
           },
           {
-            "key": "maxc family tv|cine / peliculas",
-            "before_fingerprint": "d9ebc887b33a9f94",
-            "after_fingerprint": "e9614b0d080bcdac"
+            "key": "mga tv (nicaragua)|entretenimiento / cine / series",
+            "before_fingerprint": "67ff957f212df066",
+            "after_fingerprint": "1eeaf2089fbe3286"
           },
           {
-            "key": "maxc kids tv|infantiles",
-            "before_fingerprint": "f55f4da25a7b9c46",
-            "after_fingerprint": "eea558fc3f1db3d7"
+            "key": "mittos tv [no 24/7]|cine / peliculas",
+            "before_fingerprint": "c9debb9c46ffcb2a",
+            "after_fingerprint": "8703fb433bc1048c"
           },
           {
-            "key": "maxc tv|cine / peliculas",
-            "before_fingerprint": "777a2058a6923a0b",
-            "after_fingerprint": "c14a002cf872b3e9"
+            "key": "mix bolivia hd [no 24.7][opc.3]|bolivia",
+            "before_fingerprint": "c5d395e6e7a98e7d",
+            "after_fingerprint": "dd66526e4840fd4d"
           },
           {
-            "key": "naruto (peliculas) (america latina)|anime",
-            "before_fingerprint": "d385b565fd2abc4a",
-            "after_fingerprint": "31e88f84f0ddf173"
+            "key": "mix bolivia sd [no 24.7][opc.2]|bolivia",
+            "before_fingerprint": "c207d716e5d69995",
+            "after_fingerprint": "dc3e4ea12bf0ad8b"
           },
           {
-            "key": "pantalla clasica [no 24/7] (ecuador)|cine / peliculas",
-            "before_fingerprint": "89b58b6a424e7d7b",
-            "after_fingerprint": "55011071dd6b73ce"
+            "key": "mix bolivia tve [no 24.7]|bolivia",
+            "before_fingerprint": "9650bd1e9ca15dec",
+            "after_fingerprint": "7f2028866832fecf"
           },
           {
-            "key": "pequeradio tv (es)|infantiles",
-            "before_fingerprint": "8ac7f402c8ffb243",
-            "after_fingerprint": "acbecb18443af300"
+            "key": "moni tv hd|infantiles",
+            "before_fingerprint": "26c891d544bff20f",
+            "after_fingerprint": "9ed93e6c63eccbc6"
           }
         ],
         "categories": []
@@ -350,153 +378,153 @@
         "stream_urls": [
           {
             "key": "5dcb62e63d4d8f0009f36881",
-            "before_fingerprint": "58196f14147b2e5f",
-            "after_fingerprint": "9881d340efdd5213"
+            "before_fingerprint": "9881d340efdd5213",
+            "after_fingerprint": "cf1c587845db1370"
           },
           {
             "key": "5dcdde78f080d900098550e4",
-            "before_fingerprint": "2f059eba8adbb922",
-            "after_fingerprint": "5e2b4498bb48aef2"
+            "before_fingerprint": "5e2b4498bb48aef2",
+            "after_fingerprint": "a6df2917f265dd75"
           },
           {
             "key": "5dcddf1ed95e740009fef7ab",
-            "before_fingerprint": "9df27727ad49cf63",
-            "after_fingerprint": "8d5467854b263f2e"
+            "before_fingerprint": "8d5467854b263f2e",
+            "after_fingerprint": "69ccb18707b2e959"
           },
           {
             "key": "5dcddfcb229eff00091b6bdf",
-            "before_fingerprint": "9e94dea47a592fe3",
-            "after_fingerprint": "536859b2c409cb80"
+            "before_fingerprint": "536859b2c409cb80",
+            "after_fingerprint": "51365a34f1f431eb"
           },
           {
             "key": "5dcde0657444a40009cd2422",
-            "before_fingerprint": "e713d1e63b47e091",
-            "after_fingerprint": "7f24f97019b00697"
+            "before_fingerprint": "7f24f97019b00697",
+            "after_fingerprint": "c8aa6c282c5217e9"
           },
           {
             "key": "5dcde07af1c85b0009b18651",
-            "before_fingerprint": "1934d4ef20abf6c9",
-            "after_fingerprint": "b45986f743cf6bf4"
+            "before_fingerprint": "b45986f743cf6bf4",
+            "after_fingerprint": "89537f211045991c"
           },
           {
             "key": "5dcde0cc2efd2700090b7ff4",
-            "before_fingerprint": "328797f8e1a7e89f",
-            "after_fingerprint": "0e2a2db4782f9b76"
+            "before_fingerprint": "0e2a2db4782f9b76",
+            "after_fingerprint": "d3f1acf52a8d4487"
           },
           {
             "key": "5dcde1317578340009b751d0",
-            "before_fingerprint": "d245474b8e657f1d",
-            "after_fingerprint": "0dcd69cf8abaa590"
+            "before_fingerprint": "0dcd69cf8abaa590",
+            "after_fingerprint": "eac1f5816017c9e4"
           },
           {
             "key": "5dcde17bf6591d0009839e02",
-            "before_fingerprint": "200e4c98f86a3315",
-            "after_fingerprint": "fb64cdec4adcafe2"
+            "before_fingerprint": "fb64cdec4adcafe2",
+            "after_fingerprint": "d808080a24d53b78"
           },
           {
             "key": "5dcde197f6591d0009839e04",
-            "before_fingerprint": "98037bfcef3330fb",
-            "after_fingerprint": "964511ede0f5e943"
+            "before_fingerprint": "964511ede0f5e943",
+            "after_fingerprint": "64b27415ea1ed10e"
           },
           {
             "key": "5dcde27ffae9520009c0c75a",
-            "before_fingerprint": "c32a101db43af6d2",
-            "after_fingerprint": "1fc057f2046a2bfb"
+            "before_fingerprint": "1fc057f2046a2bfb",
+            "after_fingerprint": "6a08e72117ed0ec5"
           },
           {
             "key": "5dcde2ac4bc6c500094ab45b",
-            "before_fingerprint": "9203e681580a0fb2",
-            "after_fingerprint": "4af8401ef43dd89e"
+            "before_fingerprint": "4af8401ef43dd89e",
+            "after_fingerprint": "e6c96cedf1f142fb"
           },
           {
             "key": "5dcde2f53449c50009b2b4dc",
-            "before_fingerprint": "97fe848580f76a84",
-            "after_fingerprint": "ff475a52c9b0a639"
+            "before_fingerprint": "ff475a52c9b0a639",
+            "after_fingerprint": "acbea120d340162b"
           },
           {
             "key": "5dcde437229eff00091b6c30",
-            "before_fingerprint": "88b3de8497378894",
-            "after_fingerprint": "434d022951ba91df"
+            "before_fingerprint": "434d022951ba91df",
+            "after_fingerprint": "53d3a364da67fe20"
           },
           {
             "key": "5dd6d935d000120009bc1132",
-            "before_fingerprint": "6525559d47478bbf",
-            "after_fingerprint": "447de2e089d5d475"
+            "before_fingerprint": "447de2e089d5d475",
+            "after_fingerprint": "d53f22915b71ca48"
           },
           {
             "key": "5dd6dae8ce788b0009eaf77b",
-            "before_fingerprint": "70d1b64f6a7d8de2",
-            "after_fingerprint": "a674e20c92ac450b"
+            "before_fingerprint": "a674e20c92ac450b",
+            "after_fingerprint": "f3553bf4cda82cab"
           },
           {
             "key": "5dd6dc7480e3550009133d4a",
-            "before_fingerprint": "88090b2aacf5a7bd",
-            "after_fingerprint": "e55f5e5fe3690090"
+            "before_fingerprint": "e55f5e5fe3690090",
+            "after_fingerprint": "741adc90e21930ce"
           },
           {
             "key": "5dd6ddb30a1d8a000908ed4c",
-            "before_fingerprint": "e0477ac684fb44df",
-            "after_fingerprint": "b0bf47fe62d20a0d"
+            "before_fingerprint": "b0bf47fe62d20a0d",
+            "after_fingerprint": "4f8b5facb621750b"
           },
           {
             "key": "5dd7ea2aeab5230009986735",
-            "before_fingerprint": "2c95001bb980ae4b",
-            "after_fingerprint": "5e9c4628cf178628"
+            "before_fingerprint": "5e9c4628cf178628",
+            "after_fingerprint": "9b491fb2d488b428"
           },
           {
             "key": "5dd837642c6e9300098ad484",
-            "before_fingerprint": "82dda384e0d62401",
-            "after_fingerprint": "5afdfd955fd3628c"
+            "before_fingerprint": "5afdfd955fd3628c",
+            "after_fingerprint": "638ef5600ae74564"
           },
           {
             "key": "5dd85eac039bba0009e86d1d",
-            "before_fingerprint": "5e4cb441079895f6",
-            "after_fingerprint": "1cefdd4094f4eb78"
+            "before_fingerprint": "1cefdd4094f4eb78",
+            "after_fingerprint": "6a301834811fe3e3"
           },
           {
             "key": "5ddc266f80e3550009136843",
-            "before_fingerprint": "2a0d5e4299615252",
-            "after_fingerprint": "4e516c8aede38115"
+            "before_fingerprint": "4e516c8aede38115",
+            "after_fingerprint": "7054351ce43d7f7c"
           },
           {
             "key": "5ddc4e8bcbb9010009b4e84f",
-            "before_fingerprint": "17e08c509cbc449f",
-            "after_fingerprint": "287645d27693a518"
+            "before_fingerprint": "287645d27693a518",
+            "after_fingerprint": "ea2b3e49fb912868"
           },
           {
             "key": "5ddc503ac7ef120009b101a2",
-            "before_fingerprint": "ac994409ebc42be4",
-            "after_fingerprint": "3388aa60f132cdb6"
+            "before_fingerprint": "3388aa60f132cdb6",
+            "after_fingerprint": "49a6836a47bf3dfb"
           },
           {
             "key": "5ddd7cb2cbb9010009b4fe32",
-            "before_fingerprint": "f6762ff222c84feb",
-            "after_fingerprint": "57b06e3106a37ef1"
+            "before_fingerprint": "57b06e3106a37ef1",
+            "after_fingerprint": "f26c41f90024762f"
           },
           {
             "key": "5de5758e1a30dc00094fcd6c",
-            "before_fingerprint": "cd5c0f18fb9f4a48",
-            "after_fingerprint": "436a81fda401ea7f"
+            "before_fingerprint": "436a81fda401ea7f",
+            "after_fingerprint": "9e7ed867042e2a17"
           },
           {
             "key": "5de802659167b10009e7deba",
-            "before_fingerprint": "8ceac45de3d6c4a3",
-            "after_fingerprint": "60bdfe59b98dfde0"
+            "before_fingerprint": "60bdfe59b98dfde0",
+            "after_fingerprint": "362f3bbeb9110e59"
           },
           {
             "key": "5de91b7ea86ee60009d89e75",
-            "before_fingerprint": "976e2c6630471366",
-            "after_fingerprint": "1c7911cf336ddba3"
+            "before_fingerprint": "1c7911cf336ddba3",
+            "after_fingerprint": "eb10f40fc8aac65d"
           },
           {
             "key": "5defde6d6c07b50009cf0757",
-            "before_fingerprint": "9b423986ac8988e1",
-            "after_fingerprint": "2c518c3b29e552dc"
+            "before_fingerprint": "2c518c3b29e552dc",
+            "after_fingerprint": "c65645f9f0e10133"
           },
           {
             "key": "5df265697ec3510009df1ef0",
-            "before_fingerprint": "60199fef9aaf2a11",
-            "after_fingerprint": "81a1b4e0f57fa94d"
+            "before_fingerprint": "81a1b4e0f57fa94d",
+            "after_fingerprint": "41400da51bdce566"
           }
         ],
         "categories": []
@@ -523,153 +551,153 @@
         "stream_urls": [
           {
             "key": "5f120e94a5714d00074576a1",
-            "before_fingerprint": "ce311162b18e1ec4",
-            "after_fingerprint": "bf77d91393fa6769"
+            "before_fingerprint": "bf77d91393fa6769",
+            "after_fingerprint": "5b620965f112b884"
           },
           {
             "key": "5f120f41b7d403000783a6d6",
-            "before_fingerprint": "7295e010f49b6ff0",
-            "after_fingerprint": "403cf4c3f2ceab7d"
+            "before_fingerprint": "403cf4c3f2ceab7d",
+            "after_fingerprint": "a9a4a546522e01ce"
           },
           {
             "key": "5f12101f0b12f00007844c7c",
-            "before_fingerprint": "1aff0a1dd06b56a8",
-            "after_fingerprint": "669fd8ae185e9ab1"
+            "before_fingerprint": "669fd8ae185e9ab1",
+            "after_fingerprint": "e4e0605b4e488955"
           },
           {
             "key": "5f1210d14ae1f80007bafb1d",
-            "before_fingerprint": "d6030aea58be0577",
-            "after_fingerprint": "add7ab0fb96a6415"
+            "before_fingerprint": "add7ab0fb96a6415",
+            "after_fingerprint": "cb65e82e3f2a148b"
           },
           {
             "key": "5f12111c9e6c2c00078ef3bb",
-            "before_fingerprint": "9b94fbb895682d06",
-            "after_fingerprint": "a502422b3bc3dde7"
+            "before_fingerprint": "a502422b3bc3dde7",
+            "after_fingerprint": "efe1e1ed97ea6922"
           },
           {
             "key": "5f1212ad1728050007a523b8",
-            "before_fingerprint": "46280ae56a9b2e4d",
-            "after_fingerprint": "6edd78657aae915a"
+            "before_fingerprint": "6edd78657aae915a",
+            "after_fingerprint": "bedcf0b80de7487f"
           },
           {
             "key": "5f1212fb81e85c00077ae9ef",
-            "before_fingerprint": "0d86be23a673d260",
-            "after_fingerprint": "04d2d97738540976"
+            "before_fingerprint": "04d2d97738540976",
+            "after_fingerprint": "7354a5ca39056d7b"
           },
           {
             "key": "5f12136385bccc00070142ed",
-            "before_fingerprint": "e9775ae686f2dfaa",
-            "after_fingerprint": "d751b967784e1eb2"
+            "before_fingerprint": "d751b967784e1eb2",
+            "after_fingerprint": "a49dbf84e54437ac"
           },
           {
             "key": "5f1213ba0ecebc00070e170f",
-            "before_fingerprint": "bbaa4d8f9c3a1b8a",
-            "after_fingerprint": "3ddc9e2564a93ec8"
+            "before_fingerprint": "3ddc9e2564a93ec8",
+            "after_fingerprint": "1e451c8c39231774"
           },
           {
             "key": "5f12141b146d760007934ea7",
-            "before_fingerprint": "c21bc11c52f28a57",
-            "after_fingerprint": "4d1b5018437be709"
+            "before_fingerprint": "4d1b5018437be709",
+            "after_fingerprint": "cba12fc3668b833a"
           },
           {
             "key": "5f1214a637c6fd00079c652f",
-            "before_fingerprint": "c062fa10954f04f7",
-            "after_fingerprint": "8e930e6b4a323c76"
+            "before_fingerprint": "8e930e6b4a323c76",
+            "after_fingerprint": "e93e455bb796127a"
           },
           {
             "key": "5f171d3442a0500007362f22",
-            "before_fingerprint": "0ae5407fbf7e2811",
-            "after_fingerprint": "3e35769fc50f3471"
+            "before_fingerprint": "3e35769fc50f3471",
+            "after_fingerprint": "76a27cee62dc033f"
           },
           {
             "key": "5f171f032cd22e0007f17f3d",
-            "before_fingerprint": "4f4a7f9678c39eb0",
-            "after_fingerprint": "66338d6436b51c6f"
+            "before_fingerprint": "66338d6436b51c6f",
+            "after_fingerprint": "daa0d4124f6cc285"
           },
           {
             "key": "5f171f988ab9780007fa95ea",
-            "before_fingerprint": "c7c939327131f83e",
-            "after_fingerprint": "672394a75dcbb2fc"
+            "before_fingerprint": "672394a75dcbb2fc",
+            "after_fingerprint": "fd88701dd400c752"
           },
           {
             "key": "5f1ef1a8cec6be00072a7ac9",
-            "before_fingerprint": "934e3737fa323910",
-            "after_fingerprint": "aefce54033454430"
+            "before_fingerprint": "aefce54033454430",
+            "after_fingerprint": "9ffdf76300b4c6ea"
           },
           {
             "key": "5f1ef23020a5ac0007e5e8ea",
-            "before_fingerprint": "e21f7dbcb7f2fac4",
-            "after_fingerprint": "923d2b974aa0a2b8"
+            "before_fingerprint": "923d2b974aa0a2b8",
+            "after_fingerprint": "a3a236e4ab98c020"
           },
           {
             "key": "5f32cf37c9ff2b00082adbc8",
-            "before_fingerprint": "94e7b557c19da528",
-            "after_fingerprint": "be09aebf566de628"
+            "before_fingerprint": "be09aebf566de628",
+            "after_fingerprint": "6aa3b8f36978b7bb"
           },
           {
             "key": "5f32d2db0af67400077f29c4",
-            "before_fingerprint": "acbe16fdecccb303",
-            "after_fingerprint": "c1ae1a1dd6ab34f9"
+            "before_fingerprint": "c1ae1a1dd6ab34f9",
+            "after_fingerprint": "65c77f136ff44090"
           },
           {
             "key": "5f32d432d612e50007e56133",
-            "before_fingerprint": "84b6248d9a91391f",
-            "after_fingerprint": "05c08fa40cf0d1dd"
+            "before_fingerprint": "05c08fa40cf0d1dd",
+            "after_fingerprint": "d539bbdca9dadf50"
           },
           {
             "key": "5f32d4d9ec194100070c7449",
-            "before_fingerprint": "fce129dea98e53b9",
-            "after_fingerprint": "9c80df16f2d8b4fc"
+            "before_fingerprint": "9c80df16f2d8b4fc",
+            "after_fingerprint": "dfd11b54ba19d0d9"
           },
           {
             "key": "5f357e91b18f0b00073583d2",
-            "before_fingerprint": "f2922132c520b2e8",
-            "after_fingerprint": "ca012731fe0159f1"
+            "before_fingerprint": "ca012731fe0159f1",
+            "after_fingerprint": "27c5d5535e348fe3"
           },
           {
             "key": "5f4fb4cf605ddf000748e16f",
-            "before_fingerprint": "ec4d109ae95067d5",
-            "after_fingerprint": "e73d939c54fea2a8"
+            "before_fingerprint": "e73d939c54fea2a8",
+            "after_fingerprint": "7530f32ff160e4a9"
           },
           {
             "key": "5f512365abe1f50007d3ff56",
-            "before_fingerprint": "58b6e95de8ca40cc",
-            "after_fingerprint": "54447a1337e56b5f"
+            "before_fingerprint": "54447a1337e56b5f",
+            "after_fingerprint": "1f263fea1155e601"
           },
           {
             "key": "5f5141c1605ddf000748eb1b",
-            "before_fingerprint": "d39a99c7a4342692",
-            "after_fingerprint": "dd339199868d1699"
+            "before_fingerprint": "dd339199868d1699",
+            "after_fingerprint": "361781fe6ea1f6d3"
           },
           {
             "key": "5f515ebac01c0f00080e8439",
-            "before_fingerprint": "544095a6628cfbc6",
-            "after_fingerprint": "c351bbd5ef43aa6a"
+            "before_fingerprint": "c351bbd5ef43aa6a",
+            "after_fingerprint": "5e9b661a1f672311"
           },
           {
             "key": "5f5a545d0dbf7f0007c09408",
-            "before_fingerprint": "a680074d2e968aff",
-            "after_fingerprint": "298b48cce7952a56"
+            "before_fingerprint": "298b48cce7952a56",
+            "after_fingerprint": "fe9c36471a6d44d1"
           },
           {
             "key": "5f5c216df68f920007888315",
-            "before_fingerprint": "0d3d447fc0c49ce7",
-            "after_fingerprint": "55aec1771510260d"
+            "before_fingerprint": "55aec1771510260d",
+            "after_fingerprint": "19f22a4a70ca4f2a"
           },
           {
             "key": "5f6108d8cc331900075e98e4",
-            "before_fingerprint": "6731ba44b569770f",
-            "after_fingerprint": "e18fcf9b9fe817ab"
+            "before_fingerprint": "e18fcf9b9fe817ab",
+            "after_fingerprint": "7d5bf9f5729e0087"
           },
           {
             "key": "5f6df5a173d7340007c559f7",
-            "before_fingerprint": "2eca99113011f443",
-            "after_fingerprint": "a6f1082f3966af59"
+            "before_fingerprint": "a6f1082f3966af59",
+            "after_fingerprint": "0bd90402d045127d"
           },
           {
             "key": "5f997e44949bc70007a6941e",
-            "before_fingerprint": "e6c867144231489c",
-            "after_fingerprint": "dd919fac6f16bf41"
+            "before_fingerprint": "dd919fac6f16bf41",
+            "after_fingerprint": "02432aaba3091dd9"
           }
         ],
         "categories": []
@@ -696,153 +724,153 @@
         "stream_urls": [
           {
             "key": "5dcb62e63d4d8f0009f36881",
-            "before_fingerprint": "3be8a30562684e94",
-            "after_fingerprint": "b32f080ec620ed3d"
+            "before_fingerprint": "b32f080ec620ed3d",
+            "after_fingerprint": "434c6983e112b1d5"
           },
           {
             "key": "5dcdde78f080d900098550e4",
-            "before_fingerprint": "361a283a89a50c64",
-            "after_fingerprint": "099918bc3226bb91"
+            "before_fingerprint": "099918bc3226bb91",
+            "after_fingerprint": "3dfc1584ee1f9421"
           },
           {
             "key": "5dcddf1ed95e740009fef7ab",
-            "before_fingerprint": "31b16f734d40aacf",
-            "after_fingerprint": "8b55be9db4e1fc93"
+            "before_fingerprint": "8b55be9db4e1fc93",
+            "after_fingerprint": "5aa364cfd6213585"
           },
           {
             "key": "5dcddfcb229eff00091b6bdf",
-            "before_fingerprint": "c1c23d548dbec85d",
-            "after_fingerprint": "72b14a9a82281ad1"
+            "before_fingerprint": "72b14a9a82281ad1",
+            "after_fingerprint": "a1b7e2a878972758"
           },
           {
             "key": "5dcde0657444a40009cd2422",
-            "before_fingerprint": "6044efab475b74a3",
-            "after_fingerprint": "58472cd035396aa9"
+            "before_fingerprint": "58472cd035396aa9",
+            "after_fingerprint": "91351a47abffae80"
           },
           {
             "key": "5dcde07af1c85b0009b18651",
-            "before_fingerprint": "7ba953904e324900",
-            "after_fingerprint": "4c5a0d24057522f0"
+            "before_fingerprint": "4c5a0d24057522f0",
+            "after_fingerprint": "2d617f840589ad11"
           },
           {
             "key": "5dcde0cc2efd2700090b7ff4",
-            "before_fingerprint": "99338355f6a5073a",
-            "after_fingerprint": "036c3bf3be52579d"
+            "before_fingerprint": "036c3bf3be52579d",
+            "after_fingerprint": "3028f7251162a41e"
           },
           {
             "key": "5dcde1317578340009b751d0",
-            "before_fingerprint": "6e443d378af80b1c",
-            "after_fingerprint": "9c685b2eddcab581"
+            "before_fingerprint": "9c685b2eddcab581",
+            "after_fingerprint": "3f1ae977eb481a2c"
           },
           {
             "key": "5dcde17bf6591d0009839e02",
-            "before_fingerprint": "f5115c758e1abd1b",
-            "after_fingerprint": "8c7f013617ed131a"
+            "before_fingerprint": "8c7f013617ed131a",
+            "after_fingerprint": "482770aa22c87359"
           },
           {
             "key": "5dcde197f6591d0009839e04",
-            "before_fingerprint": "26cf167197fb4d55",
-            "after_fingerprint": "1a7ab4360688c05f"
+            "before_fingerprint": "1a7ab4360688c05f",
+            "after_fingerprint": "8709f99444acdd70"
           },
           {
             "key": "5dcde27ffae9520009c0c75a",
-            "before_fingerprint": "fbf37e525293ca54",
-            "after_fingerprint": "3f19f85c483f96ac"
+            "before_fingerprint": "3f19f85c483f96ac",
+            "after_fingerprint": "2aa4355c3e484ac8"
           },
           {
             "key": "5dcde2ac4bc6c500094ab45b",
-            "before_fingerprint": "9dd0709269ef6f2e",
-            "after_fingerprint": "0015d4051613009c"
+            "before_fingerprint": "0015d4051613009c",
+            "after_fingerprint": "d1d71eb9f0d52042"
           },
           {
             "key": "5dcde2f53449c50009b2b4dc",
-            "before_fingerprint": "383d182605dd18ec",
-            "after_fingerprint": "8ea4e3bbe5189fc3"
+            "before_fingerprint": "8ea4e3bbe5189fc3",
+            "after_fingerprint": "d022f7c6040be582"
           },
           {
             "key": "5dcde437229eff00091b6c30",
-            "before_fingerprint": "7389784eed989b86",
-            "after_fingerprint": "36a1858d415b16e7"
+            "before_fingerprint": "36a1858d415b16e7",
+            "after_fingerprint": "8f22a42a0b2f6bdc"
           },
           {
             "key": "5dd6d935d000120009bc1132",
-            "before_fingerprint": "3329f5b3905e7d62",
-            "after_fingerprint": "891b955b233121da"
+            "before_fingerprint": "891b955b233121da",
+            "after_fingerprint": "246c139d8e7d2255"
           },
           {
             "key": "5dd6dae8ce788b0009eaf77b",
-            "before_fingerprint": "2de95ad7e200da22",
-            "after_fingerprint": "4bbaed5b3beb2fe8"
+            "before_fingerprint": "4bbaed5b3beb2fe8",
+            "after_fingerprint": "59d4517110943960"
           },
           {
             "key": "5dd6dc7480e3550009133d4a",
-            "before_fingerprint": "c856c8e723a1c250",
-            "after_fingerprint": "8586b4a4bc3b285a"
+            "before_fingerprint": "8586b4a4bc3b285a",
+            "after_fingerprint": "7ac6e30694ae7eaf"
           },
           {
             "key": "5dd6ddb30a1d8a000908ed4c",
-            "before_fingerprint": "41425e77a07f68b1",
-            "after_fingerprint": "243f97240617a12f"
+            "before_fingerprint": "243f97240617a12f",
+            "after_fingerprint": "35819922db1a34cf"
           },
           {
             "key": "5dd7ea2aeab5230009986735",
-            "before_fingerprint": "e364b6936f55b96a",
-            "after_fingerprint": "a3bdd96ebc129f30"
+            "before_fingerprint": "a3bdd96ebc129f30",
+            "after_fingerprint": "8326c643045ff104"
           },
           {
             "key": "5dd837642c6e9300098ad484",
-            "before_fingerprint": "f7495cbcad024a0e",
-            "after_fingerprint": "b05dd6564b720e63"
+            "before_fingerprint": "b05dd6564b720e63",
+            "after_fingerprint": "c807d23d399a33b9"
           },
           {
             "key": "5dd85eac039bba0009e86d1d",
-            "before_fingerprint": "a44522e70c51a7f8",
-            "after_fingerprint": "8c43e3238c259676"
+            "before_fingerprint": "8c43e3238c259676",
+            "after_fingerprint": "b74689b72339b903"
           },
           {
             "key": "5ddc266f80e3550009136843",
-            "before_fingerprint": "90e2e7049f0a427e",
-            "after_fingerprint": "410d809c6496aa7b"
+            "before_fingerprint": "410d809c6496aa7b",
+            "after_fingerprint": "dfd734817e3b174b"
           },
           {
             "key": "5ddc4e8bcbb9010009b4e84f",
-            "before_fingerprint": "06e7c2d0b0a63a32",
-            "after_fingerprint": "2c0b87bfe1d2b94f"
+            "before_fingerprint": "2c0b87bfe1d2b94f",
+            "after_fingerprint": "060c58ec3f847f64"
           },
           {
             "key": "5ddc503ac7ef120009b101a2",
-            "before_fingerprint": "037ba8352760385a",
-            "after_fingerprint": "2a08aba43ea4079f"
+            "before_fingerprint": "2a08aba43ea4079f",
+            "after_fingerprint": "c588ffce0d8a2fda"
           },
           {
             "key": "5ddd7cb2cbb9010009b4fe32",
-            "before_fingerprint": "63107269eb1fd252",
-            "after_fingerprint": "d7d89899622bd796"
+            "before_fingerprint": "d7d89899622bd796",
+            "after_fingerprint": "98fb822a6b4ad313"
           },
           {
             "key": "5de5758e1a30dc00094fcd6c",
-            "before_fingerprint": "ff7a2ee513046ead",
-            "after_fingerprint": "d211b6f138e5d447"
+            "before_fingerprint": "d211b6f138e5d447",
+            "after_fingerprint": "2db7ed0199ee0453"
           },
           {
             "key": "5de802659167b10009e7deba",
-            "before_fingerprint": "c8d536a2e60b9949",
-            "after_fingerprint": "ad89eff1dc870613"
+            "before_fingerprint": "ad89eff1dc870613",
+            "after_fingerprint": "fc09f71d35076289"
           },
           {
             "key": "5de91b7ea86ee60009d89e75",
-            "before_fingerprint": "c68c67eb930cf93f",
-            "after_fingerprint": "4810bea9074c8973"
+            "before_fingerprint": "4810bea9074c8973",
+            "after_fingerprint": "986c61b63b5cbda2"
           },
           {
             "key": "5defde6d6c07b50009cf0757",
-            "before_fingerprint": "1ae1193bced8017f",
-            "after_fingerprint": "f3249b8c7e8684db"
+            "before_fingerprint": "f3249b8c7e8684db",
+            "after_fingerprint": "a135dc1e93c30ee7"
           },
           {
             "key": "5df265697ec3510009df1ef0",
-            "before_fingerprint": "78dfc901f44cf7bb",
-            "after_fingerprint": "c12dc187f32c6d32"
+            "before_fingerprint": "c12dc187f32c6d32",
+            "after_fingerprint": "21a35651cd93d431"
           }
         ],
         "categories": []
@@ -869,153 +897,153 @@
         "stream_urls": [
           {
             "key": "5f1aa7aab66c76000790ee7e",
-            "before_fingerprint": "4c253f6b3bbfc41a",
-            "after_fingerprint": "58c3b00d59ae9638"
+            "before_fingerprint": "58c3b00d59ae9638",
+            "after_fingerprint": "63db53c3293ea7dd"
           },
           {
             "key": "5f1aa9bcd8160700076d45d1",
-            "before_fingerprint": "3cb154dd5cd001f1",
-            "after_fingerprint": "c1a122d82b91dcd7"
+            "before_fingerprint": "c1a122d82b91dcd7",
+            "after_fingerprint": "4372aad8a6e35476"
           },
           {
             "key": "5f1aab1d29b39600073e243f",
-            "before_fingerprint": "c8c619edc9135a58",
-            "after_fingerprint": "487f8936a3f30de7"
+            "before_fingerprint": "487f8936a3f30de7",
+            "after_fingerprint": "29a2e232f5196a85"
           },
           {
             "key": "5f1aadf373bed3000794d1d7",
-            "before_fingerprint": "39bea0fbbd9a2142",
-            "after_fingerprint": "772de4dda56fe50d"
+            "before_fingerprint": "772de4dda56fe50d",
+            "after_fingerprint": "2938c99e41792e9b"
           },
           {
             "key": "5f1ab3c7778230000735cf41",
-            "before_fingerprint": "af6291e74f4d0667",
-            "after_fingerprint": "3130d93767e2048b"
+            "before_fingerprint": "3130d93767e2048b",
+            "after_fingerprint": "e54e761baee341d2"
           },
           {
             "key": "5f1abce155a03d0007718834",
-            "before_fingerprint": "7a0054d6b1492223",
-            "after_fingerprint": "287daffc59c5e769"
+            "before_fingerprint": "287daffc59c5e769",
+            "after_fingerprint": "6290074f80b347e0"
           },
           {
             "key": "5f1abf5fafb5ee0007d4d0ca",
-            "before_fingerprint": "214cf59b28d87f63",
-            "after_fingerprint": "fda36e895125d7d8"
+            "before_fingerprint": "fda36e895125d7d8",
+            "after_fingerprint": "6e69cf1df559be82"
           },
           {
             "key": "5f1ac1f1b66c76000790ef27",
-            "before_fingerprint": "6b24d5a1913ae1fe",
-            "after_fingerprint": "c9b5404eb76bff77"
+            "before_fingerprint": "c9b5404eb76bff77",
+            "after_fingerprint": "8a9b23ad655e9494"
           },
           {
             "key": "5f1ac2591dd8880007bb7d6d",
-            "before_fingerprint": "d4c017a08954c0f8",
-            "after_fingerprint": "d82dc8b5397fb291"
+            "before_fingerprint": "d82dc8b5397fb291",
+            "after_fingerprint": "7f278f5c05710f1a"
           },
           {
             "key": "5f1ac8099c49f600076579b2",
-            "before_fingerprint": "13c436146601268e",
-            "after_fingerprint": "a3bbb232f8fc0c91"
+            "before_fingerprint": "a3bbb232f8fc0c91",
+            "after_fingerprint": "ee98ac1cf80dcf5b"
           },
           {
             "key": "5f1ac8a87cd38d000745d7cf",
-            "before_fingerprint": "b33f71b0fd34c3a5",
-            "after_fingerprint": "6abef963cad82e13"
+            "before_fingerprint": "6abef963cad82e13",
+            "after_fingerprint": "0d901151c46de05b"
           },
           {
             "key": "5f1ac947dcd00d0007937c08",
-            "before_fingerprint": "cb0c52fda3d1afea",
-            "after_fingerprint": "8987d4963d3a96db"
+            "before_fingerprint": "8987d4963d3a96db",
+            "after_fingerprint": "ad5c7bb2af691d87"
           },
           {
             "key": "5f1ac9a2d3611d0007a844bb",
-            "before_fingerprint": "5ec524737dae40fe",
-            "after_fingerprint": "b12d5bf351123c7a"
+            "before_fingerprint": "b12d5bf351123c7a",
+            "after_fingerprint": "4be8afaf03e6e496"
           },
           {
             "key": "5f1aca0b4e448e00075e7c5e",
-            "before_fingerprint": "ef34825e30649664",
-            "after_fingerprint": "9f56732925e86a66"
+            "before_fingerprint": "9f56732925e86a66",
+            "after_fingerprint": "b363cebd55b2cd6f"
           },
           {
             "key": "5f1aca8310a30e00074fab92",
-            "before_fingerprint": "e1ae670249e07e26",
-            "after_fingerprint": "1ef1a03daa5d2309"
+            "before_fingerprint": "1ef1a03daa5d2309",
+            "after_fingerprint": "9d73f2c99a2368e3"
           },
           {
             "key": "5f1acba0d1f6340007db8843",
-            "before_fingerprint": "ee11506475209df8",
-            "after_fingerprint": "68f254d1c9a2c32c"
+            "before_fingerprint": "68f254d1c9a2c32c",
+            "after_fingerprint": "405a310d3ca2749a"
           },
           {
             "key": "5f1acbed25948a0007ffbe65",
-            "before_fingerprint": "c2be63d2ac64d512",
-            "after_fingerprint": "1b62b56178c8aadd"
+            "before_fingerprint": "1b62b56178c8aadd",
+            "after_fingerprint": "49a9e4ad5906c199"
           },
           {
             "key": "5f1acce7f17797000718f9be",
-            "before_fingerprint": "b01870126e21b5a5",
-            "after_fingerprint": "3ef66036e61af065"
+            "before_fingerprint": "3ef66036e61af065",
+            "after_fingerprint": "929517402bdba257"
           },
           {
             "key": "5f1acd36779de70007a680d1",
-            "before_fingerprint": "a271ff08a27567d8",
-            "after_fingerprint": "f004ec9ea24a1dc1"
+            "before_fingerprint": "f004ec9ea24a1dc1",
+            "after_fingerprint": "592673d7f8296311"
           },
           {
             "key": "5f1acdaa8ba90f0007d5e760",
-            "before_fingerprint": "59f4ab86f05d4d4c",
-            "after_fingerprint": "1ab359cd825fdc8f"
+            "before_fingerprint": "1ab359cd825fdc8f",
+            "after_fingerprint": "3d59a8f67e9cfe5a"
           },
           {
             "key": "5f28009b150b2500077766b8",
-            "before_fingerprint": "92b8b45209276bd2",
-            "after_fingerprint": "cc94fae141a0d10e"
+            "before_fingerprint": "cc94fae141a0d10e",
+            "after_fingerprint": "3f0d3fa0f51d3ff4"
           },
           {
             "key": "5f6a38eaa5b68b0007a00e7a",
-            "before_fingerprint": "3bf2f50d2b8ddf3b",
-            "after_fingerprint": "a52d6dfe200be8b6"
+            "before_fingerprint": "a52d6dfe200be8b6",
+            "after_fingerprint": "e23d9c74cabc9b9a"
           },
           {
             "key": "5f984f4a09e92d0007d74647",
-            "before_fingerprint": "13119eb739bc277b",
-            "after_fingerprint": "ce88b1aac8148698"
+            "before_fingerprint": "ce88b1aac8148698",
+            "after_fingerprint": "aba045245b1adcee"
           },
           {
             "key": "5f98537a5a4341000733aefe",
-            "before_fingerprint": "e9e45202eb44126f",
-            "after_fingerprint": "45d04e6eedb813ce"
+            "before_fingerprint": "45d04e6eedb813ce",
+            "after_fingerprint": "ed0f07800dbd409e"
           },
           {
             "key": "600169ec77e6f70008fa9cf0",
-            "before_fingerprint": "9b02bacf621947b9",
-            "after_fingerprint": "94415228ffe04f32"
+            "before_fingerprint": "94415228ffe04f32",
+            "after_fingerprint": "bfaadd826a10dfe1"
           },
           {
             "key": "600ae6a78d801e0007117d21",
-            "before_fingerprint": "9f168670737a3eb1",
-            "after_fingerprint": "10ac62bab8348d62"
+            "before_fingerprint": "10ac62bab8348d62",
+            "after_fingerprint": "09e08f0329f20289"
           },
           {
             "key": "60218baa464ef900073168c1",
-            "before_fingerprint": "b519394bbf1c93b7",
-            "after_fingerprint": "51d218b8dff8f020"
+            "before_fingerprint": "51d218b8dff8f020",
+            "after_fingerprint": "49c137402843e94c"
           },
           {
             "key": "604f8125c6669b00077f7699",
-            "before_fingerprint": "954d749f80406630",
-            "after_fingerprint": "46ba3b74c4f669aa"
+            "before_fingerprint": "46ba3b74c4f669aa",
+            "after_fingerprint": "6597e2366220b6eb"
           },
           {
             "key": "604f81a49ef73300070e554f",
-            "before_fingerprint": "5b2f5b05404ed78a",
-            "after_fingerprint": "3370a30f3c59b8ed"
+            "before_fingerprint": "3370a30f3c59b8ed",
+            "after_fingerprint": "5a18ee5db33a819b"
           },
           {
             "key": "6080345ebb49b90007ce0baf",
-            "before_fingerprint": "0ab1d006545a8743",
-            "after_fingerprint": "3dcba9a6a8575744"
+            "before_fingerprint": "3dcba9a6a8575744",
+            "after_fingerprint": "ce9ad7e80daebd46"
           }
         ],
         "categories": []
@@ -1042,153 +1070,153 @@
         "stream_urls": [
           {
             "key": "5dcb62e63d4d8f0009f36881",
-            "before_fingerprint": "6103ca55109eb89f",
-            "after_fingerprint": "2c42b9026d4757cf"
+            "before_fingerprint": "2c42b9026d4757cf",
+            "after_fingerprint": "edbdf702819a093e"
           },
           {
             "key": "5dcdde78f080d900098550e4",
-            "before_fingerprint": "58fa9a216ba5f79f",
-            "after_fingerprint": "771109c050cdbe9a"
+            "before_fingerprint": "771109c050cdbe9a",
+            "after_fingerprint": "b45c04210bfdee61"
           },
           {
             "key": "5dcddf1ed95e740009fef7ab",
-            "before_fingerprint": "e6ad6716c6b13103",
-            "after_fingerprint": "ca85982766a4decd"
+            "before_fingerprint": "ca85982766a4decd",
+            "after_fingerprint": "5615ca7de92b9764"
           },
           {
             "key": "5dcddfcb229eff00091b6bdf",
-            "before_fingerprint": "131241f292af8cc9",
-            "after_fingerprint": "48e8c64d8c375045"
+            "before_fingerprint": "48e8c64d8c375045",
+            "after_fingerprint": "dd70daf9a8cbf651"
           },
           {
             "key": "5dcde0657444a40009cd2422",
-            "before_fingerprint": "89820cf7be7ac701",
-            "after_fingerprint": "70a95945616a0647"
+            "before_fingerprint": "70a95945616a0647",
+            "after_fingerprint": "3710363a2b0af3d3"
           },
           {
             "key": "5dcde07af1c85b0009b18651",
-            "before_fingerprint": "e3a85d806bb7fb91",
-            "after_fingerprint": "025445218beb1828"
+            "before_fingerprint": "025445218beb1828",
+            "after_fingerprint": "f1f0514ace5eae09"
           },
           {
             "key": "5dcde0cc2efd2700090b7ff4",
-            "before_fingerprint": "527b1f61265b12ce",
-            "after_fingerprint": "609f299f60029d0a"
+            "before_fingerprint": "609f299f60029d0a",
+            "after_fingerprint": "fcd276323be16735"
           },
           {
             "key": "5dcde1317578340009b751d0",
-            "before_fingerprint": "e951dfbd736292d8",
-            "after_fingerprint": "0d81e5434f4f2986"
+            "before_fingerprint": "0d81e5434f4f2986",
+            "after_fingerprint": "43e32059ad255ab8"
           },
           {
             "key": "5dcde17bf6591d0009839e02",
-            "before_fingerprint": "71c033cee08d5332",
-            "after_fingerprint": "bd66e9c33af6953c"
+            "before_fingerprint": "bd66e9c33af6953c",
+            "after_fingerprint": "c1290b00809bef59"
           },
           {
             "key": "5dcde197f6591d0009839e04",
-            "before_fingerprint": "294d688daafb7542",
-            "after_fingerprint": "9f15837ef8f0fdf9"
+            "before_fingerprint": "9f15837ef8f0fdf9",
+            "after_fingerprint": "f694e32cc0956f3e"
           },
           {
             "key": "5dcde27ffae9520009c0c75a",
-            "before_fingerprint": "4982ab95e9c512ec",
-            "after_fingerprint": "9aab7022db2bc417"
+            "before_fingerprint": "9aab7022db2bc417",
+            "after_fingerprint": "cfcdfd07c6abf5ab"
           },
           {
             "key": "5dcde2ac4bc6c500094ab45b",
-            "before_fingerprint": "ef031221107693bd",
-            "after_fingerprint": "5884a2baa949259c"
+            "before_fingerprint": "5884a2baa949259c",
+            "after_fingerprint": "d29a645966ee35d0"
           },
           {
             "key": "5dcde2f53449c50009b2b4dc",
-            "before_fingerprint": "ae331886bfe694e5",
-            "after_fingerprint": "7c44df8d6e8341e3"
+            "before_fingerprint": "7c44df8d6e8341e3",
+            "after_fingerprint": "297ee12ef0d5d6c4"
           },
           {
             "key": "5dcde437229eff00091b6c30",
-            "before_fingerprint": "af15fed2cd46d697",
-            "after_fingerprint": "4e7ea75ab43c6642"
+            "before_fingerprint": "4e7ea75ab43c6642",
+            "after_fingerprint": "36d2373ada594c16"
           },
           {
             "key": "5dd6d935d000120009bc1132",
-            "before_fingerprint": "64266fada703efaa",
-            "after_fingerprint": "4c8965d65cecb4c4"
+            "before_fingerprint": "4c8965d65cecb4c4",
+            "after_fingerprint": "ab6624435101648d"
           },
           {
             "key": "5dd6dae8ce788b0009eaf77b",
-            "before_fingerprint": "233fa4b07d6571ed",
-            "after_fingerprint": "9ad93ff14c9a0296"
+            "before_fingerprint": "9ad93ff14c9a0296",
+            "after_fingerprint": "0399bc921933cc03"
           },
           {
             "key": "5dd6dc7480e3550009133d4a",
-            "before_fingerprint": "b1c2351a2ffe702c",
-            "after_fingerprint": "4f66024f6a69d68c"
+            "before_fingerprint": "4f66024f6a69d68c",
+            "after_fingerprint": "0e7a6a2509d58eb6"
           },
           {
             "key": "5dd6ddb30a1d8a000908ed4c",
-            "before_fingerprint": "50a4f760a62f4f6c",
-            "after_fingerprint": "c726a4eb13bf26ba"
+            "before_fingerprint": "c726a4eb13bf26ba",
+            "after_fingerprint": "a01eaf3391be27e8"
           },
           {
             "key": "5dd7ea2aeab5230009986735",
-            "before_fingerprint": "c623d977f60315bc",
-            "after_fingerprint": "d775861d330b86ef"
+            "before_fingerprint": "d775861d330b86ef",
+            "after_fingerprint": "12baa7b8b090b8a3"
           },
           {
             "key": "5dd837642c6e9300098ad484",
-            "before_fingerprint": "1fa5b102f03b0278",
-            "after_fingerprint": "5fc97b041bb858b7"
+            "before_fingerprint": "5fc97b041bb858b7",
+            "after_fingerprint": "640d4f0d80cd00d0"
           },
           {
             "key": "5dd85eac039bba0009e86d1d",
-            "before_fingerprint": "2fe2d094b38e389d",
-            "after_fingerprint": "9e815eee582f9f9d"
+            "before_fingerprint": "9e815eee582f9f9d",
+            "after_fingerprint": "8e18d7498288d88c"
           },
           {
             "key": "5ddc266f80e3550009136843",
-            "before_fingerprint": "f48690ae1060b29c",
-            "after_fingerprint": "87b947ef12cd8548"
+            "before_fingerprint": "87b947ef12cd8548",
+            "after_fingerprint": "8173289badace30e"
           },
           {
             "key": "5ddc4e8bcbb9010009b4e84f",
-            "before_fingerprint": "e04517ea905a7b88",
-            "after_fingerprint": "fdc3d3aca6f5f5d5"
+            "before_fingerprint": "fdc3d3aca6f5f5d5",
+            "after_fingerprint": "85137a455c1c82a7"
           },
           {
             "key": "5ddc503ac7ef120009b101a2",
-            "before_fingerprint": "cb2649de3ad1ce10",
-            "after_fingerprint": "506b5d92c9768ab1"
+            "before_fingerprint": "506b5d92c9768ab1",
+            "after_fingerprint": "040014c0594c428f"
           },
           {
             "key": "5ddd7cb2cbb9010009b4fe32",
-            "before_fingerprint": "e0192f3a7f8c1afb",
-            "after_fingerprint": "6a6ac8472e937083"
+            "before_fingerprint": "6a6ac8472e937083",
+            "after_fingerprint": "dfe7fcfb5464b22e"
           },
           {
             "key": "5de5758e1a30dc00094fcd6c",
-            "before_fingerprint": "d819d32527aa74ef",
-            "after_fingerprint": "424970c516aa8fc3"
+            "before_fingerprint": "424970c516aa8fc3",
+            "after_fingerprint": "2cf56f81745ac646"
           },
           {
             "key": "5de802659167b10009e7deba",
-            "before_fingerprint": "39572d7c26eb20b4",
-            "after_fingerprint": "1164fb2d549a99c7"
+            "before_fingerprint": "1164fb2d549a99c7",
+            "after_fingerprint": "a9a8ba4cba8829c4"
           },
           {
             "key": "5de91b7ea86ee60009d89e75",
-            "before_fingerprint": "6004358966242344",
-            "after_fingerprint": "53ef0147d4561170"
+            "before_fingerprint": "53ef0147d4561170",
+            "after_fingerprint": "f296bdb9e1afffa1"
           },
           {
             "key": "5defde6d6c07b50009cf0757",
-            "before_fingerprint": "f45dcbe95e8d2685",
-            "after_fingerprint": "3f53c1d792b567c4"
+            "before_fingerprint": "3f53c1d792b567c4",
+            "after_fingerprint": "c7069e921eb60e8d"
           },
           {
             "key": "5df265697ec3510009df1ef0",
-            "before_fingerprint": "6c568546b0388391",
-            "after_fingerprint": "a553f188cc60d6a5"
+            "before_fingerprint": "a553f188cc60d6a5",
+            "after_fingerprint": "c5e103f7bbf552ad"
           }
         ],
         "categories": []
@@ -1215,153 +1243,153 @@
         "stream_urls": [
           {
             "key": "5dcb62e63d4d8f0009f36881",
-            "before_fingerprint": "6103ca55109eb89f",
-            "after_fingerprint": "2c42b9026d4757cf"
+            "before_fingerprint": "2c42b9026d4757cf",
+            "after_fingerprint": "edbdf702819a093e"
           },
           {
             "key": "5dcdde78f080d900098550e4",
-            "before_fingerprint": "58fa9a216ba5f79f",
-            "after_fingerprint": "771109c050cdbe9a"
+            "before_fingerprint": "771109c050cdbe9a",
+            "after_fingerprint": "b45c04210bfdee61"
           },
           {
             "key": "5dcddf1ed95e740009fef7ab",
-            "before_fingerprint": "e6ad6716c6b13103",
-            "after_fingerprint": "ca85982766a4decd"
+            "before_fingerprint": "ca85982766a4decd",
+            "after_fingerprint": "5615ca7de92b9764"
           },
           {
             "key": "5dcddfcb229eff00091b6bdf",
-            "before_fingerprint": "131241f292af8cc9",
-            "after_fingerprint": "48e8c64d8c375045"
+            "before_fingerprint": "48e8c64d8c375045",
+            "after_fingerprint": "dd70daf9a8cbf651"
           },
           {
             "key": "5dcde0657444a40009cd2422",
-            "before_fingerprint": "89820cf7be7ac701",
-            "after_fingerprint": "70a95945616a0647"
+            "before_fingerprint": "70a95945616a0647",
+            "after_fingerprint": "3710363a2b0af3d3"
           },
           {
             "key": "5dcde07af1c85b0009b18651",
-            "before_fingerprint": "e3a85d806bb7fb91",
-            "after_fingerprint": "025445218beb1828"
+            "before_fingerprint": "025445218beb1828",
+            "after_fingerprint": "f1f0514ace5eae09"
           },
           {
             "key": "5dcde0cc2efd2700090b7ff4",
-            "before_fingerprint": "527b1f61265b12ce",
-            "after_fingerprint": "609f299f60029d0a"
+            "before_fingerprint": "609f299f60029d0a",
+            "after_fingerprint": "fcd276323be16735"
           },
           {
             "key": "5dcde1317578340009b751d0",
-            "before_fingerprint": "e951dfbd736292d8",
-            "after_fingerprint": "0d81e5434f4f2986"
+            "before_fingerprint": "0d81e5434f4f2986",
+            "after_fingerprint": "43e32059ad255ab8"
           },
           {
             "key": "5dcde17bf6591d0009839e02",
-            "before_fingerprint": "71c033cee08d5332",
-            "after_fingerprint": "bd66e9c33af6953c"
+            "before_fingerprint": "bd66e9c33af6953c",
+            "after_fingerprint": "c1290b00809bef59"
           },
           {
             "key": "5dcde197f6591d0009839e04",
-            "before_fingerprint": "294d688daafb7542",
-            "after_fingerprint": "9f15837ef8f0fdf9"
+            "before_fingerprint": "9f15837ef8f0fdf9",
+            "after_fingerprint": "f694e32cc0956f3e"
           },
           {
             "key": "5dcde27ffae9520009c0c75a",
-            "before_fingerprint": "4982ab95e9c512ec",
-            "after_fingerprint": "9aab7022db2bc417"
+            "before_fingerprint": "9aab7022db2bc417",
+            "after_fingerprint": "cfcdfd07c6abf5ab"
           },
           {
             "key": "5dcde2ac4bc6c500094ab45b",
-            "before_fingerprint": "ef031221107693bd",
-            "after_fingerprint": "5884a2baa949259c"
+            "before_fingerprint": "5884a2baa949259c",
+            "after_fingerprint": "d29a645966ee35d0"
           },
           {
             "key": "5dcde2f53449c50009b2b4dc",
-            "before_fingerprint": "ae331886bfe694e5",
-            "after_fingerprint": "7c44df8d6e8341e3"
+            "before_fingerprint": "7c44df8d6e8341e3",
+            "after_fingerprint": "297ee12ef0d5d6c4"
           },
           {
             "key": "5dcde437229eff00091b6c30",
-            "before_fingerprint": "af15fed2cd46d697",
-            "after_fingerprint": "4e7ea75ab43c6642"
+            "before_fingerprint": "4e7ea75ab43c6642",
+            "after_fingerprint": "36d2373ada594c16"
           },
           {
             "key": "5dd6d935d000120009bc1132",
-            "before_fingerprint": "64266fada703efaa",
-            "after_fingerprint": "4c8965d65cecb4c4"
+            "before_fingerprint": "4c8965d65cecb4c4",
+            "after_fingerprint": "ab6624435101648d"
           },
           {
             "key": "5dd6dae8ce788b0009eaf77b",
-            "before_fingerprint": "233fa4b07d6571ed",
-            "after_fingerprint": "9ad93ff14c9a0296"
+            "before_fingerprint": "9ad93ff14c9a0296",
+            "after_fingerprint": "0399bc921933cc03"
           },
           {
             "key": "5dd6dc7480e3550009133d4a",
-            "before_fingerprint": "b1c2351a2ffe702c",
-            "after_fingerprint": "4f66024f6a69d68c"
+            "before_fingerprint": "4f66024f6a69d68c",
+            "after_fingerprint": "0e7a6a2509d58eb6"
           },
           {
             "key": "5dd6ddb30a1d8a000908ed4c",
-            "before_fingerprint": "50a4f760a62f4f6c",
-            "after_fingerprint": "c726a4eb13bf26ba"
+            "before_fingerprint": "c726a4eb13bf26ba",
+            "after_fingerprint": "a01eaf3391be27e8"
           },
           {
             "key": "5dd7ea2aeab5230009986735",
-            "before_fingerprint": "c623d977f60315bc",
-            "after_fingerprint": "d775861d330b86ef"
+            "before_fingerprint": "d775861d330b86ef",
+            "after_fingerprint": "12baa7b8b090b8a3"
           },
           {
             "key": "5dd837642c6e9300098ad484",
-            "before_fingerprint": "1fa5b102f03b0278",
-            "after_fingerprint": "5fc97b041bb858b7"
+            "before_fingerprint": "5fc97b041bb858b7",
+            "after_fingerprint": "640d4f0d80cd00d0"
           },
           {
             "key": "5dd85eac039bba0009e86d1d",
-            "before_fingerprint": "2fe2d094b38e389d",
-            "after_fingerprint": "9e815eee582f9f9d"
+            "before_fingerprint": "9e815eee582f9f9d",
+            "after_fingerprint": "8e18d7498288d88c"
           },
           {
             "key": "5ddc266f80e3550009136843",
-            "before_fingerprint": "f48690ae1060b29c",
-            "after_fingerprint": "87b947ef12cd8548"
+            "before_fingerprint": "87b947ef12cd8548",
+            "after_fingerprint": "8173289badace30e"
           },
           {
             "key": "5ddc4e8bcbb9010009b4e84f",
-            "before_fingerprint": "e04517ea905a7b88",
-            "after_fingerprint": "fdc3d3aca6f5f5d5"
+            "before_fingerprint": "fdc3d3aca6f5f5d5",
+            "after_fingerprint": "85137a455c1c82a7"
           },
           {
             "key": "5ddc503ac7ef120009b101a2",
-            "before_fingerprint": "cb2649de3ad1ce10",
-            "after_fingerprint": "506b5d92c9768ab1"
+            "before_fingerprint": "506b5d92c9768ab1",
+            "after_fingerprint": "040014c0594c428f"
           },
           {
             "key": "5ddd7cb2cbb9010009b4fe32",
-            "before_fingerprint": "e0192f3a7f8c1afb",
-            "after_fingerprint": "6a6ac8472e937083"
+            "before_fingerprint": "6a6ac8472e937083",
+            "after_fingerprint": "dfe7fcfb5464b22e"
           },
           {
             "key": "5de5758e1a30dc00094fcd6c",
-            "before_fingerprint": "d819d32527aa74ef",
-            "after_fingerprint": "424970c516aa8fc3"
+            "before_fingerprint": "424970c516aa8fc3",
+            "after_fingerprint": "2cf56f81745ac646"
           },
           {
             "key": "5de802659167b10009e7deba",
-            "before_fingerprint": "39572d7c26eb20b4",
-            "after_fingerprint": "1164fb2d549a99c7"
+            "before_fingerprint": "1164fb2d549a99c7",
+            "after_fingerprint": "a9a8ba4cba8829c4"
           },
           {
             "key": "5de91b7ea86ee60009d89e75",
-            "before_fingerprint": "6004358966242344",
-            "after_fingerprint": "53ef0147d4561170"
+            "before_fingerprint": "53ef0147d4561170",
+            "after_fingerprint": "f296bdb9e1afffa1"
           },
           {
             "key": "5defde6d6c07b50009cf0757",
-            "before_fingerprint": "f45dcbe95e8d2685",
-            "after_fingerprint": "3f53c1d792b567c4"
+            "before_fingerprint": "3f53c1d792b567c4",
+            "after_fingerprint": "c7069e921eb60e8d"
           },
           {
             "key": "5df265697ec3510009df1ef0",
-            "before_fingerprint": "6c568546b0388391",
-            "after_fingerprint": "a553f188cc60d6a5"
+            "before_fingerprint": "a553f188cc60d6a5",
+            "after_fingerprint": "c5e103f7bbf552ad"
           }
         ],
         "categories": []
@@ -1388,153 +1416,153 @@
         "stream_urls": [
           {
             "key": "51c75f7bb6f26ba1cd00002f",
-            "before_fingerprint": "900a1b8addadef0c",
-            "after_fingerprint": "a8a0795914b188ac"
+            "before_fingerprint": "a8a0795914b188ac",
+            "after_fingerprint": "8141fe1122e78d6f"
           },
           {
             "key": "5421f71da6af422839419cb3",
-            "before_fingerprint": "341e5a68c4b9a927",
-            "after_fingerprint": "82dc2bdae34fa438"
+            "before_fingerprint": "82dc2bdae34fa438",
+            "after_fingerprint": "6d6df70441fe4a37"
           },
           {
             "key": "545943f1c9f133a519bbac92",
-            "before_fingerprint": "c5c38aabd6dc6a06",
-            "after_fingerprint": "09a8e8a623805082"
+            "before_fingerprint": "09a8e8a623805082",
+            "after_fingerprint": "ec23b6568b37e390"
           },
           {
             "key": "5459795fc9f133a519bc0bef",
-            "before_fingerprint": "7813eda11340d67f",
-            "after_fingerprint": "683fe834a47869ce"
+            "before_fingerprint": "683fe834a47869ce",
+            "after_fingerprint": "e73b31e22d273a1e"
           },
           {
             "key": "54ff7ba69222cb1c2624c584",
-            "before_fingerprint": "36b66d0036f415f6",
-            "after_fingerprint": "835ecf33dc313840"
+            "before_fingerprint": "835ecf33dc313840",
+            "after_fingerprint": "4c0f388a9b05bab8"
           },
           {
             "key": "554158e864526b29254ff105",
-            "before_fingerprint": "9a18d647740d2573",
-            "after_fingerprint": "e3377d81b6054f19"
+            "before_fingerprint": "e3377d81b6054f19",
+            "after_fingerprint": "c403d60e2c075a14"
           },
           {
             "key": "55b179af994403942f3061d6",
-            "before_fingerprint": "efa0667302c7c550",
-            "after_fingerprint": "4a4220495efeabf4"
+            "before_fingerprint": "4a4220495efeabf4",
+            "after_fingerprint": "e13cc87e24b07d56"
           },
           {
             "key": "55b285cd2665de274553d66f",
-            "before_fingerprint": "59b6f7d8369f87b9",
-            "after_fingerprint": "1dae69854d7f2ac7"
+            "before_fingerprint": "1dae69854d7f2ac7",
+            "after_fingerprint": "c20444c8fea61499"
           },
           {
             "key": "5616f9c0ada51f8004c4b091",
-            "before_fingerprint": "136fc6773785f6de",
-            "after_fingerprint": "d15d59c7d4b50aa7"
+            "before_fingerprint": "d15d59c7d4b50aa7",
+            "after_fingerprint": "d207236a7a2aad87"
           },
           {
             "key": "56171fafada51f8004c4b40f",
-            "before_fingerprint": "98fbfc40dc8e1706",
-            "after_fingerprint": "fbae2a5c6cece57f"
+            "before_fingerprint": "fbae2a5c6cece57f",
+            "after_fingerprint": "a27dce7ca5e45351"
           },
           {
             "key": "561c5b0dada51f8004c4d855",
-            "before_fingerprint": "2e644a1e9a648a4a",
-            "after_fingerprint": "373f18ef0bf991cf"
+            "before_fingerprint": "373f18ef0bf991cf",
+            "after_fingerprint": "94c50a4c5dc91d9c"
           },
           {
             "key": "561d7d484dc7c8770484914a",
-            "before_fingerprint": "319b34b4214216ca",
-            "after_fingerprint": "981151e6149f5492"
+            "before_fingerprint": "981151e6149f5492",
+            "after_fingerprint": "7f7094751ecb680c"
           },
           {
             "key": "563a970aa1a1f7fe7c9daad7",
-            "before_fingerprint": "1fe1bd21d96215a8",
-            "after_fingerprint": "0135f6580ffbc77f"
+            "before_fingerprint": "0135f6580ffbc77f",
+            "after_fingerprint": "8f45428c844a5d71"
           },
           {
             "key": "569546031a619b8f07ce6e25",
-            "before_fingerprint": "a9d4cdda918ff19d",
-            "after_fingerprint": "de5710db18677447"
+            "before_fingerprint": "de5710db18677447",
+            "after_fingerprint": "9e41af2602b032af"
           },
           {
             "key": "580e87ff497c73ba2f321dd3",
-            "before_fingerprint": "ab24dde1ea244fa6",
-            "after_fingerprint": "28e7818288d1e451"
+            "before_fingerprint": "28e7818288d1e451",
+            "after_fingerprint": "a0ee3c54bb56eeb1"
           },
           {
             "key": "5812b3a4249444e05d09cc46",
-            "before_fingerprint": "f7478bd28cf85e47",
-            "after_fingerprint": "2cc262dab17a2b0d"
+            "before_fingerprint": "2cc262dab17a2b0d",
+            "after_fingerprint": "886d6fd6a7f4aa6e"
           },
           {
             "key": "5812b7d3249444e05d09cc49",
-            "before_fingerprint": "5c0cc92ed5b226fb",
-            "after_fingerprint": "fbe2edbc357c978f"
+            "before_fingerprint": "fbe2edbc357c978f",
+            "after_fingerprint": "ab309bbbd768f13e"
           },
           {
             "key": "5812bcc8237a6ff45d16c407",
-            "before_fingerprint": "5cda1c419c059960",
-            "after_fingerprint": "73bfbf4cfc0e1762"
+            "before_fingerprint": "73bfbf4cfc0e1762",
+            "after_fingerprint": "b7aa6e23a90ba079"
           },
           {
             "key": "5812bd9f249444e05d09cc4e",
-            "before_fingerprint": "f1d5e9d7cee5fde9",
-            "after_fingerprint": "ea6d9e7b26053f4f"
+            "before_fingerprint": "ea6d9e7b26053f4f",
+            "after_fingerprint": "13f33e5f4e7e912b"
           },
           {
             "key": "5812be1c249444e05d09cc50",
-            "before_fingerprint": "f61788ce5970c6d4",
-            "after_fingerprint": "cbc4f24432e8e05f"
+            "before_fingerprint": "cbc4f24432e8e05f",
+            "after_fingerprint": "507efeade500498b"
           },
           {
             "key": "5812bfbe4ced4f7b601b12e6",
-            "before_fingerprint": "6647e885c384deb0",
-            "after_fingerprint": "a71aba30289de5e5"
+            "before_fingerprint": "a71aba30289de5e5",
+            "after_fingerprint": "584206d3aaa71c90"
           },
           {
             "key": "5873fc21cad696fb37aa9054",
-            "before_fingerprint": "e8d6b30ab4d955d0",
-            "after_fingerprint": "f39dba42f63de221"
+            "before_fingerprint": "f39dba42f63de221",
+            "after_fingerprint": "2a8182bc3e267c1f"
           },
           {
             "key": "5877ac8cb791f4eb4a140d81",
-            "before_fingerprint": "5ca6b452c21ffb6f",
-            "after_fingerprint": "0d142ae582804c1b"
+            "before_fingerprint": "0d142ae582804c1b",
+            "after_fingerprint": "c6b68373e7a6cc1a"
           },
           {
             "key": "58af4c093a41ca9d4ecabe96",
-            "before_fingerprint": "b92973e9b4bed060",
-            "after_fingerprint": "0558a30ef10c4f7c"
+            "before_fingerprint": "0558a30ef10c4f7c",
+            "after_fingerprint": "09ace3dfe5270bfc"
           },
           {
             "key": "58d947b9e420d8656ee101ab",
-            "before_fingerprint": "b1c085a19e31fbc4",
-            "after_fingerprint": "a5365e616afb9fbf"
+            "before_fingerprint": "a5365e616afb9fbf",
+            "after_fingerprint": "ab86aab8ef1f542c"
           },
           {
             "key": "58e55b14ad8e9c364d55f717",
-            "before_fingerprint": "e1f47c225444553c",
-            "after_fingerprint": "41ac03e5030b7a1f"
+            "before_fingerprint": "41ac03e5030b7a1f",
+            "after_fingerprint": "f8d10a803408e3a7"
           },
           {
             "key": "59b722526996084038c01e1b",
-            "before_fingerprint": "da80ec6688c3b38c",
-            "after_fingerprint": "63f11fe8ce0008c5"
+            "before_fingerprint": "63f11fe8ce0008c5",
+            "after_fingerprint": "104f18eaee6750a7"
           },
           {
             "key": "5a4d35dfa5c02e717a234f86",
-            "before_fingerprint": "f8ba395de5e4beae",
-            "after_fingerprint": "aac1b3ebaf74c091"
+            "before_fingerprint": "aac1b3ebaf74c091",
+            "after_fingerprint": "5008f38e0656c3c2"
           },
           {
             "key": "5a4d3a00ad95e4718ae8d8db",
-            "before_fingerprint": "b3ae4a094f54246e",
-            "after_fingerprint": "f35996ceea7d8706"
+            "before_fingerprint": "f35996ceea7d8706",
+            "after_fingerprint": "c4ec9bbcff39b8ae"
           },
           {
             "key": "5a66795ef91fef2c7031c599",
-            "before_fingerprint": "945b2b30cd1356bf",
-            "after_fingerprint": "599db0eea137868e"
+            "before_fingerprint": "599db0eea137868e",
+            "after_fingerprint": "71cfbe856a80ba74"
           }
         ],
         "categories": []
@@ -1613,27 +1641,18 @@
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/CL.m3u",
       "new_source_url": "https://m3u.cl/lista/CL.m3u",
-      "added_channels": 2,
+      "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 1,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
       "content_hash_changed": true,
       "channel_order_changed": true,
       "samples": {
-        "added": [
-          "1807",
-          "1808"
-        ],
+        "added": [],
         "removed": [],
         "renamed": [],
-        "stream_urls": [
-          {
-            "key": "432",
-            "before_fingerprint": "64dd0461c2da1a0d",
-            "after_fingerprint": "44c34e3691865d8f"
-          }
-        ],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": false
@@ -1706,7 +1725,7 @@
     },
     {
       "source": "GENERADOR/M3UCL-EC",
-      "status": "unchanged",
+      "status": "changed",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/EC.m3u",
       "new_source_url": "https://m3u.cl/lista/EC.m3u",
@@ -1715,8 +1734,8 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
       "samples": {
         "added": [],
         "removed": [],
@@ -1728,7 +1747,7 @@
     },
     {
       "source": "GENERADOR/M3UCL-ES",
-      "status": "unchanged",
+      "status": "changed",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/ES.m3u",
       "new_source_url": "https://m3u.cl/lista/ES.m3u",
@@ -1737,8 +1756,8 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
       "samples": {
         "added": [],
         "removed": [],
@@ -1750,21 +1769,19 @@
     },
     {
       "source": "GENERADOR/M3UCL-MUSICA",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/musica.m3u",
       "new_source_url": "https://m3u.cl/lista/musica.m3u",
-      "added_channels": 1,
+      "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "1807"
-        ],
+        "added": [],
         "removed": [],
         "renamed": [],
         "stream_urls": [],
@@ -1888,27 +1905,18 @@
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/total.m3u",
       "new_source_url": "https://m3u.cl/lista/total.m3u",
-      "added_channels": 2,
+      "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 1,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
       "content_hash_changed": true,
       "channel_order_changed": true,
       "samples": {
-        "added": [
-          "1807",
-          "1808"
-        ],
+        "added": [],
         "removed": [],
         "renamed": [],
-        "stream_urls": [
-          {
-            "key": "432",
-            "before_fingerprint": "64dd0461c2da1a0d",
-            "after_fingerprint": "44c34e3691865d8f"
-          }
-        ],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": false
@@ -1941,176 +1949,196 @@
       "source_url_changed": false,
       "old_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u",
       "new_source_url": "https://raw.githubusercontent.com/ByD4rking/Iptv-Chile-Master-CL/main/IPTV-CHILE-MAESTRA_CORREGIDO.m3u",
-      "added_channels": 8,
-      "removed_channels": 0,
+      "added_channels": 22,
+      "removed_channels": 5,
       "renamed_channels": 0,
-      "changed_stream_urls": 406,
+      "changed_stream_urls": 412,
       "changed_categories": 0,
       "content_hash_changed": true,
       "channel_order_changed": true,
       "samples": {
         "added": [
-          "canal 24 multivision [no 24/7]|bolivia",
-          "canal locomotion - segunda senal [no 24/7]|anime",
-          "canal locomotion - segunda senal [opc.2][no 24/7]|anime",
-          "laika channel (es)|infantiles",
-          "retromagico|infantiles#3",
-          "yu-gi-oh! (espana)[twitch]|espana",
-          "yu-gi-oh! (latino)[twitch]|anime",
-          "zyoon tv hd (chile)|anime"
+          "canal grande television [no 24/7] [opc.2]|venezuela",
+          "claro sports 2 hd (mexico)|deportes",
+          "claro sports 2 hd (mexico)|deportes#2",
+          "claro sports 2 hd (mexico)|deportes#3",
+          "claro sports hd (mexico)|deportes",
+          "claro sports hd (mexico)|deportes#2",
+          "claro sports hd (mexico)|deportes#3",
+          "gogoplay max [no 24/7]|bolivia",
+          "gogoplay sd [no 24/7]|bolivia",
+          "gogoplay sd [no 24/7]|bolivia#2",
+          "gogoplay tve [no 24/7]|bolivia",
+          "gogoplay tve [no 24/7]|bolivia#2",
+          "mix bolivia hd [no 24.7]|bolivia",
+          "mix bolivia hd [no 24.7]|bolivia#2",
+          "mix bolivia sd [no 24.7]|bolivia",
+          "mix bolivia sd [no 24.7]|bolivia#2",
+          "mix bolivia tve [no 24.7]|bolivia",
+          "multicanal|costa rica#4",
+          "once tv digital|peru#3",
+          "planeta radio tv [no 24/7](ecuador - guayas)|entretenimiento / cine / series#3",
+          "super canal|costa rica#3",
+          "unyka tv [no 24/7]|entretenimiento / cine / series"
         ],
-        "removed": [],
+        "removed": [
+          "gogoplay sd [no 24/7] [opc.2]|bolivia",
+          "gogoplay tve [no 24/7] [opc.2]|bolivia",
+          "mix bolivia hd [no 24.7] [opc.3]|bolivia",
+          "mix bolivia sd [no 24.7] [opc.2]|bolivia",
+          "multicinema|costa rica#2"
+        ],
         "renamed": [],
         "stream_urls": [
           {
             "key": "5dcb62e63d4d8f0009f36881",
-            "before_fingerprint": "6103ca55109eb89f",
-            "after_fingerprint": "0f0a56b83f2754ae"
+            "before_fingerprint": "0f0a56b83f2754ae",
+            "after_fingerprint": "edbdf702819a093e"
           },
           {
             "key": "5dcdde78f080d900098550e4",
-            "before_fingerprint": "58fa9a216ba5f79f",
-            "after_fingerprint": "ac38c83856edf6ad"
+            "before_fingerprint": "ac38c83856edf6ad",
+            "after_fingerprint": "b45c04210bfdee61"
           },
           {
             "key": "5dcddf1ed95e740009fef7ab",
-            "before_fingerprint": "e6ad6716c6b13103",
-            "after_fingerprint": "a4265b062776e962"
+            "before_fingerprint": "a4265b062776e962",
+            "after_fingerprint": "5615ca7de92b9764"
           },
           {
             "key": "5dcddfcb229eff00091b6bdf",
-            "before_fingerprint": "131241f292af8cc9",
-            "after_fingerprint": "3815cab6379328b2"
+            "before_fingerprint": "3815cab6379328b2",
+            "after_fingerprint": "dd70daf9a8cbf651"
           },
           {
             "key": "5dcde0657444a40009cd2422",
-            "before_fingerprint": "89820cf7be7ac701",
-            "after_fingerprint": "31ad53fcc983b465"
+            "before_fingerprint": "31ad53fcc983b465",
+            "after_fingerprint": "3710363a2b0af3d3"
           },
           {
             "key": "5dcde07af1c85b0009b18651",
-            "before_fingerprint": "e3a85d806bb7fb91",
-            "after_fingerprint": "87ac29275516ef70"
+            "before_fingerprint": "87ac29275516ef70",
+            "after_fingerprint": "f1f0514ace5eae09"
           },
           {
             "key": "5dcde0cc2efd2700090b7ff4",
-            "before_fingerprint": "527b1f61265b12ce",
-            "after_fingerprint": "ebf594256a663c3a"
+            "before_fingerprint": "ebf594256a663c3a",
+            "after_fingerprint": "fcd276323be16735"
           },
           {
             "key": "5dcde1317578340009b751d0",
-            "before_fingerprint": "e951dfbd736292d8",
-            "after_fingerprint": "362310bbad2ab903"
+            "before_fingerprint": "362310bbad2ab903",
+            "after_fingerprint": "43e32059ad255ab8"
           },
           {
             "key": "5dcde17bf6591d0009839e02",
-            "before_fingerprint": "71c033cee08d5332",
-            "after_fingerprint": "795557545ce26ffd"
+            "before_fingerprint": "795557545ce26ffd",
+            "after_fingerprint": "c1290b00809bef59"
           },
           {
             "key": "5dcde197f6591d0009839e04",
-            "before_fingerprint": "294d688daafb7542",
-            "after_fingerprint": "4c067e48ba3ed969"
+            "before_fingerprint": "4c067e48ba3ed969",
+            "after_fingerprint": "f694e32cc0956f3e"
           },
           {
             "key": "5dcde27ffae9520009c0c75a",
-            "before_fingerprint": "4982ab95e9c512ec",
-            "after_fingerprint": "c83a6ad8ff7c7eaa"
+            "before_fingerprint": "c83a6ad8ff7c7eaa",
+            "after_fingerprint": "cfcdfd07c6abf5ab"
           },
           {
             "key": "5dcde2ac4bc6c500094ab45b",
-            "before_fingerprint": "ef031221107693bd",
-            "after_fingerprint": "4aab265070f410f7"
+            "before_fingerprint": "4aab265070f410f7",
+            "after_fingerprint": "d29a645966ee35d0"
           },
           {
             "key": "5dcde2f53449c50009b2b4dc",
-            "before_fingerprint": "ae331886bfe694e5",
-            "after_fingerprint": "8a0afb12b2fd4ac7"
+            "before_fingerprint": "8a0afb12b2fd4ac7",
+            "after_fingerprint": "297ee12ef0d5d6c4"
           },
           {
             "key": "5dcde437229eff00091b6c30",
-            "before_fingerprint": "af15fed2cd46d697",
-            "after_fingerprint": "7117968e63ac72b8"
+            "before_fingerprint": "7117968e63ac72b8",
+            "after_fingerprint": "36d2373ada594c16"
           },
           {
             "key": "5dd6d935d000120009bc1132",
-            "before_fingerprint": "64266fada703efaa",
-            "after_fingerprint": "b0debeeddb26dbd7"
+            "before_fingerprint": "b0debeeddb26dbd7",
+            "after_fingerprint": "ab6624435101648d"
           },
           {
             "key": "5dd6dae8ce788b0009eaf77b",
-            "before_fingerprint": "233fa4b07d6571ed",
-            "after_fingerprint": "d26f5f82c0fc63bf"
+            "before_fingerprint": "d26f5f82c0fc63bf",
+            "after_fingerprint": "0399bc921933cc03"
           },
           {
             "key": "5dd6dc7480e3550009133d4a",
-            "before_fingerprint": "b1c2351a2ffe702c",
-            "after_fingerprint": "eac8d57089bf12c4"
+            "before_fingerprint": "eac8d57089bf12c4",
+            "after_fingerprint": "0e7a6a2509d58eb6"
           },
           {
             "key": "5dd6ddb30a1d8a000908ed4c",
-            "before_fingerprint": "50a4f760a62f4f6c",
-            "after_fingerprint": "83eef058a53a39cf"
+            "before_fingerprint": "83eef058a53a39cf",
+            "after_fingerprint": "a01eaf3391be27e8"
           },
           {
             "key": "5dd7ea2aeab5230009986735",
-            "before_fingerprint": "c623d977f60315bc",
-            "after_fingerprint": "c68bf8e74696daf7"
+            "before_fingerprint": "c68bf8e74696daf7",
+            "after_fingerprint": "12baa7b8b090b8a3"
           },
           {
             "key": "5dd837642c6e9300098ad484",
-            "before_fingerprint": "1fa5b102f03b0278",
-            "after_fingerprint": "a7172ff6c19ca2f3"
+            "before_fingerprint": "a7172ff6c19ca2f3",
+            "after_fingerprint": "640d4f0d80cd00d0"
           },
           {
             "key": "5dd85eac039bba0009e86d1d",
-            "before_fingerprint": "2fe2d094b38e389d",
-            "after_fingerprint": "200fce0c7599736c"
+            "before_fingerprint": "200fce0c7599736c",
+            "after_fingerprint": "8e18d7498288d88c"
           },
           {
             "key": "5ddc266f80e3550009136843",
-            "before_fingerprint": "f48690ae1060b29c",
-            "after_fingerprint": "725f571d309a15a0"
+            "before_fingerprint": "725f571d309a15a0",
+            "after_fingerprint": "8173289badace30e"
           },
           {
             "key": "5ddc4e8bcbb9010009b4e84f",
-            "before_fingerprint": "e04517ea905a7b88",
-            "after_fingerprint": "5e3b976e10b408ee"
+            "before_fingerprint": "5e3b976e10b408ee",
+            "after_fingerprint": "85137a455c1c82a7"
           },
           {
             "key": "5ddc503ac7ef120009b101a2",
-            "before_fingerprint": "cb2649de3ad1ce10",
-            "after_fingerprint": "85cbe802802bc056"
+            "before_fingerprint": "85cbe802802bc056",
+            "after_fingerprint": "040014c0594c428f"
           },
           {
             "key": "5ddd7cb2cbb9010009b4fe32",
-            "before_fingerprint": "e0192f3a7f8c1afb",
-            "after_fingerprint": "161abdfcd336c860"
+            "before_fingerprint": "161abdfcd336c860",
+            "after_fingerprint": "dfe7fcfb5464b22e"
           },
           {
             "key": "5de5758e1a30dc00094fcd6c",
-            "before_fingerprint": "d819d32527aa74ef",
-            "after_fingerprint": "8f0ab62988bd0c18"
+            "before_fingerprint": "8f0ab62988bd0c18",
+            "after_fingerprint": "2cf56f81745ac646"
           },
           {
             "key": "5de802659167b10009e7deba",
-            "before_fingerprint": "39572d7c26eb20b4",
-            "after_fingerprint": "4b70f3b1a26d1387"
+            "before_fingerprint": "4b70f3b1a26d1387",
+            "after_fingerprint": "a9a8ba4cba8829c4"
           },
           {
             "key": "5de91b7ea86ee60009d89e75",
-            "before_fingerprint": "6004358966242344",
-            "after_fingerprint": "f945180b2440887f"
+            "before_fingerprint": "f945180b2440887f",
+            "after_fingerprint": "f296bdb9e1afffa1"
           },
           {
             "key": "5defde6d6c07b50009cf0757",
-            "before_fingerprint": "f45dcbe95e8d2685",
-            "after_fingerprint": "9fbfb6c92ef11eec"
+            "before_fingerprint": "9fbfb6c92ef11eec",
+            "after_fingerprint": "c7069e921eb60e8d"
           },
           {
             "key": "5df265697ec3510009df1ef0",
-            "before_fingerprint": "6c568546b0388391",
-            "after_fingerprint": "2d4f3c78f18fa401"
+            "before_fingerprint": "2d4f3c78f18fa401",
+            "after_fingerprint": "c5e103f7bbf552ad"
           }
         ],
         "categories": []
