@@ -25,8 +25,8 @@ USER_AGENT = "Mozilla/5.0 (compatible; IPTVLogoAudit/1.0)"
 TIMEOUT = 12
 RETRIES = 2
 IMAGE_SIGNATURES = (
-    (b"\\x89PNG\\r\\n\\x1a\\n", "png"),
-    (b"\\xff\\xd8\\xff", "jpeg"),
+    (b"\x89PNG\r\n\x1a\n", "png"),
+    (b"\xff\xd8\xff", "jpeg"),
     (b"GIF87a", "gif"),
     (b"GIF89a", "gif"),
     (b"RIFF", "webp"),
@@ -39,7 +39,7 @@ def parse_playlist(text: str):
             continue
         name = line.split(",", 1)[1].strip() if "," in line else "(sin nombre)"
         group = re.search(r'group-title="([^"]*)"', line, re.I)
-        logo = re.search(r'(?:tvg-logo|(?<![\\w-])logo)="([^"]*)"', line, re.I)
+        logo = re.search(r'(?:tvg-logo|(?<![\w-])logo)="([^"]*)"', line, re.I)
         rows.append({
             "line": line_no,
             "name": name,
