@@ -8,7 +8,7 @@ EXPECTED = [
     re.compile(r"^24 Horas TVN"),
     re.compile(r"^Meganoticias$"),
     re.compile(r"^TN"),
-    re.compile(r"^N\\+ México$"),
+    re.compile(r"^N\+ México$"),
     re.compile(r"^RCN Noticias$"),
     re.compile(r"^TeleSUR$"),
     re.compile(r"^CNN en Español"),
