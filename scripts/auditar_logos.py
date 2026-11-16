@@ -76,8 +76,10 @@ def _check_once(url: str):
                 return {"status": "ok", "detail": f"{status} firma {fmt}", "format": fmt}
             return {"status": "broken", "detail": f"contenido no imagen ({content_type or 'sin MIME'})"}
     except HTTPError as exc:
-        if exc.code in (401, 403, 404, 410):
+        if exc.code in (404, 410):
             return {"status": "broken", "detail": f"HTTP {exc.code}"}
+        if exc.code in (401, 403):
+            return {"status": "inconclusive", "detail": f"HTTP {exc.code} (bloqueo de acceso; no confirma que la imagen esté rota)"}
         return {"status": "inconclusive", "detail": f"HTTP {exc.code}"}
     except (URLError, TimeoutError, OSError) as exc:
         return {"status": "inconclusive", "detail": str(exc)[:180]}
