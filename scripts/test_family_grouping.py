@@ -102,6 +102,45 @@ class FamilyGroupingTests(unittest.TestCase):
         result = ap.agrupar_familias_por_categoria(lines)
         self.assertEqual(sum(line.startswith("#EXTINF") for line in result), 2)
 
+    def test_logo_restoration_only_touches_authorized_channels(self):
+        reference = [
+            '#EXTINF:-1 tvg-name="Canal Permitido" tvg-logo="https://logos.example/permitido.png" group-title="Test",Canal Permitido',
+            "https://streams.example/permitido.m3u8",
+            '#EXTINF:-1 tvg-name="Canal Bloqueado" tvg-logo="https://logos.example/bloqueado.png" group-title="Test",Canal Bloqueado',
+            "https://streams.example/bloqueado.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-name="Canal Permitido" group-title="Test",Canal Permitido',
+            "https://streams.example/permitido.m3u8",
+            '#EXTINF:-1 tvg-name="Canal Bloqueado" group-title="Test",Canal Bloqueado',
+            "https://streams.example/bloqueado.m3u8",
+        ]
+        result, _ = ap.restaurar_logos_historicos(
+            current, reference, nombres_autorizados={"Canal Permitido"}
+        )
+        permitido = next(x for x in result if x.startswith("#EXTINF") and "Canal Permitido" in x)
+        bloqueado = next(x for x in result if x.startswith("#EXTINF") and "Canal Bloqueado" in x)
+        self.assertIn('tvg-logo="https://logos.example/permitido.png"', permitido)
+        self.assertNotIn("tvg-logo=", bloqueado)
+
+    def test_authorized_logo_override_updates_both_logo_attributes(self):
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-name="TL+ (El Salvador)" tvg-logo="https://old.example/expired.png" logo="https://old.example/expired.png" group-title="Anime",TL+ (El Salvador)',
+            "https://streams.example/tlplus.m3u8",
+        ]
+        correct = "https://tlmas.kift.live/assets/imgs/logo.png"
+        result, _ = ap.restaurar_logos_historicos(
+            current,
+            [],
+            nombres_autorizados={"TL+ (El Salvador)"},
+            logos_autorizados_por_nombre={"TL+ (El Salvador)": correct},
+        )
+        entry = next(x for x in result if x.startswith("#EXTINF"))
+        self.assertEqual(entry.count(correct), 2)
+        self.assertNotIn("old.example", entry)
+
     def test_category_order_is_preserved(self):
         lines = ["#EXTM3U"]
         lines += bloque("Canal A", categoria="Primera")
