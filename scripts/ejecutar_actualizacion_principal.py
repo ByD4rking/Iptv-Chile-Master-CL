@@ -212,6 +212,10 @@ def main():
         f"{len(no_verificados_magma)} sin verificar y conservados sin cambios."
     )
 
+    # La agrupación global puede alterar el orden de las sagas; Anime se ordena
+    # como última operación estructural, después de todas las reconciliaciones.
+    ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
+
     ids_pluto_orden = (
         alimentador.obtener_ids_pluto_existentes(original_lines)
         | alimentador.obtener_ids_pluto_existentes(ordered_lines)
