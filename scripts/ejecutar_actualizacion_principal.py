@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 import requests
+import json
 from auditar_logos import audit as auditar_logos, check_url as verificar_logo_url
 
 import alimentar_principal as alimentador
@@ -126,6 +127,20 @@ def main():
     god_path = ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"
     god_lines = god_path.read_text(encoding="utf-8-sig").splitlines() if god_path.is_file() else []
     referencias_logos = original_lines + god_lines
+    logos_por_url_prioritarios = {}
+    ruta_referencias_logos = ROOT / "scripts" / "logo_references.json"
+    if ruta_referencias_logos.is_file():
+        try:
+            datos_referencias = json.loads(ruta_referencias_logos.read_text(encoding="utf-8"))
+            logos_por_url_prioritarios = {
+                str(url).strip(): str(logo).strip()
+                for url, logo in datos_referencias.get("logos", {}).items()
+                if alimentador.url_es_valida(str(url).strip())
+                and alimentador.url_es_valida(str(logo).strip())
+            }
+            print(f"[LOGOS] Referencias manuales exactas cargadas: {len(logos_por_url_prioritarios)}")
+        except (OSError, ValueError, TypeError) as error_referencias:
+            print(f"[LOGOS] No se pudo cargar logo_references.json: {error_referencias}")
 
     # Solo se reemplazan logos con fallo confirmado (404/410 o contenido no-imagen).
     # 401/403, límites y errores transitorios quedan como inconclusos y se conservan.
@@ -156,6 +171,7 @@ def main():
         referencias_logos,
         pluto_por_id,
         pluto_por_nombre,
+        logos_por_url_prioritarios=logos_por_url_prioritarios,
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
         logos_rotos_confirmados=logos_rotos_confirmados,
         validar_logo=validar_logo_candidato,
