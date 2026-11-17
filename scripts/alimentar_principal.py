@@ -2538,60 +2538,59 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
 
 
 
+
 def clave_familia_canal(nombre):
-    """Devuelve una clave conservadora para agrupar variantes de una misma familia."""
+    """Clave de familia para agrupar señales y variantes de un mismo servicio."""
     texto = normalizar(nombre)
     texto = re.sub(r"\s*(?:\[|\()\s*(?:opc(?:ion)?|option)\.?\s*\d+\s*(?:\]|\))$", "", texto)
     texto = re.sub(r"\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
     tokens = texto.split()
     if not tokens:
         return ""
-    # Los artículos requieren dos palabras para evitar unir familias distintas.
     if tokens[0] in {"el", "los", "la", "las"}:
         base = " ".join(tokens[:2]) if len(tokens) > 1 else tokens[0]
-        if base in {"el chavo", "el chavo del"} or base == "el chavo":
+        if base == "el chavo" or tokens[:2] == ["el", "chavo"]:
             return "familia:chespirito"
         if base == "los simpson":
             return "familia:los simpson"
         return "familia:" + base
-    # Términos genéricos no identifican por sí solos una marca.
     if tokens[0] in {"tv", "canal", "radio", "cine", "deportes"}:
         return "familia:" + " ".join(tokens[:2])
-    # Las señales CNN son servicios editoriales distintos; no fusionarlas.
     if tokens[0] == "cnn":
         return "familia:cnn " + (tokens[1] if len(tokens) > 1 else "")
-    # El Chavo y Chespirito pertenecen al mismo bloque de programación.
     if tokens[0] == "chespirito":
         return "familia:chespirito"
     return "familia:" + tokens[0]
 
 
 def agrupar_familias_por_categoria(lineas):
-    """Agrupa señales relacionadas sin alterar el orden de categorías ni de familias."""
-    prefijo = []
+    """Agrupa variantes sin alterar el orden de categorías ni de familias."""
     bloques = []
+    pendientes = []
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
-            if not bloques:
-                prefijo.append(lineas[i])
+            pendientes.append(lineas[i])
             i += 1
             continue
-        inicio = i
+        inicio = list(pendientes)
+        pendientes.clear()
+        inicio.append(lineas[i])
         j = i + 1
         while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            inicio.append(lineas[j])
             j += 1
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
-            extinf = lineas[inicio]
+            inicio.append(lineas[j])
+            extinf = lineas[i]
             bloques.append({
                 "categoria": normalizar(extraer_categoria(extinf)),
                 "familia": clave_familia_canal(extraer_nombre(extinf)),
-                "lineas": lineas[inicio:j + 1],
-                "orden": len(bloques),
+                "lineas": inicio,
             })
             i = j + 1
         else:
-            prefijo.extend(lineas[inicio:j])
+            pendientes.extend(inicio)
             i = j
 
     por_categoria = {}
@@ -2603,26 +2602,20 @@ def agrupar_familias_por_categoria(lineas):
             orden_categorias.append(categoria)
         por_categoria[categoria].append(bloque)
 
-    salida = list(prefijo)
+    salida = []
     for categoria in orden_categorias:
         familias = {}
         orden_familias = []
-        sin_familia = []
         for bloque in por_categoria[categoria]:
             familia = bloque["familia"]
-            if not familia:
-                sin_familia.append(bloque)
-                continue
             if familia not in familias:
                 familias[familia] = []
                 orden_familias.append(familia)
             familias[familia].append(bloque)
-        ordenados = []
         for familia in orden_familias:
-            ordenados.extend(familias[familia])
-        ordenados.extend(sin_familia)
-        for bloque in ordenados:
-            salida.extend(bloque["lineas"])
+            for bloque in familias[familia]:
+                salida.extend(bloque["lineas"])
+    salida.extend(pendientes)
     return salida
 
 
