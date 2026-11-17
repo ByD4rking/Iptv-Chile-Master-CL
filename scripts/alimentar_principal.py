@@ -4838,10 +4838,6 @@ def main():
     )
     lineas = blindar_categoria_general(lineas)
 
-    # Aplicar al final el orden de Informativos: la restauración histórica
-    # anterior no debe deshacer prioridades ni dejar señales regionales mezcladas.
-    lineas = ordenar_informativos(lineas)
-
     # Las variantes no-Pluto pueden compartir tvg-id con una URL Pluto.
     # Añadir los IDs observados en la salida final al conjunto protegido para
     # que una alternativa regional no se confunda con un canal normal reordenado.
