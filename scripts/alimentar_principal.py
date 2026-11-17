@@ -4452,7 +4452,8 @@ def main():
     # Regla estricta: las fuentes nunca crean categorías nuevas.
     lineas = insertar_bloques(lineas, bloques_nuevos)
 
-    # 7) Consolidar Pluto por identidad aplicando LATAM > ES > MX.
+    # 7) Consolidar Pluto sin perder alternativas; la renovación anterior
+    # ya aplicó prioridad LATAM > ES > MX.
     lineas, pluto_prioridad_eliminados = deduplicar_pluto_por_prioridad(
         lineas,
         canales_pluto_fuentes_por_id,
