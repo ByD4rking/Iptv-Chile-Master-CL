@@ -2905,8 +2905,10 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
             if categoria == normalizar("Infantiles"):
                 def prioridad_infantil(bloque):
                     nombre = normalizar(extraer_nombre(bloque["lineas"][0]))
-                    if bloque["familia"] == "familia:rugrats":
-                        return 1 if nombre.startswith("rugrats crecidos") else 0
+                    if nombre.startswith("rugrats crecidos"):
+                        return 1
+                    if nombre.startswith("rugrats"):
+                        return 0
                     return 0
                 grupo_ordenado = sorted(grupo_ordenado, key=prioridad_infantil)
 

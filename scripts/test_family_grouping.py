@@ -108,6 +108,10 @@ class FamilyGroupingTests(unittest.TestCase):
         current += bloque("Los Padrinos Mágicos [Opción 2]", categoria=cat)
         current += bloque("Rugrats", categoria=cat)
 
+        self.assertEqual(
+            ap.clave_familia_canal("Rugrats"),
+            ap.clave_familia_canal("Rugrats Crecidos"),
+        )
         result = ap.agrupar_familias_por_categoria(current, current)
         names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
         self.assertEqual(names, [
