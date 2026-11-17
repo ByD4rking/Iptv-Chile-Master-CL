@@ -3401,12 +3401,20 @@ def extraer_logos_bloqueados_por_url(lineas):
     return {url: next(iter(logos)) for url, logos in candidatos.items() if len(logos) == 1}
 
 
-def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None, logos_bloqueados_por_url=None):
+def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None, logos_bloqueados_por_url=None, nombres_autorizados=None, logos_autorizados_por_nombre=None):
     """Restaura logos y protege los logos válidos de la principal por URL exacta."""
     pluto_por_id = pluto_por_id or {}
     logos_bloqueados_por_url = logos_bloqueados_por_url or {}
     pluto_por_nombre = pluto_por_nombre or {}
     logos_por_url_prioritarios = logos_por_url_prioritarios or {}
+    nombres_autorizados = (
+        {normalizar_nombre_canal(x) for x in nombres_autorizados}
+        if nombres_autorizados is not None else None
+    )
+    logos_autorizados_por_nombre = {
+        normalizar_nombre_canal(nombre): logo
+        for nombre, logo in (logos_autorizados_por_nombre or {}).items()
+    }
 
     def bloques(datos):
         resultado = []
@@ -3473,8 +3481,19 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
     pendientes = 0
     salida = list(lineas)
     for item in bloques(salida):
+        # En la maestra solo se permite restaurar/cambiar los logos que el
+        # usuario autorizó expresamente. El resto queda intocable aunque falte.
+        if nombres_autorizados is not None and item["name"] not in nombres_autorizados:
+            continue
         extinf = salida[item["index"]]
         actual = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+        logo_autorizado = logos_autorizados_por_nombre.get(item["name"], "")
+        if logo_autorizado and url_es_valida(logo_autorizado):
+            logo_actual = actual.group(1).strip() if actual else ""
+            if logo_actual != logo_autorizado:
+                salida[item["index"]] = poner_logo(extinf, logo_autorizado)
+                protegidos += 1
+            continue
         logo_bloqueado = logos_bloqueados_por_url.get(item["url"], "") if item["url"] else ""
         if logo_bloqueado and url_es_valida(logo_bloqueado):
             logo_actual = actual.group(1).strip() if actual else ""
