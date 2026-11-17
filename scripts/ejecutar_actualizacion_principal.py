@@ -137,7 +137,15 @@ def main():
         "TL+ (El Salvador)",
     }
     logos_autorizados = {
-        # Logo enlazado desde el sitio oficial de TL+; reemplaza el enlace
+        "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
+        "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/oYFto0V.png",
+        "Caracola TV | CL": "https://i.imgur.com/QGvfqug.png",
+        "La Chilena TV ✪ | CL": "https://i.imgur.com/GHJkxaB.png",
+        "Radio Rancagua | CL": "https://i.imgur.com/ZzUc6je.png",
+        "Radio Rancagua FM (720p)": "https://i.imgur.com/ZzUc6je.png",
+        # Logo exacto de MAX Anime, publicado por MAX Entertainment Group LLC.
+        "MAX Anime (1080p)": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Max_Anime_Logo.png",
+        # Logo actual del perfil oficial de TL+ en Kift; reemplaza el enlace
         # temporal de Discord que ya expiró.
         "TL+ (El Salvador)": "https://kift.live/media/avatars/27ffc836-28d5-457b-9ebe-f65b0c2f5fb9/091fff8e-0e9e-46f9-b5ff-50cf24ce481b.png",
     }
