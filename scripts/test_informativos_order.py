@@ -9,8 +9,8 @@ EXPECTED = [
     re.compile(r"^CNN Chile", re.I),
     re.compile(r"^24 Horas TVN", re.I),
     re.compile(r"^Meganoticias", re.I),
-    re.compile(r"^TN(?:\\s|$)", re.I),
-    re.compile(r"^N\\+ México", re.I),
+    re.compile(r"^TN(?:\s|$)", re.I),
+    re.compile(r"^N\+ México", re.I),
     re.compile(r"^Noticias Caracol", re.I),
     re.compile(r"^RCN Noticias", re.I),
     re.compile(r"^TeleSUR$", re.I),
@@ -56,6 +56,14 @@ class InformativosOrderTests(unittest.TestCase):
                 any(pattern.search(name) for pattern in EXPECTED),
                 f"Canal no prioritario intercalado antes de cerrar el bloque prioritario: {name}",
             )
+
+    def test_tn_n_mas_priority_and_regional_detection(self):
+        self.assertIsNotNone(ap.indice_prioridad_informativos("TN"))
+        self.assertIsNotNone(ap.indice_prioridad_informativos("N+ México"))
+        self.assertTrue(ap.es_regional_informativos("Telesur | VE"))
+        self.assertTrue(ap.es_regional_informativos("Telesur English | VE"))
+        self.assertTrue(ap.es_regional_informativos("Telesur Costa Rica"))
+        self.assertFalse(ap.es_regional_informativos("T13 En Vivo (Chile - Nacional)"))
 
     def test_regional_signals_are_last(self):
         entries = informativos_names(PLAYLIST.read_text(encoding="utf-8-sig").splitlines())

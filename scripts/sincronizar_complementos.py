@@ -787,17 +787,12 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
             {"extinf": block["extinf"], "nombre": ap.extraer_nombre(block["extinf"]), "url": block["url"]},
             pluto=_is_pluto_url(block.get("url", "")),
         )
-        owner_record = manifest.get(identity, {})
-        owner_is_pluto_es = (
-            isinstance(owner_record, dict)
-            and owner_record.get("source") == ap.FUENTES_PLUTO[1]
-        )
         if (
             _is_los_pitufos_es(block["extinf"])
             or (
                 _is_los_pitufos(block["extinf"])
                 and block.get("url")
-                and (_is_pluto_es_url(block["url"]) or owner_is_pluto_es)
+                and _is_pluto_es_url(block["url"])
             )
         ):
             pitufos_removed += 1
@@ -1068,10 +1063,10 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
         selected = None
         if owner_source:
             selected = next((item for item in group if item.get("source") == owner_source), None)
-            # Excepción explícita: si la fuente propietaria es Pluto ES y su
-            # variante está en Anime, LATAM/MX pueden sustituirla. España no
-            # alimenta Anime; las versiones LATAM/MX sí.
-            if selected is None and identity in pluto_es_anime_ids and group:
+            # Si Pluto ES era propietario pero el ID sigue presente en
+            # LATAM o MX, la versión vigente de esas regiones puede sustituirlo
+            # en cualquier categoría (incluidos Infantil y Entretenimiento).
+            if selected is None and identity in pluto_latam_mx_ids and group:
                 selected = group[0]
                 manifest[identity] = {"source": selected["source"]}
             # En cualquier otra ausencia temporal se conserva la entrada y

@@ -457,6 +457,8 @@ def main(args: argparse.Namespace) -> None:
 
     before_by_category = defaultdict(list)
     after_by_category = defaultdict(list)
+    before_families_by_category = defaultdict(list)
+    after_families_by_category = defaultdict(list)
     for item in before_kept:
         # Las alternativas se auditan por identidad, cantidad y contigüidad;
         # el orden histórico se compara solo entre canales principales.
@@ -466,6 +468,9 @@ def main(args: argparse.Namespace) -> None:
         key = identity_key(item, name_to_ids)
         if key not in before_by_category[category]:
             before_by_category[category].append(key)
+        family = ap.clave_familia_canal(item["display_raw"])
+        if family and family not in before_families_by_category[category]:
+            before_families_by_category[category].append(family)
     for item in after_nonpluto:
         category = norm(item["category"])
         key = identity_key(item, name_to_ids)
@@ -473,6 +478,21 @@ def main(args: argparse.Namespace) -> None:
         # para comparar orden; no deben contarse como canales nuevos.
         if key not in after_by_category[category]:
             after_by_category[category].append(key)
+        if not item["is_option"]:
+            family = ap.clave_familia_canal(item["display_raw"])
+            if family and family not in after_families_by_category[category]:
+                after_families_by_category[category].append(family)
+
+    jwt_pluto_vencidos = [
+        item for item in after_playable
+        if item.get("is_pluto") and ap.jwt_expirado_en_url(item.get("url", ""))
+    ]
+    if jwt_pluto_vencidos:
+        raise AssertionError(
+            "La maestra conserva JWT Pluto vencidos: "
+            + repr([(item["display_raw"], item["url"][:180]) for item in jwt_pluto_vencidos[:12]])
+            + f" (total={len(jwt_pluto_vencidos)})"
+        )
 
     global_after_counts = Counter(
         identity_key(item, name_to_ids)
@@ -502,18 +522,26 @@ def main(args: argparse.Namespace) -> None:
                     f"resumen={result!r}"
                 )
 
-        # Las categorías pueden cambiar; se compara el orden solo de los
-        # canales que permanecen en la misma categoría. Los movidos se auditan
-        # por identidad y cantidad global, no como una pérdida.
+        # Informativos se ordena deliberadamente por prioridad y deja los
+        # canales regionales al final. La integridad/cantidad ya se comprobó
+        # arriba; no comparar aquí su orden histórico anterior.
+        if category == norm("Informativos"):
+            continue
+
+        # La agrupación puede mover miembros dentro de una familia; lo que
+        # debe permanecer estable es el orden histórico de las familias.
+        before_families = before_families_by_category.get(category, [])
+        after_families = after_families_by_category.get(category, [])
         expected_order = [
-            key for key in dict.fromkeys(before_keys)
-            if after_counts.get(key, 0) > 0
+            family for family in before_families if family in after_families
         ]
         actual_order = [
-            key for key in dict.fromkeys(after_keys)
-            if key in before_counts
+            family for family in after_families if family in before_families
         ]
-        if actual_order != expected_order:
+        nuevas_familias = [
+            family for family in after_families if family not in before_families
+        ]
+        if actual_order != expected_order or after_families != expected_order + nuevas_familias:
             mismatch = next(
                 (
                     index for index, (expected, actual) in enumerate(zip(expected_order, actual_order))
@@ -522,12 +550,11 @@ def main(args: argparse.Namespace) -> None:
                 min(len(expected_order), len(actual_order)),
             )
             raise AssertionError(
-                f"Cambió el orden relativo dentro de {category} en índice {mismatch}: "
-                f"antes={expected_order[mismatch:mismatch + 8]!r}; "
-                f"después={actual_order[mismatch:mismatch + 8]!r}; "
-                f"longitudes={len(expected_order)}/{len(actual_order)}"
+                f"Cambió el orden de familias dentro de {category} "
+                f"en índice {mismatch}: antes={expected_order[mismatch:mismatch + 8]!r}; "
+                f"después={after_families[mismatch:mismatch + 8]!r}; "
+                f"nuevas_al_final={nuevas_familias!r}"
             )
-
 
     # Todo logo existente en la versión anterior debe sobrevivir a la actualización.
     old_logo_by_url = defaultdict(set)
@@ -538,7 +565,13 @@ def main(args: argparse.Namespace) -> None:
                 old_logo_by_url[item["url"]].add(item["logo"])
             if item.get("id"):
                 old_logo_by_id[item["id"]].add(item["logo"])
+    logos_autorizados = {
+        ap.normalizar_nombre_canal(nombre)
+        for nombre in ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL
+    }
     for item in after_playable:
+        if ap.normalizar_nombre_canal(item.get("display_raw", "")) in logos_autorizados:
+            continue
         previous = old_logo_by_url.get(item.get("url", ""), set())
         if len(previous) == 1:
             expected_logo = next(iter(previous))

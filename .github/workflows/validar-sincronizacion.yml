@@ -63,6 +63,9 @@ jobs:
       - name: Ejecutar pruebas unitarias de sincronización
         run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
 
+      - name: Probar agrupación de familias sin alterar el orden de carpetas
+        run: python -m unittest discover -s scripts -p 'test_family_grouping.py' -v
+
       - name: Guardar maestra original para comparar pérdidas y orden
         run: cp IPTV-CHILE-MAESTRA_CORREGIDO.m3u /tmp/principal_before.m3u
 
