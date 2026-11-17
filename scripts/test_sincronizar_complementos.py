@@ -666,6 +666,38 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertIn(",Yu-Gi-Oh [Opción 3]", extinfs[2])
         self.assertEqual(stats["alternativas_agregadas"], 2)
 
+    def test_mx_pitufos_survives_when_manifest_owner_was_es(self):
+        pluto_id = "68a3a97fd8f7693ae3f8575f"
+        latam_url = (
+            "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/"
+            f"v2/stitch/hls/channel/{pluto_id}/master.m3u8?jwt=latam&country=MX"
+        )
+        mx_url = f"https://jmp2.uk/plu-{pluto_id}.m3u8"
+        base = ["#EXTM3U"] + entry(
+            pluto_id, "Infantiles", "Los Pitufos", latam_url
+        )
+        source = [
+            candidate(
+                pluto_id, "Infantiles", "Los Pitufos", latam_url,
+                ap.FUENTES_PLUTO[0],
+            ),
+            candidate(
+                "", "Infantiles", "Los Pitufos", mx_url,
+                ap.FUENTE_PLUTO_ALTERNATIVAS,
+            ),
+        ]
+        manifest = {
+            "id:" + pluto_id: {"source": ap.FUENTES_PLUTO[1]}
+        }
+
+        output, _ = reconcile_lines(base, source, manifest)
+        self.assertIn(latam_url, output)
+        self.assertIn(mx_url, output)
+        self.assertEqual(
+            manifest["id:" + pluto_id]["source"],
+            ap.FUENTES_PLUTO[0],
+        )
+
     def test_pluto_kids_are_moved_to_infantiles_and_es_pitufos_is_removed(self):
         base = ["#EXTM3U"] + (
             entry(
