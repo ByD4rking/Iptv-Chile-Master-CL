@@ -35,6 +35,27 @@ class FamilyGroupingTests(unittest.TestCase):
             "Comedy Central HD",
         ])
 
+    def test_new_family_variant_is_inserted_after_existing_family(self):
+        original = ["#EXTM3U"]
+        original += bloque("CityTV SD", categoria="Entretenimiento Premium")
+        original += bloque("DHE HD", categoria="Entretenimiento Premium")
+        original += bloque("Caracol Internacional SD", categoria="Entretenimiento Premium")
+
+        current = ["#EXTM3U"]
+        current += bloque("Caracol HD2", categoria="Entretenimiento Premium")
+        current += bloque("CityTV SD", categoria="Entretenimiento Premium")
+        current += bloque("DHE HD", categoria="Entretenimiento Premium")
+        current += bloque("Caracol Internacional SD", categoria="Entretenimiento Premium")
+
+        result = ap.agrupar_familias_por_categoria(current, original)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "CityTV SD",
+            "DHE HD",
+            "Caracol Internacional SD",
+            "Caracol HD2",
+        ])
+
     def test_generic_channel_prefixes_do_not_merge_unrelated_services(self):
         lines = ["#EXTM3U"]
         lines += bloque("Canal Onza TV")
