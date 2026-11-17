@@ -3224,6 +3224,26 @@ def integrar_pluto_mx(lineas, session):
                 categoria = "Documentales y Cultura"
             base = agregar_base(canonico, categoria)
 
+        # Algunas listas Pluto MX publican URLs jmp2/externas sin channel ID
+        # ni tvg-id. En esos casos el emparejamiento por ID no puede encontrar
+        # la señal LATAM ya presente (p. ej. Los Pitufos). Usar el nombre solo
+        # cuando identifica una única base, para no cruzar señales homónimas.
+        if base is None and nombre:
+            nombre_clave = normalizar_nombre_canal(nombre)
+            coincidencias_nombre = [
+                b for b in bloques
+                if nombre_clave
+                and normalizar_nombre_canal(b["nombre"]) == nombre_clave
+            ]
+            exactas_nombre = [
+                b for b in coincidencias_nombre
+                if normalizar(b["nombre"]) == normalizar(nombre)
+            ]
+            if len(exactas_nombre) == 1:
+                base = exactas_nombre[0]
+            elif not exactas_nombre and len(coincidencias_nombre) == 1:
+                base = coincidencias_nombre[0]
+
         if base is None and "cazador de homicidas" in nombre:
             base = next((b for b in bloques if normalizar(b["nombre"]) == "cazador de homicidas"), None)
         if base is None and "claro sports" in nombre:
