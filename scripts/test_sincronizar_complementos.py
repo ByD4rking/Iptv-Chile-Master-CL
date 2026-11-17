@@ -1303,6 +1303,19 @@ class GlobalPlaylistSafeguardTests(unittest.TestCase):
         extinf = next(line for line in output if line.startswith("#EXTINF"))
         self.assertIn(f'tvg-logo="{logo}"', extinf)
 
+
+    def test_new_channel_with_same_display_name_in_another_category_gets_no_logo(self):
+        original = ["#EXTM3U"] + self._entry(
+            "Deportes", "Canal Compartido", "https://old.example/sports.m3u8",
+            logo="https://logos.example/sports.png"
+        )
+        current = ["#EXTM3U"] + self._entry(
+            "Música", "Canal Compartido", "https://new.example/music.m3u8"
+        )
+        output, _ = blindajes.blindar_logos(current, original)
+        extinf = next(line for line in output if line.startswith("#EXTINF"))
+        self.assertNotIn("tvg-logo=", extinf)
+
     def test_new_channel_cannot_import_a_source_logo(self):
         original = ["#EXTM3U"] + self._entry(
             "Deportes", "Existente", "https://old.example/a.m3u8", "existente",
