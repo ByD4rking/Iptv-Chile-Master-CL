@@ -171,9 +171,16 @@ def main():
 
     def validar_logo_candidato(url):
         if url not in cache_logos_candidatos:
-            cache_logos_candidatos[url] = (
-                verificar_logo_url(url).get("status") == "ok"
-            )
+            try:
+                cache_logos_candidatos[url] = (
+                    verificar_logo_url(url).get("status") == "ok"
+                )
+            except Exception as error_logo:
+                cache_logos_candidatos[url] = False
+                print(
+                    "[LOGOS] Candidato no verificable; se deja pendiente: "
+                    f"{str(url)[:140]} ({error_logo})"
+                )
         return cache_logos_candidatos[url]
 
     ordered_lines, logo_stats = alimentador.restaurar_logos_historicos(
