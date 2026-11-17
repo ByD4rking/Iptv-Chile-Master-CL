@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from playlist_sources import load_principal_settings, load_sources
+import alimentar_principal as ap
 
 
 class PlaylistSourceRegistryTests(unittest.TestCase):
@@ -22,6 +23,12 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         principal = load_principal_settings()
         paths = [url.rsplit("/", 1)[-1] for url in principal["pluto_sources"]]
         self.assertEqual(paths, ["pluto_latam.m3u", "pluto_es.m3u", "pluto_mx.m3u"])
+
+    def test_stable_pluto_mx_is_used_as_fallback_catalog(self):
+        self.assertEqual(
+            ap.FUENTES_PLUTO_CATALOGO,
+            [*ap.FUENTES_PLUTO, ap.FUENTE_PLUTO_ALTERNATIVAS],
+        )
 
     def test_god_only_references_existing_regional_pluto_outputs(self):
         god = load_sources("god")
