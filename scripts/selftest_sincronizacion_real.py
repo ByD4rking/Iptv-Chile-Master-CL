@@ -544,7 +544,13 @@ def main(args: argparse.Namespace) -> None:
                 old_logo_by_url[item["url"]].add(item["logo"])
             if item.get("id"):
                 old_logo_by_id[item["id"]].add(item["logo"])
+    logos_autorizados = {
+        ap.normalizar_nombre_canal(nombre)
+        for nombre in ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL
+    }
     for item in after_playable:
+        if ap.normalizar_nombre_canal(item.get("display_raw", "")) in logos_autorizados:
+            continue
         previous = old_logo_by_url.get(item.get("url", ""), set())
         if len(previous) == 1:
             expected_logo = next(iter(previous))
