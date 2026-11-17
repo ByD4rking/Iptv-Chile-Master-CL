@@ -35,6 +35,29 @@ class FamilyGroupingTests(unittest.TestCase):
             "Comedy Central HD",
         ])
 
+    def test_generic_channel_prefixes_do_not_merge_unrelated_services(self):
+        lines = ["#EXTM3U"]
+        lines += bloque("Canal Onza TV")
+        lines += bloque("Canal Teleclásica México")
+        lines += bloque("Canal Onza TV HD")
+        result = ap.agrupar_familias_por_categoria(lines)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "Canal Onza TV", "Canal Onza TV HD", "Canal Teleclásica México",
+        ])
+
+    def test_anime_franchises_are_grouped(self):
+        lines = ["#EXTM3U"]
+        lines += bloque("Naruto")
+        lines += bloque("Dragon Ball Z", categoria="Anime")
+        lines += bloque("Naruto Shippuden")
+        lines += bloque("Dragon Ball Super", categoria="Anime")
+        result = ap.agrupar_familias_por_categoria(lines)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "Naruto", "Naruto Shippuden", "Dragon Ball Z", "Dragon Ball Super",
+        ])
+
     def test_cnn_services_remain_separate_families(self):
         lines = ["#EXTM3U"]
         lines += bloque("CNN Chile")
