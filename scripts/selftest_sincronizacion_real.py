@@ -527,7 +527,10 @@ def main(args: argparse.Namespace) -> None:
         actual_order = [
             family for family in after_families if family in before_families
         ]
-        if actual_order != expected_order:
+        nuevas_familias = [
+            family for family in after_families if family not in before_families
+        ]
+        if actual_order != expected_order or after_families != expected_order + nuevas_familias:
             mismatch = next(
                 (
                     index for index, (expected, actual) in enumerate(zip(expected_order, actual_order))
@@ -536,10 +539,10 @@ def main(args: argparse.Namespace) -> None:
                 min(len(expected_order), len(actual_order)),
             )
             raise AssertionError(
-                f"Cambió el orden relativo de familias dentro de {category} "
+                f"Cambió el orden de familias dentro de {category} "
                 f"en índice {mismatch}: antes={expected_order[mismatch:mismatch + 8]!r}; "
-                f"después={actual_order[mismatch:mismatch + 8]!r}; "
-                f"longitudes={len(expected_order)}/{len(actual_order)}"
+                f"después={after_families[mismatch:mismatch + 8]!r}; "
+                f"nuevas_al_final={nuevas_familias!r}"
             )
 
     # Todo logo existente en la versión anterior debe sobrevivir a la actualización.
