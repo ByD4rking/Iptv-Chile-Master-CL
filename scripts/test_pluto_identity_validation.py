@@ -51,11 +51,11 @@ class PlutoIdentityValidationTests(unittest.TestCase):
 
     def test_expired_mx_tagged_url_prefers_latam_catalog_over_mx(self):
         old_url = (
-            "https://stitcher.example/channel/0123456789abcdef01234567/"
+            "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/channel/0123456789abcdef01234567/"
             "master.m3u8?country=MX&jwt=old"
         )
         latam_url = (
-            "https://stitcher.example/channel/0123456789abcdef01234567/"
+            "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/channel/0123456789abcdef01234567/"
             "master.m3u8?country=MX&jwt=latam"
         )
         mx_url = (
@@ -87,7 +87,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
 
     def test_expired_brazil_url_is_preserved_when_no_brazil_catalog_exists(self):
         old_url = (
-            "https://stitcher.example/channel/abcdef0123456789abcdef0123/"
+            "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/channel/abcdef0123456789abcdef0123/"
             "master.m3u8?country=BR&jwt=old"
         )
         extinf = '#EXTINF:-1 tvg-id="br.channel" group-title="Brasil",Canal Brasil'
@@ -106,7 +106,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
     def test_non_jwt_mx_alternative_is_preserved_as_an_independent_option(self):
         external_url = "https://jmp2.uk/plu-0123456789abcdef01234567.m3u8"
         latam_url = (
-            "https://stitcher.example/channel/0123456789abcdef01234567/"
+            "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/channel/0123456789abcdef01234567/"
             "master.m3u8?country=MX&jwt=latam"
         )
         extinf = '#EXTINF:-1 tvg-id="epg.alias" group-title="Infantiles",Canal'
@@ -129,7 +129,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         payload = base64.urlsafe_b64encode(
             json.dumps({"exp": 1000}).encode("utf-8")
         ).decode("ascii").rstrip("=")
-        url = f"https://stitcher.example/master.m3u8?jwt=header.{payload}.signature"
+        url = f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/master.m3u8?jwt=header.{payload}.signature"
         self.assertTrue(jwt_necesita_renovacion_en_url(url, margen_segundos=600, ahora=500))
         self.assertFalse(jwt_necesita_renovacion_en_url(url, margen_segundos=100, ahora=500))
 
