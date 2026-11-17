@@ -531,15 +531,26 @@ def main(args: argparse.Namespace) -> None:
     # Los únicos cambios permitidos a logos históricos son overrides explícitos,
     # verificados por HTTP y asociados a la URL exacta del stream.
     forced_logo_overrides = {}
+    manual_logo_references = {}
     ruta_logo_references = ROOT / "scripts" / "logo_references.json"
     if ruta_logo_references.is_file():
-        forced_logo_overrides = json.loads(
+        datos_referencias_logo = json.loads(
             ruta_logo_references.read_text(encoding="utf-8")
-        ).get("forced_overrides", {})
+        )
+        forced_logo_overrides = datos_referencias_logo.get("forced_overrides", {})
+        manual_logo_references = datos_referencias_logo.get("logos", {})
 
     def override_logo_aprobado(item):
         url = item.get("url", "")
-        return bool(url and forced_logo_overrides.get(url) == item.get("logo"))
+        logo = item.get("logo", "")
+        return bool(
+            url
+            and logo
+            and (
+                forced_logo_overrides.get(url) == logo
+                or manual_logo_references.get(url) == logo
+            )
+        )
 
     # La auditoría se ejecuta antes de reparar. Solo se permite reemplazar o
     # retirar logos que fueron confirmados como rotos; los inconclusos se conservan.
