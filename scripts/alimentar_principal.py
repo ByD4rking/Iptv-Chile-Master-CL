@@ -3937,15 +3937,15 @@ def ordenar_informativos(lineas):
     # su orden relativo de origen.
     def prioridad_regional(bloque):
         nombre = normalizar(extraer_nombre(bloque["lineas"][0]))
-        if re.match(r"^telesur english\\s*\\|\\s*ve\\b", nombre):
+        if re.match(r"^telesur english\s*\|\s*ve\b", nombre):
             return (0, bloque["orden"])
-        if re.match(r"^telemundo noticias (?:california|florida|noreste|texas)\\b", nombre):
+        if re.match(r"^telemundo noticias (?:california|florida|noreste|texas)\b", nombre):
             return (1, bloque["orden"])
-        if re.match(r"^canal 33 tijuana\\b", nombre):
+        if re.match(r"^canal 33 tijuana\b", nombre):
             return (2, bloque["orden"])
-        if re.match(r"^telesur\\s*\\|\\s*ve\\b", nombre):
+        if re.match(r"^telesur\s*\|\s*ve\b", nombre):
             return (3, bloque["orden"])
-        if re.match(r"^telesur costa rica\\b", nombre):
+        if re.match(r"^telesur costa rica\b", nombre):
             return (4, bloque["orden"])
         return (5, bloque["orden"])
 
@@ -4837,6 +4837,21 @@ def main():
         ids_pluto=ids_pluto_orden_protegidos,
     )
     lineas = blindar_categoria_general(lineas)
+
+    # Restauración final de Pluto MX: la restauración histórica puede retirar
+    # una URL externa aunque la alternativa se hubiera agregado antes.
+    # La integración es idempotente (omite URLs ya presentes) y se ejecuta
+    # después de la última restauración estructural.
+    lineas, pluto_mx_final = integrar_pluto_mx(lineas, session)
+    print(
+        "Blindaje final Pluto MX: "
+        f"{pluto_mx_final['agregadas']} alternativas recuperadas; "
+        f"{pluto_mx_final['sin_coincidencia']} sin coincidencia."
+    )
+
+    # Prioridad informativa explícita: canales nacionales primero y señales
+    # regionales al final, sin cambiar el orden de las demás categorías.
+    lineas = ordenar_informativos(lineas)
 
     # Las variantes no-Pluto pueden compartir tvg-id con una URL Pluto.
     # Añadir los IDs observados en la salida final al conjunto protegido para
