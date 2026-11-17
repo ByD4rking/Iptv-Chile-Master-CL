@@ -40,6 +40,24 @@ class LogoAuditTests(unittest.TestCase):
         self.assertIn(f'logo="{working}"', result[1])
         self.assertEqual(stats["rotos_sin_reemplazo"], 0)
 
+    def test_explicit_logo_override_replaces_only_the_matching_stream(self):
+        stream = "https://stream.test/bitme.m3u8"
+        old = "https://img.test/old.webp"
+        new = "https://img.test/new.png"
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 group-title="Anime" tvg-logo="{old}",Bitme HD (México)',
+            stream,
+        ]
+        result, stats = ap.restaurar_logos_historicos(
+            current,
+            [],
+            logos_forzados_por_url={stream: new},
+            validar_logo=lambda url: url == new,
+        )
+        self.assertIn(f'tvg-logo="{new}"', result[1])
+        self.assertEqual(stats["forzados"], 1)
+
     def test_working_logo_is_preserved_even_if_reference_differs(self):
         working = "https://img.test/working.png"
         other = "https://img.test/other.png"
