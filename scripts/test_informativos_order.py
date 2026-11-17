@@ -1,7 +1,7 @@
 import re
 import unittest
 from pathlib import Path
-from alimentar_principal import blindar_categoria_general
+from alimentar_principal import blindar_categoria_general, determinar_destino
 
 PLAYLIST = Path("IPTV-CHILE-MAESTRA_CORREGIDO.m3u")
 EXPECTED = [
@@ -61,6 +61,10 @@ class InformativosOrderTests(unittest.TestCase):
         self.assertIn('group-title="Religiosos"', result[1])
         self.assertIn("Audaz TV (Venezuela)", result[1])
         self.assertFalse(any(re.search(r'group-title="General"', line, re.I) for line in result))
+
+    def test_news_theme_overrides_source_country(self):
+        destination = determinar_destino("News", "TN", "argentina", ["Informativos", "Argentina"])
+        self.assertEqual(destination, "Informativos")
 
     def test_unknown_general_channel_blocks_generation(self):
         sample = [
