@@ -3737,6 +3737,17 @@ def ordenar_informativos(lineas):
         raw = lineas[inicio:j]
         categoria = normalizar(extraer_categoria(raw[0]))
         nombre = extraer_nombre(raw[0])
+        es_prioritario = es_canal_prioritario_informativos(nombre)
+        if es_prioritario and categoria != "informativos":
+            raw = list(raw)
+            raw[0] = re.sub(
+                r'group-title="[^"]*"',
+                'group-title="Informativos"',
+                raw[0],
+                count=1,
+                flags=re.IGNORECASE,
+            )
+            categoria = "informativos"
         es_informativo = categoria == "informativos"
         bloques.append({
             "lineas": raw,
