@@ -12,7 +12,7 @@ _ATTRS = ("tvg-logo", "logo")
 # Únicas excepciones autorizadas por el usuario para cambiar logos existentes.
 LOGOS_AUTORIZADOS_POR_NOMBRE = {
     "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
-    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/oYFto0V.png",
+    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/3FKZHL4.png",
 }
 
 
@@ -172,6 +172,58 @@ def restaurar_categoria_bloqueada(lineas, referencia, categoria="Anime"):
     restored = remaining[:insertion] + locked + remaining[insertion:]
     output = list(prefix)
     for record in restored:
+        output.extend(record["lines"])
+    return output
+
+
+
+def priorizar_history_documentales(lineas):
+    """Coloca History, History 2 y la segunda señal History al inicio
+    de Documentales y Cultura, manteniendo el orden de los demás canales.
+    """
+    prefix, blocks = _split_blocks(lineas)
+    target = _norm("Documentales y Cultura")
+    indexes = [i for i, record in enumerate(blocks) if record["category_key"] == target]
+    if not indexes:
+        return list(lineas)
+
+    history = []
+    for i in indexes:
+        record = blocks[i]
+        name = record["name"]
+        if name == "history" or name.startswith("history "):
+            history.append((i, record))
+
+    if not history:
+        return list(lineas)
+
+    base = [(i, r) for i, r in history if not r["name"].startswith("history 2")]
+    history2 = [(i, r) for i, r in history if r["name"].startswith("history 2")]
+    if not base or not history2:
+        return list(lineas)
+
+    # Secuencia pedida: History (primera señal), History 2 y History
+    # (segunda señal). Si existen más variantes, se conservan después.
+    ordered_history = [base[0][1], history2[0][1]]
+    if len(base) > 1:
+        ordered_history.append(base[1][1])
+    used = {id(record) for record in ordered_history}
+    ordered_history.extend(r for _, r in history if id(r) not in used)
+
+    remaining = [r for r in blocks if r["category_key"] == target and id(r) not in used]
+    # Solo mueve los canales History; el resto conserva su orden relativo.
+    category_records = [r for r in blocks if r["category_key"] == target]
+    ordered_category = ordered_history + [r for r in category_records if r not in ordered_history]
+    iterator = iter(ordered_category)
+    output_blocks = []
+    for record in blocks:
+        if record["category_key"] == target:
+            output_blocks.append(next(iterator))
+        else:
+            output_blocks.append(record)
+
+    output = list(prefix)
+    for record in output_blocks:
         output.extend(record["lines"])
     return output
 
