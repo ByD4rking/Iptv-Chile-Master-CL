@@ -3,7 +3,7 @@ import re
 
 import alimentar_principal as ap
 from selftest_sincronizacion_real import channel_name_key, identity_key
-from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _group_and_label_alternatives, _identity, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, quitar_los_pitufos_es, reconcile_lines
+from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _destination, _group_and_label_alternatives, _identity, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, quitar_los_pitufos_es, reconcile_lines
 
 
 def _attr_for_test(extinf, name):
@@ -1107,6 +1107,29 @@ class AlternativeGroupingRegressionTests(unittest.TestCase):
         alternative = {"id": "344", "name": "ESPN 2", "tvg_name": "ESPN 2", "url": "https://sports.example/espn2-alt.m3u8"}
         self.assertEqual(identity_key(original, name_to_ids), identity_key(updated, name_to_ids))
         self.assertNotEqual(identity_key(original, name_to_ids), identity_key(alternative, name_to_ids))
+
+class RTVEInformativosDestinationTests(unittest.TestCase):
+    def test_rtve_24_horas_stays_in_informativos_even_when_source_says_spain(self):
+        categories = ["Informativos", "España"]
+        main_channel = {
+            "categoria": "España",
+            "nombre": "RTVE Canal 24 Horas (España)",
+            "url": "https://ztnr.rtve.es/ztnr/1694255.m3u8",
+        }
+        iptvsv_channel = {
+            "categoria": "España",
+            "nombre": "24h",
+            "url": "https://rtvelivestream.rtve.es/rtvesec/24h/24h_main_dvr.m3u8",
+        }
+        self.assertEqual(
+            _destination("https://m3u.cl/lista/ES.m3u", main_channel, categories),
+            "Informativos",
+        )
+        self.assertEqual(
+            _destination(ap.FUENTE_IPTVSV, iptvsv_channel, categories),
+            "Informativos",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -199,7 +199,12 @@ def encontrar_categoria_tematica(texto, categorias):
         ("COMEDIA", [r"\b(comedia|comedy)\b"]),
         ("RELIGIOSOS", [r"\b(religioso|religiosos|religion)\b"]),
         ("DOCUMENTALES", [r"\b(documental|documentales|documentary)\b"]),
-        ("INFORMATIVOS", [r"\b(noticias|noticia|informativos|news|tn|todo noticias)\b"]),
+        ("INFORMATIVOS", [
+            r"\b(noticias|noticia|informativos|news|tn|todo noticias)\b",
+            r"\brtve\b.*\b(24\s*horas|24h)\b",
+            r"\b(24\s*horas|24h)\b.*\brtve\b",
+        ]),
+
     ]
     for candidato, patrones in reglas:
         if any(re.search(p, texto) for p in patrones):

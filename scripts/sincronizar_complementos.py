@@ -594,6 +594,17 @@ def _destination(source_url: str, channel: dict, categories: list[str]) -> str |
     canonical_name = _canonical_channel_name(channel)
     # Estos tres canales van al comienzo de la categoría infantil aunque
     # Pluto LATAM los publique bajo Retro o Pluto MX no incluya group-title.
+    nombre_norm = ap.normalizar(name)
+    url_norm = (channel.get("url") or "").lower()
+    rtve_24h = (
+        ("rtve" in nombre_norm and re.search(r"\b(24\s*horas|24h)\b", nombre_norm))
+        or ("rtve" in url_norm and re.search(r"\b24h\b", url_norm))
+    )
+    if rtve_24h:
+        destino_informativos = ap.buscar_categoria_existente("Informativos", categories)
+        if destino_informativos:
+            return destino_informativos
+
     if canonical_name in {"popeye", "lospitufos", "heidi"}:
         if canonical_name == "lospitufos" and source_url == ap.FUENTES_PLUTO[1]:
             return None
