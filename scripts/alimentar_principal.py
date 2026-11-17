@@ -901,7 +901,7 @@ def deduplicar_pluto_por_prioridad(lineas, canales_por_id):
     La renovación LATAM > ES > MX ya se aplica antes; aquí se conserva un
     bloque principal y cada URL distinta como opción consecutiva.
     """
-    patron_opcion = r"(?:\[\s*(?:opci[oó]n|opc|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|opc|option)\s*\d+\s*\))\s*$"
+    patron_opcion = r"(?:\[\s*(?:opci[oó]n|opc|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|opc|option)\s*\d+\s*\)|\s+(?:opci[oó]n|opc|option)\s*\d+)\s*$"
 
     def es_opcion(extinf):
         return bool(re.search(patron_opcion, extraer_nombre(extinf), re.I))
@@ -5013,7 +5013,7 @@ def main():
     print("  - IPTVSV.m3u usa reglas propias y NO hereda ninguna regla de Pluto.")
     print("  - IPTVSV: no crea/alimenta carpetas-país genéricas; se respetan solo excepciones explícitas.")
     print("  - Dedupe global por URL para fuentes normales.")
-    print("  - Pluto: dedupe global por channel ID; JWT/región distintos no crean copias.")
+    print("  - Pluto: dedupe por URL exacta; URLs distintas del mismo canal se conservan como opciones.")
     print("  - Auditoría final: una URL exacta solo puede quedar una vez en toda la principal.")
     print("  - Telemundo Noticias conserva solo señales Telemundo; Sky Sports solo señales Sky Sports.")
     print("  - Pluto: las carpetas existentes se sincronizan con la categoría de la fuente propia.")
