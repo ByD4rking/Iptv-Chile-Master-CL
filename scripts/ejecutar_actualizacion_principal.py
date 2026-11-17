@@ -133,6 +133,8 @@ def main():
     )
     # Último blindaje de orden: España y todos los países deben quedar al final.
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
+    # La sincronización complementaria tampoco puede recrear General.
+    ordered_lines = alimentador.blindar_categoria_general(ordered_lines)
 
     # La restauración del orden histórico puede recuperar bloques previos.
     # Reaplicar al final la regla estricta solo a URLs de Cine/Películas MAGMA.
