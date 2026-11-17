@@ -101,6 +101,7 @@ class InformativosOrderTests(unittest.TestCase):
         sample = ["#EXTM3U"]
         for category, name in [
             ("Informativos", "N+ Foro (Televisa) (Nacional)"),
+            ("Informativos", "Telemundo Noticias Al día"),
             ("Informativos", "Telemundo Noticias Texas"),
             ("Informativos", "TN HD (Buenos Aires) [Opción 2]"),
             ("Informativos", "TN 🇦🇷"),
@@ -136,7 +137,6 @@ class InformativosOrderTests(unittest.TestCase):
             "N+ Foro (Televisa) (Nacional)",
             "T13 En Vivo (Chile - Nacional)",
             "Telesur English | VE",
-            "Telemundo Noticias Al día",
             "Telemundo Noticias Al día",
             "Telemundo Noticias Texas",
             "Telesur | VE",
