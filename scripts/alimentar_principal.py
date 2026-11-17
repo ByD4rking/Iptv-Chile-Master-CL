@@ -3191,6 +3191,44 @@ def integrar_pluto_mx(lineas, session):
             flags=re.I,
         ).strip()
         extinf = re.sub(r",(.*)$", f",{nombre_base} (OPCIÓN {numero})", base["extinf"], count=1)
+
+        # La alternativa MX debe heredar el logo del mismo ID en el catálogo
+        # canónico LATAM, no un logo que el feed MX pueda asociar erróneamente.
+        # Esto protege la identidad visual histórica de Pluto y evita cruces.
+        canonico_logo = latam_por_id.get(cid) if cid else None
+        if canonico_logo:
+            match_logo = re.search(
+                r'tvg-logo="([^"]+)"',
+                canonico_logo.get("extinf", ""),
+                re.I,
+            )
+            logo_canonico = match_logo.group(1).strip() if match_logo else ""
+            if logo_canonico and url_es_valida(logo_canonico):
+                if re.search(r'tvg-logo="[^"]*"', extinf, re.I):
+                    extinf = re.sub(
+                        r'tvg-logo="[^"]*"',
+                        f'tvg-logo="{logo_canonico}"',
+                        extinf,
+                        count=1,
+                        flags=re.I,
+                    )
+                else:
+                    extinf = re.sub(
+                        r"^(#EXTINF:\\s*[^,]+)",
+                        lambda m: f'{m.group(1)} tvg-logo="{logo_canonico}"',
+                        extinf,
+                        count=1,
+                        flags=re.I,
+                    )
+                if re.search(r'(?<![\\w-])logo="[^"]*"', extinf, re.I):
+                    extinf = re.sub(
+                        r'(?<![\\w-])logo="[^"]*"',
+                        f'logo="{logo_canonico}"',
+                        extinf,
+                        count=1,
+                        flags=re.I,
+                    )
+
         if cid:
             if re.search(r'tvg-id="[^"]*"', extinf, re.I):
                 extinf = re.sub(r'tvg-id="[^"]*"', f'tvg-id="{cid}"', extinf, count=1, flags=re.I)
