@@ -3448,12 +3448,25 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
     def poner_logo(extinf, logo):
         if not logo or not url_es_valida(logo):
             return extinf
-        patron = r'(?<![\w-])tvg-logo="[^"]*"'
+        patron = r'(?<![\\w-])tvg-logo="[^"]*"'
         reemplazo = f'tvg-logo="{logo}"'
         if re.search(patron, extinf, re.I):
-            return re.sub(patron, lambda _: reemplazo, extinf, count=1, flags=re.I)
-        coma = extinf.find(",")
-        return extinf[:coma].rstrip() + " " + reemplazo + extinf[coma:] if coma >= 0 else extinf
+            salida_extinf = re.sub(patron, lambda _: reemplazo, extinf, count=1, flags=re.I)
+        else:
+            coma = extinf.find(",")
+            salida_extinf = (
+                extinf[:coma].rstrip() + " " + reemplazo + extinf[coma:]
+                if coma >= 0 else extinf
+            )
+        # Mantener sincronizados los dos atributos que usan los reproductores.
+        patron_legacy = r'(?<![\\w-])logo="[^"]*"'
+        reemplazo_legacy = f'logo="{logo}"'
+        if re.search(patron_legacy, salida_extinf, re.I):
+            salida_extinf = re.sub(
+                patron_legacy, lambda _: reemplazo_legacy,
+                salida_extinf, count=1, flags=re.I
+            )
+        return salida_extinf
 
     anteriores = bloques(referencia)
     por_id, por_url, por_nombre, por_nombre_global = (
