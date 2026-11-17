@@ -71,6 +71,50 @@ class FamilyGroupingTests(unittest.TestCase):
             "CNN Headlines International",
         ])
 
+    def test_chavo_and_chespirito_are_distinct_families(self):
+        lines = ["#EXTM3U"]
+        lines += bloque("El Chavo TV")
+        lines += bloque("Los Simpson Latino")
+        lines += bloque("Chespirito TV")
+        result = ap.agrupar_familias_por_categoria(lines)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, ["El Chavo TV", "Los Simpson Latino", "Chespirito TV"])
+
+    def test_tve_and_comedy_central_brand_variants_group(self):
+        lines = ["#EXTM3U"]
+        lines += bloque("TVE Internacional America")
+        lines += bloque("Comedy Central")
+        lines += bloque("TVE Internacional America HD")
+        lines += bloque("Comedy Central en español")
+        result = ap.agrupar_familias_por_categoria(lines)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "TVE Internacional America", "TVE Internacional America HD",
+            "Comedy Central", "Comedy Central en español",
+        ])
+
+    def test_unnamed_channels_are_not_collapsed_together(self):
+        lines = ["#EXTM3U",
+                 '#EXTINF:-1 group-title="Test",',
+                 "https://example.com/one.m3u8",
+                 '#EXTINF:-1 group-title="Test",',
+                 "https://example.com/two.m3u8"]
+        result = ap.agrupar_familias_por_categoria(lines)
+        self.assertEqual(sum(line.startswith("#EXTINF") for line in result), 2)
+
+    def test_category_order_is_preserved(self):
+        lines = ["#EXTM3U"]
+        lines += bloque("Canal A", categoria="Primera")
+        lines += bloque("Canal B", categoria="Primera")
+        lines += bloque("Canal A HD", categoria="Primera")
+        lines += bloque("Canal C", categoria="Segunda")
+        result = ap.agrupar_familias_por_categoria(lines)
+        cats = []
+        for line in result:
+            if line.startswith("#EXTINF"):
+                cats.append(ap.normalizar(ap.extraer_categoria(line)))
+        self.assertEqual(cats, ["primera", "primera", "primera", "segunda"])
+
 
 if __name__ == "__main__":
     unittest.main()
