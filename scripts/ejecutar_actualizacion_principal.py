@@ -133,7 +133,8 @@ def main():
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
         nombres_autorizados=alimentador.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL,
         logos_autorizados_por_nombre=alimentador.LOGOS_AUTORIZADOS_PRINCIPAL,
-    )    # Último blindaje de orden: España y todos los países deben quedar al final.
+    )
+    # Último blindaje de orden: España y todos los países deben quedar al final.
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
     # Agrupar variantes de una misma familia al final del flujo, preservando
     # el orden actual de categorías y de la primera aparición de cada familia.
