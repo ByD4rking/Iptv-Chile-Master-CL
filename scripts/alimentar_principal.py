@@ -2633,10 +2633,16 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
                 channel_id = tvg_id_valido(m_id.group(1)) if m_id else ""
                 nombre_key = normalizar_nombre_canal(nombre)
+                m_opcion = re.search(
+                    r"(?:\[|\()\s*(?:opci[oó]n|opc|option)\.?\s*(\d+)\s*(?:\]|\))\s*$",
+                    nombre,
+                    re.I,
+                )
+                numero_opcion = int(m_opcion.group(1)) if m_opcion else 1
                 if channel_id:
-                    identidad = ("id", channel_id)
+                    identidad = ("id", channel_id, numero_opcion)
                 elif nombre_key:
-                    identidad = ("nombre", nombre_key)
+                    identidad = ("nombre", nombre_key, numero_opcion)
                 else:
                     identidad = ("url", url)
 
