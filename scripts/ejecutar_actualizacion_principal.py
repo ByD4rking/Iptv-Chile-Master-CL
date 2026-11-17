@@ -221,6 +221,34 @@ def main():
     # respeten la secuencia canónica después de todas las reconciliaciones.
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
+    # Última reconciliación de Pluto después de todas las restauraciones,
+    # agrupaciones y sincronizaciones complementarias. Evita que una etapa
+    # posterior vuelva a introducir JWT antiguos en la maestra.
+    ordered_lines, pluto_renovacion_final = alimentador.reemplazar_pluto_tercero_por_propio(
+        ordered_lines,
+        session,
+    )
+    print(
+        "[ORQUESTADOR] Renovación final Pluto: "
+        f"{pluto_renovacion_final['reemplazados']} URLs actualizadas; "
+        f"{pluto_renovacion_final['conservados_sin_reemplazo']} conservadas sin "
+        "correspondencia; "
+        f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas."
+    )
+    jwt_pendientes = [
+        linea.strip()
+        for linea in ordered_lines
+        if "jwt=" in linea.lower()
+        and alimentador.es_url_pluto(linea.strip())
+        and alimentador.jwt_necesita_renovacion_en_url(linea.strip())
+    ]
+    if jwt_pendientes:
+        raise RuntimeError(
+            "La maestra no se publica: quedan "
+            f"{len(jwt_pendientes)} URLs Pluto con JWT vencido o con menos de "
+            "6 horas de vigencia. Se conserva la lista anterior."
+        )
+
     ids_pluto_orden = (
         alimentador.obtener_ids_pluto_existentes(original_lines)
         | alimentador.obtener_ids_pluto_existentes(ordered_lines)
