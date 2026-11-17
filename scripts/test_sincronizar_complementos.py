@@ -1152,6 +1152,27 @@ class IdentityMetadataEnrichmentTests(unittest.TestCase):
         self.assertEqual(identity_key(before, name_to_ids), identity_key(after, name_to_ids))
 
 
+class InformativosClassificationTests(unittest.TestCase):
+    def test_iptvsv_priority_news_override_country_or_source_folder(self):
+        categories = [
+            "Informativos", "Argentina", "España",
+            "Entretenimiento / Cine / Series", "Telemundo Noticias",
+        ]
+        cases = [
+            ("Argentina", "TN 🇦🇷"),
+            ("Entretenimiento / Cine / Series", "CGTN Español"),
+            ("Telemundo Noticias", "Telemundo Noticias Ahora"),
+            ("España", "Euronews Español"),
+            ("España", "RTVE Canal 24 Horas (España)"),
+        ]
+        for category, name in cases:
+            with self.subTest(name=name):
+                self.assertEqual(
+                    ap.determinar_destino_iptvsv(category, name, categories),
+                    "Informativos",
+                )
+
+
 if __name__ == "__main__":
     unittest.main()
 

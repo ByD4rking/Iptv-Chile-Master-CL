@@ -113,6 +113,7 @@ def main():
         get_last_url_priority(),
     )
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
+    ordered_lines = alimentador.ordenar_informativos(ordered_lines)
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
     # Restaurar logos perdidos desde la versión anterior y el catálogo oficial Pluto.
     try:

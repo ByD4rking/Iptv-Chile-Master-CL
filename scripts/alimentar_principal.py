@@ -230,47 +230,112 @@ def es_categoria_pais_generica_iptvsv(categoria):
     return c in PAISES_GENERICO_IPTVSV or bool(re.match(r"^(el )?(salvador|guatemala|honduras|nicaragua|panama|cuba|puerto rico|uruguay)$", c))
 
 
-def determinar_destino_iptvsv(categoria, nombre, categorias):
-    """IPTV-SV respeta la carpeta declarada, con solo alias canónicos explícitos.
+INFORMATIVOS_PRIORITARIOS = [
+    r"^cnn chile(?:\\b|$)",
+    r"^24 horas tvn(?:\\b|$)",
+    r"^meganoticias(?:\\b|$)",
+    r"^tn(?:\\s|$)",
+    r"^n\\+\\s*mexico(?:\\b|$)",
+    r"^noticias caracol(?:\\b|$)",
+    r"^rcn noticias(?:\\b|$)",
+    r"^telesur(?:\\b|$)",
+    r"^cnn en espanol(?:\\b|$)",
+    r"^bbc news mundo(?:\\b|$)",
+    r"^dw espanol(?:\\b|$)",
+    r"^france 24 espanol(?:\\b|$)",
+    r"^euronews espanol(?:\\b|$)",
+    r"^rtve canal 24 horas(?:\\b|$)",
+    r"^cgtn espanol(?:\\b|$)",
+    r"^telemundo noticias ahora(?:\\b|$)",
+]
 
-    No reclasifica por nombre, no usa reglas temáticas y no crea carpetas.
-    """
+
+def indice_prioridad_informativos(nombre):
+    nombre = normalizar(nombre)
+    for indice, patron in enumerate(INFORMATIVOS_PRIORITARIOS):
+        if re.search(patron, nombre, re.I):
+            return indice
+    return None
+
+
+def es_canal_prioritario_informativos(nombre):
+    return indice_prioridad_informativos(nombre) is not None
+
+
+REGIONALES_INFORMATIVOS = (
+    "monterrey", "guadalajara", "tijuana", "culiacan", "los mochis",
+    "mazatlan", "ciudad obregon", "neuquen", "andalucia", "santo domingo",
+    "loja", "quito", "pichincha", "santiago", "la paz", "copiapo",
+    "atacama", "antofagasta", "vina del mar", "valparaiso", "rancagua",
+    "o'higgins", "constitucion", "maule", "concepcion", "bio bio",
+    "coyhaique", "aysen", "misiones", "resistencia", "chaco", "santa fe",
+    "san luis", "buenos aires", "la plata", "santa clara del mar",
+    "tres arroyos", "puan", "punta arenas", "magallanes", "fuengirola",
+    "malaga", "ciudad real", "castilla-la mancha", "chiclayo",
+    "lambayeque", "la costa", "nuble", "linares", "california",
+    "florida", "noreste", "texas",
+)
+
+
+def es_regional_informativos(nombre):
+    if es_canal_prioritario_informativos(nombre):
+        return False
+    nombre = normalizar(nombre)
+    if re.match(r"^telemundo noticias (california|florida|noreste|texas)\\b", nombre):
+        return True
+    if any(ubicacion in nombre for ubicacion in REGIONALES_INFORMATIVOS):
+        return True
+
+    paises = {
+        "argentina", "bolivia", "brasil", "chile", "colombia", "costa rica",
+        "cuba", "ecuador", "el salvador", "espana", "estados unidos",
+        "guatemala", "honduras", "mexico", "nicaragua", "panama", "paraguay",
+        "peru", "puerto rico", "republica dominicana", "uruguay", "venezuela",
+    }
+    for ubicacion in re.findall(r"\\(([^)]*)\\)", nombre):
+        if "nacional" in ubicacion or "internacional" in ubicacion:
+            continue
+        partes = [
+            parte.strip()
+            for parte in re.split(r"\\s*[-/]\\s*", ubicacion)
+            if parte.strip()
+        ]
+        if len(partes) >= 2:
+            if any(parte in paises for parte in partes) and any(parte not in paises for parte in partes):
+                return True
+            if all(parte not in paises for parte in partes):
+                return True
+    return False
+
+
+def determinar_destino_iptvsv(categoria, nombre, categorias):
+    """Conserva la carpeta de origen salvo prioridades informativas y alias explícitos."""
     categoria = (categoria or "").strip()
     if not categoria:
         return None
 
-    # TN (Todo Noticias) es una señal informativa inequívoca aunque IPTVSV
-    # la entregue bajo la carpeta-país Argentina.
-    if normalizar(nombre) in {"tn", "todo noticias", "tn argentina"}:
+    categoria_norm = normalizar(categoria)
+    if categoria_norm == "telemundo noticias" or es_canal_prioritario_informativos(nombre):
         return buscar_categoria_existente("Informativos", categorias)
 
-    c_norm = normalizar(categoria)
+    tema = encontrar_categoria_tematica(nombre, categorias)
+    if tema and normalizar(tema) == "informativos":
+        return tema
+
     aliases = {
         "chile": "CHILE TV",
         "el salvador": "EL Salvador",
         "el salvador - tcs": "EL Salvador",
         "el salvador local": "EL Salvador",
-        "tv chichicasteca": "Guatemala",  # excepción explícita: destino existente.
+        "tv chichicasteca": "Guatemala",
         "documentales": "Documentales y Cultura",
         "infantil": "Infantiles",
         "teen": "Infantiles",
         "noticias": "Informativos",
-        # IMPORTANTE: NO mezclar categorías deportivas de IPTVSV.
-        # Tigo Sports / Fox, FOX Sports, DSports, Win Sports y Movistar Deportes
-        # deben conservar su group-title de origen. Solo las excepciones
-        # documentadas arriba pueden normalizarse a una carpeta canónica.
     }
-    categoria_busqueda = aliases.get(c_norm, categoria)
-
-    # La carpeta especial solo se acepta si YA existe.
-    if c_norm == "tv mas importantes de cada pais":
-        return buscar_categoria_existente(
-            "TV MÁS IMPORTANTES DE CADA PAÍS", categorias
-        )
-
-    # Coincidencia con una carpeta existente. Nunca inventar una nueva.
-    return buscar_categoria_existente(categoria_busqueda, categorias)
-
+    if categoria_norm == "tv mas importantes de cada pais":
+        return buscar_categoria_existente("TV MÁS IMPORTANTES DE CADA PAÍS", categorias)
+    return buscar_categoria_existente(aliases.get(categoria_norm, categoria), categorias)
 def validar_integridad_iptvsv(lineas, canales, categorias):
     """Barrera bloqueante para impedir que IPTVSV vuelva a perder categorías.
 
@@ -443,6 +508,11 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
 
     # La temática comprobable prevalece sobre el país: noticias a Informativos,
     # novelas a Novelas, deportes a Deportes, etc. País solo es fallback.
+    if es_canal_prioritario_informativos(nombre):
+        destino = buscar_categoria_existente("Informativos", categorias)
+        if destino:
+            return destino
+
     destino_tematico = encontrar_categoria_tematica(texto, categorias)
     if destino_tematico and normalizar(destino_tematico) != "general":
         return destino_tematico
@@ -3297,6 +3367,8 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
             candidatos = por_nombre_global.get(item["name"], set())
             if len(candidatos) == 1:
                 logo = next(iter(candidatos))
+        if not logo and item["name"] == "deltatv50hd":
+            logo = "https://imgur.com/Z1K1tyl.jpg"
         if logo:
             restaurados_anteriores += 1
         else:
@@ -3447,6 +3519,56 @@ def mover_paises_al_final(lineas):
     for bloque in chile + normales + paises:
         salida.extend(bloque["lineas"])
     return salida
+def ordenar_informativos(lineas):
+    """Prioriza los canales informativos acordados y deja las señales regionales al final."""
+    prefijo, bloques = [], []
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            if not bloques:
+                prefijo.append(lineas[i])
+            else:
+                bloques[-1]["lineas"].append(lineas[i])
+            i += 1
+            continue
+        inicio = i
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        raw = lineas[inicio:j]
+        categoria = normalizar(extraer_categoria(raw[0]))
+        nombre = extraer_nombre(raw[0])
+        es_informativo = categoria == "informativos"
+        bloques.append({
+            "lineas": raw,
+            "informativo": es_informativo,
+            "prioridad": indice_prioridad_informativos(nombre) if es_informativo else None,
+            "regional": es_regional_informativos(nombre) if es_informativo else False,
+            "orden": len(bloques),
+        })
+        i = j
+
+    informativos = [bloque for bloque in bloques if bloque["informativo"]]
+    if not informativos:
+        return list(lineas)
+    prioritarios = sorted(
+        (bloque for bloque in informativos if bloque["prioridad"] is not None),
+        key=lambda bloque: (bloque["prioridad"], bloque["orden"]),
+    )
+    otros = [
+        bloque for bloque in informativos
+        if bloque["prioridad"] is None and not bloque["regional"]
+    ]
+    regionales = [bloque for bloque in informativos if bloque["regional"]]
+    ordenados = iter(prioritarios + otros + regionales)
+
+    salida = list(prefijo)
+    for bloque in bloques:
+        elegido = next(ordenados) if bloque["informativo"] else bloque
+        salida.extend(elegido["lineas"])
+    return salida
+
+
 def ordenar_bloques_magma_y_originales(lineas, session):
     """
     Ordena exclusivamente Entretenimiento / Cine / Series en tres bloques:

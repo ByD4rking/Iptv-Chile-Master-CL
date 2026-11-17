@@ -884,7 +884,7 @@ def test_restauracion_final_omite_categorias_limpiadas() -> None:
 
 def test_external_source_urls() -> None:
     assert FUENTE_MAGMA == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u"
-    assert FUENTE_PLUTO_ALTERNATIVAS == "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
+    assert FUENTE_PLUTO_ALTERNATIVAS == "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u"
 
 
 if __name__ == "__main__":
