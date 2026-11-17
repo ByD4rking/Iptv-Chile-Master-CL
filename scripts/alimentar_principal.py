@@ -1179,7 +1179,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
             i = j
             continue
 
-        if url in propias:
+        if url in propias and not jwt_expirado_en_url(url):
             salida.extend(bloque)
             ya_propios += 1
             i = j
@@ -1210,6 +1210,9 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
                     break
         if reemplazo is None:
             reemplazo = por_nombre.get(normalizar(nombre))
+
+        if reemplazo is not None and jwt_expirado_en_url(reemplazo["url"].strip()):
+            reemplazo = None
 
         if reemplazo is None:
             if catalogo_completo and jwt_expirado_en_url(url):
