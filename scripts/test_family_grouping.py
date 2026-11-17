@@ -56,6 +56,24 @@ class FamilyGroupingTests(unittest.TestCase):
             "Caracol HD2",
         ])
 
+    def test_new_option_is_inserted_after_existing_base(self):
+        original = ["#EXTM3U"]
+        original += bloque("Caracol Internacional SD", categoria="Entretenimiento Premium")
+        original += bloque("CityTV SD", categoria="Entretenimiento Premium")
+
+        current = ["#EXTM3U"]
+        current += bloque("Caracol Internacional SD [Opción 2]", categoria="Entretenimiento Premium")
+        current += bloque("CityTV SD", categoria="Entretenimiento Premium")
+        current += bloque("Caracol Internacional SD", categoria="Entretenimiento Premium")
+
+        result = ap.agrupar_familias_por_categoria(current, original)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "Caracol Internacional SD",
+            "Caracol Internacional SD [Opción 2]",
+            "CityTV SD",
+        ])
+
     def test_generic_channel_prefixes_do_not_merge_unrelated_services(self):
         lines = ["#EXTM3U"]
         lines += bloque("Canal Onza TV")
