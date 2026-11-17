@@ -48,6 +48,8 @@ class LogoAuditTests(unittest.TestCase):
             "#EXTM3U",
             f'#EXTINF:-1 group-title="Anime" tvg-logo="{old}",Bitme HD (México)',
             stream,
+            f'#EXTINF:-1 group-title="Anime" tvg-logo="{old}",Otra señal',
+            "https://stream.test/other.m3u8",
         ]
         result, stats = ap.restaurar_logos_historicos(
             current,
@@ -56,6 +58,7 @@ class LogoAuditTests(unittest.TestCase):
             validar_logo=lambda url: url == new,
         )
         self.assertIn(f'tvg-logo="{new}"', result[1])
+        self.assertIn(f'tvg-logo="{old}"', result[3])
         self.assertEqual(stats["forzados"], 1)
 
     def test_working_logo_is_preserved_even_if_reference_differs(self):
