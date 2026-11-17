@@ -127,7 +127,6 @@ NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL = {
     "Caracola TV | CL",
     "La Chilena TV ✪ | CL",
     "Radio Rancagua | CL",
-    "Radio Rancagua FM (720p)",
     "Radio Ritmovisión TV",
     "MAX Anime (1080p)",
     "Primire Anime",
@@ -139,7 +138,6 @@ LOGOS_AUTORIZADOS_PRINCIPAL = {
     "Caracola TV | CL": "https://i.imgur.com/QGvfqug.png",
     "La Chilena TV ✪ | CL": "https://i.imgur.com/GHJkxaB.png",
     "Radio Rancagua | CL": "https://i.imgur.com/ZzUc6je.png",
-    "Radio Rancagua FM (720p)": "https://i.imgur.com/ZzUc6je.png",
     "MAX Anime (1080p)": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Max_Anime_Logo.png",
     "TL+ (El Salvador)": "https://kift.live/media/avatars/27ffc836-28d5-457b-9ebe-f65b0c2f5fb9/091fff8e-0e9e-46f9-b5ff-50cf24ce481b.png",
 }
