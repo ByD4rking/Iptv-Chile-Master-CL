@@ -3379,7 +3379,7 @@ def agrupar_alternativas_por_identidad(lineas):
             extinf = set_attr(extinf, "tvg-name", canonical_tvg)
             # Los logos son independientes por URL/opción: nunca copiarlos ni sobrescribirlos.
             current_logo = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
-            legacy_logo = re.search(r'(?<![\\w-])logo="([^"]*)"', extinf, re.I)
+            legacy_logo = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
             if (not current_logo or not current_logo.group(1).strip()) and legacy_logo and legacy_logo.group(1).strip():
                 extinf = set_attr(extinf, "tvg-logo", legacy_logo.group(1).strip())
             label = base if not normalizados else f"{base} [Opción {len(normalizados) + 1}]"
@@ -3472,7 +3472,7 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
     def poner_logo(extinf, logo):
         if not logo or not url_es_valida(logo):
             return extinf
-        patron = r'(?<![\\w-])tvg-logo="[^"]*"'
+        patron = r'(?<![\w-])tvg-logo="[^"]*"'
         reemplazo = f'tvg-logo="{logo}"'
         if re.search(patron, extinf, re.I):
             salida_extinf = re.sub(patron, lambda _: reemplazo, extinf, count=1, flags=re.I)
@@ -3483,7 +3483,7 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
                 if coma >= 0 else extinf
             )
         # Mantener sincronizados los dos atributos que usan los reproductores.
-        patron_legacy = r'(?<![\\w-])logo="[^"]*"'
+        patron_legacy = r'(?<![\w-])logo="[^"]*"'
         reemplazo_legacy = f'logo="{logo}"'
         if re.search(patron_legacy, salida_extinf, re.I):
             salida_extinf = re.sub(
