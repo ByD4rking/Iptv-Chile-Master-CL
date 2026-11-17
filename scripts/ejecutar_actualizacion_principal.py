@@ -196,7 +196,8 @@ def main():
     )
     # La sincronización complementaria tampoco puede recrear General.
     ordered_lines = alimentador.blindar_categoria_general(ordered_lines)
-    # General puede reclasificar canales a países: aplicar el orden global después.
+    # General puede reclasificar canales a Informativos o a países: reordenar ambos.
+    ordered_lines = alimentador.ordenar_informativos(ordered_lines)
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
 
     # La restauración del orden histórico puede recuperar bloques previos.
