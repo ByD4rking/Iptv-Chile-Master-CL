@@ -27,7 +27,7 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
     def test_stable_pluto_mx_is_used_as_fallback_catalog(self):
         self.assertEqual(
             ap.FUENTES_PLUTO_CATALOGO,
-            [*ap.FUENTES_PLUTO, ap.FUENTE_PLUTO_ALTERNATIVAS],
+            [*ap.FUENTES_PLUTO[:2], ap.FUENTE_PLUTO_ALTERNATIVAS, *ap.FUENTES_PLUTO[2:]],
         )
 
     def test_god_only_references_existing_regional_pluto_outputs(self):
