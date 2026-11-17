@@ -529,6 +529,19 @@ def main(args: argparse.Namespace) -> None:
             )
 
 
+    # Los únicos cambios permitidos a logos históricos son overrides explícitos,
+    # verificados por HTTP y asociados a la URL exacta del stream.
+    forced_logo_overrides = {}
+    ruta_logo_references = ROOT / "scripts" / "logo_references.json"
+    if ruta_logo_references.is_file():
+        forced_logo_overrides = json.loads(
+            ruta_logo_references.read_text(encoding="utf-8")
+        ).get("forced_overrides", {})
+
+    def override_logo_aprobado(item):
+        url = item.get("url", "")
+        return bool(url and forced_logo_overrides.get(url) == item.get("logo"))
+
     # Todo logo existente en la versión anterior debe sobrevivir a la actualización.
     old_logo_by_url = defaultdict(set)
     old_logo_by_id = defaultdict(set)
@@ -542,11 +555,15 @@ def main(args: argparse.Namespace) -> None:
         previous = old_logo_by_url.get(item.get("url", ""), set())
         if len(previous) == 1:
             expected_logo = next(iter(previous))
-            if item.get("logo") != expected_logo:
+            if item.get("logo") != expected_logo and not override_logo_aprobado(item):
                 raise AssertionError(f"Logo histórico cambiado para {item['display_raw']}: {expected_logo} -> {item.get('logo')}")
             continue
         previous_id = old_logo_by_id.get(item.get("id", ""), set()) if item.get("id") else set()
-        if len(previous_id) == 1 and item.get("logo") != next(iter(previous_id)):
+        if (
+            len(previous_id) == 1
+            and item.get("logo") != next(iter(previous_id))
+            and not override_logo_aprobado(item)
+        ):
             raise AssertionError(f"Logo histórico perdido al actualizar URL de {item['display_raw']}")
     # Anime tiene orden alfabético solicitado; las alternativas se ordenan
     # junto a su canal base y no cuentan como nombres independientes.
