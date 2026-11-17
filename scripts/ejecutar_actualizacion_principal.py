@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Ejecuta la actualización integral de la principal y reconcilia sus complementos."""
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -235,13 +236,18 @@ def main():
         "correspondencia; "
         f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas."
     )
-    jwt_pendientes = [
-        linea.strip()
-        for linea in ordered_lines
-        if "jwt=" in linea.lower()
-        and alimentador.es_url_pluto(linea.strip())
-        and alimentador.jwt_necesita_renovacion_en_url(linea.strip())
-    ]
+    jwt_pendientes = []
+    for linea in ordered_lines:
+        url = linea.strip()
+        if "jwt=" not in url.lower() or not alimentador.es_url_pluto(url):
+            continue
+        country_match = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
+        # Solo bloquear la publicación por regiones que este reconciliador
+        # puede renovar (LATAM/ES/MX). Regiones ajenas al catálogo se preservan.
+        if country_match and country_match.group(1).lower() not in {"mx", "es"}:
+            continue
+        if alimentador.jwt_necesita_renovacion_en_url(url):
+            jwt_pendientes.append(url)
     if jwt_pendientes:
         raise RuntimeError(
             "La maestra no se publica: quedan "
