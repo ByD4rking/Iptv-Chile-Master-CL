@@ -3932,6 +3932,24 @@ def ordenar_informativos(lineas):
         if bloque["prioridad"] is None and not bloque["regional"]
     ]
     regionales = [bloque for bloque in informativos if bloque["regional"]]
+
+    # Orden estable de señales regionales conocidas; las demás conservan
+    # su orden relativo de origen.
+    def prioridad_regional(bloque):
+        nombre = normalizar(extraer_nombre(bloque["lineas"][0]))
+        if re.match(r"^telesur english\\s*\\|\\s*ve\\b", nombre):
+            return (0, bloque["orden"])
+        if re.match(r"^telemundo noticias (?:california|florida|noreste|texas)\\b", nombre):
+            return (1, bloque["orden"])
+        if re.match(r"^canal 33 tijuana\\b", nombre):
+            return (2, bloque["orden"])
+        if re.match(r"^telesur\\s*\\|\\s*ve\\b", nombre):
+            return (3, bloque["orden"])
+        if re.match(r"^telesur costa rica\\b", nombre):
+            return (4, bloque["orden"])
+        return (5, bloque["orden"])
+
+    regionales.sort(key=prioridad_regional)
     ordenados = iter(prioritarios + otros + regionales)
 
     salida = list(prefijo)
@@ -4819,6 +4837,10 @@ def main():
         ids_pluto=ids_pluto_orden_protegidos,
     )
     lineas = blindar_categoria_general(lineas)
+
+    # Aplicar al final el orden de Informativos: la restauración histórica
+    # anterior no debe deshacer prioridades ni dejar señales regionales mezcladas.
+    lineas = ordenar_informativos(lineas)
 
     # Las variantes no-Pluto pueden compartir tvg-id con una URL Pluto.
     # Añadir los IDs observados en la salida final al conjunto protegido para
