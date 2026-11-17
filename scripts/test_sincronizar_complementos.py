@@ -683,6 +683,8 @@ class ComplementSyncTests(unittest.TestCase):
             pluto_id, "Infantiles", "Los Pitufos (OPCIÓN 3)", mx_url
         )
 
+        current, _ = ap.deduplicar_pluto_por_prioridad(current, {})
+        current, _, _ = ap.reubicar_bloques_pluto_sin_reordenar_principal(current)
         current = ap.restaurar_orden_original_por_categoria(current, original)
         current = quitar_los_pitufos_es(current)
         current = ap.aplicar_ajustes_referencia(current, set())
