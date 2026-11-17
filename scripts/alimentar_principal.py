@@ -40,7 +40,7 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = FUENTES_PLUTO
+FUENTES_PLUTO_CATALOGO = [*FUENTES_PLUTO, FUENTE_PLUTO_ALTERNATIVAS]
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
 PAIS_POR_FUENTE = {
@@ -1040,7 +1040,7 @@ def obtener_ids_pluto_existentes(lineas):
 
 
 def cargar_catalogo_pluto_propio(session):
-    """Carga exclusivamente nuestras playlists Pluto e indexa por ID y nombre."""
+    """Carga LATAM, ES y el fallback MX sin JWT; LATAM/ES mantienen prioridad."""
     por_id = {}
     por_nombre = {}
     por_region = defaultdict(dict)
@@ -1051,8 +1051,11 @@ def cargar_catalogo_pluto_propio(session):
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
-            m_region = re.search(r"pluto_([a-z]+)\.m3u$", fuente)
-            region = m_region.group(1) if m_region else "all"
+            if fuente == FUENTE_PLUTO_ALTERNATIVAS:
+                region = "mx"
+            else:
+                m_region = re.search(r"pluto_([a-z]+)\.m3u$", fuente)
+                region = m_region.group(1) if m_region else "all"
 
             for canal in canales:
                 url = canal["url"].strip()
