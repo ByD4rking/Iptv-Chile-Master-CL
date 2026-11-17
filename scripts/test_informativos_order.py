@@ -9,8 +9,8 @@ EXPECTED = [
     re.compile(r"^CNN Chile", re.I),
     re.compile(r"^24 Horas TVN", re.I),
     re.compile(r"^Meganoticias", re.I),
-    re.compile(r"^TN(?:\\s|$)", re.I),
-    re.compile(r"^N\\+ México", re.I),
+    re.compile(r"^TN(?:\s|$)", re.I),
+    re.compile(r"^N\+ México", re.I),
     re.compile(r"^Noticias Caracol", re.I),
     re.compile(r"^RCN Noticias", re.I),
     re.compile(r"^TeleSUR$", re.I),
@@ -63,6 +63,39 @@ class InformativosOrderTests(unittest.TestCase):
         nonregional = [i for i, name in enumerate(entries) if not ap.es_regional_informativos(name)]
         if regional and nonregional:
             self.assertLess(max(nonregional), min(regional), "Hay señales regionales antes de canales no regionales")
+
+    def test_country_folders_are_last_and_chile_tv_is_first(self):
+        sample = ["#EXTM3U"]
+        categories = [
+            "Informativos", "Argentina 🇦🇷", "Anime", "CHILE TV", "Perú", "Música",
+            "Ecuador", "Venezuela", "República Dominicana", "Paraguay", "Bolivia",
+            "Nueva Zelanda",
+        ]
+        for category in categories:
+            sample.extend([
+                f'#EXTINF:-1 group-title="{category}",Canal de prueba',
+                "https://example.com/channel.m3u8",
+            ])
+        ordered = ap.mover_paises_al_final(sample)
+        actual = [
+            re.search(r'group-title="([^"]*)"', line).group(1)
+            for line in ordered if line.startswith("#EXTINF")
+        ]
+        self.assertEqual(actual, [
+            "CHILE TV", "Informativos", "Anime", "Música", "Argentina 🇦🇷",
+            "Perú", "Ecuador", "Venezuela", "República Dominicana", "Paraguay",
+            "Bolivia", "Nueva Zelanda",
+        ])
+
+    def test_published_playlist_has_chile_first_and_country_blocks_at_the_end(self):
+        lines = PLAYLIST.read_text(encoding="utf-8-sig").splitlines()
+        self.assertEqual(
+            ap.mover_paises_al_final(lines),
+            lines,
+            "La maestra publicada todavía tiene carpetas de países intercaladas",
+        )
+        first = next(line for line in lines if line.startswith("#EXTINF"))
+        self.assertIn('group-title="CHILE TV"', first)
 
     def test_prioritizer_keeps_options_and_moves_regional_signals_to_the_end(self):
         sample = ["#EXTM3U"]
