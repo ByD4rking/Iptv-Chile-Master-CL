@@ -479,15 +479,14 @@ def main(args: argparse.Namespace) -> None:
         for item in after_playable
     )
     for category, before_keys in before_by_category.items():
-        # Estos dos bloques tienen reordenamiento intencional y validaciones
-        # específicas: MAGMA se consolida en Entretenimiento y los tres
-        # prioritarios se ponen al inicio de Infantiles.
+        # Estas categorías tienen reglas explícitas de reordenamiento y pruebas propias.
+        # Informativos se ordena por prioridad y regionales; países/General se validan aparte.
         if category in {
             norm("Entretenimiento / Cine / Series"),
             norm("Infantiles"),
             norm("Anime"),
-            # España recibe reclasificaciones regionales; se audita integridad global, no orden nominal.
             norm("España"),
+            norm("Informativos"),
         }:
             continue
         after_keys = after_by_category.get(category, [])
