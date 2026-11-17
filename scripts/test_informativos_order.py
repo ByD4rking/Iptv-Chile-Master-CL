@@ -69,7 +69,7 @@ class InformativosOrderTests(unittest.TestCase):
         categories = [
             "Informativos", "Argentina 🇦🇷", "Anime", "CHILE TV", "Perú", "Música",
             "Ecuador", "Venezuela", "República Dominicana", "Paraguay", "Bolivia",
-            "Nueva Zelanda",
+            "Nueva Zelanda", "Afganistán", "Tailandia",
         ]
         for category in categories:
             sample.extend([
@@ -84,7 +84,7 @@ class InformativosOrderTests(unittest.TestCase):
         self.assertEqual(actual, [
             "CHILE TV", "Informativos", "Anime", "Música", "Argentina 🇦🇷",
             "Perú", "Ecuador", "Venezuela", "República Dominicana", "Paraguay",
-            "Bolivia", "Nueva Zelanda",
+            "Bolivia", "Nueva Zelanda", "Afganistán", "Tailandia",
         ])
 
     def test_published_playlist_has_chile_first_and_country_blocks_at_the_end(self):
