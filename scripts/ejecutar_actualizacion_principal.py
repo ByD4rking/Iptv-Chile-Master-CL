@@ -212,8 +212,9 @@ def main():
         f"{len(no_verificados_magma)} sin verificar y conservados sin cambios."
     )
 
-    # La agrupación global puede alterar el orden de las sagas; Anime se ordena
-    # como última operación estructural, después de todas las reconciliaciones.
+    # La agrupación global puede alterar el orden de las sagas; Anime se reordena
+    # aquí, al final, para que Naruto/Boruto/Películas y las demás franquicias
+    # respeten la secuencia canónica después de todas las reconciliaciones.
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
     ids_pluto_orden = (
