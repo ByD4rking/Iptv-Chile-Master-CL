@@ -9,6 +9,12 @@ from collections import defaultdict
 
 _ATTRS = ("tvg-logo", "logo")
 
+# Únicas excepciones autorizadas por el usuario para cambiar logos existentes.
+LOGOS_AUTORIZADOS_POR_NOMBRE = {
+    "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
+    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/oYFto0V.png",
+}
+
 
 def _norm(value: str) -> str:
     value = unicodedata.normalize("NFD", value or "")
@@ -112,10 +118,20 @@ def blindar_logos(lineas, referencia):
     preserved = 0
     stripped_new = 0
     unmatched = []
+    authorized = {
+        _norm(name): logo
+        for name, logo in LOGOS_AUTORIZADOS_POR_NOMBRE.items()
+    }
+    authorized_count = 0
     for record in current_blocks:
         match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
         extinf = output[record["start"]]
-        if match is None:
+        override = authorized.get(record["name"]) or authorized.get(record["tvg_name"])
+        if override:
+            previous_legacy = match[1] if match else ""
+            values = (override, override if previous_legacy else "")
+            authorized_count += 1
+        elif match is None:
             values = ("", "")
             unmatched.append(record["name"] or "(sin nombre)")
             if any(_attr(extinf, name) for name in _ATTRS):
@@ -132,6 +148,7 @@ def blindar_logos(lineas, referencia):
     return output, {
         "logos_restaurados": preserved,
         "logos_fuente_retirados": stripped_new,
+        "logos_autorizados": authorized_count,
         "canales_sin_identidad_historica": len(unmatched),
     }
 
