@@ -1,3 +1,4 @@
+import base64
 import json
 import sys
 import unittest
@@ -29,6 +30,91 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             ap.FUENTES_PLUTO_CATALOGO,
             [*ap.FUENTES_PLUTO[:2], ap.FUENTE_PLUTO_ALTERNATIVAS, *ap.FUENTES_PLUTO[2:]],
         )
+
+    def test_pluto_refresh_prefers_stable_mx_and_removes_only_expired_orphans(self):
+        class Response:
+            def __init__(self, text):
+                self.text = text
+
+            def raise_for_status(self):
+                return None
+
+        class Session:
+            def __init__(self, contents, failing=None):
+                self.contents = contents
+                self.failing = failing
+
+            def get(self, url, timeout=30):
+                if url == self.failing:
+                    raise RuntimeError("fuente temporalmente no disponible")
+                return Response(self.contents[url])
+
+        def token_url(channel_id, exp, country="MX"):
+            payload = base64.urlsafe_b64encode(
+                json.dumps({"exp": exp}).encode("utf-8")
+            ).decode("ascii").rstrip("=")
+            return (
+                "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/"
+                f"v2/stitch/hls/channel/{channel_id}/master.m3u8"
+                f"?jwt=x.{payload}.x&country={country}"
+            )
+
+        def m3u(channel_id, name, url):
+            return (
+                "#EXTM3U\n"
+                f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Pluto",{name}\n'
+                f"{url}\n"
+            )
+
+        latam_id = "aaaaaaaaaaaaaaaaaaaaaaaa"
+        es_id = "bbbbbbbbbbbbbbbbbbbbbbbb"
+        mx_id = "cccccccccccccccccccccccc"
+        orphan_id = "dddddddddddddddddddddddd"
+        live_orphan_id = "eeeeeeeeeeeeeeeeeeeeeeee"
+
+        sources = list(ap.FUENTES_PLUTO_CATALOGO)
+        self.assertEqual(len(sources), 4)
+        contents = {
+            sources[0]: m3u(latam_id, "Canal LATAM", f"https://jmp2.uk/plu-{latam_id}.m3u8"),
+            sources[1]: m3u(es_id, "Canal ES", f"https://jmp2.uk/plu-{es_id}.m3u8"),
+            sources[2]: m3u(mx_id, "Canal MX estable", f"https://jmp2.uk/plu-{mx_id}.m3u8"),
+            # El catálogo MX interno tiene el mismo canal, pero con JWT.
+            sources[3]: m3u(mx_id, "Canal MX tokenizado", token_url(mx_id, 4102444800)),
+        }
+
+        lineas = ["#EXTM3U"]
+        lineas += [
+            f'#EXTINF:-1 tvg-id="{latam_id}" group-title="Pluto",Canal LATAM',
+            token_url(latam_id, 1, "CL"),
+            f'#EXTINF:-1 tvg-id="{mx_id}" group-title="Pluto",Canal MX',
+            token_url(mx_id, 1, "MX"),
+            f'#EXTINF:-1 tvg-id="{orphan_id}" group-title="Pluto",Canal retirado',
+            token_url(orphan_id, 1, "MX"),
+            f'#EXTINF:-1 tvg-id="{live_orphan_id}" group-title="Pluto",Canal temporal aún vigente',
+            token_url(live_orphan_id, 4102444800, "MX"),
+            '#EXTINF:-1 tvg-id="no-pluto" group-title="Test",Canal no Pluto',
+            "https://example.com/live.m3u8",
+        ]
+
+        result, stats = ap.reemplazar_pluto_tercero_por_propio(
+            lineas, Session(contents)
+        )
+        joined = "\n".join(result)
+        self.assertTrue(stats["catalogo_completo"])
+        self.assertEqual(stats["expirados_eliminados"], 1)
+        self.assertIn(f"https://jmp2.uk/plu-{latam_id}.m3u8", joined)
+        self.assertIn(f"https://jmp2.uk/plu-{mx_id}.m3u8", joined)
+        self.assertNotIn("Canal retirado", joined)
+        self.assertIn("Canal temporal aún vigente", joined)
+        self.assertIn("https://example.com/live.m3u8", joined)
+
+        # Si falla una fuente, no se retiran canales sin reemplazo aunque su
+        # token esté vencido: se prioriza conservarlos hasta recuperar catálogo.
+        partial, partial_stats = ap.reemplazar_pluto_tercero_por_propio(
+            lineas, Session(contents, failing=sources[-1])
+        )
+        self.assertFalse(partial_stats["catalogo_completo"])
+        self.assertIn("Canal retirado", "\n".join(partial))
 
     def test_god_only_references_existing_regional_pluto_outputs(self):
         god = load_sources("god")
