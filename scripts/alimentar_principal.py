@@ -4368,7 +4368,8 @@ def main():
     if not lineas or not any(x.startswith("#EXTINF") for x in lineas):
         raise RuntimeError("VALIDACION FALLIDA: la principal quedó sin canales.")
 
-    # Regla global de orden: CHILE TV primero; países al final en todas las ejecuciones.
+    # Orden de Informativos y regla global: CHILE TV primero; países al final.
+    lineas = ordenar_informativos(lineas)
     lineas = mover_paises_al_final(lineas)
 
     texto_final = "\n".join(lineas)
