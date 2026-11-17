@@ -717,6 +717,8 @@ class ComplementSyncTests(unittest.TestCase):
         mx_url = f"https://jmp2.uk/plu-{pluto_id}.m3u8"
         base = ["#EXTM3U"] + entry(
             pluto_id, "Infantiles", "Los Pitufos", latam_url
+        ) + entry(
+            pluto_id, "Infantiles", "Los Pitufos (OPCIÓN 2)", mx_url
         )
         source = [
             candidate(
