@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 import requests
+from auditar_logos import audit as auditar_logos, check_url as verificar_logo_url
 
 import alimentar_principal as alimentador
 from calidad_magma_cine import (
@@ -125,12 +126,39 @@ def main():
     god_path = ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"
     god_lines = god_path.read_text(encoding="utf-8-sig").splitlines() if god_path.is_file() else []
     referencias_logos = original_lines + god_lines
+
+    # Solo se reemplazan logos con fallo confirmado (404/410 o contenido no-imagen).
+    # 401/403, límites y errores transitorios quedan como inconclusos y se conservan.
+    auditoria_logos = auditar_logos("\n".join(ordered_lines))
+    logos_rotos_confirmados = {
+        item["url"] for item in auditoria_logos["results"]
+        if item.get("status") == "broken"
+    }
+    conteos_logos = auditoria_logos["logo_urls"]
+    print(
+        "[LOGOS AUDIT] "
+        f"accesibles={conteos_logos.get('ok', 0)}; "
+        f"rotos_confirmados={len(logos_rotos_confirmados)}; "
+        f"inconclusos={conteos_logos.get('inconclusive', 0)}; "
+        f"sin_logo={len(auditoria_logos['missing_logo_entries'])}."
+    )
+    cache_logos_candidatos = {}
+
+    def validar_logo_candidato(url):
+        if url not in cache_logos_candidatos:
+            cache_logos_candidatos[url] = (
+                verificar_logo_url(url).get("status") == "ok"
+            )
+        return cache_logos_candidatos[url]
+
     ordered_lines, logo_stats = alimentador.restaurar_logos_historicos(
         ordered_lines,
         referencias_logos,
         pluto_por_id,
         pluto_por_nombre,
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
+        logos_rotos_confirmados=logos_rotos_confirmados,
+        validar_logo=validar_logo_candidato,
     )
     # Último blindaje de orden: España y todos los países deben quedar al final.
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
@@ -175,6 +203,7 @@ def main():
             "Entretenimiento / Cine / Series",
             "Infantiles",
             "Anime",
+            "Informativos",
             # España recibe reclasificaciones regionales desde Anime.
             "España",
         },
