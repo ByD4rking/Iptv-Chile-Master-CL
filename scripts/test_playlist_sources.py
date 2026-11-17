@@ -25,6 +25,44 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         paths = [url.rsplit("/", 1)[-1] for url in principal["pluto_sources"]]
         self.assertEqual(paths, ["pluto_latam.m3u", "pluto_es.m3u", "pluto_mx.m3u"])
 
+    def test_pluto_priority_dedup_preserves_distinct_urls_as_options(self):
+        channel_id = "68a3a97fd8f7693ae3f8575f"
+        base_url = (
+            "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/"
+            f"v2/stitch/hls/channel/{channel_id}/master.m3u8?jwt=base&country=CL"
+        )
+        mx_url = f"https://jmp2.uk/plu-{channel_id}.m3u8"
+        alternate_url = (
+            "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/"
+            f"v2/stitch/hls/channel/{channel_id}/master.m3u8?jwt=other&country=MX"
+        )
+        lines = [
+            "#EXTM3U",
+            f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Infantiles",Los Pitufos',
+            base_url,
+            f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Infantiles",Los Pitufos (OPCIÓN 2)',
+            mx_url,
+            f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Infantiles",Los Pitufos',
+            alternate_url,
+            f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Infantiles",Los Pitufos duplicado',
+            alternate_url,
+        ]
+
+        result, removed = ap.deduplicar_pluto_por_prioridad(lines, {})
+        joined = "\n".join(result)
+        names = [
+            line.split(",", 1)[1]
+            for line in result
+            if line.startswith("#EXTINF") and "Los Pitufos" in line
+        ]
+        self.assertEqual(removed, 1)
+        self.assertIn(base_url, joined)
+        self.assertIn(mx_url, joined)
+        self.assertIn(alternate_url, joined)
+        self.assertEqual(len(names), 3)
+        self.assertTrue(any("(OPCIÓN 2)" in name for name in names))
+        self.assertTrue(any("(OPCIÓN 3)" in name for name in names))
+
     def test_stable_pluto_mx_is_used_as_fallback_catalog(self):
         self.assertEqual(
             ap.FUENTES_PLUTO_CATALOGO,
