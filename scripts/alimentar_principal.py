@@ -1200,6 +1200,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
     expirados_eliminados = 0
     conservados_sin_reemplazo = 0
     ya_propios = 0
+    sin_jwt_conservados = 0
     no_pluto = 0
 
     i = 0
@@ -1229,6 +1230,15 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         if not es_url_pluto(url):
             salida.extend(bloque)
             no_pluto += 1
+            i = j
+            continue
+
+        # Las alternativas MX externas (por ejemplo jmp2.uk/plu-...)
+        # no contienen JWT y son enlaces estables de reconexión. No deben
+        # reemplazarse por LATAM: se conservan como opciones independientes.
+        if not re.search(r"(?:[?&])jwt=", url, re.I):
+            salida.extend(bloque)
+            sin_jwt_conservados += 1
             i = j
             continue
 
@@ -1299,6 +1309,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         "expirados_eliminados": expirados_eliminados,
         "conservados_sin_reemplazo": conservados_sin_reemplazo,
         "ya_propios": ya_propios,
+        "sin_jwt_conservados": sin_jwt_conservados,
         "no_pluto": no_pluto,
         "errores_catalogo": errores_catalogo,
         "catalogo_completo": catalogo_completo,
