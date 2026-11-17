@@ -2627,12 +2627,15 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 categoria = normalizar(extraer_categoria(extinf))
                 nombre = extraer_nombre(extinf)
                 familia = clave_familia_canal(nombre)
-                if not familia:
-                    familia = f"sin-nombre:{len(bloques)}"
 
                 m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
                 channel_id = tvg_id_valido(m_id.group(1)) if m_id else ""
                 nombre_key = normalizar_nombre_canal(nombre)
+                if not familia:
+                    familia = (
+                        f"sin-nombre:id:{channel_id}"
+                        if channel_id else f"sin-nombre:url:{url}"
+                    )
                 m_opcion = re.search(
                     r"(?:\[|\()\s*(?:opci[oó]n|opc|option)\.?\s*(\d+)\s*(?:\]|\))\s*$",
                     nombre,
