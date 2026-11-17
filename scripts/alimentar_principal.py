@@ -283,7 +283,7 @@ def es_regional_informativos(nombre):
     nombre = normalizar(nombre)
     if re.match(r"^telesur\s*\|\s*ve\b", nombre) or re.match(r"^telesur costa rica\b", nombre):
         return True
-    if re.match(r"^telemundo noticias (california|florida|noreste|texas)\b", nombre):
+    if re.match(r"^telemundo noticias (al dia|california|florida|noreste|texas)\b", nombre):
         return True
     if any(ubicacion in nombre for ubicacion in REGIONALES_INFORMATIVOS):
         return True
