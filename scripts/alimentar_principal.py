@@ -2677,6 +2677,15 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
             segmentos.append([])
         segmentos[-1].append(bloque)
 
+    # Estas carpetas tienen un orden específico aplicado por otras reglas;
+    # el agrupador debe respetarlo en vez de restaurar su orden histórico.
+    categorias_orden_intencional = {
+        normalizar("Entretenimiento / Cine / Series"),
+        normalizar("Infantiles"),
+        normalizar("Anime"),
+        normalizar("Informativos"),
+    }
+
     salida = []
     for segmento in segmentos:
         categoria = segmento[0]["categoria"]
@@ -2689,30 +2698,39 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 orden_familias_actual.append(familia)
             familias[familia].append(bloque)
 
-        orden_historico = [
-            familia for familia in familias_originales.get(categoria, [])
-            if familia in familias
-        ]
-        conjunto_historico = set(orden_historico)
-        orden_familias = orden_historico + [
-            familia for familia in orden_familias_actual
-            if familia not in conjunto_historico
-        ]
+        if categoria in categorias_orden_intencional:
+            orden_familias = orden_familias_actual
+        else:
+            orden_historico = [
+                familia for familia in familias_originales.get(categoria, [])
+                if familia in familias
+            ]
+            conjunto_historico = set(orden_historico)
+            orden_familias = orden_historico + [
+                familia for familia in orden_familias_actual
+                if familia not in conjunto_historico
+            ]
 
         identidades = identidades_originales.get(categoria, set())
         for familia in orden_familias:
             grupo = familias[familia]
-            # Primero las señales ya existentes, en su orden actual; después
-            # las nuevas variantes, inmediatamente al final de esa familia.
-            existentes = [
-                bloque for bloque in grupo
-                if bloque["identidad"] in identidades
-            ]
-            nuevas = [
-                bloque for bloque in grupo
-                if bloque["identidad"] not in identidades
-            ]
-            for bloque in existentes + nuevas:
+            if categoria in categorias_orden_intencional:
+                # Anime, Infantiles, Informativos y el bloque MAGMA ya vienen
+                # ordenados deliberadamente; solo se agrupan sin reordenarlos.
+                grupo_ordenado = grupo
+            else:
+                # Primero las señales ya existentes, en su orden actual; después
+                # las nuevas variantes, inmediatamente al final de esa familia.
+                existentes = [
+                    bloque for bloque in grupo
+                    if bloque["identidad"] in identidades
+                ]
+                nuevas = [
+                    bloque for bloque in grupo
+                    if bloque["identidad"] not in identidades
+                ]
+                grupo_ordenado = existentes + nuevas
+            for bloque in grupo_ordenado:
                 salida.extend(bloque["lineas"])
 
     salida.extend(pendientes)
