@@ -168,7 +168,7 @@ class FamilyGroupingTests(unittest.TestCase):
         self.assertNotIn("Radio Rancagua FM (720p)", ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL)
         self.assertNotIn("Radio Ritmo FM", ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL)
 
-    def test_logo_restoration_only_touches_authorized_channels(self):
+    def test_logo_restoration_preserves_non_authorized_original_logos(self):
         reference = [
             '#EXTINF:-1 tvg-name="Canal Permitido" tvg-logo="https://logos.example/permitido.png" group-title="Test",Canal Permitido',
             "https://streams.example/permitido.m3u8",
@@ -183,12 +183,36 @@ class FamilyGroupingTests(unittest.TestCase):
             "https://streams.example/bloqueado.m3u8",
         ]
         result, _ = ap.restaurar_logos_historicos(
-            current, reference, nombres_autorizados={"Canal Permitido"}
+            current,
+            reference,
+            nombres_autorizados={"Canal Permitido"},
+            logos_bloqueados_por_identidad=ap.extraer_logos_bloqueados_por_identidad(reference),
         )
         permitido = next(x for x in result if x.startswith("#EXTINF") and "Canal Permitido" in x)
         bloqueado = next(x for x in result if x.startswith("#EXTINF") and "Canal Bloqueado" in x)
         self.assertIn('tvg-logo="https://logos.example/permitido.png"', permitido)
-        self.assertNotIn("tvg-logo=", bloqueado)
+        self.assertIn('tvg-logo="https://logos.example/bloqueado.png"', bloqueado)
+
+    def test_non_authorized_logo_survives_stream_url_rotation_by_tvg_id(self):
+        reference = [
+            '#EXTINF:-1 tvg-id="babyfirst.us" tvg-name="BabyFirst SD" tvg-logo="https://images.pluto.tv/babyfirst.png" group-title="Infantiles",BabyFirst SD',
+            "https://old.example/babyfirst.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-id="babyfirst.us" tvg-name="BabyFirst SD" tvg-logo="https://1000logos.net/babyfirst.png" group-title="Infantiles",BabyFirst SD',
+            "https://new.example/babyfirst.m3u8",
+        ]
+        result, stats = ap.restaurar_logos_historicos(
+            current,
+            reference,
+            nombres_autorizados={"Canal Permitido"},
+            logos_bloqueados_por_identidad=ap.extraer_logos_bloqueados_por_identidad(reference),
+        )
+        entry = next(x for x in result if x.startswith("#EXTINF"))
+        self.assertIn('tvg-logo="https://images.pluto.tv/babyfirst.png"', entry)
+        self.assertNotIn("1000logos.net", entry)
+        self.assertEqual(stats["protegidos"], 1)
 
     def test_authorized_logo_override_updates_both_logo_attributes(self):
         current = [
