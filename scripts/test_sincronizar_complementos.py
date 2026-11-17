@@ -1131,6 +1131,27 @@ class RTVEInformativosDestinationTests(unittest.TestCase):
         )
 
 
+class IdentityMetadataEnrichmentTests(unittest.TestCase):
+    def test_existing_display_name_keeps_identity_when_tvg_name_and_id_are_enriched(self):
+        name_to_ids = {
+            "rtve canal 24 horas espana": {"514"},
+            "rtve24": {"514"},
+        }
+        before = {
+            "id": "",
+            "tvg_name": "",
+            "name": "RTVE Canal 24 Horas (España)",
+            "url": "https://ztnr.rtve.es/ztnr/1694255.m3u8",
+        }
+        after = {
+            "id": "514",
+            "tvg_name": "RTVE24",
+            "name": "RTVE Canal 24 Horas (España)",
+            "url": "https://ztnr.rtve.es/ztnr/1694255.m3u8",
+        }
+        self.assertEqual(identity_key(before, name_to_ids), identity_key(after, name_to_ids))
+
+
 if __name__ == "__main__":
     unittest.main()
 

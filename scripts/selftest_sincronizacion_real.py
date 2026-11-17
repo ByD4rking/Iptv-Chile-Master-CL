@@ -433,12 +433,17 @@ def main(args: argparse.Namespace) -> None:
     def ids_by_name(items):
         result = defaultdict(set)
         for item in items:
-            name = channel_name_key(item.get("tvg_name") or item.get("name") or "")
-            if name:
-                # Registra también nombres sin ID: un origen puede añadirlo
-                # durante la sincronización y la identidad debe seguir estable.
+            # Registrar tvg-name Y nombre visible permite conservar la identidad
+            # cuando una fuente enriquece/cambia tvg-name sin cambiar el canal.
+            names = {
+                channel_name_key(item.get("tvg_name") or ""),
+                channel_name_key(item.get("name") or ""),
+            }
+            channel_id = valid_id(item)
+            for name in names:
+                if not name:
+                    continue
                 result[name]
-                channel_id = valid_id(item)
                 if channel_id:
                     result[name].add(channel_id)
         return result
