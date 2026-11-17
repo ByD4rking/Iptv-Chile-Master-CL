@@ -3399,32 +3399,49 @@ def ordenar_anime_alfabeticamente(lineas):
     return salida
 
 def mover_paises_al_final(lineas):
-    """Mueve las categorías-país al final sin alterar sus canales ni su orden interno."""
+    """Deja CHILE TV primero y todas las carpetas-país al final.
+
+    Los países se reconocen por el catálogo maestro y por PAIS_POR_FUENTE,
+    así una nueva fuente-país queda protegida sin tener que tocar esta función.
+    No reclasifica canales ni altera el orden interno de sus bloques.
+    """
     prefijo, bloques = [], []
+    categorias_pais = set(PAISES_ORDEN_FINAL)
+    categorias_pais.update(normalizar(valor) for valor in CATEGORIAS_PAIS.values())
+    categorias_pais.update(
+        normalizar(valor)
+        for valor in PAIS_POR_FUENTE.values()
+        if normalizar(valor) not in {"religiosos", "musica", "latam"}
+    )
+
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
             if not bloques:
                 prefijo.append(lineas[i])
+            else:
+                bloques[-1]["lineas"].append(lineas[i])
             i += 1
             continue
+
         inicio = i
         j = i + 1
         while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
             j += 1
         raw = lineas[inicio:j]
         categoria = normalizar(extraer_categoria(raw[0]))
-        es_pais = categoria in PAISES_ORDEN_FINAL or categoria.startswith("el salvador")
-        bloques.append({"lineas": raw, "pais": es_pais})
+        es_chile = categoria == "chile tv"
+        es_pais = categoria in categorias_pais or categoria.startswith("el salvador")
+        bloques.append({"lineas": raw, "pais": es_pais, "chile": es_chile})
         i = j
 
-    normales = [b for b in bloques if not b["pais"]]
-    paises = [b for b in bloques if b["pais"]]
+    chile = [bloque for bloque in bloques if bloque["chile"]]
+    normales = [bloque for bloque in bloques if not bloque["chile"] and not bloque["pais"]]
+    paises = [bloque for bloque in bloques if bloque["pais"]]
     salida = list(prefijo)
-    for bloque in normales + paises:
+    for bloque in chile + normales + paises:
         salida.extend(bloque["lineas"])
     return salida
-
 def ordenar_bloques_magma_y_originales(lineas, session):
     """
     Ordena exclusivamente Entretenimiento / Cine / Series en tres bloques:

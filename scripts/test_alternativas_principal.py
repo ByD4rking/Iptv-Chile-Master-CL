@@ -516,18 +516,34 @@ class TestAlternativasPrincipal(unittest.TestCase):
             "Naruto (Peliculas)", "Super Campeones", "Captain Tsubasa",
         ])
 
-    def test_country_categories_are_moved_to_the_end(self):
+    def test_country_categories_are_moved_to_the_end_and_chile_stays_first(self):
         lines = ["#EXTM3U"]
+        lines += block("", "Argentina", "Canal Argentina", "https://x.example/ar.m3u8")
+        lines += block("", "Anime", "Canal Anime", "https://x.example/anime.m3u8")
         lines += block("", "CHILE TV", "Canal Chile", "https://x.example/cl.m3u8")
         lines += block("", "España", "Canal España", "https://x.example/es.m3u8")
-        lines += block("", "Anime", "Anime", "https://x.example/anime.m3u8")
-        lines += block("", "Argentina", "Canal Argentina", "https://x.example/ar.m3u8")
-        output = ap.mover_paises_al_final(lines)
+        lines += block("", "Canal Internacional", "Canal Internacional", "https://x.example/int.m3u8")
+        lines += block("", "Bolivia", "Canal Bolivia", "https://x.example/bo.m3u8")
+        lines += block("", "Japón", "Canal Japón", "https://x.example/jp.m3u8")
+
+        previous = ap.PAIS_POR_FUENTE.get("/JP.m3u")
+        ap.PAIS_POR_FUENTE["/JP.m3u"] = "japon"
+        try:
+            output = ap.mover_paises_al_final(lines)
+        finally:
+            if previous is None:
+                ap.PAIS_POR_FUENTE.pop("/JP.m3u", None)
+            else:
+                ap.PAIS_POR_FUENTE["/JP.m3u"] = previous
+
         categories = [
             re.search(r'group-title="([^"]*)"', item[0], re.I).group(1)
             for item in self.entries(output)
         ]
-        self.assertEqual(categories, ["CHILE TV", "Anime", "España", "Argentina"])
+        self.assertEqual(
+            categories,
+            ["CHILE TV", "Anime", "Canal Internacional", "Argentina", "España", "Bolivia", "Japón"],
+        )
 
 if __name__ == "__main__":
     unittest.main()
