@@ -141,10 +141,15 @@ class FamilyGroupingTests(unittest.TestCase):
         ])
 
     def test_final_alternative_grouping_renumbers_in_playlist_order(self):
+        def pitufos(nombre, numero):
+            return [
+                f'#EXTINF:-1 tvg-id="pluto.pitufos" tvg-name="Los Pitufos" group-title="Infantiles",{nombre}',
+                f"https://example.com/pitufos-{numero}.m3u8",
+            ]
         lines = ["#EXTM3U"]
-        lines += bloque("Los Pitufos", categoria="Infantiles", tvg_id="pluto.pitufos")
-        lines += bloque("Los Pitufos (OPCIÓN 3)", categoria="Infantiles", tvg_id="pluto.pitufos")
-        lines += bloque("Los Pitufos [Opción 2]", categoria="Infantiles", tvg_id="pluto.pitufos")
+        lines += pitufos("Los Pitufos", 1)
+        lines += pitufos("Los Pitufos (OPCIÓN 3)", 3)
+        lines += pitufos("Los Pitufos [Opción 2]", 2)
         result = ap.agrupar_alternativas_por_identidad(lines)
         entries = [line for line in result if line.startswith("#EXTINF")]
         names = [line.rsplit(",", 1)[-1] for line in entries]
