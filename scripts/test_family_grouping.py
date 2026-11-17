@@ -48,9 +48,9 @@ class FamilyGroupingTests(unittest.TestCase):
 
     def test_anime_franchises_are_grouped(self):
         lines = ["#EXTM3U"]
-        lines += bloque("Naruto")
+        lines += bloque("Naruto", categoria="Anime")
         lines += bloque("Dragon Ball Z", categoria="Anime")
-        lines += bloque("Naruto Shippuden")
+        lines += bloque("Naruto Shippuden", categoria="Anime")
         lines += bloque("Dragon Ball Super", categoria="Anime")
         result = ap.agrupar_familias_por_categoria(lines)
         names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
