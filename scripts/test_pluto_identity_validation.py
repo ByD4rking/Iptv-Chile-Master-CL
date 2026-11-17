@@ -103,6 +103,28 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertEqual(stats["expirados_eliminados"], 0)
         self.assertEqual(stats["conservados_sin_reemplazo"], 1)
 
+    def test_non_jwt_mx_alternative_is_preserved_as_an_independent_option(self):
+        external_url = "https://jmp2.uk/plu-0123456789abcdef01234567.m3u8"
+        latam_url = (
+            "https://stitcher.example/channel/0123456789abcdef01234567/"
+            "master.m3u8?country=MX&jwt=latam"
+        )
+        extinf = '#EXTINF:-1 tvg-id="epg.alias" group-title="Infantiles",Canal'
+        catalog = (
+            {"epg.alias": {"url": latam_url}, "0123456789abcdef01234567": {"url": latam_url}},
+            {"canal": {"url": latam_url}},
+            {"latam": {}, "es": {}, "mx": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, external_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], external_url)
+        self.assertEqual(stats["sin_jwt_conservados"], 1)
+
     def test_jwt_with_less_than_six_hours_is_marked_for_early_refresh(self):
         payload = base64.urlsafe_b64encode(
             json.dumps({"exp": 1000}).encode("utf-8")
