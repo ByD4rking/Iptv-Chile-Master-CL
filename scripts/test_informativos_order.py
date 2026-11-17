@@ -107,6 +107,40 @@ class InformativosOrderTests(unittest.TestCase):
             "Telesur Costa Rica | CR",
         ])
 
+    def test_country_categories_are_always_last_and_chile_is_first(self):
+        sample = ["#EXTM3U"]
+        categories = [
+            "Anime", "Argentina", "CHILE TV", "Perú", "Ecuador",
+            "Venezuela", "República Dominicana", "Paraguay", "Bolivia",
+            "Haití", "Japón", "Documentales y Cultura",
+        ]
+        for index, category in enumerate(categories):
+            sample.extend([
+                f'#EXTINF:-1 group-title="{category}",Canal {index}',
+                f"https://example.com/{index}.m3u8",
+            ])
+
+        ordered = ap.mover_paises_al_final(sample)
+        found = [
+            re.search(r'group-title="([^"]+)"', line).group(1)
+            for line in ordered if line.startswith("#EXTINF")
+        ]
+        self.assertEqual(found[0], "CHILE TV")
+        country_names = {
+            "Argentina", "Perú", "Ecuador", "Venezuela",
+            "República Dominicana", "Paraguay", "Bolivia", "Haití", "Japón",
+        }
+        country_positions = [i for i, name in enumerate(found) if name in country_names]
+        noncountry_positions = [i for i, name in enumerate(found) if name not in country_names and name != "CHILE TV"]
+        self.assertTrue(country_positions)
+        self.assertLess(max(noncountry_positions), min(country_positions))
+        self.assertEqual(
+            [found[i] for i in country_positions],
+            ["Argentina", "Perú", "Ecuador", "Venezuela", "República Dominicana",
+             "Paraguay", "Bolivia", "Haití", "Japón"],
+            "El orden interno de las carpetas-país debe conservarse",
+        )
+
     def test_general_is_absent_from_principal(self):
         lines = PLAYLIST.read_text(encoding="utf-8-sig").splitlines()
         general = [
