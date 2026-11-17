@@ -2550,8 +2550,14 @@ def clave_familia_canal(nombre):
 
     # Franquicias y marcas cuya relación es explícita. No usar "TV", "Canal",
     # "Radio" o "Cine" como clave común: son términos genéricos.
-    if texto.startswith(("el chavo", "chespirito")):
+    if texto.startswith("el chavo"):
+        return "familia:el chavo"
+    if texto.startswith("chespirito"):
         return "familia:chespirito"
+    if texto == "tve" or texto.startswith("tve "):
+        return "familia:tve"
+    if texto == "comedy central" or texto.startswith("comedy central "):
+        return "familia:comedy central"
     if texto.startswith("los simpson"):
         return "familia:los simpson"
     if texto.startswith(("dragon ball", "dragonball")):
@@ -2589,9 +2595,13 @@ def agrupar_familias_por_categoria(lineas):
         if j < len(lineas) and url_es_valida(lineas[j].strip()):
             inicio.append(lineas[j])
             extinf = lineas[i]
+            familia = clave_familia_canal(extraer_nombre(extinf))
+            # Los bloques sin nombre no comparten familia entre sí.
+            if not familia:
+                familia = f"sin-nombre:{len(bloques)}"
             bloques.append({
                 "categoria": normalizar(extraer_categoria(extinf)),
-                "familia": clave_familia_canal(extraer_nombre(extinf)),
+                "familia": familia,
                 "lineas": inicio,
             })
             i = j + 1
