@@ -3219,15 +3219,25 @@ def integrar_pluto_mx(lineas, session):
 
         if base is None and cid and cid in latam_por_id:
             canonico = latam_por_id[cid]
-            categoria = canonico.get("categoria", "")
-            if normalizar(categoria) == "documentales":
-                categoria = "Documentales y Cultura"
-            base = agregar_base(canonico, categoria)
+            # Primero reutilizar una base existente por la identidad canónica
+            # del catálogo LATAM. No crear otra base si la maestra ya contiene
+            # el canal con un tvg-id distinto o sin ID (caso Los Pitufos).
+            clave_canonica = normalizar_nombre_canal(canonico.get("nombre", ""))
+            bases_canonicas = [
+                b for b in bloques
+                if clave_canonica
+                and normalizar_nombre_canal(b["nombre"]) == clave_canonica
+            ]
+            if len(bases_canonicas) == 1:
+                base = bases_canonicas[0]
+            elif not bases_canonicas:
+                categoria = canonico.get("categoria", "")
+                if normalizar(categoria) == "documentales":
+                    categoria = "Documentales y Cultura"
+                base = agregar_base(canonico, categoria)
 
-        # Algunas listas Pluto MX publican URLs jmp2/externas sin channel ID
-        # ni tvg-id. En esos casos el emparejamiento por ID no puede encontrar
-        # la señal LATAM ya presente (p. ej. Los Pitufos). Usar el nombre solo
-        # cuando identifica una única base, para no cruzar señales homónimas.
+        # Si el feed MX no incluye ID, o el catálogo LATAM no lo relaciona,
+        # se permite emparejar por nombre únicamente con una base inequívoca.
         if base is None and nombre:
             nombre_clave = normalizar_nombre_canal(nombre)
             coincidencias_nombre = [
