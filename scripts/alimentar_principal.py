@@ -3419,6 +3419,8 @@ def restaurar_logos_historicos(
     for item in bloques(salida):
         extinf = salida[item["index"]]
         actual = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+        if actual is None:
+            actual = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
         logo_actual = actual.group(1).strip() if actual else ""
         logo_bloqueado = logos_bloqueados_por_url.get(item["url"], "") if item["url"] else ""
 
@@ -3433,6 +3435,7 @@ def restaurar_logos_historicos(
             continue
 
         logo = ""
+        logo_desde_pluto = False
         candidato_prioritario = logos_por_url_prioritarios.get(item["url"], "") if item["url"] else ""
         if logo_aceptable(candidato_prioritario):
             logo = candidato_prioritario
@@ -3460,6 +3463,7 @@ def restaurar_logos_historicos(
                 if m_logo and logo_aceptable(m_logo.group(1).strip()):
                     logo = m_logo.group(1).strip()
                     restaurados_pluto += 1
+                    logo_desde_pluto = True
 
         # Pluto mantiene un endpoint PNG estable además de los logos versionados.
         if not logo and re.fullmatch(r"[a-f0-9]{24}", item["id"] or "", re.I):
@@ -3467,12 +3471,12 @@ def restaurar_logos_historicos(
             if logo_aceptable(candidato):
                 logo = candidato
                 restaurados_pluto += 1
+                logo_desde_pluto = True
 
         if logo:
             salida[item["index"]] = poner_logo(extinf, logo)
-            restaurados_anteriores += 1 if logo not in {
-                str((pluto_por_id.get(item["id"]) or {}).get("extinf", ""))
-            } else 0
+            if not logo_desde_pluto:
+                restaurados_anteriores += 1
         else:
             if logo_actual in logos_rotos_confirmados:
                 salida[item["index"]] = quitar_logo(extinf)
