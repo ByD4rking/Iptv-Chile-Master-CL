@@ -56,5 +56,23 @@ class AuditSourceTests(unittest.TestCase):
             MODULE.fetch_url("file:///etc/passwd")
 
 
+
+    def test_category_change_keeps_same_identity(self):
+        old_text = '#EXTM3U\n#EXTINF:-1 tvg-id="canal.x" group-title="Series",Canal X\nhttps://a/x\n'
+        new_text = '#EXTM3U\n#EXTINF:-1 tvg-id="canal.x" group-title="Cine",Canal X\nhttps://a/x\n'
+        old = MODULE.snapshot_entry(old_text.encode(), "SRC", "https://src/list.m3u")
+        new = MODULE.snapshot_entry(new_text.encode(), "SRC", "https://src/list.m3u")
+        diff = MODULE.diff_source("SRC", old, new)
+        self.assertEqual(diff["added_channels"], 0)
+        self.assertEqual(diff["removed_channels"], 0)
+        self.assertEqual(diff["changed_categories"], 1)
+
+    def test_name_fallback_identity_does_not_depend_on_category(self):
+        before = MODULE.parse_m3u('#EXTM3U\n#EXTINF:-1 group-title="Series",Canal X\nhttps://a/x\n')
+        after = MODULE.parse_m3u('#EXTM3U\n#EXTINF:-1 group-title="Cine",Canal X\nhttps://b/x\n')
+        self.assertEqual(set(before), set(after))
+        self.assertEqual(before["canal x"][2], "Series")
+        self.assertEqual(after["canal x"][2], "Cine")
+
 if __name__ == "__main__":
     unittest.main()
