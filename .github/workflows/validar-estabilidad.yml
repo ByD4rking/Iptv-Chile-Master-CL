@@ -120,5 +120,23 @@ jobs:
       - name: Verificar generador y lista GOD
         run: python IPTV-CHILE-GENERADOR/scripts/selftest.py
 
+      - name: Auditar todos los logos de la playlist principal (sin modificarlos)
+        run: python scripts/auditar_logos.py
+
+      - name: Probar protección de auditoría de logos
+        run: python -m unittest discover -s scripts -p 'test_auditar_logos.py' -v
+
+      - name: Verificar prioridad de Informativos
+        run: python -m unittest discover -s scripts -p 'test_informativos_order.py' -v
+
+      - name: Publicar informe de logos para revisión
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auditoria-logos-principal
+          path: logo-audit-report.json
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Revisar espacios y cambios mal formados
         run: git diff --check

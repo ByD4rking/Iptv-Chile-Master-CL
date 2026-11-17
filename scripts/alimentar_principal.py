@@ -199,8 +199,7 @@ def encontrar_categoria_tematica(texto, categorias):
         ("COMEDIA", [r"\b(comedia|comedy)\b"]),
         ("RELIGIOSOS", [r"\b(religioso|religiosos|religion)\b"]),
         ("DOCUMENTALES", [r"\b(documental|documentales|documentary)\b"]),
-        ("INFORMATIVOS", [r"\b(noticias|noticia|informativos|news)\b"]),
-        ("GENERAL", [r"\bgeneral\b"]),
+        ("INFORMATIVOS", [r"\b(noticias|noticia|informativos|news|tn|todo noticias)\b"]),
     ]
     for candidato, patrones in reglas:
         if any(re.search(p, texto) for p in patrones):
@@ -234,6 +233,11 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
     categoria = (categoria or "").strip()
     if not categoria:
         return None
+
+    # TN (Todo Noticias) es una señal informativa inequívoca aunque IPTVSV
+    # la entregue bajo la carpeta-país Argentina.
+    if normalizar(nombre) in {"tn", "todo noticias", "tn argentina"}:
+        return buscar_categoria_existente("Informativos", categorias)
 
     c_norm = normalizar(categoria)
     aliases = {
@@ -428,9 +432,17 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     if pais_fuente == "musica":
         return buscar_categoria_existente("MÚSICA", categorias)
 
-    # LATAM NO tiene carpeta propia. Sus canales se redistribuyen
-    # según su categoría/nombre hacia la carpeta existente que corresponda.
-    # Si no hay una clasificación segura, se omite el canal.
+    # Excepción explícita: Pluto España no debe entrar en Anime.
+    if pais_fuente == "espana" and re.search(r"\banime\b", texto):
+        return buscar_categoria_existente("España", categorias)
+
+    # La temática comprobable prevalece sobre el país: noticias a Informativos,
+    # novelas a Novelas, deportes a Deportes, etc. País solo es fallback.
+    destino_tematico = encontrar_categoria_tematica(texto, categorias)
+    if destino_tematico and normalizar(destino_tematico) != "general":
+        return destino_tematico
+
+    # LATAM/Chile y los demás países solo se usan cuando no hay temática clara.
     if pais_fuente == "chile":
         return buscar_categoria_existente("CHILE TV", categorias)
 
@@ -460,7 +472,7 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
             if destino:
                 return destino
 
-    return encontrar_categoria_tematica(texto, categorias)
+    return None
 
 def determinar_destino_magma(categoria, nombre, categorias):
     """Clasifica MAGMA usando exclusivamente carpetas ya existentes."""
@@ -1168,7 +1180,100 @@ def destino_especial_total_otros(nombre, categoria, categorias):
             encontrado = buscar_categoria_existente(destino, categorias)
             if encontrado:
                 return encontrado
-    return buscar_categoria_existente("GENERAL", categorias)
+    return None  # Nunca recrear General; lo no clasificable debe bloquearse.
+
+
+def blindar_categoria_general(lineas):
+    """Reclasifica General por temática o país; falla cerrado si no hay evidencia."""
+    categorias = categorias_de_lineas(lineas)
+    pais_por_sufijo = {
+        "cl": "CHILE TV", "ar": "Argentina", "pe": "Perú", "bo": "Bolivia",
+        "br": "Brasil", "co": "Colombia", "ec": "Ecuador", "ve": "Venezuela",
+        "mx": "México", "py": "Paraguay", "uy": "Uruguay", "cr": "Costa Rica",
+        "sv": "El Salvador", "hn": "Honduras", "gt": "Guatemala", "pa": "Panamá",
+        "do": "República Dominicana", "es": "España",
+    }
+    tematicas = [
+        (r"\b(anime|animacion)\b", "Anime"),
+        (r"\b(infantil|kids|junior)\b", "Infantiles"),
+        (r"\b(novela|novelas|telenovela)\b", "Novelas"),
+        (r"\b(series?|drama)\b", "Series"),
+        (r"\b(cine|peliculas?|movies?)\b", "Cine / Películas"),
+        (r"\b(religioso|religiosos|audaz tv)\b", "Religiosos"),
+        (r"\b(noticias|noticia|news)\b", "Informativos"),
+        (r"\b(deportes?|sports?|futbol)\b", "Deportes"),
+        (r"\b(musica|music|radio)\b", "Música"),
+        (r"\b(documentales?|cultura)\b", "Documentales y Cultura"),
+    ]
+    salida = list(lineas)
+    movidos = 0
+    for i, extinf in enumerate(list(salida)):
+        if not extinf.startswith("#EXTINF") or normalizar(extraer_categoria(extinf)) != "general":
+            continue
+        nombre = extraer_nombre(extinf)
+        j = i + 1
+        while j < len(salida) and salida[j].startswith("#") and not salida[j].startswith("#EXTINF"):
+            j += 1
+        url = salida[j].strip() if j < len(salida) else ""
+        tvg_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+        id_value = tvg_id.group(1).strip().lower() if tvg_id else ""
+        audaz = (
+            "cloud2.streaminglivehd.com" in url.lower()
+            and re.search(r"/8264/8264/", url)
+        ) or (id_value.endswith(".ve") and normalizar(nombre) == "audaz tv")
+        destino = buscar_categoria_existente("Religiosos", categorias) if audaz else None
+        if audaz and normalizar(nombre) == "vivo tv":
+            coma = extinf.find(",")
+            if coma >= 0:
+                extinf = extinf[:coma + 1] + "Audaz TV (Venezuela)"
+                salida[i] = extinf
+
+        texto = normalizar(nombre)
+        if not destino:
+            for patron, categoria in tematicas:
+                if re.search(patron, texto):
+                    destino = buscar_categoria_existente(categoria, categorias)
+                    if destino:
+                        break
+
+        if not destino and id_value and "." in id_value:
+            categoria_pais = pais_por_sufijo.get(id_value.rsplit(".", 1)[-1])
+            if categoria_pais:
+                destino = buscar_categoria_existente(categoria_pais, categorias)
+
+        if not destino:
+            paises = (
+                ("venezuela", "Venezuela"), ("peru", "Perú"), ("argentina", "Argentina"),
+                ("ecuador", "Ecuador"), ("chile", "CHILE TV"), ("mexico", "México"),
+                ("espana", "España"), ("bolivia", "Bolivia"), ("brasil", "Brasil"),
+                ("colombia", "Colombia"), ("paraguay", "Paraguay"), ("uruguay", "Uruguay"),
+                ("honduras", "Honduras"), ("guatemala", "Guatemala"), ("panama", "Panamá"),
+                ("costa rica", "Costa Rica"), ("el salvador", "El Salvador"),
+                ("republica dominicana", "República Dominicana"),
+            )
+            for pais, categoria in paises:
+                if pais in texto:
+                    destino = buscar_categoria_existente(categoria, categorias)
+                    if destino:
+                        break
+
+        if not destino:
+            raise RuntimeError(
+                "GENERAL BLOQUEADO: no se pudo demostrar temática ni país para "
+                f"{nombre!r} ({url}). No se crea General; requiere auditoría manual."
+            )
+        salida[i] = reemplazar_categoria(salida[i], destino)
+        movidos += 1
+
+    if any(
+        linea.startswith("#EXTINF")
+        and normalizar(extraer_categoria(linea)) == "general"
+        for linea in salida
+    ):
+        raise RuntimeError("BLINDAJE FALLIDO: la categoría General sigue presente.")
+    if movidos:
+        print(f"[BLINDAJE GENERAL] {movidos} canales reclasificados; categoría General eliminada.")
+    return salida
 
 
 def limpiar_total_otros_y_sin_nombre(lineas):
@@ -1232,7 +1337,10 @@ def limpiar_total_otros_y_sin_nombre(lineas):
         if destino and normalizar(destino) not in {"total","otros"}:
             reemplazos[idx]=destino; movidos[destino]+=1
         else:
-            eliminar.add(idx); duplicados_eliminados += 1
+            raise RuntimeError(
+                "CLASIFICACIÓN BLOQUEADA: canal heredado de TOTAL/OTROS sin "
+                f"temática ni país verificable: {b['nombre']!r} ({b['url']})."
+            )
 
     salida=[]; bloque_idx=0; i=0
     while i<len(lineas):
@@ -4187,6 +4295,7 @@ def main():
         },
         ids_pluto=ids_pluto_orden_protegidos,
     )
+    lineas = blindar_categoria_general(lineas)
 
     # Las variantes no-Pluto pueden compartir tvg-id con una URL Pluto.
     # Añadir los IDs observados en la salida final al conjunto protegido para
