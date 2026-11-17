@@ -3675,7 +3675,7 @@ def extraer_logos_bloqueados_por_url(lineas):
 
 
 def extraer_logos_bloqueados_por_identidad(lineas):
-    """Congela logos de la maestra por identidad estable, aunque rote la URL."""
+    """Congela logos por tvg-id o, sin ID, por categoria/nombre unicos; soporta URL rotada."""
     por_id = defaultdict(set)
     por_categoria_nombre = defaultdict(set)
     i = 0
