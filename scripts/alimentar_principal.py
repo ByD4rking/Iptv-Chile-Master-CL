@@ -3304,6 +3304,7 @@ def restaurar_logos_historicos(
     logos_por_url_prioritarios=None,
     logos_bloqueados_por_url=None,
     logos_rotos_confirmados=None,
+    logos_forzados_por_url=None,
     validar_logo=None,
 ):
     """Restaura logos ausentes o rotos confirmados sin tocar los logos funcionales."""
@@ -3314,6 +3315,7 @@ def restaurar_logos_historicos(
     logos_rotos_confirmados = {
         str(url).strip() for url in (logos_rotos_confirmados or set()) if str(url).strip()
     }
+    logos_forzados_por_url = logos_forzados_por_url or {}
     cache_validacion = {}
 
     def logo_aceptable(logo):
@@ -3405,6 +3407,7 @@ def restaurar_logos_historicos(
     restaurados_anteriores = 0
     restaurados_pluto = 0
     protegidos = 0
+    forzados = 0
     pendientes = 0
     rotos_sin_reemplazo = 0
     pendientes_detalle = []
@@ -3424,6 +3427,15 @@ def restaurar_logos_historicos(
             actual = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
         logo_actual = actual.group(1).strip() if actual else ""
         logo_bloqueado = logos_bloqueados_por_url.get(item["url"], "") if item["url"] else ""
+
+        # Sustituciones explícitas para logos que el usuario reportó como no visibles.
+        logo_forzado = logos_forzados_por_url.get(item["url"], "") if item["url"] else ""
+        if logo_forzado and logo_aceptable(logo_forzado):
+            actualizado = poner_logo(extinf, logo_forzado)
+            if actualizado != extinf:
+                salida[item["index"]] = actualizado
+                forzados += 1
+            continue
 
         if logo_bloqueado and logo_bloqueado not in logos_rotos_confirmados and logo_aceptable(logo_bloqueado):
             if logo_actual != logo_bloqueado:
@@ -3491,6 +3503,7 @@ def restaurar_logos_historicos(
         "  -> Logos: "
         f"restaurados desde referencias={restaurados_anteriores}; "
         f"Pluto={restaurados_pluto}; "
+        f"reemplazos explícitos={forzados}; "
         f"logos rotos sin reemplazo={rotos_sin_reemplazo}; "
         f"sin referencia verificable={pendientes}; protegidos={protegidos}."
     )
@@ -3504,6 +3517,7 @@ def restaurar_logos_historicos(
         "lista_anterior": restaurados_anteriores,
         "pluto": restaurados_pluto,
         "protegidos": protegidos,
+        "forzados": forzados,
         "rotos_sin_reemplazo": rotos_sin_reemplazo,
         "sin_referencia": pendientes,
         "pendientes_detalle": pendientes_detalle,
