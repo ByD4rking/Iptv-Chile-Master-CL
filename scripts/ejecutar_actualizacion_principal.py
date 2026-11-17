@@ -23,6 +23,26 @@ from sincronizar_complementos import (
 
 ROOT = Path(__file__).resolve().parents[1]
 PRINCIPAL = ROOT / "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+PITUFOS_MX_URL = "https://jmp2.uk/plu-68a3a97fd8f7693ae3f8575f.m3u8"
+
+
+def _trace_pitufos_mx(etapa, lineas=None):
+    if lineas is None:
+        lineas = PRINCIPAL.read_text(encoding="utf-8-sig").splitlines()
+    entradas = []
+    for indice, linea in enumerate(lineas):
+        if not linea.startswith("#EXTINF") or "pitufos" not in linea.lower():
+            continue
+        j = indice + 1
+        while j < len(lineas) and lineas[j].startswith("#"):
+            j += 1
+        url = lineas[j].strip() if j < len(lineas) else ""
+        entradas.append((linea.split(",", 1)[-1], url))
+    print(
+        f"[DIAGNÓSTICO PITUFOS MX] {etapa}: "
+        f"URL MX exacta={'sí' if any(url == PITUFOS_MX_URL for _, url in entradas) else 'no'}; "
+        f"entradas={entradas}"
+    )
 
 
 def main():
@@ -33,6 +53,7 @@ def main():
     print("\n[ORQUESTADOR] Actualización base: Pluto, IPTVSV, MAGMA y fuentes existentes.")
     # El alimentador conserva las barreras de identidad/cobertura Pluto.
     alimentador.main()
+    _trace_pitufos_mx("después de alimentar_principal")
 
     print("\n[ORQUESTADOR] Unificando categorías CHILE.")
     subprocess.run(
@@ -43,6 +64,7 @@ def main():
 
     print("\n[ORQUESTADOR] Sincronizando todas las fuentes complementarias.")
     result = synchronize_once()
+    _trace_pitufos_mx("después de synchronize_once")
 
     # Restaurar el orden histórico DESPUÉS de sincronizar: el reconciliador puede
     # insertar alternativas en medio de una categoría. La restauración también
@@ -53,7 +75,9 @@ def main():
         current_lines,
         original_lines,
     )
+    _trace_pitufos_mx("después de restaurar orden", ordered_lines)
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
+    _trace_pitufos_mx("después de filtro Pitufos ES", ordered_lines)
     ordered_lines = [line.rstrip() for line in ordered_lines]
 
     session = requests.Session()
@@ -65,6 +89,7 @@ def main():
         ordered_lines,
         ids_pluto_es_anime,
     )
+    _trace_pitufos_mx("después de ajustes referencia", ordered_lines)
 
     # MAGMA se vuelve a ordenar DESPUÉS de sincronizar: así los canales que
     # entren en este ciclo no quedan mezclados con el bloque histórico.
@@ -92,6 +117,7 @@ def main():
     )
     ordered_lines = _prioritize_infantiles(ordered_lines)
     ordered_lines = normalizar_nombres_solicitados(ordered_lines)
+    _trace_pitufos_mx("después de agrupar/priorizar", ordered_lines)
 
     # Última restauración de orden después de sincronizar y agrupar alternativas.
     # CHILE TV y Anime no son categorías reordenables: los canales históricos
@@ -112,6 +138,7 @@ def main():
         ordered_lines,
         get_last_url_priority(),
     )
+    _trace_pitufos_mx("después de segunda agrupación", ordered_lines)
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
     ordered_lines = alimentador.ordenar_informativos(ordered_lines)
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
@@ -141,6 +168,7 @@ def main():
     ordered_lines = alimentador.agrupar_familias_por_categoria(ordered_lines, original_lines)
     # La sincronización complementaria tampoco puede recrear General.
     ordered_lines = alimentador.blindar_categoria_general(ordered_lines)
+    _trace_pitufos_mx("después de blindajes finales", ordered_lines)
 
     # La restauración del orden histórico puede recuperar bloques previos.
     # Reaplicar al final la regla estricta solo a URLs de Cine/Películas MAGMA.
@@ -187,6 +215,7 @@ def main():
         ids_pluto_omitidos=ids_pluto_orden,
     )
 
+    _trace_pitufos_mx("antes de escribir", ordered_lines)
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
     temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
     temporary.replace(PRINCIPAL)
