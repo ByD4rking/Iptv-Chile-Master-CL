@@ -168,7 +168,21 @@ def main():
     ordered_lines = alimentador.agrupar_familias_por_categoria(ordered_lines, original_lines)
     # La sincronización complementaria tampoco puede recrear General.
     ordered_lines = alimentador.blindar_categoria_general(ordered_lines)
-    _trace_pitufos_mx("después de blindajes finales", ordered_lines)
+
+    # La sincronización complementaria y las restauraciones de orden pueden
+    # retirar una URL MX aunque el alimentador base ya la haya integrado.
+    # Reconciliar Pluto MX DESPUÉS de todas las transformaciones estructurales
+    # para que las alternativas externas sobrevivan en la salida publicada.
+    ordered_lines, pluto_mx_final = alimentador.integrar_pluto_mx(
+        ordered_lines,
+        session,
+    )
+    print(
+        "[ORQUESTADOR] Blindaje terminal Pluto MX: "
+        f"{pluto_mx_final['agregadas']} alternativas recuperadas; "
+        f"{pluto_mx_final['sin_coincidencia']} sin coincidencia."
+    )
+    _trace_pitufos_mx("después del blindaje terminal Pluto MX", ordered_lines)
 
     # La restauración del orden histórico puede recuperar bloques previos.
     # Reaplicar al final la regla estricta solo a URLs de Cine/Películas MAGMA.
