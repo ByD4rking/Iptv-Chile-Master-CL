@@ -140,6 +140,8 @@ class InformativosOrderTests(unittest.TestCase):
             "Telesur | VE",
             "Telesur Costa Rica | CR",
             "Canal 33 Tijuana (Baja California)",
+            "Mi Radio",
+            "Thema Coquimbo",
         ])
 
     def test_general_is_absent_from_principal(self):
