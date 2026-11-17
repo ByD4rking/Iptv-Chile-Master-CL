@@ -2,6 +2,7 @@ import unittest
 import re
 
 import alimentar_principal as ap
+import blindajes_principal as blindajes
 from selftest_sincronizacion_real import channel_name_key, identity_key
 from sincronizar_complementos import FUENTES_PLUTO_COMPLETAS, _destination, _group_and_label_alternatives, _identity, _merge_extinf, _prioritize_infantiles, normalizar_nombres_solicitados, quitar_los_pitufos_es, reconcile_lines
 
@@ -1278,3 +1279,77 @@ if __name__ == "__main__":
 # Comprobar orden por URL y nombres visibles de resolución.
 
 # Trigger CI: comprobar el conjunto final de reglas.
+
+class GlobalPlaylistSafeguardTests(unittest.TestCase):
+    def _entry(self, category, name, url, channel_id="", logo=""):
+        attrs = []
+        if channel_id:
+            attrs.append(f'tvg-id="{channel_id}"')
+        attrs.append(f'group-title="{category}"')
+        if logo:
+            attrs.append(f'tvg-logo="{logo}"')
+        return [f'#EXTINF:-1 {" ".join(attrs)},{name}', url]
+
+    def test_logo_survives_stream_and_name_change_by_tvg_id(self):
+        logo = "https://logos.example/original.png"
+        original = ["#EXTM3U"] + self._entry(
+            "Deportes", "Nombre original", "https://old.example/live.m3u8", "canal.id", logo
+        )
+        current = ["#EXTM3U"] + self._entry(
+            "Deportes", "Nombre actualizado", "https://new.example/live.m3u8",
+            "canal.id", "https://source.example/wrong.png"
+        )
+        output, _ = blindajes.blindar_logos(current, original)
+        extinf = next(line for line in output if line.startswith("#EXTINF"))
+        self.assertIn(f'tvg-logo="{logo}"', extinf)
+
+    def test_new_channel_cannot_import_a_source_logo(self):
+        original = ["#EXTM3U"] + self._entry(
+            "Deportes", "Existente", "https://old.example/a.m3u8", "existente",
+            "https://logos.example/existing.png"
+        )
+        current = original + self._entry(
+            "Deportes", "Nuevo", "https://new.example/b.m3u8", "nuevo",
+            "https://source.example/automatic.png"
+        )
+        output, stats = blindajes.blindar_logos(current, original)
+        new_line = next(line for line in output if line.startswith("#EXTINF") and line.endswith(",Nuevo"))
+        self.assertNotIn("tvg-logo=", new_line)
+        self.assertEqual(stats["logos_fuente_retirados"], 1)
+
+    def test_anime_is_restored_exactly_from_original_playlist(self):
+        anime = self._entry(
+            "Anime", "Dragon Ball Z", "https://anime.example/original.m3u8",
+            "anime.dbz", "https://logos.example/dbz.png"
+        )
+        original = ["#EXTM3U"] + anime
+        changed = ["#EXTM3U"] + self._entry(
+            "Anime", "Dragon Ball Z HD", "https://anime.example/changed.m3u8",
+            "anime.dbz", "https://logos.example/wrong.png"
+        )
+        output = blindajes.restaurar_categoria_bloqueada(changed, original, "Anime")
+        anime_blocks = [
+            block for block in blindajes._split_blocks(output)[1]
+            if block["category_key"] == "anime"
+        ]
+        self.assertEqual(anime_blocks[0]["lines"], anime)
+
+    def test_global_category_order_keeps_countries_at_the_end(self):
+        categories = [
+            "Informativos", "Argentina 🇦🇷", "Anime", "CHILE TV", "Perú",
+            "Competencia", "Infantiles", "Música", "Cine / Películas",
+            "Entretenimiento / Cine / Series", "Bolivia",
+        ]
+        sample = ["#EXTM3U"]
+        for index, category in enumerate(categories):
+            sample.extend(self._entry(
+                category, f"Canal {category}", f"https://{index}.example/live.m3u8"
+            ))
+        output = blindajes.ordenar_categorias_definitivo(sample)
+        actual = [block["category"] for block in blindajes._split_blocks(output)[1]]
+        self.assertEqual(actual, [
+            "CHILE TV", "Anime", "Competencia", "Infantiles",
+            "Entretenimiento / Cine / Series", "Cine / Películas",
+            "Música", "Informativos", "Argentina 🇦🇷", "Perú", "Bolivia",
+        ])
+        self.assertTrue(blindajes.validar_orden_categorias(output))
