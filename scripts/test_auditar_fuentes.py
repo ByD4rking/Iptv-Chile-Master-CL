@@ -67,12 +67,16 @@ class AuditSourceTests(unittest.TestCase):
         self.assertEqual(diff["removed_channels"], 0)
         self.assertEqual(diff["changed_categories"], 1)
 
-    def test_name_fallback_identity_does_not_depend_on_category(self):
+    def test_name_fallback_category_move_uses_url_reconciliation(self):
         before = MODULE.parse_m3u('#EXTM3U\n#EXTINF:-1 group-title="Series",Canal X\nhttps://a/x\n')
         after = MODULE.parse_m3u('#EXTM3U\n#EXTINF:-1 group-title="Cine",Canal X\nhttps://b/x\n')
-        self.assertEqual(set(before), set(after))
-        self.assertEqual(before["canal x"][2], "Series")
-        self.assertEqual(after["canal x"][2], "Cine")
+        self.assertNotEqual(set(before), set(after))
+        old = MODULE.snapshot_entry('#EXTM3U\n#EXTINF:-1 group-title="Series",Canal X\nhttps://a/x\n'.encode(), "SRC", "https://src/list.m3u")
+        new = MODULE.snapshot_entry('#EXTM3U\n#EXTINF:-1 group-title="Cine",Canal X\nhttps://a/x\n'.encode(), "SRC", "https://src/list.m3u")
+        diff = MODULE.diff_source("SRC", old, new)
+        self.assertEqual(diff["added_channels"], 0)
+        self.assertEqual(diff["removed_channels"], 0)
+        self.assertEqual(diff["changed_categories"], 1)
 
 
     def test_principal_audits_all_25_unique_m3u_sources(self):
