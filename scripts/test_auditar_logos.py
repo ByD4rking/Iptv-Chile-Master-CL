@@ -1,5 +1,5 @@
 import unittest
-from scripts.auditar_logos import audit, parse_playlist
+from scripts.auditar_logos import audit, parse_playlist, check_url
 import alimentar_principal as ap
 
 class LogoAuditTests(unittest.TestCase):
@@ -112,6 +112,11 @@ class LogoAuditTests(unittest.TestCase):
         self.assertNotIn('logo="', result[1])
         self.assertEqual(stats["rotos_sin_reemplazo"], 1)
         self.assertEqual(stats["pendientes_detalle"], ["Canal A [Anime]"])
+
+    def test_unescaped_unicode_in_logo_url_is_reported_as_broken_not_crashing(self):
+        result = check_url("https://cdn.example/logo/Bio\u00adBio.png")
+        self.assertEqual(result["status"], "broken")
+        self.assertIn("no codificados", result["detail"])
 
     def test_audit_does_not_modify_and_reports_statuses(self):
         text = '\n'.join([
