@@ -3220,9 +3220,9 @@ def integrar_pluto_mx(lineas, session):
                         count=1,
                         flags=re.I,
                     )
-                if re.search(r'(?<![\\w-])logo="[^"]*"', extinf, re.I):
+                if re.search(r'(?<![\w-])logo="[^"]*"', extinf, re.I):
                     extinf = re.sub(
-                        r'(?<![\\w-])logo="[^"]*"',
+                        r'(?<![\w-])logo="[^"]*"',
                         f'logo="{logo_canonico}"',
                         extinf,
                         count=1,
