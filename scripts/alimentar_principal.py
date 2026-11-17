@@ -4941,6 +4941,10 @@ def main():
             "Entretenimiento / Cine / Series",
             "Infantiles",
             "Anime",
+            # Informativos se ordena deliberadamente al final: nacionales/prioritarios
+            # primero y señales regionales después. Su orden se valida con la prueba
+            # específica de prioridad de Informativos, no con la protección histórica.
+            "Informativos",
             # España recibe canales reclasificados desde Anime; la restauración
             # conserva el orden de URLs, pero su validación por nombre es ambigua.
             "España",
