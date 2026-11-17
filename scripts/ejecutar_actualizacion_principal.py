@@ -178,6 +178,7 @@ def main():
             "Entretenimiento / Cine / Series",
             "Infantiles",
             "Anime",
+            "Informativos",  # Se ordena explícitamente por prioridad y regionales.
             # España recibe reclasificaciones regionales desde Anime.
             "España",
         },
