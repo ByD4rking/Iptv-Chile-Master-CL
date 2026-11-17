@@ -897,22 +897,24 @@ def deduplicar_pluto_existente(lineas):
 
 def deduplicar_pluto_por_prioridad(lineas, canales_por_id):
     """
-    Deduplica Pluto por identidad y aplica prioridad LATAM > ES > MX.
-
-    Si el mismo channel ID aparece en varias fuentes, conserva la representación
-    de la primera fuente en FUENTES_PLUTO (LATAM). Si LATAM no lo tiene, conserva
-    ES; si tampoco ES lo tiene, conserva MX. La posición física de la primera
-    aparición se mantiene para no reordenar innecesariamente la principal.
+    Consolida bloques del mismo channel ID sin perder URLs alternativas.
+    La renovación LATAM > ES > MX ya se aplica antes; aquí se conserva un
+    bloque principal y cada URL distinta como opción consecutiva.
     """
-    prioridad_url = {}
-    for identidad, canales in canales_por_id.items():
-        if not canales:
-            continue
-        for canal in canales:
-            url = (canal.get("url") or "").strip()
-            if url:
-                prioridad_url[identidad] = url
-                break
+    patron_opcion = r"(?:\[\s*(?:opci[oó]n|opc|option)\s*\d+\s*\]|\(\s*(?:opci[oó]n|opc|option)\s*\d+\s*\))\s*$"
+
+    def es_opcion(extinf):
+        return bool(re.search(patron_opcion, extraer_nombre(extinf), re.I))
+
+    def quitar_sufijo_opcion(extinf):
+        coma = extinf.find(",")
+        if coma < 0:
+            return extinf
+        nombre = re.sub(patron_opcion, "", extinf[coma + 1:], flags=re.I).rstrip()
+        return extinf[:coma + 1] + nombre
+
+    def etiquetar_opcion(extinf, numero):
+        return quitar_sufijo_opcion(extinf) + f" (OPCIÓN {numero})"
 
     bloques = []
     i = 0
@@ -938,34 +940,66 @@ def deduplicar_pluto_por_prioridad(lineas, canales_por_id):
         i = j
 
     grupos = defaultdict(list)
-    for idx, (_, identidad, url, es_pluto_id) in enumerate(bloques):
+    for idx, (bloque, identidad, url, es_pluto_id) in enumerate(bloques):
         if es_pluto_id:
-            grupos[identidad].append((idx, url))
+            grupos[identidad].append((idx, url, es_opcion(bloque[0]), bloque))
 
-    reemplazar_en = {}
+    emitir_en = {}
     eliminar = set()
     eliminados = 0
 
     for identidad, items in grupos.items():
         if len(items) <= 1:
             continue
-        preferred = prioridad_url.get(identidad, "")
-        elegido = next((idx for idx, url in items if preferred and url == preferred), items[0][0])
-        primero = items[0][0]
-        reemplazar_en[primero] = elegido
-        for idx, _ in items:
-            if idx != primero:
-                eliminar.add(idx)
+
+        # La primera señal sin sufijo es la base; si solo hay opciones,
+        # se promueve la primera para no dejar una familia sin canal principal.
+        primarios = [item for item in items if not item[2]]
+        principal = primarios[0] if primarios else items[0]
+        primer_indice = items[0][0]
+        bloque_principal = list(principal[3])
+        if es_opcion(bloque_principal[0]):
+            bloque_principal[0] = quitar_sufijo_opcion(bloque_principal[0])
+
+        url_principal = principal[1]
+        urls_vistas = {url_principal}
+        opciones = []
+        siguiente_opcion = 2
+
+        for item in items:
+            if item[0] == principal[0]:
+                continue
+            _, url, ya_es_opcion, bloque = item
+            if not url or url in urls_vistas:
                 eliminados += 1
+                continue
+
+            bloque_opcion = list(bloque)
+            if not ya_es_opcion:
+                bloque_opcion[0] = etiquetar_opcion(bloque_opcion[0], siguiente_opcion)
+                siguiente_opcion += 1
+            else:
+                numero = re.search(r"(?:opci[oó]n|opc|option)\s*(\d+)", extraer_nombre(bloque_opcion[0]), re.I)
+                if numero:
+                    siguiente_opcion = max(siguiente_opcion, int(numero.group(1)) + 1)
+
+            opciones.append(bloque_opcion)
+            urls_vistas.add(url)
+
+        emitir_en[primer_indice] = [bloque_principal, *opciones]
+        for idx, _, _, _ in items:
+            if idx != primer_indice:
+                eliminar.add(idx)
 
     salida = []
     for idx, (bloque, identidad, url, es_pluto_id) in enumerate(bloques):
         if idx in eliminar:
             continue
-        elegido = reemplazar_en.get(idx)
-        if elegido is not None and elegido != idx:
-            bloque = bloques[elegido][0]
-        salida.extend(bloque)
+        if idx in emitir_en:
+            for bloque_emitir in emitir_en[idx]:
+                salida.extend(bloque_emitir)
+        else:
+            salida.extend(bloque)
 
     return salida, eliminados
 
