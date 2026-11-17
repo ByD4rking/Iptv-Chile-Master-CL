@@ -483,6 +483,17 @@ def main(args: argparse.Namespace) -> None:
             if family and family not in after_families_by_category[category]:
                 after_families_by_category[category].append(family)
 
+    jwt_pluto_vencidos = [
+        item for item in after_playable
+        if item.get("is_pluto") and ap.jwt_expirado_en_url(item.get("url", ""))
+    ]
+    if jwt_pluto_vencidos:
+        raise AssertionError(
+            "La maestra conserva JWT Pluto vencidos: "
+            + repr([(item["display_raw"], item["url"][:180]) for item in jwt_pluto_vencidos[:12]])
+            + f" (total={len(jwt_pluto_vencidos)})"
+        )
+
     global_after_counts = Counter(
         identity_key(item, name_to_ids)
         for item in after_playable
