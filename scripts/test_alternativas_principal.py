@@ -536,6 +536,7 @@ class TestAlternativasPrincipal(unittest.TestCase):
             else:
                 ap.PAIS_POR_FUENTE["/JP.m3u"] = previous
 
+        self.assertEqual(output[0], "#EXTM3U")
         categories = [
             re.search(r'group-title="([^"]*)"', item[0], re.I).group(1)
             for item in self.entries(output)
