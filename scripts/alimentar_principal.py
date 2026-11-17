@@ -272,7 +272,7 @@ REGIONALES_INFORMATIVOS = (
     "san luis", "buenos aires", "la plata", "santa clara del mar",
     "tres arroyos", "puan", "punta arenas", "magallanes", "fuengirola",
     "malaga", "ciudad real", "castilla-la mancha", "chiclayo",
-    "lambayeque", "la costa", "nuble", "linares", "california",
+    "lambayeque", "la costa", "nuble", "linares", "coquimbo", "la serena", "elqui", "mi radio", "california",
     "florida", "noreste", "texas",
 )
 
