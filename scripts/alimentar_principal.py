@@ -2708,29 +2708,17 @@ def validar_orden_canales(
             ):
                 index = j + 1 if url else index + 1
                 continue
-            if nombre and len(ids_por_nombre.get(nombre, set())) == 1:
-                unique_id = next(iter(ids_por_nombre[nombre]))
-                # Un ID reutilizado por nombres distintos no es identidad segura.
-                key = ("id", unique_id) if nombres_por_id.get(unique_id, set()) == {nombre} else ("name", nombre)
-            elif channel_id and nombre:
-                key = ("id_name", channel_id, nombre)
-            elif channel_id:
-                key = ("id", channel_id)
-            else:
-                key = ("name", nombre)
+            familia = clave_familia_canal(nombre_raw)
+            # La auditoría compara el orden de familias, no el orden interno
+            # de sus señales: agrupar variantes no debe generar un falso fallo.
+            orden_key = familia or nombre
             vistos_categoria = vistos.setdefault(categoria, set())
-            if key not in vistos_categoria:
-                vistos_categoria.add(key)
-                if key[0] == "id":
-                    key_label = "id:" + key[1]
-                elif key[0] == "id_name":
-                    key_label = "id:" + key[1] + ":name:" + key[2]
-                else:
-                    key_label = "name:" + categoria + ":" + key[1]
+            if orden_key not in vistos_categoria:
+                vistos_categoria.add(orden_key)
                 resultado.setdefault(categoria, []).append({
-                    "id": channel_id,
-                    "name": nombre,
-                    "key": key_label,
+                    "id": "",
+                    "name": orden_key,
+                    "key": "family:" + orden_key,
                 })
             index = j + 1 if url else index + 1
         return resultado
