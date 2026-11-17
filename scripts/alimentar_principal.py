@@ -199,8 +199,7 @@ def encontrar_categoria_tematica(texto, categorias):
         ("COMEDIA", [r"\b(comedia|comedy)\b"]),
         ("RELIGIOSOS", [r"\b(religioso|religiosos|religion)\b"]),
         ("DOCUMENTALES", [r"\b(documental|documentales|documentary)\b"]),
-        ("INFORMATIVOS", [r"\b(noticias|noticia|informativos|news)\b"]),
-        ("GENERAL", [r"\bgeneral\b"]),
+        ("INFORMATIVOS", [r"\b(noticias|noticia|informativos|news|tn|todo noticias)\b"]),
     ]
     for candidato, patrones in reglas:
         if any(re.search(p, texto) for p in patrones):
@@ -428,9 +427,13 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     if pais_fuente == "musica":
         return buscar_categoria_existente("MÚSICA", categorias)
 
-    # LATAM NO tiene carpeta propia. Sus canales se redistribuyen
-    # según su categoría/nombre hacia la carpeta existente que corresponda.
-    # Si no hay una clasificación segura, se omite el canal.
+    # La temática comprobable prevalece sobre el país: noticias a Informativos,
+    # novelas a Novelas, deportes a Deportes, etc. País solo es fallback.
+    destino_tematico = encontrar_categoria_tematica(texto, categorias)
+    if destino_tematico and normalizar(destino_tematico) != "general":
+        return destino_tematico
+
+    # LATAM/Chile y los demás países solo se usan cuando no hay temática clara.
     if pais_fuente == "chile":
         return buscar_categoria_existente("CHILE TV", categorias)
 
@@ -460,7 +463,7 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
             if destino:
                 return destino
 
-    return encontrar_categoria_tematica(texto, categorias)
+    return None
 
 def determinar_destino_magma(categoria, nombre, categorias):
     """Clasifica MAGMA usando exclusivamente carpetas ya existentes."""
