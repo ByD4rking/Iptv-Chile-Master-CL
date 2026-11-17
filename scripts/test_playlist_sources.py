@@ -71,6 +71,7 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         mx_id = "cccccccccccccccccccccccc"
         orphan_id = "dddddddddddddddddddddddd"
         live_orphan_id = "eeeeeeeeeeeeeeeeeeeeeeee"
+        internal_only_id = "ffffffffffffffffffffffff"
 
         sources = list(ap.FUENTES_PLUTO_CATALOGO)
         self.assertEqual(len(sources), 4)
@@ -78,8 +79,12 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             sources[0]: m3u(latam_id, "Canal LATAM", f"https://jmp2.uk/plu-{latam_id}.m3u8"),
             sources[1]: m3u(es_id, "Canal ES", f"https://jmp2.uk/plu-{es_id}.m3u8"),
             sources[2]: m3u(mx_id, "Canal MX estable", f"https://jmp2.uk/plu-{mx_id}.m3u8"),
-            # El catálogo MX interno tiene el mismo canal, pero con JWT.
-            sources[3]: m3u(mx_id, "Canal MX tokenizado", token_url(mx_id, 4102444800)),
+            # El catálogo MX interno trae un duplicado tokenizado y un canal
+            # exclusivo con JWT vencido; el externo estable debe ganar.
+            sources[3]: (
+                m3u(mx_id, "Canal MX tokenizado", token_url(mx_id, 1))
+                + m3u(internal_only_id, "Canal MX solo interno", token_url(internal_only_id, 1))
+            ),
         }
 
         lineas = ["#EXTM3U"]
@@ -90,6 +95,8 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             token_url(mx_id, 1, "MX"),
             f'#EXTINF:-1 tvg-id="{orphan_id}" group-title="Pluto",Canal retirado',
             token_url(orphan_id, 1, "MX"),
+            f'#EXTINF:-1 tvg-id="{internal_only_id}" group-title="Pluto",Canal MX solo interno',
+            token_url(internal_only_id, 1, "MX"),
             f'#EXTINF:-1 tvg-id="{live_orphan_id}" group-title="Pluto",Canal temporal aún vigente',
             token_url(live_orphan_id, 4102444800, "MX"),
             '#EXTINF:-1 tvg-id="no-pluto" group-title="Test",Canal no Pluto',
@@ -104,10 +111,11 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             )
             joined = "\n".join(result)
             self.assertTrue(stats["catalogo_completo"])
-            self.assertEqual(stats["expirados_eliminados"], 1)
+            self.assertEqual(stats["expirados_eliminados"], 2)
             self.assertIn(f"https://jmp2.uk/plu-{latam_id}.m3u8", joined)
             self.assertIn(f"https://jmp2.uk/plu-{mx_id}.m3u8", joined)
             self.assertNotIn("Canal retirado", joined)
+            self.assertNotIn("Canal MX solo interno", joined)
             self.assertIn("Canal temporal aún vigente", joined)
             self.assertIn("https://example.com/live.m3u8", joined)
     
@@ -118,6 +126,7 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             )
             self.assertFalse(partial_stats["catalogo_completo"])
             self.assertIn("Canal retirado", "\n".join(partial))
+            self.assertIn("Canal MX solo interno", "\n".join(partial))
         finally:
             ap.PLUTO_CATALOGO_MINIMOS = original_minimos
 
