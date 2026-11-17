@@ -139,7 +139,7 @@ def main():
     logos_autorizados = {
         # Logo enlazado desde el sitio oficial de TL+; reemplaza el enlace
         # temporal de Discord que ya expiró.
-        "TL+ (El Salvador)": "https://tlmas.kift.live/assets/imgs/logo.png",
+        "TL+ (El Salvador)": "https://kift.live/media/avatars/27ffc836-28d5-457b-9ebe-f65b0c2f5fb9/091fff8e-0e9e-46f9-b5ff-50cf24ce481b.png",
     }
     ordered_lines, logo_stats = alimentador.restaurar_logos_historicos(
         ordered_lines,
