@@ -1162,6 +1162,28 @@ def jwt_expirado_en_url(url, ahora=None):
     except Exception:
         return False
 
+def jwt_necesita_renovacion_en_url(url, margen_segundos=6 * 60 * 60, ahora=None):
+    """True si el JWT vence ahora o dentro del margen preventivo configurado."""
+    m = re.search(r"(?:[?&])jwt=([^&]+)", url or "", re.I)
+    if not m:
+        return False
+    partes = m.group(1).split(".")
+    if len(partes) < 2:
+        return False
+    payload = partes[1]
+    payload += "=" * ((4 - len(payload) % 4) % 4)
+    try:
+        datos = json.loads(base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8"))
+        exp = datos.get("exp")
+        if isinstance(exp, str) and exp.isdigit():
+            exp = int(exp)
+        if not isinstance(exp, (int, float)):
+            return False
+        return exp <= (ahora if ahora is not None else time.time()) + max(0, margen_segundos)
+    except Exception:
+        return False
+
+
 def reemplazar_pluto_tercero_por_propio(lineas, session):
     """
     Renueva las URLs Pluto con LATAM > ES > MX.
@@ -1210,7 +1232,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
             i = j
             continue
 
-        if url in propias and not jwt_expirado_en_url(url):
+        if url in propias and not jwt_necesita_renovacion_en_url(url):
             salida.extend(bloque)
             ya_propios += 1
             i = j
@@ -1228,27 +1250,36 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         country = re.search(r'(?:[?&])country=([A-Za-z]{2})', url, re.I)
         region = country.group(1).lower() if country else ""
 
+        # La prioridad real es LATAM > ES > MX, no el parámetro country
+        # del JWT. Pluto LATAM suele emitir URLs con country=MX incluso para
+        # canales agregados desde Chile o Argentina; consultar primero por
+        # región convertía esas señales a la variante MX y podía degradar la
+        # reproducción respecto de la lista LATAM independiente.
         reemplazo = None
-        if region in por_region:
+        for cid in ids:
+            reemplazo = por_id.get(cid)
+            if reemplazo is not None:
+                break
+        if reemplazo is None and region in por_region:
             for cid in ids:
                 reemplazo = por_region[region].get(cid)
                 if reemplazo is not None:
                     break
         if reemplazo is None:
-            for cid in ids:
-                reemplazo = por_id.get(cid)
-                if reemplazo is not None:
-                    break
-        if reemplazo is None:
             reemplazo = por_nombre.get(normalizar(nombre))
 
-        if reemplazo is not None and jwt_expirado_en_url(reemplazo["url"].strip()):
+        if reemplazo is not None and jwt_necesita_renovacion_en_url(reemplazo["url"].strip()):
             reemplazo = None
 
         if reemplazo is None:
-            if catalogo_completo and jwt_expirado_en_url(url):
-                # El canal ya no existe en LATAM, ES ni MX y su token venció.
-                # Retirarlo evita dejar una señal muerta en la lista principal.
+            # Solo se retiran canales expirados de regiones efectivamente
+            # cubiertas por los catálogos cargados. BR/US u otras regiones no
+            # incluidas nunca se consideran ausentes por una falsa cobertura.
+            if (
+                catalogo_completo
+                and region in por_region
+                and jwt_expirado_en_url(url)
+            ):
                 expirados_eliminados += 1
                 i = j
                 continue
