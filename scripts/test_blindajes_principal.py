@@ -113,7 +113,7 @@ class GlobalCategoryOrderTests(unittest.TestCase):
         self.assertEqual(actual, [
             "CHILE TV", "Anime", "Competencia", "Infantiles",
             "Entretenimiento / Cine / Series", "Cine / Películas",
-            "Música", "Informativos", "Argentina 🇦🇷", "Perú", "Bolivia",
+            "Informativos", "Música", "Argentina 🇦🇷", "Perú", "Bolivia",
         ])
         self.assertTrue(blindajes.validar_orden_categorias(output))
 
