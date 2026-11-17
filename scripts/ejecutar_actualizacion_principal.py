@@ -128,6 +128,7 @@ def main():
     god_lines = god_path.read_text(encoding="utf-8-sig").splitlines() if god_path.is_file() else []
     referencias_logos = original_lines + god_lines
     logos_por_url_prioritarios = {}
+    logos_forzados_por_url = {}
     ruta_referencias_logos = ROOT / "scripts" / "logo_references.json"
     if ruta_referencias_logos.is_file():
         try:
@@ -138,7 +139,16 @@ def main():
                 if alimentador.url_es_valida(str(url).strip())
                 and alimentador.url_es_valida(str(logo).strip())
             }
-            print(f"[LOGOS] Referencias manuales exactas cargadas: {len(logos_por_url_prioritarios)}")
+            logos_forzados_por_url = {
+                str(url).strip(): str(logo).strip()
+                for url, logo in datos_referencias.get("forced_overrides", {}).items()
+                if alimentador.url_es_valida(str(url).strip())
+                and alimentador.url_es_valida(str(logo).strip())
+            }
+            print(
+                f"[LOGOS] Referencias manuales exactas={len(logos_por_url_prioritarios)}; "
+                f"reemplazos explícitos={len(logos_forzados_por_url)}"
+            )
         except (OSError, ValueError, TypeError) as error_referencias:
             print(f"[LOGOS] No se pudo cargar logo_references.json: {error_referencias}")
 
@@ -172,6 +182,7 @@ def main():
         pluto_por_id,
         pluto_por_nombre,
         logos_por_url_prioritarios=logos_por_url_prioritarios,
+        logos_forzados_por_url=logos_forzados_por_url,
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
         logos_rotos_confirmados=logos_rotos_confirmados,
         validar_logo=validar_logo_candidato,
