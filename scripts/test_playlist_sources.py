@@ -96,25 +96,31 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             "https://example.com/live.m3u8",
         ]
 
-        result, stats = ap.reemplazar_pluto_tercero_por_propio(
-            lineas, Session(contents)
-        )
-        joined = "\n".join(result)
-        self.assertTrue(stats["catalogo_completo"])
-        self.assertEqual(stats["expirados_eliminados"], 1)
-        self.assertIn(f"https://jmp2.uk/plu-{latam_id}.m3u8", joined)
-        self.assertIn(f"https://jmp2.uk/plu-{mx_id}.m3u8", joined)
-        self.assertNotIn("Canal retirado", joined)
-        self.assertIn("Canal temporal aún vigente", joined)
-        self.assertIn("https://example.com/live.m3u8", joined)
+        original_minimos = ap.PLUTO_CATALOGO_MINIMOS
+        ap.PLUTO_CATALOGO_MINIMOS = {fuente: 1 for fuente in sources}
+        try:
+            result, stats = ap.reemplazar_pluto_tercero_por_propio(
+                lineas, Session(contents)
+            )
+            joined = "\n".join(result)
+            self.assertTrue(stats["catalogo_completo"])
+            self.assertEqual(stats["expirados_eliminados"], 1)
+            self.assertIn(f"https://jmp2.uk/plu-{latam_id}.m3u8", joined)
+            self.assertIn(f"https://jmp2.uk/plu-{mx_id}.m3u8", joined)
+            self.assertNotIn("Canal retirado", joined)
+            self.assertIn("Canal temporal aún vigente", joined)
+            self.assertIn("https://example.com/live.m3u8", joined)
+    
+            # Si falla una fuente, no se retiran canales sin reemplazo aunque su
+            # token esté vencido: se prioriza conservarlos hasta recuperar catálogo.
+            partial, partial_stats = ap.reemplazar_pluto_tercero_por_propio(
+                lineas, Session(contents, failing=sources[-1])
+            )
+            self.assertFalse(partial_stats["catalogo_completo"])
+            self.assertIn("Canal retirado", "\n".join(partial))
+        finally:
+            ap.PLUTO_CATALOGO_MINIMOS = original_minimos
 
-        # Si falla una fuente, no se retiran canales sin reemplazo aunque su
-        # token esté vencido: se prioriza conservarlos hasta recuperar catálogo.
-        partial, partial_stats = ap.reemplazar_pluto_tercero_por_propio(
-            lineas, Session(contents, failing=sources[-1])
-        )
-        self.assertFalse(partial_stats["catalogo_completo"])
-        self.assertIn("Canal retirado", "\n".join(partial))
 
     def test_god_only_references_existing_regional_pluto_outputs(self):
         god = load_sources("god")
