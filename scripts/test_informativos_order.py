@@ -57,6 +57,12 @@ class InformativosOrderTests(unittest.TestCase):
                 f"Canal no prioritario intercalado antes de cerrar el bloque prioritario: {name}",
             )
 
+    def test_tn_n_mas_priority_and_regional_detection(self):
+        self.assertIsNotNone(ap.indice_prioridad_informativos("TN"))
+        self.assertIsNotNone(ap.indice_prioridad_informativos("N+ México"))
+        self.assertTrue(ap.es_regional_informativos("Telesur | VE"))
+        self.assertTrue(ap.es_regional_informativos("Telesur Costa Rica"))
+
     def test_regional_signals_are_last(self):
         entries = informativos_names(PLAYLIST.read_text(encoding="utf-8-sig").splitlines())
         regional = [i for i, name in enumerate(entries) if ap.es_regional_informativos(name)]
