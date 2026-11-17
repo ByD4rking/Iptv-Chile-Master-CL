@@ -117,7 +117,7 @@ def main():
     ordered_lines = quitar_los_pitufos_es(ordered_lines)
     # Restaurar logos perdidos desde la versión anterior y el catálogo oficial Pluto.
     try:
-        pluto_por_id, pluto_por_nombre, _, _ = alimentador.cargar_catalogo_pluto_propio(session)
+        pluto_por_id, pluto_por_nombre, _, _, _ = alimentador.cargar_catalogo_pluto_propio(session)
     except Exception as error:
         print(f"[ORQUESTADOR] Catálogo Pluto no disponible para logos: {error}")
         pluto_por_id, pluto_por_nombre = {}, {}
