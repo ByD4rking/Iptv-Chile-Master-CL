@@ -457,6 +457,8 @@ def main(args: argparse.Namespace) -> None:
 
     before_by_category = defaultdict(list)
     after_by_category = defaultdict(list)
+    before_families_by_category = defaultdict(list)
+    after_families_by_category = defaultdict(list)
     for item in before_kept:
         # Las alternativas se auditan por identidad, cantidad y contigüidad;
         # el orden histórico se compara solo entre canales principales.
@@ -466,6 +468,9 @@ def main(args: argparse.Namespace) -> None:
         key = identity_key(item, name_to_ids)
         if key not in before_by_category[category]:
             before_by_category[category].append(key)
+        family = ap.clave_familia_canal(item["display_raw"])
+        if family and family not in before_families_by_category[category]:
+            before_families_by_category[category].append(family)
     for item in after_nonpluto:
         category = norm(item["category"])
         key = identity_key(item, name_to_ids)
@@ -473,6 +478,10 @@ def main(args: argparse.Namespace) -> None:
         # para comparar orden; no deben contarse como canales nuevos.
         if key not in after_by_category[category]:
             after_by_category[category].append(key)
+        if not item["is_option"]:
+            family = ap.clave_familia_canal(item["display_raw"])
+            if family and family not in after_families_by_category[category]:
+                after_families_by_category[category].append(family)
 
     global_after_counts = Counter(
         identity_key(item, name_to_ids)
@@ -508,16 +517,15 @@ def main(args: argparse.Namespace) -> None:
         if category == norm("Informativos"):
             continue
 
-        # Las categorías pueden cambiar; se compara el orden solo de los
-        # canales que permanecen en la misma categoría. Los movidos se auditan
-        # por identidad y cantidad global, no como una pérdida.
+        # La agrupación puede mover miembros dentro de una familia; lo que
+        # debe permanecer estable es el orden histórico de las familias.
+        before_families = before_families_by_category.get(category, [])
+        after_families = after_families_by_category.get(category, [])
         expected_order = [
-            key for key in dict.fromkeys(before_keys)
-            if after_counts.get(key, 0) > 0
+            family for family in before_families if family in after_families
         ]
         actual_order = [
-            key for key in dict.fromkeys(after_keys)
-            if key in before_counts
+            family for family in after_families if family in before_families
         ]
         if actual_order != expected_order:
             mismatch = next(
@@ -528,12 +536,11 @@ def main(args: argparse.Namespace) -> None:
                 min(len(expected_order), len(actual_order)),
             )
             raise AssertionError(
-                f"Cambió el orden relativo dentro de {category} en índice {mismatch}: "
-                f"antes={expected_order[mismatch:mismatch + 8]!r}; "
+                f"Cambió el orden relativo de familias dentro de {category} "
+                f"en índice {mismatch}: antes={expected_order[mismatch:mismatch + 8]!r}; "
                 f"después={actual_order[mismatch:mismatch + 8]!r}; "
                 f"longitudes={len(expected_order)}/{len(actual_order)}"
             )
-
 
     # Todo logo existente en la versión anterior debe sobrevivir a la actualización.
     old_logo_by_url = defaultdict(set)
