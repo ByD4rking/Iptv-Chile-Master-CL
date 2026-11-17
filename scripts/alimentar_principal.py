@@ -2732,6 +2732,32 @@ def clave_familia_canal(nombre):
         return "familia:super campeones"
     if texto.startswith(("caballeros del zodiaco", "saint seiya")):
         return "familia:caballeros del zodiaco"
+
+    # Franquicias infantiles: las continuaciones y variantes de nombre se
+    # mantienen junto a la serie base, aunque la fuente las entregue separadas.
+    if texto.startswith("rugrats"):
+        return "familia:rugrats"
+    if texto.startswith("bob esponja"):
+        return "familia:bob esponja"
+    if texto.startswith("los padrinos magicos"):
+        return "familia:los padrinos magicos"
+    if texto.startswith(("paw patrol", "patrulla canina")):
+        return "familia:paw patrol"
+    if texto.startswith("baby shark"):
+        return "familia:baby shark"
+    if texto.startswith("el reino infantil"):
+        return "familia:el reino infantil"
+    if texto.startswith("las tortugas ninja"):
+        return "familia:las tortugas ninja"
+    if texto.startswith("kenan y kel"):
+        return "familia:kenan y kel"
+    if texto.startswith(("icarly", "nickelodeon icarly")):
+        return "familia:icarly"
+    if texto.startswith(("nick jr", "nick jr.", "nick junior")):
+        return "familia:nick jr"
+    if texto.startswith(("disney jr", "disney junior")):
+        return "familia:disney jr"
+
     if texto.startswith(("telemundo", "caracol", "univision")):
         return "familia:" + texto.split()[0]
 
@@ -2824,7 +2850,6 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
     # el agrupador debe respetarlo en vez de restaurar su orden histórico.
     categorias_orden_intencional = {
         normalizar("Entretenimiento / Cine / Series"),
-        normalizar("Infantiles"),
         normalizar("Anime"),
         normalizar("Informativos"),
     }
@@ -2858,8 +2883,8 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
         for familia in orden_familias:
             grupo = familias[familia]
             if categoria in categorias_orden_intencional:
-                # Anime, Infantiles, Informativos y el bloque MAGMA ya vienen
-                # ordenados deliberadamente; solo se agrupan sin reordenarlos.
+                # Anime, Informativos y el bloque MAGMA conservan sus reglas
+                # especiales. Infantiles sí se agrupa por franquicia más abajo.
                 grupo_ordenado = grupo
             else:
                 # Primero las señales ya existentes, en su orden actual; después
@@ -2873,6 +2898,18 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                     if bloque["identidad"] not in identidades
                 ]
                 grupo_ordenado = existentes + nuevas
+
+            # En Infantiles, la familia conserva la posición de su primera
+            # aparición. Dentro de Rugrats, la serie original precede a
+            # Rugrats Crecidos, independientemente del orden de entrada.
+            if categoria == normalizar("Infantiles"):
+                def prioridad_infantil(bloque):
+                    nombre = normalizar(extraer_nombre(bloque["lineas"][0]))
+                    if bloque["familia"] == "familia:rugrats":
+                        return 1 if nombre.startswith("rugrats crecidos") else 0
+                    return 0
+                grupo_ordenado = sorted(grupo_ordenado, key=prioridad_infantil)
+
             for bloque in grupo_ordenado:
                 salida.extend(bloque["lineas"])
 

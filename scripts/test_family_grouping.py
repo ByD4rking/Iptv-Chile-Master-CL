@@ -96,6 +96,45 @@ class FamilyGroupingTests(unittest.TestCase):
             "CityTV SD",
         ])
 
+    def test_infantile_franchises_are_grouped_and_keep_first_family_position(self):
+        cat = "Infantiles"
+        current = ["#EXTM3U"]
+        current += bloque("Rugrats Crecidos", categoria=cat)
+        current += bloque("Bob Esponja Pantalones Cuadrados", categoria=cat)
+        current += bloque("Los Padrinos Mágicos [Opción 2]", categoria=cat)
+        current += bloque("Canal Infantil", categoria=cat)
+        current += bloque("Rugrats", categoria=cat)
+        current += bloque("Bob Esponja", categoria=cat)
+        current += bloque("Los Padrinos Mágicos", categoria=cat)
+        current += bloque("Rugrats", categoria=cat)
+
+        result = ap.agrupar_familias_por_categoria(current, current)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "Rugrats",
+            "Rugrats",
+            "Rugrats Crecidos",
+            "Bob Esponja Pantalones Cuadrados",
+            "Bob Esponja",
+            "Los Padrinos Mágicos",
+            "Los Padrinos Mágicos [Opción 2]",
+            "Canal Infantil",
+        ])
+
+    def test_paw_patrol_aliases_are_kept_in_one_infantile_family(self):
+        cat = "Infantiles"
+        lines = ["#EXTM3U"]
+        lines += bloque("PAW Patrol Patrulla de Cachorros", categoria=cat)
+        lines += bloque("Patrulla Canina", categoria=cat)
+        lines += bloque("Otro canal", categoria=cat)
+        result = ap.agrupar_familias_por_categoria(lines)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "PAW Patrol Patrulla de Cachorros",
+            "Patrulla Canina",
+            "Otro canal",
+        ])
+
     def test_generic_channel_prefixes_do_not_merge_unrelated_services(self):
         lines = ["#EXTM3U"]
         lines += bloque("Canal Onza TV")
