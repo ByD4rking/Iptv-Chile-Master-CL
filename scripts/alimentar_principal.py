@@ -1667,11 +1667,47 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
 
     return salida, movidos, dict(por_categoria_movidos)
 
+# Catálogo amplio de carpetas-país: todas se ordenan al final aunque aún
+# no exista una fuente dedicada en PAIS_POR_FUENTE.
 PAISES_ORDEN_FINAL = {
-    "peru", "bolivia", "argentina", "brasil", "brazil", "colombia",
-    "ecuador", "venezuela", "paraguay", "mexico", "espana", "spain",
-    "costa rica", "republica dominicana", "el salvador", "guatemala",
-    "honduras", "nicaragua", "panama", "cuba", "puerto rico", "uruguay",
+    "afganistan", "albania", "alemania", "andorra", "angola",
+    "antigua y barbuda", "arabia saudita", "argelia", "argentina",
+    "armenia", "australia", "austria", "azerbaiyan", "bahamas",
+    "banglades", "barbados", "barein", "belgica", "belice", "benin",
+    "bielorrusia", "birmania", "bolivia", "bosnia y herzegovina",
+    "botsuana", "brasil", "brazil", "brunei", "bulgaria", "burkina faso",
+    "burundi", "butan", "cabo verde", "camboya", "camerun", "canada",
+    "catar", "chad", "chipre", "chile", "china", "colombia", "comoras",
+    "corea del norte", "corea del sur", "costa de marfil", "costa rica",
+    "croacia", "cuba", "dinamarca", "dominica", "ecuador", "egipto",
+    "el salvador", "emiratos arabes unidos", "eritrea", "eslovaquia",
+    "eslovenia", "espana", "spain", "estados unidos", "estonia",
+    "esuatini", "etiopia", "filipinas", "finlandia", "fiyi", "francia",
+    "gabon", "gambia", "georgia", "ghana", "granada", "grecia",
+    "guatemala", "guinea", "guinea ecuatorial", "guinea-bisau", "guyana",
+    "haiti", "honduras", "hungria", "india", "indonesia", "irak",
+    "iran", "irlanda", "islandia", "islas marshall", "islas salomon",
+    "israel", "italia", "jamaica", "japon", "jordania", "kazajistan",
+    "kenia", "kirguistan", "kiribati", "kuwait", "laos", "lesoto",
+    "letonia", "libano", "liberia", "libia", "liechtenstein", "lituania",
+    "luxemburgo", "madagascar", "malasia", "malaui", "maldivas", "mali",
+    "malta", "marruecos", "mauricio", "mauritania", "mexico", "micronesia",
+    "moldavia", "monaco", "mongolia", "montenegro", "mozambique", "namibia",
+    "nauru", "nepal", "nicaragua", "niger", "nigeria", "noruega",
+    "nueva zelanda", "oman", "paises bajos", "pakistan", "palaos",
+    "palestina", "panama", "papua nueva guinea", "paraguay", "peru",
+    "polonia", "portugal", "puerto rico", "reino unido", "republica centroafricana",
+    "republica checa", "republica democratica del congo",
+    "republica dominicana", "ruanda", "rumania", "rusia", "samoa",
+    "san cristobal y nieves", "san marino", "san vicente y las granadinas",
+    "santa lucia", "santo tome y principe", "senegal", "serbia",
+    "seychelles", "sierra leona", "singapur", "siria", "somalia",
+    "sri lanka", "sudafrica", "sudan", "sudan del sur", "suecia",
+    "suiza", "surinam", "tailandia", "taiwan", "tanzania", "tayikistan",
+    "timor oriental", "togo", "tonga", "trinidad y tobago", "tunez",
+    "turkmenistan", "turquia", "tuvalu", "ucrania", "uganda", "uruguay",
+    "uzbekistan", "vanuatu", "vaticano", "venezuela", "vietnam", "yemen",
+    "yibuti", "zambia", "zimbabue",
 }
 
 # Alias de países: evita que "Brasil/Brazil" o "España/Spain" terminen
