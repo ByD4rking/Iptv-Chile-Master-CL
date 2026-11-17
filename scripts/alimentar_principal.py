@@ -2542,9 +2542,9 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
 def clave_familia_canal(nombre):
     """Identifica familias conocidas sin fusionar canales por prefijos genéricos."""
     texto = normalizar(nombre)
-    texto = re.sub(r"\\s*(?:\\[|\\()\\s*(?:opc(?:ion)?|option)\\.?\\s*\\d+\\s*(?:\\]|\\))$", "", texto)
-    texto = re.sub(r"\\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
-    texto = re.sub(r"\\s*\\|\\s*(?:cl|co|chile)$", "", texto)
+    texto = re.sub(r"\s*(?:\[|\()\s*(?:opc(?:ion)?|option)\.?\s*\d+\s*(?:\]|\))$", "", texto)
+    texto = re.sub(r"\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
+    texto = re.sub(r"\s*\|\s*(?:cl|co|chile)$", "", texto)
     if not texto:
         return ""
 
