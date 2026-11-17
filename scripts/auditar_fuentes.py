@@ -52,7 +52,7 @@ def parse_m3u(text: str) -> dict[str, list[str]]:
             group_match = re.search(r'group-title="([^"]*)"', line)
             channel_id = id_match.group(1).strip() if id_match else ""
             group = group_match.group(1).strip() if group_match else ""
-            identity = channel_id or normalize(name)
+            identity = channel_id or (normalize(name) + "|" + normalize(group))
             current = (identity or f"entry-{ordinal}", name, group)
         elif current and line.startswith(("http://", "https://")):
             key, name, group = current
