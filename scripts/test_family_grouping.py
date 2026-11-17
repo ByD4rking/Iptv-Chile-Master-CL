@@ -100,12 +100,12 @@ class FamilyGroupingTests(unittest.TestCase):
         cat = "Infantiles"
         current = ["#EXTM3U"]
         current += bloque("Rugrats Crecidos", categoria=cat)
-        current += bloque("Bob Esponja Pantalones Cuadrados", categoria=cat)
-        current += bloque("Los Padrinos Mágicos [Opción 2]", categoria=cat)
-        current += bloque("Canal Infantil", categoria=cat)
-        current += bloque("Rugrats", categoria=cat)
         current += bloque("Bob Esponja", categoria=cat)
         current += bloque("Los Padrinos Mágicos", categoria=cat)
+        current += bloque("Canal Infantil", categoria=cat)
+        current += bloque("Rugrats", categoria=cat)
+        current += bloque("Bob Esponja Pantalones Cuadrados", categoria=cat)
+        current += bloque("Los Padrinos Mágicos [Opción 2]", categoria=cat)
         current += bloque("Rugrats", categoria=cat)
 
         result = ap.agrupar_familias_por_categoria(current, current)
@@ -114,8 +114,8 @@ class FamilyGroupingTests(unittest.TestCase):
             "Rugrats",
             "Rugrats",
             "Rugrats Crecidos",
-            "Bob Esponja Pantalones Cuadrados",
             "Bob Esponja",
+            "Bob Esponja Pantalones Cuadrados",
             "Los Padrinos Mágicos",
             "Los Padrinos Mágicos [Opción 2]",
             "Canal Infantil",
