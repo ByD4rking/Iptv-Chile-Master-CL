@@ -52,7 +52,7 @@ def parse_m3u(text: str) -> dict[str, list[str]]:
             group_match = re.search(r'group-title="([^"]*)"', line)
             channel_id = id_match.group(1).strip() if id_match else ""
             group = group_match.group(1).strip() if group_match else ""
-            identity = channel_id or (normalize(name) + "|" + normalize(group))
+            identity = channel_id or normalize(name)
             current = (identity or f"entry-{ordinal}", name, group)
         elif current and line.startswith(("http://", "https://")):
             key, name, group = current
@@ -107,7 +107,8 @@ def configured_sources(scope: str) -> list[dict]:
         for item in principal.get("sources", []):
             result.append({"name": "PRINCIPAL/" + item["name"], "url": item["url"], "readonly": False})
         for name, url in principal.get("special_sources", {}).items():
-            if name == "pluto_mx_alternatives":
+            # IPTVSV y MAGMA ya están en "sources"; se agregan los especiales restantes.
+            if name not in {"iptvsv", "magma"}:
                 result.append({"name": "PRINCIPAL/SPECIAL-" + name.upper(), "url": url, "readonly": False})
         for item in principal.get("pluto_sources", []):
             result.append({"name": "PRINCIPAL/" + item["name"], "url": item["url"], "readonly": False})
@@ -275,6 +276,7 @@ def audit(scope: str) -> dict:
         "scope": scope,
         "checked_at": timestamp,
         "sources_configured": len(jobs) + (len(errors) if scope == "pluto" else 0),
+        "sources_unique_urls": len({job[1] for job in jobs}),
         "sources_checked": len(results),
         "sources_failed": len(errors),
         "changed_sources": sum(1 for item in changes if item["status"] == "changed"),
