@@ -243,11 +243,19 @@ def main(args: argparse.Namespace) -> None:
 
     es_anime_ids = channel_ids(pluto_es, anime_only=True)
     latam_mx_ids = channel_ids(pluto_latam) | channel_ids(pluto_mx)
+    # Anime está congelada: solo se exige conservar las señales que ya
+    # existían en la maestra de entrada. Las altas nuevas de Pluto no se importan.
+    anime_names_before = {
+        channel_name_key(item["display_raw"])
+        for item in before
+        if norm(item["category"]) == "anime"
+    }
     allowed_anime_names = {
         channel_name_key(channel.get("nombre") or channel.get("tvg-name") or "")
         for channel in pluto_latam + pluto_mx
         if norm(channel.get("categoria", "")) == "anime"
         and channel_name_key(channel.get("nombre") or channel.get("tvg-name") or "")
+        in anime_names_before
     }
     es_only_ids = es_anime_ids - latam_mx_ids
     es_only_ids |= {norm(value) for value in ap.PLUTO_ES_ANIME_IDS_HISTORICOS} - latam_mx_ids
@@ -298,10 +306,11 @@ def main(args: argparse.Namespace) -> None:
     expected_token_urls = defaultdict(set)
     for source_name, channels in (("LATAM", pluto_latam), ("ES", pluto_es)):
         for channel in channels:
-            if source_name == "ES" and (
-                norm(channel.get("categoria", "")) == "anime"
-                or channel_name_key(channel.get("nombre", "")).startswith("lospitufos")
-            ):
+            # Anime no renueva URL ni JWT automáticamente: el bloque está
+            # congelado y conserva exactamente las URLs de la maestra de entrada.
+            if norm(channel.get("categoria", "")) == "anime":
+                continue
+            if source_name == "ES" and channel_name_key(channel.get("nombre", "")).startswith("lospitufos"):
                 continue
             url = channel.get("url", "")
             channel_id = stream_id(channel)
