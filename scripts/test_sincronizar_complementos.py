@@ -1353,3 +1353,34 @@ class GlobalPlaylistSafeguardTests(unittest.TestCase):
             "Informativos", "Música", "Argentina 🇦🇷", "Perú", "Bolivia",
         ])
         self.assertTrue(blindajes.validar_orden_categorias(output))
+
+class AuthorizedLogoOverrideTests(unittest.TestCase):
+    def test_only_the_two_authorized_logo_corrections_override_history(self):
+        old = "https://logos.example/old.png"
+        other = "https://logos.example/other.png"
+        current = ["#EXTM3U"]
+        current += [
+            '#EXTINF:-1 tvg-id="tvn.local" group-title="CHILE TV" tvg-logo="https://source.example/wrong.png",TVN HD (LOCAL)',
+            "https://streams.example/tvn.m3u8",
+            '#EXTINF:-1 tvg-id="tvchile.1080" group-title="Entretenimiento Premium" tvg-logo="https://source.example/wrong.png",TV Chile (1080p) [Geo-blocked]',
+            "https://streams.example/tvchile.m3u8",
+            '#EXTINF:-1 tvg-id="other.id" group-title="Series" tvg-logo="https://source.example/wrong.png",Otro canal',
+            "https://streams.example/other.m3u8",
+        ]
+        original = ["#EXTM3U"]
+        original += [
+            f'#EXTINF:-1 tvg-id="tvn.local" group-title="CHILE TV" tvg-logo="{old}",TVN HD (LOCAL)',
+            "https://streams.example/tvn-old.m3u8",
+            f'#EXTINF:-1 tvg-id="tvchile.1080" group-title="Entretenimiento Premium" tvg-logo="{old}",TV Chile (1080p) [Geo-blocked]',
+            "https://streams.example/tvchile-old.m3u8",
+            f'#EXTINF:-1 tvg-id="other.id" group-title="Series" tvg-logo="{other}",Otro canal',
+            "https://streams.example/other.m3u8",
+        ]
+        output, stats = blindajes.blindar_logos(current, original)
+        tvn = next(line for line in output if line.startswith("#EXTINF") and "TVN HD (LOCAL)" in line)
+        tvchile = next(line for line in output if line.startswith("#EXTINF") and "TV Chile (1080p)" in line)
+        other_line = next(line for line in output if line.startswith("#EXTINF") and line.endswith(",Otro canal"))
+        self.assertIn(blindajes.LOGOS_AUTORIZADOS_POR_NOMBRE["TVN HD (LOCAL)"], tvn)
+        self.assertIn(blindajes.LOGOS_AUTORIZADOS_POR_NOMBRE["TV Chile (1080p) [Geo-blocked]"], tvchile)
+        self.assertIn(f'tvg-logo="{other}"', other_line)
+        self.assertEqual(stats["logos_autorizados"], 2)
