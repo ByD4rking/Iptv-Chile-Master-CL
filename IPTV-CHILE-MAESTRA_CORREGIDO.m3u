@@ -1,4 +1,5 @@
 #EXTM3U
+
 #EXTINF:0 type="stream" channelId="-1" group-title="CHILE TV" logo="https://i.ibb.co/hFJ441F/mega.jpg" tvg-name="Mega HD (Nacional)" tvg-logo="https://i.ibb.co/hFJ441F/mega.jpg",Mega HD (Nacional)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -92,6 +93,10 @@ http://181.78.121.15:8000/play/a00k/index.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://iptv2.intersurtv.cl/TVN/index.m3u8?PlaylistM3UCL
+#EXTINF:0 type="stream" channelId="3801" group-title="CHILE TV" logo="https://i.imgur.com/oYFto0V.png" tvg-logo="https://i.imgur.com/oYFto0V.png",TV Chile (1080p) [Geo-blocked]
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8
 #EXTINF:0 type="stream" channelId="-1" group-title="CHILE TV" logo="https://cdn.m3u.cl/logo/457_Canal_13.png" tvg-logo="https://cdn.m3u.cl/logo/457_Canal_13.png",Canal 13 HD (Nacional)(Geo-Blocked)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -800,10 +805,6 @@ https://unlimited1-cl-isp.dps.live/itv/itv.smil/playlist.m3u8?PlaylistM3UCL
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://video.juntostvchile.cl:8879/hls/web-jntv.m3u8?PlaylistM3UCL
-#EXTINF:0 type="stream" channelId="-1" name="La Chilena TV" group-title="CHILE TV" logo="https://cdn.m3u.cl/logo/1195_La_Chilena_TV.png" tvg-logo="https://cdn.m3u.cl/logo/1195_La_Chilena_TV.png",La Chilena TV ✪ | CL
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://vdochile.com:3134/hybrid/play.m3u8?PlaylistM3UCL
 #EXTINF:0 type="stream" channelId="-1" name="La Clave" group-title="CHILE TV" logo="https://cdn.m3u.cl/logo/1270_La_Clave.png" tvg-logo="https://cdn.m3u.cl/logo/1270_La_Clave.png",La Clave | CL
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -1240,10 +1241,6 @@ https://tv.arkeo.cl:1936/radiorancagua/radiorancagua/playlist.m3u8?PlaylistM3UCL
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://live20.bozztv.com/giatv/giatv-riquelme1350am/riquelme1350am/playlist.m3u8?PlaylistM3UCL
-#EXTINF:0 type="stream" channelId="-1" name="Radio Ritmo FM" group-title="CHILE TV" logo="https://cdn.m3u.cl/logo/1196_Radio_Ritmo_FM.png" tvg-logo="https://cdn.m3u.cl/logo/1196_Radio_Ritmo_FM.png",Radio Ritmo FM | CL
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://panel.tvstream.cl:1936/8046/8046/playlist.m3u8?PlaylistM3UCL
 #EXTINF:0 type="stream" channelId="-1" name="Radio Romantica" group-title="CHILE TV" logo="https://cdn.m3u.cl/logo/428_Radio_Romantica.png" tvg-logo="https://cdn.m3u.cl/logo/428_Radio_Romantica.png",Radio Romantica | CL
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -1745,6 +1742,38 @@ https://vivo.solumedia.com:19360/araucaria/araucaria.m3u8?PlaylistM3UCL
 #EXTVLCOPT:network-caching=5000
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36
 http://m3u.tvcluboficial.com/free/ReachBot/Kip/360.m3u8
+#EXTINF:0 type="stream" channelId="-1" name="La Chilena TV" group-title="CHILE TV" logo="https://cdn.m3u.cl/logo/1195_La_Chilena_TV.png" tvg-logo="https://cdn.m3u.cl/logo/1195_La_Chilena_TV.png",La Chilena TV ✪ | CL
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://vdochile.com:3134/hybrid/play.m3u8?PlaylistM3UCL
+#EXTINF:0 type="stream" channelId="-1" name="Radio Ritmo FM" group-title="CHILE TV" logo="https://cdn.m3u.cl/logo/1196_Radio_Ritmo_FM.png" tvg-logo="https://cdn.m3u.cl/logo/1196_Radio_Ritmo_FM.png",Radio Ritmo FM | CL
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://panel.tvstream.cl:1936/8046/8046/playlist.m3u8?PlaylistM3UCL
+#EXTINF:0 type="stream" channelId="-1" group-title="CHILE TV" logo="https://i.imgur.com/QGvfqug.png" tvg-logo="https://i.imgur.com/QGvfqug.png",Caracola TV
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://wifispeed.trapemn.tv:1936/comunales/caracola-tv/chunks.m3u8
+#EXTINF:0 type="stream" channelId="-1" group-title="CHILE TV" logo="https://cdn.m3u.cl/logo/1655_Ciudadano_Radio.png" tvg-logo="https://cdn.m3u.cl/logo/1655_Ciudadano_Radio.png",Ciudadano Radio (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://oracle.streaminghd.cl/ciudadanoradiotv/ciudadanoradiotv/playlist.m3u8
+#EXTINF:0 type="stream" channelId="-1" group-title="CHILE TV" logo="https://i.imgur.com/GHJkxaB.png" tvg-logo="https://i.imgur.com/GHJkxaB.png",La Chilena TV
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://vdochile.com:3134/stream/play.m3u8
+#EXTINF:0 type="stream" channelId="-1" group-title="CHILE TV" logo="https://i.imgur.com/ZzUc6je.png" tvg-logo="https://i.imgur.com/ZzUc6je.png",Radio Rancagua FM (720p)
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://tv.arkeo.cl:1936/radiorancagua/radiorancagua/playlist.m3u8
+#EXTINF:0 type="stream" channelId="-1" group-title="CHILE TV" logo="https://i.imgur.com/qU3E0kX.png" tvg-logo="https://i.imgur.com/qU3E0kX.png",Radio Ritmo (1080p) [Not 24/7]
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://panel.tvstream.cl:1936/8046/8046/playlist.m3u8
+#EXTINF:0 type="stream" channelId="1404" group-title="CHILE TV" logo="https://i.imgur.com/mTesx1h.png" tvg-logo="https://i.imgur.com/mTesx1h.png",Vision TV
+#EXTVLCOPT:http-reconnect=true
+#EXTVLCOPT:network-caching=5000
+https://tv.arkeo.cl:1936/8044/8044/playlist.m3u8
 #EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/RoqueDJ/iptv-svg/main/1792421696158.png" group-title="Competencia",American Ninja Warrior
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -7527,14 +7556,6 @@ http://playcom.trapemn.tv:1935/transcoderip/america.stream/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 http://bantel-cdn1.iptvperu.tv:1935/btnscrtn/antenauno.stream/playlist.m3u8
-#EXTINF:0 type="stream" channelId="-1" group-title="General" logo="https://i.imgur.com/QGvfqug.png" tvg-logo="https://i.imgur.com/QGvfqug.png",Caracola TV
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://wifispeed.trapemn.tv:1936/comunales/caracola-tv/chunks.m3u8
-#EXTINF:0 type="stream" channelId="-1" group-title="General" logo="https://cdn.m3u.cl/logo/1655_Ciudadano_Radio.png" tvg-logo="https://cdn.m3u.cl/logo/1655_Ciudadano_Radio.png",Ciudadano Radio (720p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://oracle.streaminghd.cl/ciudadanoradiotv/ciudadanoradiotv/playlist.m3u8
 #EXTINF:0 type="stream" channelId="-1" group-title="Perú" logo="https://i.imgur.com/X7cPyP2.png" tvg-logo="https://i.imgur.com/X7cPyP2.png",Controversia TV (720p) [Not 24/7]
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -7555,10 +7576,6 @@ http://190.93.224.42/GLOBAL/index.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 http://181.78.8.199:8000/play/a09k/index.m3u8
-#EXTINF:0 type="stream" channelId="-1" group-title="Música" logo="https://i.imgur.com/GHJkxaB.png" tvg-logo="https://i.imgur.com/GHJkxaB.png",La Chilena TV
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://vdochile.com:3134/stream/play.m3u8
 #EXTINF:0 type="stream" channelId="-1" group-title="República Dominicana" logo="https://www.vivalivetv.com/public/files/shows/0/1/3386-294x165-FFFFFF.jpg" tvg-logo="https://www.vivalivetv.com/public/files/shows/0/1/3386-294x165-FFFFFF.jpg",La Reina TV [Geo-blocked]
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -7579,14 +7596,6 @@ https://live2.tensila.com/1-1-1.power-tv/hls/master.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://giatv.bozztv.com/giatv/giatv-PTVonLINE/PTVonLINE/playlist.m3u8
-#EXTINF:0 type="stream" channelId="-1" group-title="General" logo="https://i.imgur.com/ZzUc6je.png" tvg-logo="https://i.imgur.com/ZzUc6je.png",Radio Rancagua FM (720p)
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://tv.arkeo.cl:1936/radiorancagua/radiorancagua/playlist.m3u8
-#EXTINF:0 type="stream" channelId="-1" group-title="Música" logo="https://i.imgur.com/qU3E0kX.png" tvg-logo="https://i.imgur.com/qU3E0kX.png",Radio Ritmo (1080p) [Not 24/7]
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://panel.tvstream.cl:1936/8046/8046/playlist.m3u8
 #EXTINF:0 type="stream" channelId="-1" group-title="Argentina" logo="https://i.imgur.com/HXBLozl.png" tvg-logo="https://i.imgur.com/HXBLozl.png",Radio TV Neuquén (720p) [Not 24/7]
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -7663,10 +7672,6 @@ https://videohd.live:19360/8008/8008.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 https://59d39900ebfb8.streamlock.net/teleestrella/teleestrella/playlist.m3u8
-#EXTINF:0 type="stream" channelId="3801" group-title="CHILE TV" logo="https://i.imgur.com/oYFto0V.png" tvg-logo="https://i.imgur.com/oYFto0V.png",TV Chile (1080p) [Geo-blocked]
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://mdstrm.com/live-stream-playlist/533adcc949386ce765657d7c.m3u8
 #EXTINF:0 type="stream" channelId="-1" group-title="Bolivia" logo="https://i.imgur.com/V6wxEdh.png" tvg-logo="https://i.imgur.com/V6wxEdh.png",TV Latina (1080p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
@@ -7707,10 +7712,6 @@ https://live-evg11.tv360.bitel.com.pe/bitel/uraniotv/playlist.m3u8
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
 http://138.121.15.230:9002/USA/index.m3u8
-#EXTINF:0 type="stream" channelId="1404" group-title="General" logo="https://i.imgur.com/mTesx1h.png" tvg-logo="https://i.imgur.com/mTesx1h.png",Vision TV
-#EXTVLCOPT:http-reconnect=true
-#EXTVLCOPT:network-caching=5000
-https://tv.arkeo.cl:1936/8044/8044/playlist.m3u8
 #EXTINF:0 type="stream" channelId="-1" group-title="Perú" logo="https://i.imgur.com/GkSoxhx.png" tvg-logo="https://i.imgur.com/GkSoxhx.png",Viva TV Yurimaguas (720p)
 #EXTVLCOPT:http-reconnect=true
 #EXTVLCOPT:network-caching=5000
