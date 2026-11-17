@@ -125,41 +125,15 @@ def main():
     god_path = ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"
     god_lines = god_path.read_text(encoding="utf-8-sig").splitlines() if god_path.is_file() else []
     referencias_logos = original_lines + god_lines
-    nombres_logos_autorizados = {
-        "TVN HD (LOCAL)",
-        "TV Chile (1080p) [Geo-blocked]",
-        "Caracola TV | CL",
-        "La Chilena TV ✪ | CL",
-        "Radio Rancagua | CL",
-        "Radio Rancagua FM (720p)",
-        "Radio Ritmovisión TV",
-        "MAX Anime (1080p)",
-        "Primire Anime",
-        "TL+ (El Salvador)",
-    }
-    logos_autorizados = {
-        "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
-        "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/oYFto0V.png",
-        "Caracola TV | CL": "https://i.imgur.com/QGvfqug.png",
-        "La Chilena TV ✪ | CL": "https://i.imgur.com/GHJkxaB.png",
-        "Radio Rancagua | CL": "https://i.imgur.com/ZzUc6je.png",
-        "Radio Rancagua FM (720p)": "https://i.imgur.com/ZzUc6je.png",
-        # Logo exacto de MAX Anime, publicado por MAX Entertainment Group LLC.
-        "MAX Anime (1080p)": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Max_Anime_Logo.png",
-        # Logo actual del perfil oficial de TL+ en Kift; reemplaza el enlace
-        # temporal de Discord que ya expiró.
-        "TL+ (El Salvador)": "https://kift.live/media/avatars/27ffc836-28d5-457b-9ebe-f65b0c2f5fb9/091fff8e-0e9e-46f9-b5ff-50cf24ce481b.png",
-    }
     ordered_lines, logo_stats = alimentador.restaurar_logos_historicos(
         ordered_lines,
         referencias_logos,
         pluto_por_id,
         pluto_por_nombre,
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
-        nombres_autorizados=nombres_logos_autorizados,
-        logos_autorizados_por_nombre=logos_autorizados,
-    )
-    # Último blindaje de orden: España y todos los países deben quedar al final.
+        nombres_autorizados=alimentador.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL,
+        logos_autorizados_por_nombre=alimentador.LOGOS_AUTORIZADOS_PRINCIPAL,
+    )    # Último blindaje de orden: España y todos los países deben quedar al final.
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
     # Agrupar variantes de una misma familia al final del flujo, preservando
     # el orden actual de categorías y de la primera aparición de cada familia.
