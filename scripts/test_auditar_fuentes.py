@@ -77,10 +77,12 @@ class AuditSourceTests(unittest.TestCase):
 
     def test_principal_audits_all_25_unique_m3u_sources(self):
         sources = MODULE.configured_sources("principal")
-        urls = {item["url"] for item in sources}
+        principal_sources = [item for item in sources if item["name"].startswith("PRINCIPAL/")]
+        urls = {item["url"] for item in principal_sources}
         self.assertEqual(len(urls), 25)
-        self.assertIn("PRINCIPAL/SPECIAL-PLUTO_MX_ALTERNATIVES", {item["name"] for item in sources})
-        self.assertIn("PRINCIPAL/SPECIAL-FEAR_FACTOR", {item["name"] for item in sources})
+        self.assertIn("PRINCIPAL/SPECIAL-PLUTO_MX_ALTERNATIVES", {item["name"] for item in principal_sources})
+        self.assertIn("PRINCIPAL/SPECIAL-FEAR_FACTOR", {item["name"] for item in principal_sources})
+        self.assertTrue(any(item["name"].startswith("GOD/") and item["readonly"] for item in sources))
 
 
     def test_rename_without_tvg_id_is_detected_when_stream_url_is_stable(self):
