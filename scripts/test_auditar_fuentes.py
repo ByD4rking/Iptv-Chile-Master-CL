@@ -82,5 +82,17 @@ class AuditSourceTests(unittest.TestCase):
         self.assertIn("PRINCIPAL/SPECIAL-PLUTO_MX_ALTERNATIVES", {item["name"] for item in sources})
         self.assertIn("PRINCIPAL/SPECIAL-FEAR_FACTOR", {item["name"] for item in sources})
 
+
+    def test_rename_without_tvg_id_is_detected_when_stream_url_is_stable(self):
+        old_text = '#EXTM3U\n#EXTINF:-1 group-title="Series",Nombre Antiguo\nhttps://a/stream.m3u8\n'
+        new_text = '#EXTM3U\n#EXTINF:-1 group-title="Cine",Nombre Nuevo\nhttps://a/stream.m3u8\n'
+        old = MODULE.snapshot_entry(old_text.encode(), "SRC", "https://src/list.m3u")
+        new = MODULE.snapshot_entry(new_text.encode(), "SRC", "https://src/list.m3u")
+        diff = MODULE.diff_source("SRC", old, new)
+        self.assertEqual(diff["added_channels"], 0)
+        self.assertEqual(diff["removed_channels"], 0)
+        self.assertEqual(diff["renamed_channels"], 1)
+        self.assertEqual(diff["changed_categories"], 1)
+
 if __name__ == "__main__":
     unittest.main()
