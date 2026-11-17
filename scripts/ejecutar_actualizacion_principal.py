@@ -158,6 +158,7 @@ def main():
         pluto_por_id,
         pluto_por_nombre,
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
+        logos_bloqueados_por_identidad=alimentador.extraer_logos_bloqueados_por_identidad(original_lines),
         nombres_autorizados=alimentador.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL,
         logos_autorizados_por_nombre=alimentador.LOGOS_AUTORIZADOS_PRINCIPAL,
     )
