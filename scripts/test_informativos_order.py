@@ -114,6 +114,8 @@ class InformativosOrderTests(unittest.TestCase):
             ("Informativos", "Telemundo Noticias Ahora"),
             ("Informativos", "T13 En Vivo (Chile - Nacional)"),
             ("Informativos", "Canal 33 Tijuana (Baja California)"),
+            ("Informativos", "Mi Radio"),
+            ("Informativos", "Thema Coquimbo"),
             ("Informativos", "Meganoticias"),
         ]:
             sample.extend([
