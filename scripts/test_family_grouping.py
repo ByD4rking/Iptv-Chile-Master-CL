@@ -119,6 +119,27 @@ class FamilyGroupingTests(unittest.TestCase):
             "Naruto", "Naruto Shippuden", "Dragon Ball Z", "Dragon Ball Super",
         ])
 
+    def test_anime_saga_order_places_boruto_before_naruto_movies(self):
+        lines = ["#EXTM3U"]
+        lines += bloque("Naruto (Peliculas)", categoria="Anime")
+        lines += bloque("Boruto: Naruto Next Generations", categoria="Anime")
+        lines += bloque("Naruto Shippuden", categoria="Anime")
+        lines += bloque("Naruto", categoria="Anime")
+        lines += bloque("Dragon Ball GT", categoria="Anime")
+        lines += bloque("Dragon Ball Z", categoria="Anime")
+        lines += bloque("Dragon Ball Super", categoria="Anime")
+        result = ap.ordenar_anime_alfabeticamente(lines)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "Dragon Ball Z",
+            "Dragon Ball Super",
+            "Dragon Ball GT",
+            "Naruto",
+            "Naruto Shippuden",
+            "Boruto: Naruto Next Generations",
+            "Naruto (Peliculas)",
+        ])
+
     def test_cnn_services_remain_separate_families(self):
         lines = ["#EXTM3U"]
         lines += bloque("CNN Chile")
