@@ -60,6 +60,7 @@ def _split_blocks(lines):
         )
         blocks.append({
             "lines": raw,
+            "start": index,
             "category": category,
             "category_key": _norm(category),
             "name": _norm(display_name),
@@ -113,7 +114,7 @@ def blindar_logos(lineas, referencia):
     unmatched = []
     for record in current_blocks:
         match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
-        extinf = output[next(i for i, line in enumerate(output) if line == record["lines"][0])]
+        extinf = output[record["start"]]
         if match is None:
             values = ("", "")
             unmatched.append(record["name"] or "(sin nombre)")
@@ -125,16 +126,8 @@ def blindar_logos(lineas, referencia):
                 preserved += 1
         for name, value in zip(_ATTRS, values):
             extinf = _set_attr(extinf, name, value)
-        # Las líneas se comparan por índice de bloque, no por URL: las entradas
-        # pueden compartir nombre o URL y conservar sus metadatos por separado.
-        block_index = record["lines"]
-        start = None
-        for i in range(len(output)):
-            if output[i] == block_index[0]:
-                start = i
-                break
-        if start is not None:
-            output[start] = extinf
+        # Se usa el índice original del bloque: puede haber EXTINF idénticos.
+        output[record["start"]] = extinf
 
     return output, {
         "logos_restaurados": preserved,
