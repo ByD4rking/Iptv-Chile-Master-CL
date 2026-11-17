@@ -4237,11 +4237,17 @@ def main():
                 if indice_extinf < 0:
                     continue
                 extinf = lineas[indice_extinf]
-                if re.search("tvg-logo=\"[^\"]*\"", extinf, re.I):
-                    extinf = re.sub("tvg-logo=\"[^\"]*\"", "tvg-logo=\"" + logo_fear + "\"", extinf, count=1, flags=re.I)
-                else:
+                logo_existente = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+                if not logo_existente:
+                    logo_existente = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
+                # Fear Factor conserva cualquier logo que ya tenga la maestra.
+                # La fuente solo completa el atributo cuando realmente falta.
+                if not logo_existente or not url_es_valida(logo_existente.group(1)):
                     coma = extinf.find(",")
-                    extinf = extinf[:coma].rstrip() + " tvg-logo=\"" + logo_fear + "\"" + extinf[coma:]
+                    extinf = (
+                        extinf[:coma].rstrip() + " tvg-logo=\"" + logo_fear + "\"" + extinf[coma:]
+                        if coma >= 0 else extinf
+                    )
                 extinf = reemplazar_categoria(extinf, destino)
                 if "," in extinf:
                     extinf = extinf.rsplit(",", 1)[0] + ",Fear Factor"
