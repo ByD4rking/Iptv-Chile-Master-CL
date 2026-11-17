@@ -43,6 +43,13 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
 }
 
 FUENTES_PLUTO_CATALOGO = [*FUENTES_PLUTO[:2], FUENTE_PLUTO_ALTERNATIVAS, *FUENTES_PLUTO[2:]]
+# Umbrales conservadores: una descarga truncada no debe provocar bajas masivas.
+PLUTO_CATALOGO_MINIMOS = {
+    FUENTES_PLUTO[0]: 100,
+    FUENTES_PLUTO[1]: 50,
+    FUENTE_PLUTO_ALTERNATIVAS: 50,
+    **{fuente: 100 for fuente in FUENTES_PLUTO[2:]},
+}
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
 PAIS_POR_FUENTE = {
@@ -1054,9 +1061,13 @@ def cargar_catalogo_pluto_propio(session):
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
-            if not canales:
+            minimo = PLUTO_CATALOGO_MINIMOS.get(fuente, 1)
+            if len(canales) < minimo:
                 errores += 1
-                print(f"  -> Catálogo Pluto vacío; se protege la maestra: {fuente}")
+                print(
+                    f"  -> Catálogo Pluto incompleto ({len(canales)}/{minimo}); "
+                    f"se protege la maestra: {fuente}"
+                )
                 continue
             fuentes_ok += 1
 
