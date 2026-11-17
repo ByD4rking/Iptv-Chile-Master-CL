@@ -2599,39 +2599,71 @@ def clave_familia_canal(nombre):
     # (por ejemplo, Comedy Central y Comedy Central HD).
     return "canal:" + texto
 
-def agrupar_familias_por_categoria(lineas):
-    """Agrupa variantes sin alterar el orden de categorías ni de familias."""
-    bloques = []
-    pendientes = []
-    i = 0
-    while i < len(lineas):
-        if not lineas[i].startswith("#EXTINF"):
-            pendientes.append(lineas[i])
-            i += 1
-            continue
-        inicio = list(pendientes)
-        pendientes.clear()
-        inicio.append(lineas[i])
-        j = i + 1
-        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
-            inicio.append(lineas[j])
-            j += 1
-        if j < len(lineas) and url_es_valida(lineas[j].strip()):
-            inicio.append(lineas[j])
-            extinf = lineas[i]
-            familia = clave_familia_canal(extraer_nombre(extinf))
-            # Los bloques sin nombre no comparten familia entre sí.
-            if not familia:
-                familia = f"sin-nombre:{len(bloques)}"
-            bloques.append({
-                "categoria": normalizar(extraer_categoria(extinf)),
-                "familia": familia,
-                "lineas": inicio,
-            })
-            i = j + 1
-        else:
-            pendientes.extend(inicio)
-            i = j
+def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
+    """Agrupa familias respetando su orden histórico e inserta novedades al final del grupo."""
+
+    def extraer_bloques(datos):
+        bloques = []
+        pendientes = []
+        i = 0
+        while i < len(datos):
+            if not datos[i].startswith("#EXTINF"):
+                pendientes.append(datos[i])
+                i += 1
+                continue
+
+            inicio = list(pendientes)
+            pendientes.clear()
+            inicio.append(datos[i])
+            j = i + 1
+            while j < len(datos) and datos[j].startswith("#") and not datos[j].startswith("#EXTINF"):
+                inicio.append(datos[j])
+                j += 1
+
+            if j < len(datos) and url_es_valida(datos[j].strip()):
+                url = datos[j].strip()
+                inicio.append(datos[j])
+                extinf = datos[i]
+                categoria = normalizar(extraer_categoria(extinf))
+                nombre = extraer_nombre(extinf)
+                familia = clave_familia_canal(nombre)
+                if not familia:
+                    familia = f"sin-nombre:{len(bloques)}"
+
+                m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
+                channel_id = tvg_id_valido(m_id.group(1)) if m_id else ""
+                nombre_key = normalizar_nombre_canal(nombre)
+                if channel_id:
+                    identidad = ("id", channel_id)
+                elif nombre_key:
+                    identidad = ("nombre", nombre_key)
+                else:
+                    identidad = ("url", url)
+
+                bloques.append({
+                    "categoria": categoria,
+                    "familia": familia,
+                    "identidad": identidad,
+                    "lineas": inicio,
+                })
+                i = j + 1
+            else:
+                pendientes.extend(inicio)
+                i = j
+
+        return bloques, pendientes
+
+    bloques, pendientes = extraer_bloques(lineas)
+    originales, _ = extraer_bloques(lineas_anteriores or [])
+
+    familias_originales = defaultdict(list)
+    identidades_originales = defaultdict(set)
+    for bloque in originales:
+        categoria = bloque["categoria"]
+        familia = bloque["familia"]
+        if familia not in familias_originales[categoria]:
+            familias_originales[categoria].append(familia)
+        identidades_originales[categoria].add(bloque["identidad"])
 
     segmentos = []
     for bloque in bloques:
@@ -2641,20 +2673,44 @@ def agrupar_familias_por_categoria(lineas):
 
     salida = []
     for segmento in segmentos:
+        categoria = segmento[0]["categoria"]
         familias = {}
-        orden_familias = []
+        orden_familias_actual = []
         for bloque in segmento:
             familia = bloque["familia"]
             if familia not in familias:
                 familias[familia] = []
-                orden_familias.append(familia)
+                orden_familias_actual.append(familia)
             familias[familia].append(bloque)
+
+        orden_historico = [
+            familia for familia in familias_originales.get(categoria, [])
+            if familia in familias
+        ]
+        conjunto_historico = set(orden_historico)
+        orden_familias = orden_historico + [
+            familia for familia in orden_familias_actual
+            if familia not in conjunto_historico
+        ]
+
+        identidades = identidades_originales.get(categoria, set())
         for familia in orden_familias:
-            for bloque in familias[familia]:
+            grupo = familias[familia]
+            # Primero las señales ya existentes, en su orden actual; después
+            # las nuevas variantes, inmediatamente al final de esa familia.
+            existentes = [
+                bloque for bloque in grupo
+                if bloque["identidad"] in identidades
+            ]
+            nuevas = [
+                bloque for bloque in grupo
+                if bloque["identidad"] not in identidades
+            ]
+            for bloque in existentes + nuevas:
                 salida.extend(bloque["lineas"])
+
     salida.extend(pendientes)
     return salida
-
 
 def validar_orden_canales(
     lineas_anteriores,
