@@ -111,6 +111,30 @@ def normalizar_nombre_canal(value):
     return re.sub(r"[^a-z0-9]+", "", value)
 TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
 
+# Lista blanca estricta: ningún otro canal puede recibir cambios automáticos de logo.
+NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL = {
+    "TVN HD (LOCAL)",
+    "TV Chile (1080p) [Geo-blocked]",
+    "Caracola TV | CL",
+    "La Chilena TV ✪ | CL",
+    "Radio Rancagua | CL",
+    "Radio Rancagua FM (720p)",
+    "Radio Ritmovisión TV",
+    "MAX Anime (1080p)",
+    "Primire Anime",
+    "TL+ (El Salvador)",
+}
+LOGOS_AUTORIZADOS_PRINCIPAL = {
+    "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
+    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/oYFto0V.png",
+    "Caracola TV | CL": "https://i.imgur.com/QGvfqug.png",
+    "La Chilena TV ✪ | CL": "https://i.imgur.com/GHJkxaB.png",
+    "Radio Rancagua | CL": "https://i.imgur.com/ZzUc6je.png",
+    "Radio Rancagua FM (720p)": "https://i.imgur.com/ZzUc6je.png",
+    "MAX Anime (1080p)": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Max_Anime_Logo.png",
+    "TL+ (El Salvador)": "https://kift.live/media/avatars/27ffc836-28d5-457b-9ebe-f65b0c2f5fb9/091fff8e-0e9e-46f9-b5ff-50cf24ce481b.png",
+}
+
 
 def tvg_id_valido(value):
     value = normalizar(value)
@@ -4681,6 +4705,8 @@ def main():
     lineas, logos_restaurados = restaurar_logos_historicos(
         lineas, referencias_logos, pluto_por_id, pluto_por_nombre, logos_historicos,
         logos_bloqueados_por_url=extraer_logos_bloqueados_por_url(lineas_iniciales),
+        nombres_autorizados=NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL,
+        logos_autorizados_por_nombre=LOGOS_AUTORIZADOS_PRINCIPAL,
     )
     # Ordenar Anime por franquicia/saga al final para que ninguna etapa posterior lo desordene.
     lineas = ordenar_anime_alfabeticamente(lineas)
