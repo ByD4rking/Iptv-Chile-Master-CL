@@ -74,5 +74,13 @@ class AuditSourceTests(unittest.TestCase):
         self.assertEqual(before["canal x"][2], "Series")
         self.assertEqual(after["canal x"][2], "Cine")
 
+
+    def test_principal_audits_all_25_unique_m3u_sources(self):
+        sources = MODULE.configured_sources("principal")
+        urls = {item["url"] for item in sources}
+        self.assertEqual(len(urls), 25)
+        self.assertIn("PRINCIPAL/SPECIAL-PLUTO_MX_ALTERNATIVES", {item["name"] for item in sources})
+        self.assertIn("PRINCIPAL/SPECIAL-FEAR_FACTOR", {item["name"] for item in sources})
+
 if __name__ == "__main__":
     unittest.main()
