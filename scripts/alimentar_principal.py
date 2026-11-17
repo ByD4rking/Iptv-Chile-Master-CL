@@ -255,22 +255,22 @@ def es_categoria_pais_generica_iptvsv(categoria):
 
 
 INFORMATIVOS_PRIORITARIOS = [
-    r"^cnn chile(?:\\b|$)",
-    r"^24 horas tvn(?:\\b|$)",
-    r"^meganoticias(?:\\b|$)",
-    r"^tn(?:\\s|$)",
-    r"^n\\+\\s*mexico(?:\\b|$)",
-    r"^noticias caracol(?:\\b|$)",
-    r"^rcn noticias(?:\\b|$)",
+    r"^cnn chile(?:\b|$)",
+    r"^24 horas tvn(?:\b|$)",
+    r"^meganoticias(?:\b|$)",
+    r"^tn(?:\s|$)",
+    r"^n\+\s*mexico(?:\b|$)",
+    r"^noticias caracol(?:\b|$)",
+    r"^rcn noticias(?:\b|$)",
     r"^telesur$",
-    r"^cnn en espanol(?:\\b|$)",
-    r"^bbc news mundo(?:\\b|$)",
-    r"^dw espanol(?:\\b|$)",
-    r"^france 24 espanol(?:\\b|$)",
-    r"^euronews espanol(?:\\b|$)",
-    r"^rtve canal 24 horas(?:\\b|$)",
-    r"^cgtn espanol(?:\\b|$)",
-    r"^telemundo noticias ahora(?:\\b|$)",
+    r"^cnn en espanol(?:\b|$)",
+    r"^bbc news mundo(?:\b|$)",
+    r"^dw espanol(?:\b|$)",
+    r"^france 24 espanol(?:\b|$)",
+    r"^euronews espanol(?:\b|$)",
+    r"^rtve canal 24 horas(?:\b|$)",
+    r"^cgtn espanol(?:\b|$)",
+    r"^telemundo noticias ahora(?:\b|$)",
 ]
 
 
@@ -305,9 +305,9 @@ def es_regional_informativos(nombre):
     if es_canal_prioritario_informativos(nombre):
         return False
     nombre = normalizar(nombre)
-    if re.match(r"^telesur\\s*\\|\\s*ve\\b", nombre) or re.match(r"^telesur costa rica\\b", nombre):
+    if re.match(r"^telesur\s*\|\s*ve\b", nombre) or re.match(r"^telesur costa rica\b", nombre):
         return True
-    if re.match(r"^telemundo noticias (california|florida|noreste|texas)\\b", nombre):
+    if re.match(r"^telemundo noticias (california|florida|noreste|texas)\b", nombre):
         return True
     if any(ubicacion in nombre for ubicacion in REGIONALES_INFORMATIVOS):
         return True
@@ -318,12 +318,12 @@ def es_regional_informativos(nombre):
         "guatemala", "honduras", "mexico", "nicaragua", "panama", "paraguay",
         "peru", "puerto rico", "republica dominicana", "uruguay", "venezuela",
     }
-    for ubicacion in re.findall(r"\\(([^)]*)\\)", nombre):
+    for ubicacion in re.findall(r"\(([^)]*)\)", nombre):
         if "nacional" in ubicacion or "internacional" in ubicacion:
             continue
         partes = [
             parte.strip()
-            for parte in re.split(r"\\s*[-/]\\s*", ubicacion)
+            for parte in re.split(r"\s*[-/]\s*", ubicacion)
             if parte.strip()
         ]
         if len(partes) >= 2:
