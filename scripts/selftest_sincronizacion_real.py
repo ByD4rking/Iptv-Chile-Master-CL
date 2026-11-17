@@ -502,6 +502,12 @@ def main(args: argparse.Namespace) -> None:
                     f"resumen={result!r}"
                 )
 
+        # Informativos se ordena deliberadamente por prioridad y deja los
+        # canales regionales al final. La integridad/cantidad ya se comprobó
+        # arriba; no comparar aquí su orden histórico anterior.
+        if category == norm("Informativos"):
+            continue
+
         # Las categorías pueden cambiar; se compara el orden solo de los
         # canales que permanecen en la misma categoría. Los movidos se auditan
         # por identidad y cantidad global, no como una pérdida.
