@@ -13,7 +13,7 @@ EXPECTED = [
     re.compile(r"^N\\+ México", re.I),
     re.compile(r"^Noticias Caracol", re.I),
     re.compile(r"^RCN Noticias", re.I),
-    re.compile(r"^TeleSUR", re.I),
+    re.compile(r"^TeleSUR$", re.I),
     re.compile(r"^CNN en Español", re.I),
     re.compile(r"^BBC News Mundo", re.I),
     re.compile(r"^DW Espa[nñ]ol|^DW Espanol", re.I),
@@ -75,6 +75,9 @@ class InformativosOrderTests(unittest.TestCase):
             ("Informativos", "CNN Chile"),
             ("Informativos", "RTVE Canal 24 Horas (España)"),
             ("Informativos", "TeleSUR"),
+            ("Informativos", "Telesur | VE"),
+            ("Informativos", "Telesur English | VE"),
+            ("Informativos", "Telesur Costa Rica | CR"),
             ("Informativos", "Telemundo Noticias Ahora"),
             ("Informativos", "T13 En Vivo (Chile - Nacional)"),
             ("Informativos", "Canal 33 Tijuana (Baja California)"),
@@ -97,8 +100,11 @@ class InformativosOrderTests(unittest.TestCase):
             "Telemundo Noticias Ahora",
             "N+ Foro (Televisa) (Nacional)",
             "T13 En Vivo (Chile - Nacional)",
+            "Telesur English | VE",
             "Telemundo Noticias Texas",
             "Canal 33 Tijuana (Baja California)",
+            "Telesur | VE",
+            "Telesur Costa Rica | CR",
         ])
 
     def test_general_is_absent_from_principal(self):

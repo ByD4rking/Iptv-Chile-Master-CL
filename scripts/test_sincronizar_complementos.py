@@ -1173,6 +1173,23 @@ class InformativosClassificationTests(unittest.TestCase):
                 )
 
 
+class IPTVSVConflictQuarantineTests(unittest.TestCase):
+    def test_known_duplicate_url_with_conflicting_categories_is_quarantined(self):
+        ambiguous_url = "https://183.giatvcdn.com/giatvplayout7/giatv-209474/playlist.m3u8"
+        channels = [
+            {"url": ambiguous_url, "categoria": "Anime", "nombre": "Delmi"},
+            {"url": ambiguous_url, "categoria": "Infantiles", "nombre": "Laika Channel (ES)"},
+        ]
+        result = ap.validar_integridad_iptvsv(
+            ["#EXTM3U"],
+            channels,
+            ["Anime", "Infantiles", "Informativos"],
+        )
+        self.assertEqual(channels, [])
+        self.assertEqual(result["conflictos_fuente"], 0)
+        self.assertEqual(result["urls_cuarentena"], 2)
+
+
 if __name__ == "__main__":
     unittest.main()
 

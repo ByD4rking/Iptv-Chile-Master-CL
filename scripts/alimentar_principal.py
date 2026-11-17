@@ -238,7 +238,7 @@ INFORMATIVOS_PRIORITARIOS = [
     r"^n\\+\\s*mexico(?:\\b|$)",
     r"^noticias caracol(?:\\b|$)",
     r"^rcn noticias(?:\\b|$)",
-    r"^telesur(?:\\b|$)",
+    r"^telesur$",
     r"^cnn en espanol(?:\\b|$)",
     r"^bbc news mundo(?:\\b|$)",
     r"^dw espanol(?:\\b|$)",
@@ -281,6 +281,8 @@ def es_regional_informativos(nombre):
     if es_canal_prioritario_informativos(nombre):
         return False
     nombre = normalizar(nombre)
+    if re.match(r"^telesur\\s*\\|\\s*ve\\b", nombre) or re.match(r"^telesur costa rica\\b", nombre):
+        return True
     if re.match(r"^telemundo noticias (california|florida|noreste|texas)\\b", nombre):
         return True
     if any(ubicacion in nombre for ubicacion in REGIONALES_INFORMATIVOS):
@@ -349,6 +351,19 @@ def validar_integridad_iptvsv(lineas, canales, categorias):
         la actualización en lugar de elegir una categoría arbitrariamente.
       - Las categorías-país genéricas siguen excluidas por regla del proyecto.
     """
+    urls_conflictivas_cuarentena = {
+        "https://183.giatvcdn.com/giatvplayout7/giatv-209474/playlist.m3u8":
+            "IPTVSV repite la misma URL como Delmi (Anime) y Laika Channel (ES) (Infantiles)",
+    }
+    canales_antes_cuarentena = len(canales)
+    canales[:] = [
+        canal for canal in canales
+        if (canal.get("url") or "").strip() not in urls_conflictivas_cuarentena
+    ]
+    urls_cuarentena = canales_antes_cuarentena - len(canales)
+    if urls_cuarentena:
+        print("[IPTVSV][CUARENTENA] Se omiten registros con categoría ambigua; se preservan los canales actuales.")
+
     por_url = defaultdict(set)
     for canal in canales:
         url = (canal.get("url") or "").strip()
@@ -429,6 +444,7 @@ def validar_integridad_iptvsv(lineas, canales, categorias):
         "urls_fuente": len(por_url),
         "categorias_faltantes": len(categorias_faltantes),
         "conflictos_fuente": len(conflictos_fuente),
+        "urls_cuarentena": urls_cuarentena,
         "errores_categoria": len(errores),
     }
 
