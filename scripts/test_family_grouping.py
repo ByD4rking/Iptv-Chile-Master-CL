@@ -130,7 +130,7 @@ class FamilyGroupingTests(unittest.TestCase):
             '#EXTINF:-1 tvg-name="TL+ (El Salvador)" tvg-logo="https://old.example/expired.png" logo="https://old.example/expired.png" group-title="Anime",TL+ (El Salvador)',
             "https://streams.example/tlplus.m3u8",
         ]
-        correct = "https://tlmas.kift.live/assets/imgs/logo.png"
+        correct = "https://kift.live/media/avatars/27ffc836-28d5-457b-9ebe-f65b0c2f5fb9/091fff8e-0e9e-46f9-b5ff-50cf24ce481b.png"
         result, _ = ap.restaurar_logos_historicos(
             current,
             [],
