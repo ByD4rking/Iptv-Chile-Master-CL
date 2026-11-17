@@ -134,6 +134,8 @@ class InformativosOrderTests(unittest.TestCase):
             "N+ Foro (Televisa) (Nacional)",
             "T13 En Vivo (Chile - Nacional)",
             "Telesur English | VE",
+            "Telemundo Noticias Al día",
+            "Telemundo Noticias Al día",
             "Telemundo Noticias Texas",
             "Telesur | VE",
             "Telesur Costa Rica | CR",
