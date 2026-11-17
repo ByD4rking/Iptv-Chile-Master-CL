@@ -2540,28 +2540,34 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
 
 
 def clave_familia_canal(nombre):
-    """Clave de familia para agrupar señales y variantes de un mismo servicio."""
+    """Identifica familias conocidas sin fusionar canales por prefijos genéricos."""
     texto = normalizar(nombre)
-    texto = re.sub(r"\s*(?:\[|\()\s*(?:opc(?:ion)?|option)\.?\s*\d+\s*(?:\]|\))$", "", texto)
-    texto = re.sub(r"\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
-    tokens = texto.split()
-    if not tokens:
+    texto = re.sub(r"\\s*(?:\\[|\\()\\s*(?:opc(?:ion)?|option)\\.?\\s*\\d+\\s*(?:\\]|\\))$", "", texto)
+    texto = re.sub(r"\\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
+    texto = re.sub(r"\\s*\\|\\s*(?:cl|co|chile)$", "", texto)
+    if not texto:
         return ""
-    if tokens[0] in {"el", "los", "la", "las"}:
-        base = " ".join(tokens[:2]) if len(tokens) > 1 else tokens[0]
-        if base == "el chavo" or tokens[:2] == ["el", "chavo"]:
-            return "familia:chespirito"
-        if base == "los simpson":
-            return "familia:los simpson"
-        return "familia:" + base
-    if tokens[0] in {"tv", "canal", "radio", "cine", "deportes"}:
-        return "familia:" + " ".join(tokens[:2])
-    if tokens[0] == "cnn":
-        return "familia:cnn " + (tokens[1] if len(tokens) > 1 else "")
-    if tokens[0] == "chespirito":
-        return "familia:chespirito"
-    return "familia:" + tokens[0]
 
+    # Franquicias y marcas cuya relación es explícita. No usar "TV", "Canal",
+    # "Radio" o "Cine" como clave común: son términos genéricos.
+    if texto.startswith(("el chavo", "chespirito")):
+        return "familia:chespirito"
+    if texto.startswith("los simpson"):
+        return "familia:los simpson"
+    if texto.startswith(("dragon ball", "dragonball")):
+        return "familia:dragon ball"
+    if texto.startswith("naruto"):
+        return "familia:naruto"
+    if texto.startswith(("super campeones", "capitan tsubasa")):
+        return "familia:super campeones"
+    if texto.startswith(("caballeros del zodiaco", "saint seiya")):
+        return "familia:caballeros del zodiaco"
+    if texto.startswith(("telemundo", "caracol", "univision")):
+        return "familia:" + texto.split()[0]
+
+    # El resto solo se agrupa cuando el nombre base es el mismo
+    # (por ejemplo, Comedy Central y Comedy Central HD).
+    return "canal:" + texto
 
 def agrupar_familias_por_categoria(lineas):
     """Agrupa variantes sin alterar el orden de categorías ni de familias."""
