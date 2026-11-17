@@ -163,6 +163,11 @@ class FamilyGroupingTests(unittest.TestCase):
         result = ap.agrupar_familias_por_categoria(lines)
         self.assertEqual(sum(line.startswith("#EXTINF") for line in result), 2)
 
+    def test_logo_authorization_whitelist_contains_only_the_nine_requested_names(self):
+        self.assertEqual(len(ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL), 9)
+        self.assertNotIn("Radio Rancagua FM (720p)", ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL)
+        self.assertNotIn("Radio Ritmo FM", ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL)
+
     def test_logo_restoration_only_touches_authorized_channels(self):
         reference = [
             '#EXTINF:-1 tvg-name="Canal Permitido" tvg-logo="https://logos.example/permitido.png" group-title="Test",Canal Permitido',
