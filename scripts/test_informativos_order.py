@@ -9,8 +9,8 @@ EXPECTED = [
     re.compile(r"^CNN Chile", re.I),
     re.compile(r"^24 Horas TVN", re.I),
     re.compile(r"^Meganoticias", re.I),
-    re.compile(r"^TN(?:\\s|$)", re.I),
-    re.compile(r"^N\\+ México", re.I),
+    re.compile(r"^TN(?:\s|$)", re.I),
+    re.compile(r"^N\+ México", re.I),
     re.compile(r"^Noticias Caracol", re.I),
     re.compile(r"^RCN Noticias", re.I),
     re.compile(r"^TeleSUR$", re.I),
@@ -64,13 +64,48 @@ class InformativosOrderTests(unittest.TestCase):
         if regional and nonregional:
             self.assertLess(max(nonregional), min(regional), "Hay señales regionales antes de canales no regionales")
 
+    def test_country_folders_are_last_and_chile_tv_is_first(self):
+        sample = ["#EXTM3U"]
+        categories = [
+            "Informativos", "Argentina 🇦🇷", "Anime", "CHILE TV", "Perú", "Música",
+            "Ecuador", "Venezuela", "República Dominicana", "Paraguay", "Bolivia",
+            "Nueva Zelanda", "Afganistán", "Tailandia",
+        ]
+        for category in categories:
+            sample.extend([
+                f'#EXTINF:-1 group-title="{category}",Canal de prueba',
+                "https://example.com/channel.m3u8",
+            ])
+        ordered = ap.mover_paises_al_final(sample)
+        actual = [
+            re.search(r'group-title="([^"]*)"', line).group(1)
+            for line in ordered if line.startswith("#EXTINF")
+        ]
+        self.assertEqual(actual, [
+            "CHILE TV", "Informativos", "Anime", "Música", "Argentina 🇦🇷",
+            "Perú", "Ecuador", "Venezuela", "República Dominicana", "Paraguay",
+            "Bolivia", "Nueva Zelanda", "Afganistán", "Tailandia",
+        ])
+
+    def test_published_playlist_has_chile_first_and_country_blocks_at_the_end(self):
+        lines = PLAYLIST.read_text(encoding="utf-8-sig").splitlines()
+        self.assertEqual(
+            ap.mover_paises_al_final(lines),
+            lines,
+            "La maestra publicada todavía tiene carpetas de países intercaladas",
+        )
+        first = next(line for line in lines if line.startswith("#EXTINF"))
+        self.assertIn('group-title="CHILE TV"', first)
+
     def test_prioritizer_keeps_options_and_moves_regional_signals_to_the_end(self):
         sample = ["#EXTM3U"]
         for category, name in [
             ("Informativos", "N+ Foro (Televisa) (Nacional)"),
+            ("Informativos", "Telemundo Noticias Al día"),
             ("Informativos", "Telemundo Noticias Texas"),
-            ("Informativos", "TN HD (Buenos Aires) [Opción 2]"),
-            ("Informativos", "TN 🇦🇷"),
+            ("Argentina", "TN HD (Buenos Aires) [Opción 2]"),
+            ("Argentina", "TN 🇦🇷"),
+            ("México", "N+ México"),
             ("Informativos", "CNN en Español [Opción 2]"),
             ("Informativos", "CNN Chile"),
             ("Informativos", "RTVE Canal 24 Horas (España)"),
@@ -81,6 +116,8 @@ class InformativosOrderTests(unittest.TestCase):
             ("Informativos", "Telemundo Noticias Ahora"),
             ("Informativos", "T13 En Vivo (Chile - Nacional)"),
             ("Informativos", "Canal 33 Tijuana (Baja California)"),
+            ("Informativos", "Mi Radio"),
+            ("Informativos", "Thema Coquimbo"),
             ("Informativos", "Meganoticias"),
         ]:
             sample.extend([
@@ -89,11 +126,22 @@ class InformativosOrderTests(unittest.TestCase):
             ])
         ordered = ap.ordenar_informativos(sample)
         names = informativos_names(ordered)
+        for expected_name in (
+            "TN HD (Buenos Aires) [Opción 2]",
+            "TN 🇦🇷",
+            "N+ México",
+        ):
+            extinf = next(
+                line for line in ordered
+                if line.startswith("#EXTINF") and line.endswith("," + expected_name)
+            )
+            self.assertIn('group-title="Informativos"', extinf)
         self.assertEqual(names, [
             "CNN Chile",
             "Meganoticias",
             "TN HD (Buenos Aires) [Opción 2]",
             "TN 🇦🇷",
+            "N+ México",
             "TeleSUR",
             "CNN en Español [Opción 2]",
             "RTVE Canal 24 Horas (España)",
@@ -101,10 +149,13 @@ class InformativosOrderTests(unittest.TestCase):
             "N+ Foro (Televisa) (Nacional)",
             "T13 En Vivo (Chile - Nacional)",
             "Telesur English | VE",
+            "Telemundo Noticias Al día",
             "Telemundo Noticias Texas",
-            "Canal 33 Tijuana (Baja California)",
             "Telesur | VE",
             "Telesur Costa Rica | CR",
+            "Canal 33 Tijuana (Baja California)",
+            "Mi Radio",
+            "Thema Coquimbo",
         ])
 
     def test_general_is_absent_from_principal(self):

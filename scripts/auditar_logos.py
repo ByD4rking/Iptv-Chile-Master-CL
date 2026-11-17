@@ -81,6 +81,8 @@ def _check_once(url: str):
         if exc.code in (401, 403):
             return {"status": "inconclusive", "detail": f"HTTP {exc.code} (bloqueo de acceso; no confirma que la imagen esté rota)"}
         return {"status": "inconclusive", "detail": f"HTTP {exc.code}"}
+    except UnicodeError as exc:
+        return {"status": "broken", "detail": f"URL con caracteres no codificados: {exc}"}
     except (URLError, TimeoutError, OSError) as exc:
         return {"status": "inconclusive", "detail": str(exc)[:180]}
 

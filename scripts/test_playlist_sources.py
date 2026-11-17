@@ -37,7 +37,7 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         special = load_principal_settings()["special_sources"]
         self.assertEqual(special["iptvsv"], "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u")
         self.assertEqual(special["magma"], "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u")
-        self.assertEqual(special["pluto_mx_alternatives"], "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u")
+        self.assertEqual(special["pluto_mx_alternatives"], "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u")
 
 
 if __name__ == "__main__":

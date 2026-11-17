@@ -479,15 +479,14 @@ def main(args: argparse.Namespace) -> None:
         for item in after_playable
     )
     for category, before_keys in before_by_category.items():
-        # Estos dos bloques tienen reordenamiento intencional y validaciones
-        # específicas: MAGMA se consolida en Entretenimiento y los tres
-        # prioritarios se ponen al inicio de Infantiles.
+        # Estas categorías tienen reglas explícitas de reordenamiento y pruebas propias.
+        # Informativos se ordena por prioridad y regionales; países/General se validan aparte.
         if category in {
             norm("Entretenimiento / Cine / Series"),
             norm("Infantiles"),
             norm("Anime"),
-            # España recibe reclasificaciones regionales; se audita integridad global, no orden nominal.
             norm("España"),
+            norm("Informativos"),
         }:
             continue
         after_keys = after_by_category.get(category, [])
@@ -529,6 +528,48 @@ def main(args: argparse.Namespace) -> None:
             )
 
 
+    # Los únicos cambios permitidos a logos históricos son overrides explícitos,
+    # verificados por HTTP y asociados a la URL exacta del stream.
+    forced_logo_overrides = {}
+    manual_logo_references = {}
+    ruta_logo_references = ROOT / "scripts" / "logo_references.json"
+    if ruta_logo_references.is_file():
+        datos_referencias_logo = json.loads(
+            ruta_logo_references.read_text(encoding="utf-8")
+        )
+        forced_logo_overrides = datos_referencias_logo.get("forced_overrides", {})
+        manual_logo_references = datos_referencias_logo.get("logos", {})
+
+    def override_logo_aprobado(item):
+        url = item.get("url", "")
+        logo = item.get("logo", "")
+        return bool(
+            url
+            and logo
+            and (
+                forced_logo_overrides.get(url) == logo
+                or manual_logo_references.get(url) == logo
+            )
+        )
+
+    # La auditoría se ejecuta antes de reparar. Solo se permite reemplazar o
+    # retirar logos que fueron confirmados como rotos; los inconclusos se conservan.
+    broken_logo_urls = set()
+    ruta_auditoria_logos = ROOT / "logo-audit-report.json"
+    if ruta_auditoria_logos.is_file():
+        reporte_logos = json.loads(ruta_auditoria_logos.read_text(encoding="utf-8"))
+        broken_logo_urls = {
+            row.get("url", "")
+            for row in reporte_logos.get("results", [])
+            if row.get("status") == "broken" and row.get("url")
+        }
+
+    def logo_cambio_aprobado(item, logo_anterior):
+        return (
+            override_logo_aprobado(item)
+            or bool(logo_anterior and logo_anterior in broken_logo_urls)
+        )
+
     # Todo logo existente en la versión anterior debe sobrevivir a la actualización.
     old_logo_by_url = defaultdict(set)
     old_logo_by_id = defaultdict(set)
@@ -542,11 +583,15 @@ def main(args: argparse.Namespace) -> None:
         previous = old_logo_by_url.get(item.get("url", ""), set())
         if len(previous) == 1:
             expected_logo = next(iter(previous))
-            if item.get("logo") != expected_logo:
+            if item.get("logo") != expected_logo and not logo_cambio_aprobado(item, expected_logo):
                 raise AssertionError(f"Logo histórico cambiado para {item['display_raw']}: {expected_logo} -> {item.get('logo')}")
             continue
         previous_id = old_logo_by_id.get(item.get("id", ""), set()) if item.get("id") else set()
-        if len(previous_id) == 1 and item.get("logo") != next(iter(previous_id)):
+        if (
+            len(previous_id) == 1
+            and item.get("logo") != next(iter(previous_id))
+            and not logo_cambio_aprobado(item, next(iter(previous_id)))
+        ):
             raise AssertionError(f"Logo histórico perdido al actualizar URL de {item['display_raw']}")
     # Anime tiene orden alfabético solicitado; las alternativas se ordenan
     # junto a su canal base y no cuentan como nombres independientes.

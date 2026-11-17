@@ -5,6 +5,8 @@ import subprocess
 import sys
 
 import requests
+import json
+from auditar_logos import audit as auditar_logos, check_url as verificar_logo_url
 
 import alimentar_principal as alimentador
 from calidad_magma_cine import (
@@ -125,17 +127,78 @@ def main():
     god_path = ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"
     god_lines = god_path.read_text(encoding="utf-8-sig").splitlines() if god_path.is_file() else []
     referencias_logos = original_lines + god_lines
+    logos_por_url_prioritarios = {}
+    logos_forzados_por_url = {}
+    ruta_referencias_logos = ROOT / "scripts" / "logo_references.json"
+    if ruta_referencias_logos.is_file():
+        try:
+            datos_referencias = json.loads(ruta_referencias_logos.read_text(encoding="utf-8"))
+            logos_por_url_prioritarios = {
+                str(url).strip(): str(logo).strip()
+                for url, logo in datos_referencias.get("logos", {}).items()
+                if alimentador.url_es_valida(str(url).strip())
+                and alimentador.url_es_valida(str(logo).strip())
+            }
+            logos_forzados_por_url = {
+                str(url).strip(): str(logo).strip()
+                for url, logo in datos_referencias.get("forced_overrides", {}).items()
+                if alimentador.url_es_valida(str(url).strip())
+                and alimentador.url_es_valida(str(logo).strip())
+            }
+            print(
+                f"[LOGOS] Referencias manuales exactas={len(logos_por_url_prioritarios)}; "
+                f"reemplazos explícitos={len(logos_forzados_por_url)}"
+            )
+        except (OSError, ValueError, TypeError) as error_referencias:
+            print(f"[LOGOS] No se pudo cargar logo_references.json: {error_referencias}")
+
+    # Solo se reemplazan logos con fallo confirmado (404/410 o contenido no-imagen).
+    # 401/403, límites y errores transitorios quedan como inconclusos y se conservan.
+    auditoria_logos = auditar_logos("\n".join(ordered_lines))
+    logos_rotos_confirmados = {
+        item["url"] for item in auditoria_logos["results"]
+        if item.get("status") == "broken"
+    }
+    conteos_logos = auditoria_logos["logo_urls"]
+    print(
+        "[LOGOS AUDIT] "
+        f"accesibles={conteos_logos.get('ok', 0)}; "
+        f"rotos_confirmados={len(logos_rotos_confirmados)}; "
+        f"inconclusos={conteos_logos.get('inconclusive', 0)}; "
+        f"sin_logo={len(auditoria_logos['missing_logo_entries'])}."
+    )
+    cache_logos_candidatos = {}
+
+    def validar_logo_candidato(url):
+        if url not in cache_logos_candidatos:
+            try:
+                cache_logos_candidatos[url] = (
+                    verificar_logo_url(url).get("status") == "ok"
+                )
+            except Exception as error_logo:
+                cache_logos_candidatos[url] = False
+                print(
+                    "[LOGOS] Candidato no verificable; se deja pendiente: "
+                    f"{str(url)[:140]} ({error_logo})"
+                )
+        return cache_logos_candidatos[url]
+
     ordered_lines, logo_stats = alimentador.restaurar_logos_historicos(
         ordered_lines,
         referencias_logos,
         pluto_por_id,
         pluto_por_nombre,
+        logos_por_url_prioritarios=logos_por_url_prioritarios,
+        logos_forzados_por_url=logos_forzados_por_url,
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
+        logos_rotos_confirmados=logos_rotos_confirmados,
+        validar_logo=validar_logo_candidato,
     )
-    # Último blindaje de orden: España y todos los países deben quedar al final.
-    ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
     # La sincronización complementaria tampoco puede recrear General.
     ordered_lines = alimentador.blindar_categoria_general(ordered_lines)
+    # General puede reclasificar canales a Informativos o a países: reordenar ambos.
+    ordered_lines = alimentador.ordenar_informativos(ordered_lines)
+    ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
 
     # La restauración del orden histórico puede recuperar bloques previos.
     # Reaplicar al final la regla estricta solo a URLs de Cine/Películas MAGMA.
@@ -175,6 +238,7 @@ def main():
             "Entretenimiento / Cine / Series",
             "Infantiles",
             "Anime",
+            "Informativos",
             # España recibe reclasificaciones regionales desde Anime.
             "España",
         },

@@ -231,22 +231,22 @@ def es_categoria_pais_generica_iptvsv(categoria):
 
 
 INFORMATIVOS_PRIORITARIOS = [
-    r"^cnn chile(?:\\b|$)",
-    r"^24 horas tvn(?:\\b|$)",
-    r"^meganoticias(?:\\b|$)",
-    r"^tn(?:\\s|$)",
-    r"^n\\+\\s*mexico(?:\\b|$)",
-    r"^noticias caracol(?:\\b|$)",
-    r"^rcn noticias(?:\\b|$)",
+    r"^cnn chile(?:\b|$)",
+    r"^24 horas tvn(?:\b|$)",
+    r"^meganoticias(?:\b|$)",
+    r"^tn(?:\s|$)",
+    r"^n\+\s*mexico(?:\b|$)",
+    r"^noticias caracol(?:\b|$)",
+    r"^rcn noticias(?:\b|$)",
     r"^telesur$",
-    r"^cnn en espanol(?:\\b|$)",
-    r"^bbc news mundo(?:\\b|$)",
-    r"^dw espanol(?:\\b|$)",
-    r"^france 24 espanol(?:\\b|$)",
-    r"^euronews espanol(?:\\b|$)",
-    r"^rtve canal 24 horas(?:\\b|$)",
-    r"^cgtn espanol(?:\\b|$)",
-    r"^telemundo noticias ahora(?:\\b|$)",
+    r"^cnn en espanol(?:\b|$)",
+    r"^bbc news mundo(?:\b|$)",
+    r"^dw espanol(?:\b|$)",
+    r"^france 24 espanol(?:\b|$)",
+    r"^euronews espanol(?:\b|$)",
+    r"^rtve canal 24 horas(?:\b|$)",
+    r"^cgtn espanol(?:\b|$)",
+    r"^telemundo noticias ahora(?:\b|$)",
 ]
 
 
@@ -272,7 +272,7 @@ REGIONALES_INFORMATIVOS = (
     "san luis", "buenos aires", "la plata", "santa clara del mar",
     "tres arroyos", "puan", "punta arenas", "magallanes", "fuengirola",
     "malaga", "ciudad real", "castilla-la mancha", "chiclayo",
-    "lambayeque", "la costa", "nuble", "linares", "california",
+    "lambayeque", "la costa", "nuble", "linares", "coquimbo", "la serena", "elqui", "mi radio", "california",
     "florida", "noreste", "texas",
 )
 
@@ -281,9 +281,9 @@ def es_regional_informativos(nombre):
     if es_canal_prioritario_informativos(nombre):
         return False
     nombre = normalizar(nombre)
-    if re.match(r"^telesur\\s*\\|\\s*ve\\b", nombre) or re.match(r"^telesur costa rica\\b", nombre):
+    if re.match(r"^telesur\s*\|\s*ve\b", nombre) or re.match(r"^telesur costa rica\b", nombre):
         return True
-    if re.match(r"^telemundo noticias (california|florida|noreste|texas)\\b", nombre):
+    if re.match(r"^telemundo noticias (al dia|california|florida|noreste|texas)\b", nombre):
         return True
     if any(ubicacion in nombre for ubicacion in REGIONALES_INFORMATIVOS):
         return True
@@ -294,12 +294,12 @@ def es_regional_informativos(nombre):
         "guatemala", "honduras", "mexico", "nicaragua", "panama", "paraguay",
         "peru", "puerto rico", "republica dominicana", "uruguay", "venezuela",
     }
-    for ubicacion in re.findall(r"\\(([^)]*)\\)", nombre):
+    for ubicacion in re.findall(r"\(([^)]*)\)", nombre):
         if "nacional" in ubicacion or "internacional" in ubicacion:
             continue
         partes = [
             parte.strip()
-            for parte in re.split(r"\\s*[-/]\\s*", ubicacion)
+            for parte in re.split(r"\s*[-/]\s*", ubicacion)
             if parte.strip()
         ]
         if len(partes) >= 2:
@@ -308,7 +308,6 @@ def es_regional_informativos(nombre):
             if all(parte not in paises for parte in partes):
                 return True
     return False
-
 
 def determinar_destino_iptvsv(categoria, nombre, categorias):
     """Conserva la carpeta de origen salvo prioridades informativas y alias explícitos."""
@@ -1670,9 +1669,75 @@ def reubicar_bloques_pluto_sin_reordenar_principal(lineas):
 PAISES_ORDEN_FINAL = {
     "peru", "bolivia", "argentina", "brasil", "brazil", "colombia",
     "ecuador", "venezuela", "paraguay", "mexico", "espana", "spain",
-    "costa rica", "republica dominicana", "el salvador", "guatemala",
-    "honduras", "nicaragua", "panama", "cuba", "puerto rico", "uruguay",
+    "costa rica", "republica dominicana", "rep dominicana", "el salvador",
+    "guatemala", "honduras", "nicaragua", "panama", "cuba", "puerto rico",
+    "uruguay", "chile", "canada", "estados unidos", "usa", "united states",
+    "reino unido", "united kingdom", "nueva zelanda", "new zealand",
+    "australia", "japon", "japan", "corea del sur", "south korea",
+    "corea del norte", "alemania", "germany", "francia", "france", "italia",
+    "italy", "portugal", "paises bajos", "netherlands", "belgica", "belgium",
+    "suiza", "switzerland", "austria", "irlanda", "ireland", "escocia",
+    "scotland", "gales", "wales", "suecia", "sweden", "noruega", "norway",
+    "dinamarca", "denmark", "finlandia", "finland", "polonia", "poland",
+    "ucrania", "ukraine", "rusia", "russia", "grecia", "greece", "turquia",
+    "turkey", "israel", "palestina", "qatar", "iran", "india", "singapur",
+    "singapore", "filipinas", "philippines", "indonesia", "sudafrica",
+    "south africa", "guinea ecuatorial", "jamaica", "haiti",
+    "trinidad y tobago", "republica checa", "czech republic", "eslovaquia",
+    "slovakia", "hungria", "hungary", "serbia", "croacia", "croatia",
+    "el salvador", "nicaragua", "panama", "honduras", "guatemala",
 }
+
+# Catálogo amplio ISO en español/inglés: las nuevas carpetas de país se detectan
+# por nombre, además de las fuentes incorporadas dinámicamente en PAIS_POR_FUENTE.
+PAISES_ORDEN_FINAL.update({
+    "afganistan", "afghanistan", "albania", "argelia", "algeria", "andorra",
+    "angola", "antigua y barbuda", "antigua and barbuda", "arabia saudita",
+    "saudi arabia", "armenia", "azerbaiyan", "azerbaijan", "bahamas",
+    "bangladesh", "barbados", "barein", "bahrain", "belice", "belize",
+    "benin", "bhutan", "butan", "bosnia y herzegovina",
+    "bosnia and herzegovina", "botsuana", "botswana", "brunei",
+    "brunei darussalam", "bulgaria", "burkina faso", "burundi",
+    "cabo verde", "cape verde", "camboya", "cambodia", "camerun",
+    "cameroon", "republica centroafricana", "central african republic",
+    "chad", "china", "chipre", "cyprus", "comoras", "comoros",
+    "costa de marfil", "cote d ivoire", "croacia", "croatia", "djibouti",
+    "yibuti", "dominica", "egipto", "egypt", "eritrea", "esuatini",
+    "eswatini", "estonia", "etiopia", "ethiopia", "fiyi", "fiji",
+    "gabon", "gambia", "georgia", "ghana", "granada", "grenada",
+    "guinea", "guinea bisau", "guinea bissau", "guinea-bissau",
+    "guyana", "haiti", "hungria", "hungary", "islandia", "iceland",
+    "irak", "iraq", "jamaica", "jordania", "jordan", "kazajistan",
+    "kazakhstan", "kenia", "kenya", "kirguistan", "kyrgyzstan",
+    "kiribati", "kuwait", "laos", "letonia", "latvia", "libano",
+    "lebanon", "lesoto", "lesotho", "liberia", "libia", "libya",
+    "liechtenstein", "lituania", "lithuania", "luxemburgo", "luxembourg",
+    "madagascar", "malaui", "malawi", "malasia", "malaysia", "maldivas",
+    "maldives", "mali", "malta", "marruecos", "morocco", "mauricio",
+    "mauritius", "mauritania", "micronesia", "moldavia", "moldova",
+    "monaco", "mongolia", "montenegro", "mozambique", "birmania",
+    "myanmar", "namibia", "nauru", "nepal", "niger", "nigeria",
+    "macedonia del norte", "north macedonia", "oman", "pakistan",
+    "pakistán", "palaos", "palau", "papua nueva guinea",
+    "papua new guinea", "ruanda", "rwanda", "rumania", "romania",
+    "samoa", "san cristobal y nieves", "saint kitts and nevis",
+    "san marino", "san vicente y las granadinas",
+    "saint vincent and the grenadines", "santa lucia", "saint lucia",
+    "santo tome y principe", "sao tome and principe", "senegal",
+    "seychelles", "sierra leona", "sierra leone", "singapur",
+    "singapore", "eslovaquia", "slovakia", "eslovenia", "slovenia",
+    "islas salomon", "solomon islands", "somalia", "sri lanka",
+    "sudan", "sudan del sur", "south sudan", "surinam", "suriname",
+    "siria", "syria", "tayikistan", "tajikistan", "tanzania",
+    "tailandia", "thailand", "timor oriental", "east timor",
+    "togo", "tonga", "tunez", "tunisia", "turkmenistan", "tuvalu",
+    "uganda", "emiratos arabes unidos", "united arab emirates",
+    "uzbekistan", "vanuatu", "ciudad del vaticano", "vatican city",
+    "vietnam", "yemen", "yibuti", "zambia", "zimbabue", "zimbabwe",
+    "taiwan", "hong kong", "macao", "macau", "kosovo", "groenlandia",
+    "greenland", "islas feroe", "faroe islands",
+})
+
 
 # Alias de países: evita que "Brasil/Brazil" o "España/Spain" terminen
 # en bloques físicos separados. La categoría visible queda en español.
@@ -3282,12 +3347,41 @@ def extraer_logos_bloqueados_por_url(lineas):
     return {url: next(iter(logos)) for url, logos in candidatos.items() if len(logos) == 1}
 
 
-def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None, logos_bloqueados_por_url=None):
-    """Restaura logos y protege los logos válidos de la principal por URL exacta."""
+def restaurar_logos_historicos(
+    lineas,
+    referencia,
+    pluto_por_id=None,
+    pluto_por_nombre=None,
+    logos_por_url_prioritarios=None,
+    logos_bloqueados_por_url=None,
+    logos_rotos_confirmados=None,
+    logos_forzados_por_url=None,
+    validar_logo=None,
+):
+    """Restaura logos ausentes o rotos confirmados sin tocar los logos funcionales."""
     pluto_por_id = pluto_por_id or {}
     logos_bloqueados_por_url = logos_bloqueados_por_url or {}
     pluto_por_nombre = pluto_por_nombre or {}
     logos_por_url_prioritarios = logos_por_url_prioritarios or {}
+    logos_rotos_confirmados = {
+        str(url).strip() for url in (logos_rotos_confirmados or set()) if str(url).strip()
+    }
+    logos_forzados_por_url = logos_forzados_por_url or {}
+    cache_validacion = {}
+
+    def logo_aceptable(logo):
+        logo = str(logo or "").strip()
+        if (
+            not url_es_valida(logo)
+            or logo in logos_rotos_confirmados
+            or "flagcdn.com" in logo.lower()
+        ):
+            return False
+        if validar_logo is None:
+            return True
+        if logo not in cache_validacion:
+            cache_validacion[logo] = bool(validar_logo(logo))
+        return cache_validacion[logo]
 
     def bloques(datos):
         resultado = []
@@ -3319,14 +3413,30 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
         return resultado
 
     def poner_logo(extinf, logo):
-        if not logo or not url_es_valida(logo):
+        if not logo_aceptable(logo):
             return extinf
-        patron = r'(?<![\w-])tvg-logo="[^"]*"'
+        tvg_patron = r'(?<![\w-])tvg-logo="[^"]*"'
+        legacy_patron = r'(?<![\w-])logo="[^"]*"'
         reemplazo = f'tvg-logo="{logo}"'
-        if re.search(patron, extinf, re.I):
-            return re.sub(patron, lambda _: reemplazo, extinf, count=1, flags=re.I)
-        coma = extinf.find(",")
-        return extinf[:coma].rstrip() + " " + reemplazo + extinf[coma:] if coma >= 0 else extinf
+        if re.search(tvg_patron, extinf, re.I):
+            extinf = re.sub(tvg_patron, lambda _: reemplazo, extinf, count=1, flags=re.I)
+        else:
+            coma = extinf.find(",")
+            if coma >= 0:
+                extinf = extinf[:coma].rstrip() + " " + reemplazo + extinf[coma:]
+        if re.search(legacy_patron, extinf, re.I):
+            extinf = re.sub(
+                legacy_patron,
+                lambda _: f'logo="{logo}"',
+                extinf,
+                count=1,
+                flags=re.I,
+            )
+        return extinf
+
+    def quitar_logo(extinf):
+        extinf = re.sub(r'\s+(?:tvg-logo|(?<![\w-])logo)="[^"]*"', "", extinf, flags=re.I)
+        return re.sub(r"\s+,", ",", extinf)
 
     anteriores = bloques(referencia)
     por_id, por_url, por_nombre, por_nombre_global = (
@@ -3337,80 +3447,139 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
         for clave, canal in pluto_por_nombre.items()
     }
     for item in anteriores:
-        if not item["logo"] or not url_es_valida(item["logo"]):
+        logo = item["logo"]
+        if not url_es_valida(logo) or logo in logos_rotos_confirmados:
             continue
         if item["id"]:
-            por_id[item["id"]].add(item["logo"])
+            por_id[item["id"]].add(logo)
         if item["url"]:
-            por_url[item["url"]].add(item["logo"])
+            por_url[item["url"]].add(logo)
         if item["category"] and item["name"]:
-            por_nombre[(item["category"], item["name"])].add(item["logo"])
+            por_nombre[(item["category"], item["name"])].add(logo)
         if item["name"]:
-            por_nombre_global[item["name"]].add(item["logo"])
+            por_nombre_global[item["name"]].add(logo)
 
     restaurados_anteriores = 0
     restaurados_pluto = 0
     protegidos = 0
+    forzados = 0
     pendientes = 0
+    rotos_sin_reemplazo = 0
+    pendientes_detalle = []
     salida = list(lineas)
+
+    def unico_verificado(candidatos):
+        candidatos = {x for x in candidatos if url_es_valida(x) and x not in logos_rotos_confirmados}
+        if len(candidatos) != 1:
+            return ""
+        candidato = next(iter(candidatos))
+        return candidato if logo_aceptable(candidato) else ""
+
     for item in bloques(salida):
         extinf = salida[item["index"]]
         actual = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+        if actual is None:
+            actual = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
+        logo_actual = actual.group(1).strip() if actual else ""
         logo_bloqueado = logos_bloqueados_por_url.get(item["url"], "") if item["url"] else ""
-        if logo_bloqueado and url_es_valida(logo_bloqueado):
-            logo_actual = actual.group(1).strip() if actual else ""
+
+        # Sustituciones explícitas para logos que el usuario reportó como no visibles.
+        logo_forzado = logos_forzados_por_url.get(item["url"], "") if item["url"] else ""
+        if logo_forzado and logo_aceptable(logo_forzado):
+            actualizado = poner_logo(extinf, logo_forzado)
+            if actualizado != extinf:
+                salida[item["index"]] = actualizado
+                forzados += 1
+            continue
+
+        if (
+            logo_bloqueado
+            and logo_bloqueado not in logos_rotos_confirmados
+            and url_es_valida(logo_bloqueado)
+        ):
             if logo_actual != logo_bloqueado:
                 salida[item["index"]] = poner_logo(extinf, logo_bloqueado)
                 protegidos += 1
             continue
-        if actual and actual.group(1).strip() and url_es_valida(actual.group(1).strip()):
+
+        # Los logos existentes no concluyentes o accesibles se conservan sin cambios.
+        if logo_actual and logo_actual not in logos_rotos_confirmados and url_es_valida(logo_actual):
             continue
 
-        # La playlist anterior tiene prioridad solo con coincidencia exacta de URL.
-        logo = logos_por_url_prioritarios.get(item["url"], "") if item["url"] else ""
+        logo = ""
+        logo_desde_pluto = False
+        candidato_prioritario = logos_por_url_prioritarios.get(item["url"], "") if item["url"] else ""
+        if logo_aceptable(candidato_prioritario):
+            logo = candidato_prioritario
+
         legado = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
-        if not logo:
-            logo = legado.group(1).strip() if legado else ""
-        if not logo and item["url"] and len(por_url.get(item["url"], set())) == 1:
-            logo = next(iter(por_url[item["url"]]))
-        if not logo and item["id"] and len(por_id.get(item["id"], set())) == 1:
-            logo = next(iter(por_id[item["id"]]))
+        if not logo and legado:
+            candidato = legado.group(1).strip()
+            if logo_aceptable(candidato):
+                logo = candidato
+        if not logo and item["url"]:
+            logo = unico_verificado(por_url.get(item["url"], set()))
+        if not logo and item["id"]:
+            logo = unico_verificado(por_id.get(item["id"], set()))
         if not logo and item["category"] and item["name"]:
-            candidatos = por_nombre.get((item["category"], item["name"]), set())
-            if len(candidatos) == 1:
-                logo = next(iter(candidatos))
+            logo = unico_verificado(por_nombre.get((item["category"], item["name"]), set()))
         if not logo and item["name"]:
-            candidatos = por_nombre_global.get(item["name"], set())
-            if len(candidatos) == 1:
-                logo = next(iter(candidatos))
-        if not logo and item["name"] == "deltatv50hd":
-            logo = "https://imgur.com/Z1K1tyl.jpg"
-        if logo:
-            restaurados_anteriores += 1
-        else:
+            logo = unico_verificado(por_nombre_global.get(item["name"], set()))
+
+        if not logo:
             canal = pluto_por_id.get(item["id"]) if item["id"] else None
             if canal is None and item["name"]:
                 canal = pluto_nombre_normalizado.get(item["name"])
             if canal:
                 m_logo = re.search(r'tvg-logo="([^"]+)"', canal.get("extinf", ""), re.I)
-                if m_logo and url_es_valida(m_logo.group(1).strip()):
+                if m_logo and logo_aceptable(m_logo.group(1).strip()):
                     logo = m_logo.group(1).strip()
                     restaurados_pluto += 1
+                    logo_desde_pluto = True
+
+        # Pluto mantiene un endpoint PNG estable además de los logos versionados.
+        if not logo and re.fullmatch(r"[a-f0-9]{24}", item["id"] or "", re.I):
+            candidato = f"https://images.pluto.tv/channels/{item['id']}/colorLogoPNG.png"
+            if logo_aceptable(candidato):
+                logo = candidato
+                restaurados_pluto += 1
+                logo_desde_pluto = True
+
         if logo:
             salida[item["index"]] = poner_logo(extinf, logo)
+            if not logo_desde_pluto:
+                restaurados_anteriores += 1
         else:
+            if logo_actual in logos_rotos_confirmados:
+                salida[item["index"]] = quitar_logo(extinf)
+                rotos_sin_reemplazo += 1
             pendientes += 1
+            pendientes_detalle.append(
+                f"{extraer_nombre(extinf)} [{extraer_categoria(extinf)}]"
+            )
 
     print(
-        "  -> Logos restaurados: "
-        f"lista anterior={restaurados_anteriores}; Pluto={restaurados_pluto}; "
-        f"sin referencia verificable={pendientes}."
+        "  -> Logos: "
+        f"restaurados desde referencias={restaurados_anteriores}; "
+        f"Pluto={restaurados_pluto}; "
+        f"reemplazos explícitos={forzados}; "
+        f"logos rotos sin reemplazo={rotos_sin_reemplazo}; "
+        f"sin referencia verificable={pendientes}; protegidos={protegidos}."
     )
+    if pendientes_detalle:
+        print("  -> LOGOS PENDIENTES (sin reemplazo verificable):")
+        for pendiente in pendientes_detalle[:100]:
+            print(f"     - {pendiente}")
+        if len(pendientes_detalle) > 100:
+            print(f"     - ... y {len(pendientes_detalle) - 100} más.")
     return salida, {
         "lista_anterior": restaurados_anteriores,
         "pluto": restaurados_pluto,
         "protegidos": protegidos,
+        "forzados": forzados,
+        "rotos_sin_reemplazo": rotos_sin_reemplazo,
         "sin_referencia": pendientes,
+        "pendientes_detalle": pendientes_detalle,
     }
 
 def clave_orden_anime(nombre, indice=0):
@@ -3492,21 +3661,34 @@ def ordenar_anime_alfabeticamente(lineas):
     return salida
 
 def mover_paises_al_final(lineas):
-    """Deja CHILE TV primero y todas las carpetas-país al final.
+    """Deja CHILE TV primero y todas las carpetas de países al final.
 
-    Los países se reconocen por el catálogo maestro y por PAIS_POR_FUENTE,
-    así una nueva fuente-país queda protegida sin tener que tocar esta función.
-    No reclasifica canales ni altera el orden interno de sus bloques.
+    Reconoce nombres de países, alias en español/inglés, banderas y categorías
+    extendidas (por ejemplo, "Argentina 🇦🇷"). Conserva el orden interno.
     """
-    prefijo, bloques = [], []
-    categorias_pais = set(PAISES_ORDEN_FINAL)
-    categorias_pais.update(normalizar(valor) for valor in CATEGORIAS_PAIS.values())
+    def clave_categoria(valor):
+        valor = normalizar(valor)
+        valor = re.sub(r"[^a-z0-9 ]+", " ", valor)
+        return re.sub(r"\s+", " ", valor).strip()
+
+    categorias_pais = {clave_categoria(x) for x in PAISES_ORDEN_FINAL}
+    categorias_pais.update(clave_categoria(x) for x in CATEGORIAS_PAIS.values())
+    categorias_pais.update(clave_categoria(x) for x in PAISES_GENERICO_IPTVSV)
     categorias_pais.update(
-        normalizar(valor)
+        clave_categoria(valor)
         for valor in PAIS_POR_FUENTE.values()
-        if normalizar(valor) not in {"religiosos", "musica", "latam"}
+        if clave_categoria(valor) not in {"religiosos", "musica", "latam"}
     )
 
+    def es_categoria_pais(categoria):
+        clave = clave_categoria(categoria)
+        return any(
+            clave == pais or clave.startswith(pais + " ")
+            for pais in categorias_pais
+            if pais
+        )
+
+    prefijo, bloques = [], []
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
@@ -3522,9 +3704,10 @@ def mover_paises_al_final(lineas):
         while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
             j += 1
         raw = lineas[inicio:j]
-        categoria = normalizar(extraer_categoria(raw[0]))
-        es_chile = categoria == "chile tv"
-        es_pais = categoria in categorias_pais or categoria.startswith("el salvador")
+        categoria = extraer_categoria(raw[0])
+        clave = clave_categoria(categoria)
+        es_chile = clave == "chile tv"
+        es_pais = not es_chile and es_categoria_pais(categoria)
         bloques.append({"lineas": raw, "pais": es_pais, "chile": es_chile})
         i = j
 
@@ -3554,6 +3737,17 @@ def ordenar_informativos(lineas):
         raw = lineas[inicio:j]
         categoria = normalizar(extraer_categoria(raw[0]))
         nombre = extraer_nombre(raw[0])
+        es_prioritario = es_canal_prioritario_informativos(nombre)
+        if es_prioritario and categoria != "informativos":
+            raw = list(raw)
+            raw[0] = re.sub(
+                r'group-title="[^"]*"',
+                'group-title="Informativos"',
+                raw[0],
+                count=1,
+                flags=re.IGNORECASE,
+            )
+            categoria = "informativos"
         es_informativo = categoria == "informativos"
         bloques.append({
             "lineas": raw,
@@ -4192,6 +4386,10 @@ def main():
 
     if not lineas or not any(x.startswith("#EXTINF") for x in lineas):
         raise RuntimeError("VALIDACION FALLIDA: la principal quedó sin canales.")
+
+    # Orden de Informativos y regla global: CHILE TV primero; países al final.
+    lineas = ordenar_informativos(lineas)
+    lineas = mover_paises_al_final(lineas)
 
     texto_final = "\n".join(lineas)
     if not texto_final.endswith("\n"):
