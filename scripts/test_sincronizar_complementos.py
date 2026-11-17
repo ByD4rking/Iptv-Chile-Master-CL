@@ -1134,8 +1134,8 @@ class RTVEInformativosDestinationTests(unittest.TestCase):
 class IdentityMetadataEnrichmentTests(unittest.TestCase):
     def test_existing_display_name_keeps_identity_when_tvg_name_and_id_are_enriched(self):
         name_to_ids = {
-            "rtve canal 24 horas espana": {"514"},
-            "rtve24": {"514"},
+            channel_name_key("RTVE Canal 24 Horas (España)"): {"514"},
+            channel_name_key("RTVE24"): {"514"},
         }
         before = {
             "id": "",
