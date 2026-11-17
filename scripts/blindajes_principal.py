@@ -88,8 +88,6 @@ def _identity_keys(record):
         keys.append(("category_name", record["category_key"], record["name"]))
     if record["tvg_name"]:
         keys.append(("tvg_name", record["tvg_name"]))
-    if record["name"]:
-        keys.append(("name", record["name"]))
     return keys
 
 
