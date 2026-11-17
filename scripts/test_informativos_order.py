@@ -61,7 +61,9 @@ class InformativosOrderTests(unittest.TestCase):
         self.assertIsNotNone(ap.indice_prioridad_informativos("TN"))
         self.assertIsNotNone(ap.indice_prioridad_informativos("N+ México"))
         self.assertTrue(ap.es_regional_informativos("Telesur | VE"))
+        self.assertTrue(ap.es_regional_informativos("Telesur English | VE"))
         self.assertTrue(ap.es_regional_informativos("Telesur Costa Rica"))
+        self.assertFalse(ap.es_regional_informativos("T13 En Vivo (Chile - Nacional)"))
 
     def test_regional_signals_are_last(self):
         entries = informativos_names(PLAYLIST.read_text(encoding="utf-8-sig").splitlines())
