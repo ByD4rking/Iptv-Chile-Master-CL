@@ -76,6 +76,7 @@ class LogoAuditTests(unittest.TestCase):
         self.assertNotIn("tvg-logo=", result[1])
         self.assertNotIn('logo="', result[1])
         self.assertEqual(stats["rotos_sin_reemplazo"], 1)
+        self.assertEqual(stats["pendientes_detalle"], ["Canal A [Anime]"])
 
     def test_audit_does_not_modify_and_reports_statuses(self):
         text = '\n'.join([
