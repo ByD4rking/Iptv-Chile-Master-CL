@@ -125,6 +125,26 @@ class FamilyGroupingTests(unittest.TestCase):
             "Canal Infantil",
         ])
 
+    def test_rugrats_crecidos_existing_order_is_preserved_when_base_is_inserted_before(self):
+        cat = "Infantiles"
+        current = ["#EXTM3U"]
+        # Estas dos señales ya estaban ordenadas así; la agrupación no debe
+        # invertirlas ni cambiar su orden relativo.
+        current += bloque("Rugrats Crecidos - Señal 1", categoria=cat)
+        current += bloque("Rugrats Crecidos - Señal 2", categoria=cat)
+        # La serie original se incorpora antes del bloque ya existente.
+        current += bloque("Rugrats - Señal 1", categoria=cat)
+        current += bloque("Rugrats - Señal 2", categoria=cat)
+
+        result = ap.agrupar_familias_por_categoria(current, current)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "Rugrats - Señal 1",
+            "Rugrats - Señal 2",
+            "Rugrats Crecidos - Señal 1",
+            "Rugrats Crecidos - Señal 2",
+        ])
+
     def test_paw_patrol_aliases_are_kept_in_one_infantile_family(self):
         cat = "Infantiles"
         lines = ["#EXTM3U"]
