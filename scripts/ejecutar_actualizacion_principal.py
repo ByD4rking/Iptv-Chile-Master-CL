@@ -8,6 +8,12 @@ import sys
 import requests
 
 import alimentar_principal as alimentador
+from blindajes_principal import (
+    blindar_logos,
+    ordenar_categorias_definitivo,
+    restaurar_categoria_bloqueada,
+    validar_orden_categorias,
+)
 from calidad_magma_cine import (
     audit_and_filter_channels as _audit_magma_cinema,
     probe_stream as _probe_magma_stream,
@@ -236,6 +242,20 @@ def main():
         "correspondencia; "
         f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas."
     )
+
+    # Blindajes terminales: Anime se restaura íntegro desde la maestra de entrada;
+    # todos los logos existentes se congelan por identidad; el orden global de
+    # carpetas se aplica al final para que ninguna sincronización lo deshaga.
+    ordered_lines = restaurar_categoria_bloqueada(
+        ordered_lines, original_lines, "Anime"
+    )
+    ordered_lines, blindaje_logos_stats = blindar_logos(
+        ordered_lines, original_lines
+    )
+    ordered_lines = ordenar_categorias_definitivo(ordered_lines)
+    validar_orden_categorias(ordered_lines)
+    print("[ORQUESTADOR] Blindaje global de logos:", blindaje_logos_stats)
+    print("[ORQUESTADOR] Orden global definitivo de categorías: validado.")
     jwt_pendientes = []
     for linea in ordered_lines:
         url = linea.strip()
