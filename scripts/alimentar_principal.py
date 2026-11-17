@@ -1,6 +1,8 @@
 from pathlib import Path
+import base64
 import json
 import re
+import time
 import unicodedata
 import requests
 from collections import defaultdict
@@ -1040,17 +1042,24 @@ def obtener_ids_pluto_existentes(lineas):
 
 
 def cargar_catalogo_pluto_propio(session):
-    """Carga LATAM, ES y el fallback MX sin JWT; LATAM/ES mantienen prioridad."""
+    """Carga LATAM, ES y MX; LATAM/ES tienen prioridad y MX es fallback sin JWT."""
     por_id = {}
     por_nombre = {}
     por_region = defaultdict(dict)
     errores = 0
+    fuentes_ok = 0
 
     for fuente in FUENTES_PLUTO_CATALOGO:
         try:
             r = session.get(fuente, timeout=30)
             r.raise_for_status()
             canales = parsear_m3u(r.text)
+            if not canales:
+                errores += 1
+                print(f"  -> Catálogo Pluto vacío; se protege la maestra: {fuente}")
+                continue
+            fuentes_ok += 1
+
             if fuente == FUENTE_PLUTO_ALTERNATIVAS:
                 region = "mx"
             else:
@@ -1061,14 +1070,21 @@ def cargar_catalogo_pluto_propio(session):
                 url = canal["url"].strip()
                 if not url:
                     continue
-                cid = extraer_pluto_id(url)
-                m_id = re.search(r'tvg-id="([^"]+)"', canal["extinf"], re.I)
-                if m_id:
-                    cid = m_id.group(1).strip().lower()
                 nombre = normalizar(canal.get("nombre", ""))
-                if cid:
-                    # LATAM aparece primero en FUENTES_PLUTO y por tanto
-                    # gana frente a ES/MX cuando comparten el mismo canal.
+                m_id = re.search(r'tvg-id="([^"]+)"', canal["extinf"], re.I)
+                tvg_id = m_id.group(1).strip().lower() if m_id else ""
+                url_id = extraer_pluto_id(url)
+
+                # Guardar ambas identidades: algunos tvg-id son alias EPG y
+                # no coinciden con el channel ID real incluido en la URL.
+                ids = []
+                if tvg_id:
+                    ids.append(tvg_id)
+                if url_id and url_id not in ids:
+                    ids.append(url_id)
+
+                for cid in ids:
+                    # LATAM aparece primero y gana en el catálogo global.
                     por_id.setdefault(cid, canal)
                     por_region[region].setdefault(cid, canal)
                 if nombre:
@@ -1077,28 +1093,48 @@ def cargar_catalogo_pluto_propio(session):
             errores += 1
             print(f"  -> No se pudo cargar Pluto propio: {fuente} :: {e}")
 
-    return por_id, por_nombre, por_region, errores
+    catalogo_completo = (
+        errores == 0
+        and fuentes_ok == len(FUENTES_PLUTO_CATALOGO)
+        and bool(por_id)
+    )
+    return por_id, por_nombre, por_region, errores, catalogo_completo
 
+
+def jwt_expirado_en_url(url, ahora=None):
+    """Devuelve True solo cuando el JWT de la URL se puede leer y ya venció."""
+    m = re.search(r"(?:[?&])jwt=([^&]+)", url or "", re.I)
+    if not m:
+        return False
+    partes = m.group(1).split(".")
+    if len(partes) < 2:
+        return False
+    payload = partes[1]
+    payload += "=" * ((4 - len(payload) % 4) % 4)
+    try:
+        datos = json.loads(base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8"))
+        exp = datos.get("exp")
+        if isinstance(exp, str) and exp.isdigit():
+            exp = int(exp)
+        return isinstance(exp, (int, float)) and exp <= (ahora or time.time())
+    except Exception:
+        return False
 
 def reemplazar_pluto_tercero_por_propio(lineas, session):
     """
-    Reemplaza SOLO entradas Pluto que no usan una URL de nuestras playlists.
-
-    Prioridad:
-      1) región indicada por country= en la URL antigua;
-      2) channel ID en nuestra lista regional;
-      3) channel ID en catálogo global;
-      4) nombre normalizado como respaldo.
-
-    Si una URL Pluto de terceros no tiene correspondencia propia, se elimina.
+    Renueva las URLs Pluto con LATAM > ES > MX.
+    Si un JWT expiró y no existe en ningún catálogo completo, retira ese canal
+    obsoleto. Si alguna fuente falla, conserva los canales sin correspondencia.
     Todo lo que no sea Pluto se conserva exactamente.
     """
-    por_id, por_nombre, por_region, errores_catalogo = cargar_catalogo_pluto_propio(session)
-
+    por_id, por_nombre, por_region, errores_catalogo, catalogo_completo = (
+        cargar_catalogo_pluto_propio(session)
+    )
     propias = {canal["url"].strip() for canal in por_id.values()}
     salida = []
     reemplazados = 0
-    eliminados_sin_reemplazo = 0
+    expirados_eliminados = 0
+    conservados_sin_reemplazo = 0
     ya_propios = 0
     no_pluto = 0
 
@@ -1113,7 +1149,6 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         nombre = extraer_nombre(extinf)
         bloque = [extinf]
         j = i + 1
-
         while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
             bloque.append(lineas[j])
             j += 1
@@ -1139,27 +1174,40 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
             i = j
             continue
 
-        cid = extraer_pluto_id(url)
         m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
-        if m_id:
-            cid = m_id.group(1).strip().lower()
+        tvg_id = m_id.group(1).strip().lower() if m_id else ""
+        url_id = extraer_pluto_id(url)
+        ids = []
+        if tvg_id:
+            ids.append(tvg_id)
+        if url_id and url_id not in ids:
+            ids.append(url_id)
 
         country = re.search(r'(?:[?&])country=([A-Za-z]{2})', url, re.I)
         region = country.group(1).lower() if country else ""
 
         reemplazo = None
-        if cid and region in por_region:
-            reemplazo = por_region[region].get(cid)
-        if reemplazo is None and cid:
-            reemplazo = por_id.get(cid)
+        if region in por_region:
+            for cid in ids:
+                reemplazo = por_region[region].get(cid)
+                if reemplazo is not None:
+                    break
+        if reemplazo is None:
+            for cid in ids:
+                reemplazo = por_id.get(cid)
+                if reemplazo is not None:
+                    break
         if reemplazo is None:
             reemplazo = por_nombre.get(normalizar(nombre))
 
         if reemplazo is None:
-            # Regla de seguridad: nunca eliminar un canal existente solo
-            # porque la fuente propia no respondió o no lo catalogó.
-            # Se conserva el bloque y queda contabilizado para auditoría.
-            eliminados_sin_reemplazo += 1
+            if catalogo_completo and jwt_expirado_en_url(url):
+                # El canal ya no existe en LATAM, ES ni MX y su token venció.
+                # Retirarlo evita dejar una señal muerta en la lista principal.
+                expirados_eliminados += 1
+                i = j
+                continue
+            conservados_sin_reemplazo += 1
             salida.extend(bloque)
             i = j
             continue
@@ -1171,12 +1219,14 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
 
     return salida, {
         "reemplazados": reemplazados,
-        "eliminados_sin_reemplazo": eliminados_sin_reemplazo,
+        "eliminados_sin_reemplazo": expirados_eliminados,
+        "expirados_eliminados": expirados_eliminados,
+        "conservados_sin_reemplazo": conservados_sin_reemplazo,
         "ya_propios": ya_propios,
         "no_pluto": no_pluto,
         "errores_catalogo": errores_catalogo,
+        "catalogo_completo": catalogo_completo,
     }
-
 
 def limpiar_pluto_antiguo(lineas, session):
     """
@@ -4010,7 +4060,7 @@ def main():
         lineas,
         session,
     )
-    pluto_errores = pluto_reemplazo.get("eliminados_sin_reemplazo", 0)
+    pluto_errores = pluto_reemplazo.get("errores_catalogo", 0)
 
     # 2) Pluto: sincronizar las carpetas de los canales que YA estaban
     # en la principal con la categoría declarada por nuestras fuentes.
