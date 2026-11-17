@@ -1,5 +1,6 @@
 import unittest
 from scripts.auditar_logos import audit, parse_playlist
+import alimentar_principal as ap
 
 class LogoAuditTests(unittest.TestCase):
     def test_parse_and_deduplicate_logo_urls(self):
@@ -16,6 +17,65 @@ class LogoAuditTests(unittest.TestCase):
         self.assertEqual(len(rows), 3)
         self.assertEqual(rows[0]["group"], "Anime")
         self.assertEqual(rows[2]["logo"], "")
+
+    def test_confirmed_broken_logo_is_replaced_and_both_attributes_match(self):
+        broken = "https://img.test/broken.png"
+        working = "https://img.test/working.png"
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 group-title="Anime" tvg-id="canal.a" tvg-logo="{broken}" logo="{broken}",Canal A',
+            "https://stream.test/current.m3u8",
+        ]
+        reference = [
+            f'#EXTINF:-1 group-title="Anime" tvg-id="canal.a" tvg-logo="{working}",Canal A',
+            "https://stream.test/reference.m3u8",
+        ]
+        result, stats = ap.restaurar_logos_historicos(
+            current,
+            reference,
+            logos_rotos_confirmados={broken},
+            validar_logo=lambda url: url == working,
+        )
+        self.assertIn(f'tvg-logo="{working}"', result[1])
+        self.assertIn(f'logo="{working}"', result[1])
+        self.assertEqual(stats["rotos_sin_reemplazo"], 0)
+
+    def test_working_logo_is_preserved_even_if_reference_differs(self):
+        working = "https://img.test/working.png"
+        other = "https://img.test/other.png"
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 group-title="Anime" tvg-id="canal.a" tvg-logo="{working}",Canal A',
+            "https://stream.test/current.m3u8",
+        ]
+        reference = [
+            f'#EXTINF:-1 group-title="Anime" tvg-id="canal.a" tvg-logo="{other}",Canal A',
+            "https://stream.test/reference.m3u8",
+        ]
+        result, _ = ap.restaurar_logos_historicos(
+            current,
+            reference,
+            validar_logo=lambda url: url == other,
+        )
+        self.assertIn(f'tvg-logo="{working}"', result[1])
+        self.assertNotIn(f'tvg-logo="{other}"', result[1])
+
+    def test_confirmed_broken_logo_without_verified_alternative_is_cleared(self):
+        broken = "https://img.test/broken.png"
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 group-title="Anime" tvg-logo="{broken}" logo="{broken}",Canal A',
+            "https://stream.test/current.m3u8",
+        ]
+        result, stats = ap.restaurar_logos_historicos(
+            current,
+            [],
+            logos_rotos_confirmados={broken},
+            validar_logo=lambda url: False,
+        )
+        self.assertNotIn("tvg-logo=", result[1])
+        self.assertNotIn('logo="', result[1])
+        self.assertEqual(stats["rotos_sin_reemplazo"], 1)
 
     def test_audit_does_not_modify_and_reports_statuses(self):
         text = '\n'.join([
