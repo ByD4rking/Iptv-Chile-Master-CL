@@ -3492,7 +3492,11 @@ def restaurar_logos_historicos(
                 forzados += 1
             continue
 
-        if logo_bloqueado and logo_bloqueado not in logos_rotos_confirmados and logo_aceptable(logo_bloqueado):
+        if (
+            logo_bloqueado
+            and logo_bloqueado not in logos_rotos_confirmados
+            and url_es_valida(logo_bloqueado)
+        ):
             if logo_actual != logo_bloqueado:
                 salida[item["index"]] = poner_logo(extinf, logo_bloqueado)
                 protegidos += 1
