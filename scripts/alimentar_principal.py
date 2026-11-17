@@ -3371,7 +3371,11 @@ def restaurar_logos_historicos(
 
     def logo_aceptable(logo):
         logo = str(logo or "").strip()
-        if not url_es_valida(logo) or logo in logos_rotos_confirmados:
+        if (
+            not url_es_valida(logo)
+            or logo in logos_rotos_confirmados
+            or "flagcdn.com" in logo.lower()
+        ):
             return False
         if validar_logo is None:
             return True
