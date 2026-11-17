@@ -666,6 +666,48 @@ class ComplementSyncTests(unittest.TestCase):
         self.assertIn(",Yu-Gi-Oh [Opción 3]", extinfs[2])
         self.assertEqual(stats["alternativas_agregadas"], 2)
 
+    def test_mx_pitufos_option_survives_final_orchestrator_postprocessing(self):
+        pluto_id = "68a3a97fd8f7693ae3f8575f"
+        latam_url = (
+            "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/"
+            f"v2/stitch/hls/channel/{pluto_id}/master.m3u8?jwt=latam&country=MX"
+        )
+        mx_url = f"https://jmp2.uk/plu-{pluto_id}.m3u8"
+        other_url = "https://example.com/pitufos-option.m3u8"
+        original = ["#EXTM3U"] + entry(
+            pluto_id, "Infantiles", "Los Pitufos", latam_url
+        ) + entry(
+            pluto_id, "Infantiles", "Los Pitufos (OPCIÓN 2)", other_url
+        )
+        current = original + entry(
+            pluto_id, "Infantiles", "Los Pitufos (OPCIÓN 3)", mx_url
+        )
+
+        current = ap.restaurar_orden_original_por_categoria(current, original)
+        current = quitar_los_pitufos_es(current)
+        current = ap.aplicar_ajustes_referencia(current, set())
+        current = _group_and_label_alternatives(current, {})
+        current = _prioritize_infantiles(current)
+        current = normalizar_nombres_solicitados(current)
+        current = ap.restaurar_orden_original_por_categoria(
+            current, original, categorias_reordenables={"Infantiles"}
+        )
+        current = _group_and_label_alternatives(current, {})
+        current = ap.ordenar_anime_alfabeticamente(current)
+        current = ap.ordenar_informativos(current)
+        current = quitar_los_pitufos_es(current)
+        current, _ = ap.restaurar_logos_historicos(
+            current, [], {}, {}, nombres_autorizados=set(),
+            logos_autorizados_por_nombre={},
+        )
+        current = ap.mover_paises_al_final(current)
+        current = ap.agrupar_familias_por_categoria(current, original)
+        current = ap.blindar_categoria_general(current)
+
+        self.assertIn(mx_url, current)
+        self.assertIn(latam_url, current)
+        self.assertIn(other_url, current)
+
     def test_mx_pitufos_survives_when_manifest_owner_was_es(self):
         pluto_id = "68a3a97fd8f7693ae3f8575f"
         latam_url = (
