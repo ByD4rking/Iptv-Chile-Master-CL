@@ -2541,8 +2541,8 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
 def clave_familia_canal(nombre):
     """Devuelve una clave conservadora para agrupar variantes de una misma familia."""
     texto = normalizar(nombre)
-    texto = re.sub(r"\\s*(?:\\[|\\()\\s*(?:opc(?:ion)?|option)\\.?\\s*\\d+\\s*(?:\\]|\\))$", "", texto)
-    texto = re.sub(r"\\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
+    texto = re.sub(r"\s*(?:\[|\()\s*(?:opc(?:ion)?|option)\.?\s*\d+\s*(?:\]|\))$", "", texto)
+    texto = re.sub(r"\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
     tokens = texto.split()
     if not tokens:
         return ""
