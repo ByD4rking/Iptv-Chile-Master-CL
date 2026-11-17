@@ -61,7 +61,6 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
 
         def m3u(channel_id, name, url):
             return (
-                "#EXTM3U\n"
                 f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Pluto",{name}\n'
                 f"{url}\n"
             )
@@ -76,13 +75,14 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         sources = list(ap.FUENTES_PLUTO_CATALOGO)
         self.assertEqual(len(sources), 4)
         contents = {
-            sources[0]: m3u(latam_id, "Canal LATAM", f"https://jmp2.uk/plu-{latam_id}.m3u8"),
-            sources[1]: m3u(es_id, "Canal ES", f"https://jmp2.uk/plu-{es_id}.m3u8"),
-            sources[2]: m3u(mx_id, "Canal MX estable", f"https://jmp2.uk/plu-{mx_id}.m3u8"),
+            sources[0]: "#EXTM3U\n" + m3u(latam_id, "Canal LATAM", f"https://jmp2.uk/plu-{latam_id}.m3u8"),
+            sources[1]: "#EXTM3U\n" + m3u(es_id, "Canal ES", f"https://jmp2.uk/plu-{es_id}.m3u8"),
+            sources[2]: "#EXTM3U\n" + m3u(mx_id, "Canal MX estable", f"https://jmp2.uk/plu-{mx_id}.m3u8"),
             # El catálogo MX interno trae un duplicado tokenizado y un canal
             # exclusivo con JWT vencido; el externo estable debe ganar.
             sources[3]: (
-                m3u(mx_id, "Canal MX tokenizado", token_url(mx_id, 1))
+                "#EXTM3U\n"
+                + m3u(mx_id, "Canal MX tokenizado", token_url(mx_id, 1))
                 + m3u(internal_only_id, "Canal MX solo interno", token_url(internal_only_id, 1))
             ),
         }
