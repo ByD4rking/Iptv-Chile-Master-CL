@@ -3407,6 +3407,7 @@ def restaurar_logos_historicos(
     protegidos = 0
     pendientes = 0
     rotos_sin_reemplazo = 0
+    pendientes_detalle = []
     salida = list(lineas)
 
     def unico_verificado(candidatos):
@@ -3482,6 +3483,9 @@ def restaurar_logos_historicos(
                 salida[item["index"]] = quitar_logo(extinf)
                 rotos_sin_reemplazo += 1
             pendientes += 1
+            pendientes_detalle.append(
+                f"{extraer_nombre(extinf)} [{extraer_categoria(extinf)}]"
+            )
 
     print(
         "  -> Logos: "
@@ -3490,12 +3494,19 @@ def restaurar_logos_historicos(
         f"logos rotos sin reemplazo={rotos_sin_reemplazo}; "
         f"sin referencia verificable={pendientes}; protegidos={protegidos}."
     )
+    if pendientes_detalle:
+        print("  -> LOGOS PENDIENTES (sin reemplazo verificable):")
+        for pendiente in pendientes_detalle[:100]:
+            print(f"     - {pendiente}")
+        if len(pendientes_detalle) > 100:
+            print(f"     - ... y {len(pendientes_detalle) - 100} más.")
     return salida, {
         "lista_anterior": restaurados_anteriores,
         "pluto": restaurados_pluto,
         "protegidos": protegidos,
         "rotos_sin_reemplazo": rotos_sin_reemplazo,
         "sin_referencia": pendientes,
+        "pendientes_detalle": pendientes_detalle,
     }
 
 def clave_orden_anime(nombre, indice=0):
