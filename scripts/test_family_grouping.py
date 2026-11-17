@@ -140,6 +140,21 @@ class FamilyGroupingTests(unittest.TestCase):
             "Naruto (Peliculas)",
         ])
 
+    def test_final_alternative_grouping_renumbers_in_playlist_order(self):
+        lines = ["#EXTM3U"]
+        lines += bloque("Los Pitufos", categoria="Infantiles", tvg_id="pluto.pitufos")
+        lines += bloque("Los Pitufos (OPCIÓN 3)", categoria="Infantiles", tvg_id="pluto.pitufos")
+        lines += bloque("Los Pitufos [Opción 2]", categoria="Infantiles", tvg_id="pluto.pitufos")
+        result = ap.agrupar_alternativas_por_identidad(lines)
+        entries = [line for line in result if line.startswith("#EXTINF")]
+        names = [line.rsplit(",", 1)[-1] for line in entries]
+        self.assertEqual(names, [
+            "Los Pitufos",
+            "Los Pitufos [Opción 2]",
+            "Los Pitufos [Opción 3]",
+        ])
+        self.assertEqual(sum(1 for line in result if line.endswith(".m3u8")), 3)
+
     def test_cnn_services_remain_separate_families(self):
         lines = ["#EXTM3U"]
         lines += bloque("CNN Chile")
