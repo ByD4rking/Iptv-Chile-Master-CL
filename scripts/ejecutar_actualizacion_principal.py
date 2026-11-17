@@ -289,6 +289,7 @@ def main():
             "Infantiles",
             "Anime",
             "Informativos",  # Se ordena explícitamente por prioridad y regionales.
+            "Documentales y Cultura",  # Reordenación History autorizada explícitamente.
             # España recibe reclasificaciones regionales desde Anime.
             "España",
         },
