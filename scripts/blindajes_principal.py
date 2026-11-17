@@ -127,7 +127,7 @@ def blindar_logos(lineas, referencia):
         match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
         extinf = output[record["start"]]
         override = authorized.get(record["name"]) or authorized.get(record["tvg_name"])
-        if override:
+        if override and match is not None:
             previous_legacy = match[1] if match else ""
             values = (override, override if previous_legacy else "")
             authorized_count += 1
