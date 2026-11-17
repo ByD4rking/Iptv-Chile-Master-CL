@@ -1688,6 +1688,57 @@ PAISES_ORDEN_FINAL = {
     "el salvador", "nicaragua", "panama", "honduras", "guatemala",
 }
 
+# Catálogo amplio ISO en español/inglés: las nuevas carpetas de país se detectan
+# por nombre, además de las fuentes incorporadas dinámicamente en PAIS_POR_FUENTE.
+PAISES_ORDEN_FINAL.update({
+    "afganistan", "afghanistan", "albania", "argelia", "algeria", "andorra",
+    "angola", "antigua y barbuda", "antigua and barbuda", "arabia saudita",
+    "saudi arabia", "armenia", "azerbaiyan", "azerbaijan", "bahamas",
+    "bangladesh", "barbados", "barein", "bahrain", "belice", "belize",
+    "benin", "bhutan", "butan", "bosnia y herzegovina",
+    "bosnia and herzegovina", "botsuana", "botswana", "brunei",
+    "brunei darussalam", "bulgaria", "burkina faso", "burundi",
+    "cabo verde", "cape verde", "camboya", "cambodia", "camerun",
+    "cameroon", "republica centroafricana", "central african republic",
+    "chad", "china", "chipre", "cyprus", "comoras", "comoros",
+    "costa de marfil", "cote d ivoire", "croacia", "croatia", "djibouti",
+    "yibuti", "dominica", "egipto", "egypt", "eritrea", "esuatini",
+    "eswatini", "estonia", "etiopia", "ethiopia", "fiyi", "fiji",
+    "gabon", "gambia", "georgia", "ghana", "granada", "grenada",
+    "guinea", "guinea bisau", "guinea bissau", "guinea-bissau",
+    "guyana", "haiti", "hungria", "hungary", "islandia", "iceland",
+    "irak", "iraq", "jamaica", "jordania", "jordan", "kazajistan",
+    "kazakhstan", "kenia", "kenya", "kirguistan", "kyrgyzstan",
+    "kiribati", "kuwait", "laos", "letonia", "latvia", "libano",
+    "lebanon", "lesoto", "lesotho", "liberia", "libia", "libya",
+    "liechtenstein", "lituania", "lithuania", "luxemburgo", "luxembourg",
+    "madagascar", "malaui", "malawi", "malasia", "malaysia", "maldivas",
+    "maldives", "mali", "malta", "marruecos", "morocco", "mauricio",
+    "mauritius", "mauritania", "micronesia", "moldavia", "moldova",
+    "monaco", "mongolia", "montenegro", "mozambique", "birmania",
+    "myanmar", "namibia", "nauru", "nepal", "niger", "nigeria",
+    "macedonia del norte", "north macedonia", "oman", "pakistan",
+    "pakistán", "palaos", "palau", "papua nueva guinea",
+    "papua new guinea", "ruanda", "rwanda", "rumania", "romania",
+    "samoa", "san cristobal y nieves", "saint kitts and nevis",
+    "san marino", "san vicente y las granadinas",
+    "saint vincent and the grenadines", "santa lucia", "saint lucia",
+    "santo tome y principe", "sao tome and principe", "senegal",
+    "seychelles", "sierra leona", "sierra leone", "singapur",
+    "singapore", "eslovaquia", "slovakia", "eslovenia", "slovenia",
+    "islas salomon", "solomon islands", "somalia", "sri lanka",
+    "sudan", "sudan del sur", "south sudan", "surinam", "suriname",
+    "siria", "syria", "tayikistan", "tajikistan", "tanzania",
+    "tailandia", "thailand", "timor oriental", "east timor",
+    "togo", "tonga", "tunez", "tunisia", "turkmenistan", "tuvalu",
+    "uganda", "emiratos arabes unidos", "united arab emirates",
+    "uzbekistan", "vanuatu", "ciudad del vaticano", "vatican city",
+    "vietnam", "yemen", "yibuti", "zambia", "zimbabue", "zimbabwe",
+    "taiwan", "hong kong", "macao", "macau", "kosovo", "groenlandia",
+    "greenland", "islas feroe", "faroe islands",
+})
+
+
 # Alias de países: evita que "Brasil/Brazil" o "España/Spain" terminen
 # en bloques físicos separados. La categoría visible queda en español.
 PAISES_CANONICOS = {
