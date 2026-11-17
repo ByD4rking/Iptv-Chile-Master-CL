@@ -427,6 +427,10 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     if pais_fuente == "musica":
         return buscar_categoria_existente("MÚSICA", categorias)
 
+    # Excepción explícita: Pluto España no debe entrar en Anime.
+    if pais_fuente == "espana" and re.search(r"\banime\b", texto):
+        return buscar_categoria_existente("España", categorias)
+
     # La temática comprobable prevalece sobre el país: noticias a Informativos,
     # novelas a Novelas, deportes a Deportes, etc. País solo es fallback.
     destino_tematico = encontrar_categoria_tematica(texto, categorias)
