@@ -1,6 +1,6 @@
 import unittest
 
-from blindajes_principal import (
+from scripts.blindajes_principal import (
     LOGOS_AUTORIZADOS_POR_NOMBRE,
     priorizar_history_documentales,
 )
