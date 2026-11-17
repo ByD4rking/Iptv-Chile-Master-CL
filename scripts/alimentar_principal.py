@@ -3214,7 +3214,7 @@ def integrar_pluto_mx(lineas, session):
                     )
                 else:
                     extinf = re.sub(
-                        r"^(#EXTINF:\\s*[^,]+)",
+                        r"^(#EXTINF:\s*[^,]+)",
                         lambda m: f'{m.group(1)} tvg-logo="{logo_canonico}"',
                         extinf,
                         count=1,
