@@ -125,12 +125,30 @@ def main():
     god_path = ROOT / "IPTV-CHILE-MAESTRA_GOD.m3u"
     god_lines = god_path.read_text(encoding="utf-8-sig").splitlines() if god_path.is_file() else []
     referencias_logos = original_lines + god_lines
+    nombres_logos_autorizados = {
+        "TVN HD (LOCAL)",
+        "TV Chile (1080p) [Geo-blocked]",
+        "Caracola TV | CL",
+        "La Chilena TV ✪ | CL",
+        "Radio Rancagua | CL",
+        "Radio Ritmovisión TV",
+        "MAX Anime (1080p)",
+        "Primire Anime",
+        "TL+ (El Salvador)",
+    }
+    logos_autorizados = {
+        # Logo enlazado desde el sitio oficial de TL+; reemplaza el enlace
+        # temporal de Discord que ya expiró.
+        "TL+ (El Salvador)": "https://tlmas.kift.live/assets/imgs/logo.png",
+    }
     ordered_lines, logo_stats = alimentador.restaurar_logos_historicos(
         ordered_lines,
         referencias_logos,
         pluto_por_id,
         pluto_por_nombre,
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
+        nombres_autorizados=nombres_logos_autorizados,
+        logos_autorizados_por_nombre=logos_autorizados,
     )
     # Último blindaje de orden: España y todos los países deben quedar al final.
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
