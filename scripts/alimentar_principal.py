@@ -969,20 +969,16 @@ def deduplicar_pluto_por_prioridad(lineas, canales_por_id):
         for item in items:
             if item[0] == principal[0]:
                 continue
-            _, url, ya_es_opcion, bloque = item
+            _, url, _, bloque = item
             if not url or url in urls_vistas:
                 eliminados += 1
                 continue
 
+            # Normalizar todas las alternativas al formato que reconocen
+            # los pasos de reubicación y agrupación: (OPCIÓN n).
             bloque_opcion = list(bloque)
-            if not ya_es_opcion:
-                bloque_opcion[0] = etiquetar_opcion(bloque_opcion[0], siguiente_opcion)
-                siguiente_opcion += 1
-            else:
-                numero = re.search(r"(?:opci[oó]n|opc|option)\s*(\d+)", extraer_nombre(bloque_opcion[0]), re.I)
-                if numero:
-                    siguiente_opcion = max(siguiente_opcion, int(numero.group(1)) + 1)
-
+            bloque_opcion[0] = etiquetar_opcion(bloque_opcion[0], siguiente_opcion)
+            siguiente_opcion += 1
             opciones.append(bloque_opcion)
             urls_vistas.add(url)
 
