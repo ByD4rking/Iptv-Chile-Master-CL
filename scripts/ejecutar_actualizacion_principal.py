@@ -185,6 +185,10 @@ def main():
     )
     _trace_pitufos_mx("después del blindaje terminal Pluto MX", ordered_lines)
 
+    # La integración terminal puede añadir opciones después del agrupador inicial.
+    # Reagrupar aquí para mantenerlas contiguas y renumerarlas por posición real.
+    ordered_lines = alimentador.agrupar_alternativas_por_identidad(ordered_lines)
+
     # La restauración del orden histórico puede recuperar bloques previos.
     # Reaplicar al final la regla estricta solo a URLs de Cine/Películas MAGMA.
     respuesta_magma = session.get(alimentador.FUENTE_MAGMA, timeout=30)
