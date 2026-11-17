@@ -35,6 +35,28 @@ class FamilyGroupingTests(unittest.TestCase):
             "Comedy Central HD",
         ])
 
+    def test_intentionally_sorted_categories_keep_the_current_order(self):
+        original = ["#EXTM3U"]
+        original += bloque("Naruto", categoria="Anime")
+        original += bloque("Dragon Ball Z", categoria="Anime")
+        original += bloque("Retro TV", categoria="Entretenimiento / Cine / Series")
+        original += bloque("Los Simpson Latino", categoria="Entretenimiento / Cine / Series")
+
+        current = ["#EXTM3U"]
+        current += bloque("Dragon Ball Z", categoria="Anime")
+        current += bloque("Dragon Ball Super", categoria="Anime")
+        current += bloque("Naruto", categoria="Anime")
+        current += bloque("Los Simpson Latino", categoria="Entretenimiento / Cine / Series")
+        current += bloque("Los Simpson Latino [Opción 2]", categoria="Entretenimiento / Cine / Series")
+        current += bloque("Retro TV", categoria="Entretenimiento / Cine / Series")
+
+        result = ap.agrupar_familias_por_categoria(current, original)
+        names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
+        self.assertEqual(names, [
+            "Dragon Ball Z", "Dragon Ball Super", "Naruto",
+            "Los Simpson Latino", "Los Simpson Latino [Opción 2]", "Retro TV",
+        ])
+
     def test_new_family_variant_is_inserted_after_existing_family(self):
         original = ["#EXTM3U"]
         original += bloque("CityTV SD", categoria="Entretenimiento Premium")
