@@ -135,9 +135,9 @@ class InformativosOrderTests(unittest.TestCase):
             "T13 En Vivo (Chile - Nacional)",
             "Telesur English | VE",
             "Telemundo Noticias Texas",
-            "Canal 33 Tijuana (Baja California)",
             "Telesur | VE",
             "Telesur Costa Rica | CR",
+            "Canal 33 Tijuana (Baja California)",
         ])
 
     def test_general_is_absent_from_principal(self):
