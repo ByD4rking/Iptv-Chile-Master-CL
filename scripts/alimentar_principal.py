@@ -234,6 +234,11 @@ def determinar_destino_iptvsv(categoria, nombre, categorias):
     if not categoria:
         return None
 
+    # TN (Todo Noticias) es una señal informativa inequívoca aunque IPTVSV
+    # la entregue bajo la carpeta-país Argentina.
+    if normalizar(nombre) in {"tn", "todo noticias", "tn argentina"}:
+        return buscar_categoria_existente("Informativos", categorias)
+
     c_norm = normalizar(categoria)
     aliases = {
         "chile": "CHILE TV",
