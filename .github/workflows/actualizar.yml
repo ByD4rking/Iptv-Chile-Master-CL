@@ -72,6 +72,9 @@ jobs:
             scripts/alimentar_principal.py \
             scripts/sincronizar_complementos.py \
             scripts/ejecutar_actualizacion_principal.py \
+            scripts/auditar_logos.py \
+            scripts/test_auditar_logos.py \
+            scripts/test_informativos_order.py \
             scripts/test_sincronizar_complementos.py \
             scripts/selftest_sincronizacion_real.py \
             scripts/unificar_chile.py \
@@ -110,6 +113,12 @@ jobs:
 
       - name: Actualizar principal y sincronizar fuentes complementarias
         run: python scripts/ejecutar_actualizacion_principal.py
+
+      - name: Blindar orden de CHILE TV, países e Informativos
+        run: python -m unittest discover -s scripts -p 'test_informativos_order.py' -v
+
+      - name: Verificar reparación segura de logos
+        run: python -m unittest discover -s scripts -p 'test_auditar_logos.py' -v
 
       - name: Auditoría integral de la M3U generada
         run: python scripts/selftest_sincronizacion_real.py --audit-only --before /tmp/principal_before.m3u
