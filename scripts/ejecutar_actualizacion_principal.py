@@ -134,6 +134,9 @@ def main():
     )
     # Último blindaje de orden: España y todos los países deben quedar al final.
     ordered_lines = alimentador.mover_paises_al_final(ordered_lines)
+    # Agrupar variantes de una misma familia al final del flujo, preservando
+    # el orden actual de categorías y de la primera aparición de cada familia.
+    ordered_lines = alimentador.agrupar_familias_por_categoria(ordered_lines)
     # La sincronización complementaria tampoco puede recrear General.
     ordered_lines = alimentador.blindar_categoria_general(ordered_lines)
 
