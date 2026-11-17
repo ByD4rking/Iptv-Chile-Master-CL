@@ -3674,10 +3674,44 @@ def extraer_logos_bloqueados_por_url(lineas):
     return {url: next(iter(logos)) for url, logos in candidatos.items() if len(logos) == 1}
 
 
-def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None, logos_bloqueados_por_url=None, nombres_autorizados=None, logos_autorizados_por_nombre=None):
+def extraer_logos_bloqueados_por_identidad(lineas):
+    """Congela logos de la maestra por identidad estable, aunque rote la URL."""
+    por_id = defaultdict(set)
+    por_categoria_nombre = defaultdict(set)
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        url = next((x.strip() for x in lineas[i + 1:j] if url_es_valida(x.strip())), "")
+        m_id = re.search(r'tvg-id="([^"]*)"', extinf, re.I)
+        m_logo = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
+        m_legacy = re.search(r'(?<![\w-])logo="([^"]*)"', extinf, re.I)
+        logo = (m_logo.group(1).strip() if m_logo else "") or (m_legacy.group(1).strip() if m_legacy else "")
+        if url and url_es_valida(logo):
+            cid = m_id.group(1).strip().lower() if m_id else ""
+            categoria = normalizar(extraer_categoria(extinf))
+            nombre = normalizar_nombre_canal(extraer_nombre(extinf))
+            if cid:
+                por_id[cid].add(logo)
+            if categoria and nombre:
+                por_categoria_nombre[(categoria, nombre)].add(logo)
+        i = j
+    return {
+        "id": {k: next(iter(v)) for k, v in por_id.items() if len(v) == 1},
+        "categoria_nombre": {k: next(iter(v)) for k, v in por_categoria_nombre.items() if len(v) == 1},
+    }
+
+
+def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_nombre=None, logos_por_url_prioritarios=None, logos_bloqueados_por_url=None, nombres_autorizados=None, logos_autorizados_por_nombre=None, logos_bloqueados_por_identidad=None):
     """Restaura logos y protege los logos válidos de la principal por URL exacta."""
     pluto_por_id = pluto_por_id or {}
     logos_bloqueados_por_url = logos_bloqueados_por_url or {}
+    logos_bloqueados_por_identidad = logos_bloqueados_por_identidad or {}
     pluto_por_nombre = pluto_por_nombre or {}
     logos_por_url_prioritarios = logos_por_url_prioritarios or {}
     nombres_autorizados = (
@@ -3769,8 +3803,6 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
     for item in bloques(salida):
         # En la maestra solo se permite restaurar/cambiar los logos que el
         # usuario autorizó expresamente. El resto queda intocable aunque falte.
-        if nombres_autorizados is not None and item["name"] not in nombres_autorizados:
-            continue
         extinf = salida[item["index"]]
         actual = re.search(r'tvg-logo="([^"]*)"', extinf, re.I)
         logo_autorizado = logos_autorizados_por_nombre.get(item["name"], "")
@@ -3780,6 +3812,22 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
                 salida[item["index"]] = poner_logo(extinf, logo_autorizado)
                 protegidos += 1
             continue
+
+        # Canales no autorizados: jamás se les asigna un logo nuevo. Se restaura
+        # únicamente el logo que ya tenían en la maestra de entrada, usando
+        # identidad estable para soportar renovaciones/cambios de URL.
+        if nombres_autorizados is not None and item["name"] not in nombres_autorizados:
+            logo_bloqueado = logos_bloqueados_por_url.get(item["url"], "") if item["url"] else ""
+            if not logo_bloqueado and item["id"]:
+                logo_bloqueado = logos_bloqueados_por_identidad.get("id", {}).get(item["id"], "")
+            if not logo_bloqueado and item["category"] and item["name"]:
+                logo_bloqueado = logos_bloqueados_por_identidad.get("categoria_nombre", {}).get((item["category"], item["name"]), "")
+            logo_actual = actual.group(1).strip() if actual else ""
+            if logo_bloqueado and url_es_valida(logo_bloqueado) and logo_actual != logo_bloqueado:
+                salida[item["index"]] = poner_logo(extinf, logo_bloqueado)
+                protegidos += 1
+            continue
+
         logo_bloqueado = logos_bloqueados_por_url.get(item["url"], "") if item["url"] else ""
         if logo_bloqueado and url_es_valida(logo_bloqueado):
             logo_actual = actual.group(1).strip() if actual else ""
@@ -4994,6 +5042,7 @@ def main():
     lineas, logos_restaurados = restaurar_logos_historicos(
         lineas, referencias_logos, pluto_por_id, pluto_por_nombre, logos_historicos,
         logos_bloqueados_por_url=extraer_logos_bloqueados_por_url(lineas_iniciales),
+        logos_bloqueados_por_identidad=extraer_logos_bloqueados_por_identidad(lineas_iniciales),
         nombres_autorizados=NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL,
         logos_autorizados_por_nombre=LOGOS_AUTORIZADOS_PRINCIPAL,
     )
