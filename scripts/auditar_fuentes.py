@@ -107,7 +107,8 @@ def configured_sources(scope: str) -> list[dict]:
         for item in principal.get("sources", []):
             result.append({"name": "PRINCIPAL/" + item["name"], "url": item["url"], "readonly": False})
         for name, url in principal.get("special_sources", {}).items():
-            if name == "pluto_mx_alternatives":
+            # IPTVSV y MAGMA ya están en "sources"; se agregan los especiales restantes.
+            if name not in {"iptvsv", "magma"}:
                 result.append({"name": "PRINCIPAL/SPECIAL-" + name.upper(), "url": url, "readonly": False})
         for item in principal.get("pluto_sources", []):
             result.append({"name": "PRINCIPAL/" + item["name"], "url": item["url"], "readonly": False})
@@ -161,20 +162,44 @@ def diff_source(name: str, old: dict | None, new: dict) -> dict:
     old_channels = old.get("channels", {})
     new_channels = new.get("channels", {})
     old_keys, new_keys = set(old_channels), set(new_channels)
-    added = sorted(new_keys - old_keys)
-    removed = sorted(old_keys - new_keys)
+    added_keys = set(new_keys - old_keys)
+    removed_keys = set(old_keys - new_keys)
     changed_name = []
     changed_url = []
     changed_group = []
-    for key in sorted(old_keys & new_keys):
-        before = old_channels[key]
-        after = new_channels[key]
+
+    def compare_pair(key: str, before: list[str], after: list[str]) -> None:
         if before[0] != after[0]:
             changed_name.append({"key": key, "before_fingerprint": before[0], "after_fingerprint": after[0]})
         if before[1] != after[1]:
             changed_url.append({"key": key, "before_fingerprint": before[1], "after_fingerprint": after[1]})
         if before[2] != after[2]:
             changed_group.append({"key": key, "before_fingerprint": before[2], "after_fingerprint": after[2]})
+
+    for key in sorted(old_keys & new_keys):
+        compare_pair(key, old_channels[key], new_channels[key])
+
+    # Si una fuente no entrega tvg-id, un cambio de nombre altera la clave.
+    # Reconciliar solo por URL cuando esta aparece una única vez en ambos lados:
+    # permite detectar renombres y evita emparejamientos ambiguos por duplicados.
+    old_by_url: dict[str, list[str]] = {}
+    new_by_url: dict[str, list[str]] = {}
+    for key in removed_keys:
+        old_by_url.setdefault(old_channels[key][1], []).append(key)
+    for key in added_keys:
+        new_by_url.setdefault(new_channels[key][1], []).append(key)
+    for url_fp in sorted(set(old_by_url) & set(new_by_url)):
+        before_keys = old_by_url[url_fp]
+        after_keys = new_by_url[url_fp]
+        if len(before_keys) != 1 or len(after_keys) != 1:
+            continue
+        before_key, after_key = before_keys[0], after_keys[0]
+        compare_pair(before_key, old_channels[before_key], new_channels[after_key])
+        removed_keys.discard(before_key)
+        added_keys.discard(after_key)
+
+    added = sorted(added_keys)
+    removed = sorted(removed_keys)
     url_changed = old.get("url") != new.get("url")
     content_changed = old.get("sha256") != new.get("sha256")
     order_changed = list(old_channels) != list(new_channels)
@@ -275,6 +300,7 @@ def audit(scope: str) -> dict:
         "scope": scope,
         "checked_at": timestamp,
         "sources_configured": len(jobs) + (len(errors) if scope == "pluto" else 0),
+        "sources_unique_urls": len({job[1] for job in jobs}),
         "sources_checked": len(results),
         "sources_failed": len(errors),
         "changed_sources": sum(1 for item in changes if item["status"] == "changed"),
