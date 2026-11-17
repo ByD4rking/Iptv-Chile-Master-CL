@@ -2711,7 +2711,7 @@ def validar_orden_canales(
             familia = clave_familia_canal(nombre_raw)
             # La auditoría compara el orden de familias, no el orden interno
             # de sus señales: agrupar variantes no debe generar un falso fallo.
-            orden_key = familia or nombre
+            orden_key = familia or nombre or ("id:" + channel_id if channel_id else "")
             vistos_categoria = vistos.setdefault(categoria, set())
             if orden_key not in vistos_categoria:
                 vistos_categoria.add(orden_key)
