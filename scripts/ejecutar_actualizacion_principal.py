@@ -131,6 +131,7 @@ def main():
         "Caracola TV | CL",
         "La Chilena TV ✪ | CL",
         "Radio Rancagua | CL",
+        "Radio Rancagua FM (720p)",
         "Radio Ritmovisión TV",
         "MAX Anime (1080p)",
         "Primire Anime",
