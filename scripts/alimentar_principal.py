@@ -2593,20 +2593,17 @@ def agrupar_familias_por_categoria(lineas):
             pendientes.extend(inicio)
             i = j
 
-    por_categoria = {}
-    orden_categorias = []
+    segmentos = []
     for bloque in bloques:
-        categoria = bloque["categoria"]
-        if categoria not in por_categoria:
-            por_categoria[categoria] = []
-            orden_categorias.append(categoria)
-        por_categoria[categoria].append(bloque)
+        if not segmentos or segmentos[-1][0]["categoria"] != bloque["categoria"]:
+            segmentos.append([])
+        segmentos[-1].append(bloque)
 
     salida = []
-    for categoria in orden_categorias:
+    for segmento in segmentos:
         familias = {}
         orden_familias = []
-        for bloque in por_categoria[categoria]:
+        for bloque in segmento:
             familia = bloque["familia"]
             if familia not in familias:
                 familias[familia] = []
