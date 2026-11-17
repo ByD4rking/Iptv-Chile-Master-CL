@@ -2904,7 +2904,11 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
             # Rugrats Crecidos, independientemente del orden de entrada.
             if categoria == normalizar("Infantiles"):
                 def prioridad_infantil(bloque):
-                    nombre = normalizar(extraer_nombre(bloque["lineas"][0]))
+                    extinf = next(
+                        (linea for linea in bloque["lineas"] if linea.startswith("#EXTINF")),
+                        "",
+                    )
+                    nombre = normalizar(extraer_nombre(extinf))
                     if nombre.startswith("rugrats crecidos"):
                         return 1
                     if nombre.startswith("rugrats"):
