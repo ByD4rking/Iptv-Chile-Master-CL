@@ -103,8 +103,9 @@ class InformativosOrderTests(unittest.TestCase):
             ("Informativos", "N+ Foro (Televisa) (Nacional)"),
             ("Informativos", "Telemundo Noticias Al día"),
             ("Informativos", "Telemundo Noticias Texas"),
-            ("Informativos", "TN HD (Buenos Aires) [Opción 2]"),
-            ("Informativos", "TN 🇦🇷"),
+            ("Argentina", "TN HD (Buenos Aires) [Opción 2]"),
+            ("Argentina", "TN 🇦🇷"),
+            ("México", "N+ México"),
             ("Informativos", "CNN en Español [Opción 2]"),
             ("Informativos", "CNN Chile"),
             ("Informativos", "RTVE Canal 24 Horas (España)"),
@@ -125,11 +126,22 @@ class InformativosOrderTests(unittest.TestCase):
             ])
         ordered = ap.ordenar_informativos(sample)
         names = informativos_names(ordered)
+        for expected_name in (
+            "TN HD (Buenos Aires) [Opción 2]",
+            "TN 🇦🇷",
+            "N+ México",
+        ):
+            extinf = next(
+                line for line in ordered
+                if line.startswith("#EXTINF") and line.endswith("," + expected_name)
+            )
+            self.assertIn('group-title="Informativos"', extinf)
         self.assertEqual(names, [
             "CNN Chile",
             "Meganoticias",
             "TN HD (Buenos Aires) [Opción 2]",
             "TN 🇦🇷",
+            "N+ México",
             "TeleSUR",
             "CNN en Español [Opción 2]",
             "RTVE Canal 24 Horas (España)",
