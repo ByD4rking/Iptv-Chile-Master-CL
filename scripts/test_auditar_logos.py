@@ -81,6 +81,20 @@ class LogoAuditTests(unittest.TestCase):
         self.assertIn(f'tvg-logo="{working}"', result[1])
         self.assertNotIn(f'tvg-logo="{other}"', result[1])
 
+    def test_country_flag_is_not_used_as_a_channel_logo(self):
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 group-title="Bolivia" tvg-id="canal.24",Canal 24 Multivision',
+            "https://stream.test/canal24.m3u8",
+        ]
+        reference = [
+            '#EXTINF:-1 group-title="Bolivia" tvg-id="canal.24" tvg-logo="https://flagcdn.com/w320/bo.png",Canal 24 Multivision',
+            "https://stream.test/other.m3u8",
+        ]
+        result, stats = ap.restaurar_logos_historicos(current, reference)
+        self.assertNotIn("tvg-logo=", result[1])
+        self.assertEqual(stats["sin_referencia"], 1)
+
     def test_confirmed_broken_logo_without_verified_alternative_is_cleared(self):
         broken = "https://img.test/broken.png"
         current = [
