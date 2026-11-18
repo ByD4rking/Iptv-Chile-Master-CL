@@ -125,7 +125,10 @@ def blindar_logos(lineas, referencia):
         match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
         extinf = output[record["start"]]
         override = authorized.get(record["name"]) or authorized.get(record["tvg_name"])
-        if override and match is not None:
+        if override:
+            # Estos dos nombres fueron autorizados expresamente: copiar el
+            # logo canónico de TVN incluso si la identidad no coincide con
+            # la entrada histórica (caso que antes impedía aplicar el cambio).
             previous_legacy = match[1] if match else ""
             values = (override, override if previous_legacy else "")
             authorized_count += 1
@@ -188,16 +191,19 @@ def priorizar_history_documentales(lineas):
     if not category_records:
         return list(lineas)
 
-    history = [
-        record for record in category_records
-        if record["name"] == "history"
-        or (record["name"].startswith("history ") and not record["name"].startswith("history 2"))
-    ]
-    history2 = [
-        record for record in category_records
-        if record["name"] == "history 2"
-        or record["name"].startswith("history 2 ")
-    ]
+    def is_history2(record):
+        names = (record["name"], record["tvg_name"])
+        return any(
+            re.match(r"^(?:history\s*2|h\s*2)(?:\s|$)", name)
+            for name in names if name
+        )
+
+    def is_history(record):
+        names = (record["name"], record["tvg_name"])
+        return any(name.startswith("history") for name in names if name) and not is_history2(record)
+
+    history = [record for record in category_records if is_history(record)]
+    history2 = [record for record in category_records if is_history2(record)]
     prioritized_ids = {id(record) for record in history + history2}
     if not prioritized_ids:
         return list(lineas)
@@ -216,6 +222,41 @@ def priorizar_history_documentales(lineas):
             continue
         output.extend(record["lines"])
     return output
+
+
+def validar_prioridad_history_documentales(lineas):
+    """Verifica que todas las señales History y H2 estén antes del resto."""
+    expected = priorizar_history_documentales(lineas)
+    if expected != list(lineas):
+        raise AssertionError(
+            "History y History 2/H2 no están completos y agrupados al inicio "
+            "de Documentales y Cultura."
+        )
+    return True
+
+
+def validar_logos_tvn_autorizados(lineas):
+    """Exige los dos logos TVN autorizados en sus canales exactos."""
+    authorized = {_norm(name): logo for name, logo in LOGOS_AUTORIZADOS_POR_NOMBRE.items()}
+    found = set()
+    for record in _split_blocks(lineas)[1]:
+        names = {record["name"], record["tvg_name"]}
+        matched = next((name for name in names if name in authorized), None)
+        if matched is None:
+            continue
+        logo = _attr(record["lines"][0], "tvg-logo")
+        if logo != authorized[matched]:
+            raise AssertionError(
+                f"Logo incorrecto en {matched}: esperado={authorized[matched]!r}, actual={logo!r}"
+            )
+        found.add(matched)
+    missing = set(authorized) - found
+    if missing:
+        raise AssertionError(
+            "No se encontraron las dos señales TVN autorizadas en la principal: "
+            + ", ".join(sorted(missing))
+        )
+    return True
 
 
 def ordenar_categorias_definitivo(lineas):

@@ -4,7 +4,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from scripts.blindajes_principal import priorizar_history_documentales
+from scripts.blindajes_principal import (
+    priorizar_history_documentales,
+    validar_prioridad_history_documentales,
+)
 from alimentar_principal import validar_orden_canales
 
 
@@ -25,6 +28,9 @@ class DocumentalesHistoryOrderTests(unittest.TestCase):
         lines += bloque("History (1080p)")
         lines += bloque("Nat Geo")
         lines += bloque("History 2 (1080p)")
+        lines += bloque("H2 (720p)")
+        lines += bloque("H2 HD (1080p)")
+        lines += bloque("H2O Science")
         result = priorizar_history_documentales(lines)
         names = [line.rsplit(",", 1)[-1] for line in result if line.startswith("#EXTINF")]
         self.assertEqual(names, [
@@ -32,10 +38,14 @@ class DocumentalesHistoryOrderTests(unittest.TestCase):
             "History (1080p)",
             "History 2 (720p)",
             "History 2 (1080p)",
+            "H2 (720p)",
+            "H2 HD (1080p)",
             "E! Entertainment",
             "Discovery Channel",
             "Nat Geo",
+            "H2O Science",
         ])
+        self.assertTrue(validar_prioridad_history_documentales(result))
 
     def test_channel_order_validator_allows_only_history_priority(self):
         original = ["#EXTM3U"]
@@ -43,6 +53,7 @@ class DocumentalesHistoryOrderTests(unittest.TestCase):
         original += bloque("History Channel HD")
         original += bloque("Discovery Channel")
         original += bloque("History 2 Latin America (1080p)")
+        original += bloque("H2 (1080p)")
         original += bloque("Nat Geo")
         reordered = priorizar_history_documentales(original)
         validar_orden_canales(original, reordered)
@@ -53,6 +64,7 @@ class DocumentalesHistoryOrderTests(unittest.TestCase):
         original += bloque("History Channel HD")
         original += bloque("Discovery Channel")
         original += bloque("History 2 Latin America (1080p)")
+        original += bloque("H2 (1080p)")
         original += bloque("Nat Geo")
         reordered = priorizar_history_documentales(original)
         # Alterar el orden relativo de dos canales ajenos a History debe fallar.
@@ -61,7 +73,7 @@ class DocumentalesHistoryOrderTests(unittest.TestCase):
         for i in extinf_positions:
             end = next((j for j in extinf_positions if j > i), len(reordered))
             blocks.append(reordered[i:end])
-        blocks[2], blocks[3] = blocks[3], blocks[2]
+        blocks[3], blocks[4] = blocks[4], blocks[3]
         invalid = ["#EXTM3U"] + [line for block in blocks for line in block]
         with self.assertRaisesRegex(RuntimeError, "ORDEN BLOQUEADO"):
             validar_orden_canales(original, invalid)

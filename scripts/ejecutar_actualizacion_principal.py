@@ -14,6 +14,8 @@ from blindajes_principal import (
     priorizar_history_documentales,
     restaurar_categoria_bloqueada,
     validar_orden_categorias,
+    validar_prioridad_history_documentales,
+    validar_logos_tvn_autorizados,
 )
 from calidad_magma_cine import (
     audit_and_filter_channels as _audit_magma_cinema,
@@ -256,7 +258,11 @@ def main():
     ordered_lines = ordenar_categorias_definitivo(ordered_lines)
     ordered_lines = priorizar_history_documentales(ordered_lines)
     validar_orden_categorias(ordered_lines)
+    validar_prioridad_history_documentales(ordered_lines)
+    validar_logos_tvn_autorizados(ordered_lines)
     print("[ORQUESTADOR] Blindaje global de logos:", blindaje_logos_stats)
+    print("[ORQUESTADOR] History + History 2/H2: prioridad y cobertura validadas.")
+    print("[ORQUESTADOR] Logos TVN HD (LOCAL) y TV Chile 1080p: copiados y validados.")
     print("[ORQUESTADOR] Orden global definitivo de categorías: validado.")
     jwt_pendientes = []
     for linea in ordered_lines:

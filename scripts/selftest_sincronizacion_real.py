@@ -549,11 +549,17 @@ def main(args: argparse.Namespace) -> None:
         if category == norm("Documentales y Cultura"):
             before_families = [
                 family for family in before_families
-                if not family.split(":", 1)[-1].startswith("history")
+                if not (
+                    family.split(":", 1)[-1].startswith("history")
+                    or re.match(r"^h\s*2(?:\b|$)", family.split(":", 1)[-1])
+                )
             ]
             after_families = [
                 family for family in after_families
-                if not family.split(":", 1)[-1].startswith("history")
+                if not (
+                    family.split(":", 1)[-1].startswith("history")
+                    or re.match(r"^h\s*2(?:\b|$)", family.split(":", 1)[-1])
+                )
             ]
         expected_order = [
             family for family in before_families if family in after_families
