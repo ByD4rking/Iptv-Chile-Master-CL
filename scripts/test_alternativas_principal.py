@@ -225,6 +225,41 @@ class TestAlternativasPrincipal(unittest.TestCase):
         self.assertFalse(ap.canal_excluido_pluto_es(fuente_latam, pitufos))
 
 
+    def test_restore_does_not_match_idless_new_alias_to_ambiguous_historical_name(self):
+        original = ["#EXTM3U"]
+        original += block("", "Colombia", "Canal Capital [Geo-Blocked]", "https://old.example/capital-geo.m3u8")
+        original += block("", "Colombia", "Canal Dos Yopal HD (Casanare)", "https://old.example/dos-yopal.m3u8")
+        original += block("", "Colombia", "Canal Institucional [No 24/7] (Nacional) [Geo-Blocked]", "https://old.example/institucional.m3u8")
+        original += block("", "Colombia", "Canal Más Televisión [No 24/7] (La Dorada - Caldas)", "https://old.example/mas-tv.m3u8")
+        original += block("", "Colombia", "Canal Mundo Visión HD [No 24/7] (Pereira - Risaralda)", "https://old.example/mundo-vision.m3u8")
+        original += block("115", "Colombia", "Canal Capital | CO", "https://old.example/capital-115.m3u8")
+        original += block("495", "Colombia", "Canal Capital | CO", "https://old.example/capital-495.m3u8")
+
+        current = ["#EXTM3U"]
+        # Nueva señal sin ID y URL distinta: no debe heredar por nombre la
+        # posición del único homónimo histórico que tampoco tenía ID.
+        current += block("", "Colombia", "Canal Capital", "https://new.example/capital.m3u8")
+        current += block("", "Colombia", "Canal Dos Yopal HD (Casanare)", "https://old.example/dos-yopal.m3u8")
+        current += block("", "Colombia", "Canal Institucional [No 24/7] (Nacional) [Geo-Blocked]", "https://old.example/institucional.m3u8")
+        current += block("", "Colombia", "Canal Más Televisión [No 24/7] (La Dorada - Caldas)", "https://old.example/mas-tv.m3u8")
+        current += block("", "Colombia", "Canal Mundo Visión HD [No 24/7] (Pereira - Risaralda)", "https://old.example/mundo-vision.m3u8")
+        current += block("115", "Colombia", "Canal Capital | CO", "https://old.example/capital-115.m3u8")
+        current += block("495", "Colombia", "Canal Capital | CO", "https://old.example/capital-495.m3u8")
+
+        restored = ap.restaurar_orden_original_por_categoria(current, original)
+        parsed = self.entries(restored)
+        names = [item[0].split(",", 1)[1] for item in parsed]
+        self.assertEqual(names, [
+            "Canal Dos Yopal HD (Casanare)",
+            "Canal Institucional [No 24/7] (Nacional) [Geo-Blocked]",
+            "Canal Más Televisión [No 24/7] (La Dorada - Caldas)",
+            "Canal Mundo Visión HD [No 24/7] (Pereira - Risaralda)",
+            "Canal Capital | CO",
+            "Canal Capital | CO",
+            "Canal Capital",
+        ])
+        ap.validar_orden_canales(original, restored)
+
     def test_restore_matches_delmi_v2_historical_label(self):
         original = ["#EXTM3U"]
         original += block("", "Anime", "Delmi TV [V2]", "https://a.example/delmi-v2.m3u8")
