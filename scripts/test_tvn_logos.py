@@ -3,6 +3,7 @@ import unittest
 from scripts.blindajes_principal import blindar_logos, validar_logos_tvn_autorizados
 
 TVN_LOGO = "https://i.imgur.com/3FKZHL4.png"
+TV_CHILE_LOGO = "https://i.imgur.com/oYFto0V.png"
 
 
 def channel(name, logo):
@@ -25,7 +26,8 @@ class TvnLogoTests(unittest.TestCase):
         result, stats = blindar_logos(current, reference)
         extinf = [line for line in result if line.startswith("#EXTINF")]
         self.assertEqual(len(extinf), 2)
-        self.assertTrue(all(f'tvg-logo="{TVN_LOGO}"' in line for line in extinf))
+        self.assertIn(f'tvg-logo="{TVN_LOGO}"', extinf[0])
+        self.assertIn(f'tvg-logo="{TV_CHILE_LOGO}"', extinf[1])
         self.assertEqual(stats["logos_autorizados"], 2)
         self.assertTrue(validar_logos_tvn_autorizados(result))
 
