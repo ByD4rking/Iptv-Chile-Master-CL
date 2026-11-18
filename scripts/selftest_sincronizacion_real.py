@@ -507,6 +507,23 @@ def main(args: argparse.Namespace) -> None:
         identity_key(item, name_to_ids)
         for item in after_playable
     )
+    # Una señal puede conservar su stream y cambiar tvg-name/nombre visible
+    # durante la normalización. La auditoría no debe marcarla como perdida
+    # cuando la URL exacta sigue publicada, aunque la clave textual cambie.
+    global_after_urls = {
+        str(item.get("url") or "").strip()
+        for item in after_playable
+        if str(item.get("url") or "").strip()
+    }
+    before_urls_by_identity = defaultdict(set)
+    for item in before_kept:
+        if item["is_option"]:
+            continue
+        key = identity_key(item, name_to_ids)
+        url = str(item.get("url") or "").strip()
+        if url:
+            before_urls_by_identity[(norm(item["category"]), key)].add(url)
+
     for category, before_keys in before_by_category.items():
         # Estos dos bloques tienen reordenamiento intencional y validaciones
         # específicas: MAGMA se consolida en Entretenimiento y los tres
@@ -525,9 +542,18 @@ def main(args: argparse.Namespace) -> None:
 
         for key, count in before_counts.items():
             if after_counts.get(key, 0) < count and global_after_counts.get(key, 0) < count:
+                # La URL exacta es una identidad inequívoca incluso si el
+                # proveedor o el normalizador cambió el nombre del canal.
+                # Solo se considera preservado si el stream sigue en la
+                # playlist final; no se acepta una coincidencia por nombre
+                # aproximado ni una URL que haya desaparecido.
+                old_urls = before_urls_by_identity.get((category, key), set())
+                if old_urls and old_urls.intersection(global_after_urls):
+                    continue
                 raise AssertionError(
                     f"Se perdió una alternativa existente: {key} en {category}; "
                     f"antes={count}, después_total={global_after_counts.get(key, 0)}; "
+                    f"URLs anteriores aún presentes={bool(old_urls.intersection(global_after_urls))}; "
                     f"resumen={result!r}"
                 )
 
