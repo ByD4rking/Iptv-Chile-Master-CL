@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "scope": "principal",
-  "checked_at": "2026-11-18T00:23:11.008253+00:00",
+  "checked_at": "2026-11-18T00:45:09.793692+00:00",
   "sources_configured": 64,
   "sources_unique_urls": 42,
   "sources_checked": 62,
   "sources_failed": 2,
-  "changed_sources": 8,
+  "changed_sources": 4,
   "new_sources": 0,
-  "total_added_channels": 26,
-  "total_removed_channels": 12,
-  "total_changed_stream_urls": 181,
+  "total_added_channels": 0,
+  "total_removed_channels": 0,
+  "total_changed_stream_urls": 2,
   "total_source_url_changes": 0,
   "configured_source_url_changes": [],
   "removed_sources": [],
@@ -139,523 +139,66 @@
     },
     {
       "source": "GOD/IPTV-ORG-AMER",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/regions/amer.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/regions/amer.m3u",
       "added_channels": 0,
       "removed_channels": 0,
-      "renamed_channels": 1,
-      "changed_stream_urls": 9,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
+      "content_hash_changed": false,
       "channel_order_changed": false,
       "samples": {
         "added": [],
         "removed": [],
-        "renamed": [
-          {
-            "key": "TomSingsTV.us@HD",
-            "before_fingerprint": "1d59eac6f3f31f86",
-            "after_fingerprint": "401cf1dada8b53bd"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "ESPNLatinAmerica.us@Colombia",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "EuronewsSpanish.fr@SD",
-            "before_fingerprint": "97776f66738aa540",
-            "after_fingerprint": "d55c0c7c94689360"
-          },
-          {
-            "key": "MiMusicaSalsa.us@SD",
-            "before_fingerprint": "c9d559293c451534",
-            "after_fingerprint": "f2573bf9e41c6ac4"
-          },
-          {
-            "key": "RumboMineroTV.pe@SD",
-            "before_fingerprint": "570e411d8d02a51a",
-            "after_fingerprint": "0821a04f3e4a207f"
-          },
-          {
-            "key": "ScaresbyShudder.us@SD",
-            "before_fingerprint": "1b99b5d3387896d4",
-            "after_fingerprint": "09bc590e5cd9dc85"
-          },
-          {
-            "key": "SulaTV.hn@SD",
-            "before_fingerprint": "a381e0cc75e6de20",
-            "after_fingerprint": "797a1618a7568434"
-          },
-          {
-            "key": "TomSingsTV.us@HD",
-            "before_fingerprint": "e826846dea4de624",
-            "after_fingerprint": "e9c9c1c83efa699b"
-          },
-          {
-            "key": "WeatherNation.us@SD",
-            "before_fingerprint": "f0f48f905cefd589",
-            "after_fingerprint": "cf03ad16a2500ff0"
-          },
-          {
-            "key": "WineWatchesWhiskey.us@HD",
-            "before_fingerprint": "164b3e2145127ba1",
-            "after_fingerprint": "e5331e56948480e4"
-          }
-        ],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-CATEGORIES",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/index.category.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/index.category.m3u",
-      "added_channels": 7,
-      "removed_channels": 4,
-      "renamed_channels": 8,
-      "changed_stream_urls": 51,
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "5Gold.il@SD",
-          "5Live.il@SD",
-          "5Sport.il@SD",
-          "5Sport4K.il@SD",
-          "M6.fr@SD",
-          "SonySportsTen3Hindi.in@SD",
-          "TA3.sk@SD"
-        ],
-        "removed": [
-          "AryanTVNational.in@SD",
-          "Dukhniwaran.in@SD",
-          "GospelTVIndia.in@SD",
-          "NagalandTV.in@SD"
-        ],
-        "renamed": [
-          {
-            "key": "Eurosport1.fr@UK",
-            "before_fingerprint": "26241707c2036ac0",
-            "after_fingerprint": "a073c6b1f86234a0"
-          },
-          {
-            "key": "ImaiTV.lk@SD",
-            "before_fingerprint": "f989682a832f4e58",
-            "after_fingerprint": "0f4683e5f46642fa"
-          },
-          {
-            "key": "KNewsIndia.in@SD",
-            "before_fingerprint": "7706885f35221325",
-            "after_fingerprint": "cb7f0a8de8077138"
-          },
-          {
-            "key": "LCP.fr@SD",
-            "before_fingerprint": "ebafd60555e6d00a",
-            "after_fingerprint": "1544cd8b4609f5b7"
-          },
-          {
-            "key": "PunjabiBeatsHD.in@HD",
-            "before_fingerprint": "1ccd3dbf486f235f",
-            "after_fingerprint": "ff4d55d9126e699a"
-          },
-          {
-            "key": "SonyYay.in@SD",
-            "before_fingerprint": "2a509b3347b5b6ea",
-            "after_fingerprint": "7bc192594eb467dc"
-          },
-          {
-            "key": "SonyYay.in@SD#2",
-            "before_fingerprint": "2a509b3347b5b6ea",
-            "after_fingerprint": "7bc192594eb467dc"
-          },
-          {
-            "key": "TomSingsTV.us@HD",
-            "before_fingerprint": "1d59eac6f3f31f86",
-            "after_fingerprint": "401cf1dada8b53bd"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "ABPNews.in@SD",
-            "before_fingerprint": "d097653bffc1eeaf",
-            "after_fingerprint": "611881cd4ca49a68"
-          },
-          {
-            "key": "Aastha.in@SD",
-            "before_fingerprint": "c3d9ac8575542262",
-            "after_fingerprint": "35c9c0cb7797ea08"
-          },
-          {
-            "key": "ArgusNews.in@SD",
-            "before_fingerprint": "b72ccf76902af6d0",
-            "after_fingerprint": "ec352b62c1d96882"
-          },
-          {
-            "key": "BFMTV.fr@SD",
-            "before_fingerprint": "ecd32f23236afca7",
-            "after_fingerprint": "c6b83890410b2fac"
-          },
-          {
-            "key": "Bharat24.in@SD",
-            "before_fingerprint": "b25ffed4a0a3f73e",
-            "after_fingerprint": "ca1d87f448358e64"
-          },
-          {
-            "key": "ChannelDivya.in@SD",
-            "before_fingerprint": "9ddc85a9226e56e5",
-            "after_fingerprint": "e596714a04402b9c"
-          },
-          {
-            "key": "ColorsBangla.in@HD",
-            "before_fingerprint": "f782a33c3f320f18",
-            "after_fingerprint": "3f5424794a55d3a5"
-          },
-          {
-            "key": "DDPunjabi.in@SD",
-            "before_fingerprint": "7b54e5c3cccefe5d",
-            "after_fingerprint": "3e22afcaa7bd6d5f"
-          },
-          {
-            "key": "DailyPostTV.in@SD",
-            "before_fingerprint": "8a1e8c325aff97d7",
-            "after_fingerprint": "6f9b4c3a256a5ab5"
-          },
-          {
-            "key": "ESPNLatinAmerica.us@Colombia",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "EuronewsSpanish.fr@SD",
-            "before_fingerprint": "97776f66738aa540",
-            "after_fingerprint": "d55c0c7c94689360"
-          },
-          {
-            "key": "Eurosport1.fr@UK",
-            "before_fingerprint": "fc09dc53213b3d9d",
-            "after_fingerprint": "81d501aaa3772d9b"
-          },
-          {
-            "key": "FashionTV.in@SD",
-            "before_fingerprint": "ff62bd190877c9cf",
-            "after_fingerprint": "13fc37cd0dd0607a"
-          },
-          {
-            "key": "Goldmines.in@SD",
-            "before_fingerprint": "c811c8f35d8ecc2c",
-            "after_fingerprint": "47d64a8739c2e868"
-          },
-          {
-            "key": "GoldminesBollywood.in@SD",
-            "before_fingerprint": "278c1e22ab0cdfbd",
-            "after_fingerprint": "4cc57e9c6154baff"
-          },
-          {
-            "key": "GoldminesMovies.in@SD",
-            "before_fingerprint": "a4b4ea36ac3db03a",
-            "after_fingerprint": "c19c385ceba87270"
-          },
-          {
-            "key": "GujaratFirst.in@SD",
-            "before_fingerprint": "981818053ea451ee",
-            "after_fingerprint": "f04c092d12bb416a"
-          },
-          {
-            "key": "HindiKhabar.in@SD",
-            "before_fingerprint": "d995ffed654fd4c9",
-            "after_fingerprint": "ffcf17a886357af7"
-          },
-          {
-            "key": "KNewsIndia.in@SD",
-            "before_fingerprint": "b4ba11a0965ca3a4",
-            "after_fingerprint": "e0271e6bc83cc63d"
-          },
-          {
-            "key": "KanakNews.in@SD",
-            "before_fingerprint": "af0d7d2a4154387c",
-            "after_fingerprint": "7502c06aa1488ae1"
-          },
-          {
-            "key": "KhabarFast.in@SD",
-            "before_fingerprint": "1515e5cf042a0e60",
-            "after_fingerprint": "97ee12c077d8449a"
-          },
-          {
-            "key": "LCP.fr@SD",
-            "before_fingerprint": "d313d3161cd4cdba",
-            "after_fingerprint": "66ccbd7da4bc9916"
-          },
-          {
-            "key": "LivingIndiaNews.in@SD",
-            "before_fingerprint": "74ed5e9938c56a34",
-            "after_fingerprint": "352b3b515a7332de"
-          },
-          {
-            "key": "ManoranjanMovies.in@SD",
-            "before_fingerprint": "fb7d4836fe9fb145",
-            "after_fingerprint": "03c68cfe7bcc47ee"
-          },
-          {
-            "key": "MiMusicaSalsa.us@SD",
-            "before_fingerprint": "c9d559293c451534",
-            "after_fingerprint": "f2573bf9e41c6ac4"
-          },
-          {
-            "key": "NDTV.in@SD",
-            "before_fingerprint": "bdf6338ca9ae27a8",
-            "after_fingerprint": "985ac0f007359f84"
-          },
-          {
-            "key": "NandighoshaTV.in@SD",
-            "before_fingerprint": "e50bf0ba65c66e41",
-            "after_fingerprint": "4c4a019a28797cd6"
-          },
-          {
-            "key": "News18Bangla.in@SD",
-            "before_fingerprint": "263f91b7d13fd8ee",
-            "after_fingerprint": "6d659eaaf2359b1e"
-          },
-          {
-            "key": "News24.in@SD",
-            "before_fingerprint": "dfc76190f30ac55e",
-            "after_fingerprint": "5ef7b5c53d70c6d6"
-          },
-          {
-            "key": "News9Live.in@SD",
-            "before_fingerprint": "058f68bd27b3577f",
-            "after_fingerprint": "4e8dc559362aabf4"
-          }
-        ],
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-COUNTRIES",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/index.country.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/index.country.m3u",
-      "added_channels": 7,
-      "removed_channels": 4,
-      "renamed_channels": 7,
-      "changed_stream_urls": 61,
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "5Gold.il@SD",
-          "5Live.il@SD",
-          "5Sport.il@SD",
-          "5Sport4K.il@SD",
-          "M6.fr@SD",
-          "SonySportsTen3Hindi.in@SD",
-          "TA3.sk@SD"
-        ],
-        "removed": [
-          "AryanTVNational.in@SD",
-          "Dukhniwaran.in@SD",
-          "GospelTVIndia.in@SD",
-          "NagalandTV.in@SD"
-        ],
-        "renamed": [
-          {
-            "key": "Eurosport1.fr@UK",
-            "before_fingerprint": "26241707c2036ac0",
-            "after_fingerprint": "a073c6b1f86234a0"
-          },
-          {
-            "key": "ImaiTV.lk@SD",
-            "before_fingerprint": "f989682a832f4e58",
-            "after_fingerprint": "0f4683e5f46642fa"
-          },
-          {
-            "key": "KNewsIndia.in@SD",
-            "before_fingerprint": "7706885f35221325",
-            "after_fingerprint": "cb7f0a8de8077138"
-          },
-          {
-            "key": "LCP.fr@SD",
-            "before_fingerprint": "ebafd60555e6d00a",
-            "after_fingerprint": "1544cd8b4609f5b7"
-          },
-          {
-            "key": "PunjabiBeatsHD.in@HD",
-            "before_fingerprint": "1ccd3dbf486f235f",
-            "after_fingerprint": "ff4d55d9126e699a"
-          },
-          {
-            "key": "SonyYay.in@SD",
-            "before_fingerprint": "2a509b3347b5b6ea",
-            "after_fingerprint": "7bc192594eb467dc"
-          },
-          {
-            "key": "TomSingsTV.us@HD",
-            "before_fingerprint": "1d59eac6f3f31f86",
-            "after_fingerprint": "401cf1dada8b53bd"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "ABPNews.in@SD",
-            "before_fingerprint": "d097653bffc1eeaf",
-            "after_fingerprint": "611881cd4ca49a68"
-          },
-          {
-            "key": "Aastha.in@SD",
-            "before_fingerprint": "c3d9ac8575542262",
-            "after_fingerprint": "35c9c0cb7797ea08"
-          },
-          {
-            "key": "ArgusNews.in@SD",
-            "before_fingerprint": "b72ccf76902af6d0",
-            "after_fingerprint": "ec352b62c1d96882"
-          },
-          {
-            "key": "BFMTV.fr@SD",
-            "before_fingerprint": "ecd32f23236afca7",
-            "after_fingerprint": "c6b83890410b2fac"
-          },
-          {
-            "key": "Bharat24.in@SD",
-            "before_fingerprint": "b25ffed4a0a3f73e",
-            "after_fingerprint": "ca1d87f448358e64"
-          },
-          {
-            "key": "ChannelDivya.in@SD",
-            "before_fingerprint": "9ddc85a9226e56e5",
-            "after_fingerprint": "e596714a04402b9c"
-          },
-          {
-            "key": "ColorsBangla.in@HD",
-            "before_fingerprint": "f782a33c3f320f18",
-            "after_fingerprint": "3f5424794a55d3a5"
-          },
-          {
-            "key": "DDPunjabi.in@SD",
-            "before_fingerprint": "7b54e5c3cccefe5d",
-            "after_fingerprint": "3e22afcaa7bd6d5f"
-          },
-          {
-            "key": "DailyPostTV.in@SD",
-            "before_fingerprint": "8a1e8c325aff97d7",
-            "after_fingerprint": "6f9b4c3a256a5ab5"
-          },
-          {
-            "key": "ESPNLatinAmerica.us@Colombia",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "ESPNLatinAmerica.us@Colombia#2",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "ESPNLatinAmerica.us@Colombia#3",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "ESPNLatinAmerica.us@Colombia#4",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "EuronewsSpanish.fr@SD",
-            "before_fingerprint": "97776f66738aa540",
-            "after_fingerprint": "d55c0c7c94689360"
-          },
-          {
-            "key": "Eurosport1.fr@UK",
-            "before_fingerprint": "fc09dc53213b3d9d",
-            "after_fingerprint": "81d501aaa3772d9b"
-          },
-          {
-            "key": "FashionTV.in@SD",
-            "before_fingerprint": "ff62bd190877c9cf",
-            "after_fingerprint": "13fc37cd0dd0607a"
-          },
-          {
-            "key": "Goldmines.in@SD",
-            "before_fingerprint": "c811c8f35d8ecc2c",
-            "after_fingerprint": "47d64a8739c2e868"
-          },
-          {
-            "key": "GoldminesBollywood.in@SD",
-            "before_fingerprint": "278c1e22ab0cdfbd",
-            "after_fingerprint": "4cc57e9c6154baff"
-          },
-          {
-            "key": "GoldminesMovies.in@SD",
-            "before_fingerprint": "a4b4ea36ac3db03a",
-            "after_fingerprint": "c19c385ceba87270"
-          },
-          {
-            "key": "GujaratFirst.in@SD",
-            "before_fingerprint": "981818053ea451ee",
-            "after_fingerprint": "f04c092d12bb416a"
-          },
-          {
-            "key": "HindiKhabar.in@SD",
-            "before_fingerprint": "d995ffed654fd4c9",
-            "after_fingerprint": "ffcf17a886357af7"
-          },
-          {
-            "key": "KNewsIndia.in@SD",
-            "before_fingerprint": "b4ba11a0965ca3a4",
-            "after_fingerprint": "e0271e6bc83cc63d"
-          },
-          {
-            "key": "KanakNews.in@SD",
-            "before_fingerprint": "af0d7d2a4154387c",
-            "after_fingerprint": "7502c06aa1488ae1"
-          },
-          {
-            "key": "KhabarFast.in@SD",
-            "before_fingerprint": "1515e5cf042a0e60",
-            "after_fingerprint": "97ee12c077d8449a"
-          },
-          {
-            "key": "LCP.fr@SD",
-            "before_fingerprint": "d313d3161cd4cdba",
-            "after_fingerprint": "66ccbd7da4bc9916"
-          },
-          {
-            "key": "LivingIndiaNews.in@SD",
-            "before_fingerprint": "74ed5e9938c56a34",
-            "after_fingerprint": "352b3b515a7332de"
-          },
-          {
-            "key": "ManoranjanMovies.in@SD",
-            "before_fingerprint": "fb7d4836fe9fb145",
-            "after_fingerprint": "03c68cfe7bcc47ee"
-          },
-          {
-            "key": "MiMusicaSalsa.us@SD",
-            "before_fingerprint": "c9d559293c451534",
-            "after_fingerprint": "f2573bf9e41c6ac4"
-          },
-          {
-            "key": "NDTV.in@SD",
-            "before_fingerprint": "bdf6338ca9ae27a8",
-            "after_fingerprint": "985ac0f007359f84"
-          },
-          {
-            "key": "NandighoshaTV.in@SD",
-            "before_fingerprint": "e50bf0ba65c66e41",
-            "after_fingerprint": "4c4a019a28797cd6"
-          }
-        ],
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
@@ -684,364 +227,88 @@
     },
     {
       "source": "GOD/IPTV-ORG-SPA",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/languages/spa.m3u",
       "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 5,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
+      "content_hash_changed": false,
       "channel_order_changed": false,
       "samples": {
         "added": [],
         "removed": [],
         "renamed": [],
-        "stream_urls": [
-          {
-            "key": "ESPNLatinAmerica.us@Colombia",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "EuronewsSpanish.fr@SD",
-            "before_fingerprint": "97776f66738aa540",
-            "after_fingerprint": "d55c0c7c94689360"
-          },
-          {
-            "key": "MiMusicaSalsa.us@SD",
-            "before_fingerprint": "c9d559293c451534",
-            "after_fingerprint": "f2573bf9e41c6ac4"
-          },
-          {
-            "key": "RumboMineroTV.pe@SD",
-            "before_fingerprint": "570e411d8d02a51a",
-            "after_fingerprint": "0821a04f3e4a207f"
-          },
-          {
-            "key": "SulaTV.hn@SD",
-            "before_fingerprint": "a381e0cc75e6de20",
-            "after_fingerprint": "797a1618a7568434"
-          }
-        ],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-SPORTS",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/categories/sports.m3u",
-      "added_channels": 5,
+      "added_channels": 0,
       "removed_channels": 0,
-      "renamed_channels": 1,
-      "changed_stream_urls": 2,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "5Gold.il@SD",
-          "5Live.il@SD",
-          "5Sport.il@SD",
-          "5Sport4K.il@SD",
-          "SonySportsTen3Hindi.in@SD"
-        ],
+        "added": [],
         "removed": [],
-        "renamed": [
-          {
-            "key": "Eurosport1.fr@UK",
-            "before_fingerprint": "26241707c2036ac0",
-            "after_fingerprint": "a073c6b1f86234a0"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "ESPNLatinAmerica.us@Colombia",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "Eurosport1.fr@UK",
-            "before_fingerprint": "fc09dc53213b3d9d",
-            "after_fingerprint": "81d501aaa3772d9b"
-          }
-        ],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-TOTAL",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/index.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/index.m3u",
-      "added_channels": 7,
-      "removed_channels": 4,
-      "renamed_channels": 7,
-      "changed_stream_urls": 48,
+      "added_channels": 0,
+      "removed_channels": 0,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "5Gold.il@SD",
-          "5Live.il@SD",
-          "5Sport.il@SD",
-          "5Sport4K.il@SD",
-          "M6.fr@SD",
-          "SonySportsTen3Hindi.in@SD",
-          "TA3.sk@SD"
-        ],
-        "removed": [
-          "AryanTVNational.in@SD",
-          "Dukhniwaran.in@SD",
-          "GospelTVIndia.in@SD",
-          "NagalandTV.in@SD"
-        ],
-        "renamed": [
-          {
-            "key": "Eurosport1.fr@UK",
-            "before_fingerprint": "26241707c2036ac0",
-            "after_fingerprint": "a073c6b1f86234a0"
-          },
-          {
-            "key": "ImaiTV.lk@SD",
-            "before_fingerprint": "f989682a832f4e58",
-            "after_fingerprint": "0f4683e5f46642fa"
-          },
-          {
-            "key": "KNewsIndia.in@SD",
-            "before_fingerprint": "7706885f35221325",
-            "after_fingerprint": "cb7f0a8de8077138"
-          },
-          {
-            "key": "LCP.fr@SD",
-            "before_fingerprint": "ebafd60555e6d00a",
-            "after_fingerprint": "1544cd8b4609f5b7"
-          },
-          {
-            "key": "PunjabiBeatsHD.in@HD",
-            "before_fingerprint": "1ccd3dbf486f235f",
-            "after_fingerprint": "ff4d55d9126e699a"
-          },
-          {
-            "key": "SonyYay.in@SD",
-            "before_fingerprint": "2a509b3347b5b6ea",
-            "after_fingerprint": "7bc192594eb467dc"
-          },
-          {
-            "key": "TomSingsTV.us@HD",
-            "before_fingerprint": "1d59eac6f3f31f86",
-            "after_fingerprint": "401cf1dada8b53bd"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "ABPNews.in@SD",
-            "before_fingerprint": "d097653bffc1eeaf",
-            "after_fingerprint": "611881cd4ca49a68"
-          },
-          {
-            "key": "Aastha.in@SD",
-            "before_fingerprint": "c3d9ac8575542262",
-            "after_fingerprint": "35c9c0cb7797ea08"
-          },
-          {
-            "key": "ArgusNews.in@SD",
-            "before_fingerprint": "b72ccf76902af6d0",
-            "after_fingerprint": "ec352b62c1d96882"
-          },
-          {
-            "key": "BFMTV.fr@SD",
-            "before_fingerprint": "ecd32f23236afca7",
-            "after_fingerprint": "c6b83890410b2fac"
-          },
-          {
-            "key": "Bharat24.in@SD",
-            "before_fingerprint": "b25ffed4a0a3f73e",
-            "after_fingerprint": "ca1d87f448358e64"
-          },
-          {
-            "key": "ChannelDivya.in@SD",
-            "before_fingerprint": "9ddc85a9226e56e5",
-            "after_fingerprint": "e596714a04402b9c"
-          },
-          {
-            "key": "ColorsBangla.in@HD",
-            "before_fingerprint": "f782a33c3f320f18",
-            "after_fingerprint": "3f5424794a55d3a5"
-          },
-          {
-            "key": "DDPunjabi.in@SD",
-            "before_fingerprint": "7b54e5c3cccefe5d",
-            "after_fingerprint": "3e22afcaa7bd6d5f"
-          },
-          {
-            "key": "DailyPostTV.in@SD",
-            "before_fingerprint": "8a1e8c325aff97d7",
-            "after_fingerprint": "6f9b4c3a256a5ab5"
-          },
-          {
-            "key": "ESPNLatinAmerica.us@Colombia",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "EuronewsSpanish.fr@SD",
-            "before_fingerprint": "97776f66738aa540",
-            "after_fingerprint": "d55c0c7c94689360"
-          },
-          {
-            "key": "Eurosport1.fr@UK",
-            "before_fingerprint": "fc09dc53213b3d9d",
-            "after_fingerprint": "81d501aaa3772d9b"
-          },
-          {
-            "key": "FashionTV.in@SD",
-            "before_fingerprint": "ff62bd190877c9cf",
-            "after_fingerprint": "13fc37cd0dd0607a"
-          },
-          {
-            "key": "Goldmines.in@SD",
-            "before_fingerprint": "c811c8f35d8ecc2c",
-            "after_fingerprint": "47d64a8739c2e868"
-          },
-          {
-            "key": "GoldminesBollywood.in@SD",
-            "before_fingerprint": "278c1e22ab0cdfbd",
-            "after_fingerprint": "4cc57e9c6154baff"
-          },
-          {
-            "key": "GoldminesMovies.in@SD",
-            "before_fingerprint": "a4b4ea36ac3db03a",
-            "after_fingerprint": "c19c385ceba87270"
-          },
-          {
-            "key": "GujaratFirst.in@SD",
-            "before_fingerprint": "981818053ea451ee",
-            "after_fingerprint": "f04c092d12bb416a"
-          },
-          {
-            "key": "HindiKhabar.in@SD",
-            "before_fingerprint": "d995ffed654fd4c9",
-            "after_fingerprint": "ffcf17a886357af7"
-          },
-          {
-            "key": "KNewsIndia.in@SD",
-            "before_fingerprint": "b4ba11a0965ca3a4",
-            "after_fingerprint": "e0271e6bc83cc63d"
-          },
-          {
-            "key": "KanakNews.in@SD",
-            "before_fingerprint": "af0d7d2a4154387c",
-            "after_fingerprint": "7502c06aa1488ae1"
-          },
-          {
-            "key": "KhabarFast.in@SD",
-            "before_fingerprint": "1515e5cf042a0e60",
-            "after_fingerprint": "97ee12c077d8449a"
-          },
-          {
-            "key": "LCP.fr@SD",
-            "before_fingerprint": "d313d3161cd4cdba",
-            "after_fingerprint": "66ccbd7da4bc9916"
-          },
-          {
-            "key": "LivingIndiaNews.in@SD",
-            "before_fingerprint": "74ed5e9938c56a34",
-            "after_fingerprint": "352b3b515a7332de"
-          },
-          {
-            "key": "ManoranjanMovies.in@SD",
-            "before_fingerprint": "fb7d4836fe9fb145",
-            "after_fingerprint": "03c68cfe7bcc47ee"
-          },
-          {
-            "key": "MiMusicaSalsa.us@SD",
-            "before_fingerprint": "c9d559293c451534",
-            "after_fingerprint": "f2573bf9e41c6ac4"
-          },
-          {
-            "key": "NDTV.in@SD",
-            "before_fingerprint": "bdf6338ca9ae27a8",
-            "after_fingerprint": "985ac0f007359f84"
-          },
-          {
-            "key": "NandighoshaTV.in@SD",
-            "before_fingerprint": "e50bf0ba65c66e41",
-            "after_fingerprint": "4c4a019a28797cd6"
-          },
-          {
-            "key": "News18Bangla.in@SD",
-            "before_fingerprint": "263f91b7d13fd8ee",
-            "after_fingerprint": "6d659eaaf2359b1e"
-          },
-          {
-            "key": "News24.in@SD",
-            "before_fingerprint": "dfc76190f30ac55e",
-            "after_fingerprint": "5ef7b5c53d70c6d6"
-          },
-          {
-            "key": "News9Live.in@SD",
-            "before_fingerprint": "058f68bd27b3577f",
-            "after_fingerprint": "4e8dc559362aabf4"
-          }
-        ],
+        "added": [],
+        "removed": [],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/IPTV-ORG-US",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://iptv-org.github.io/iptv/countries/us.m3u",
       "new_source_url": "https://iptv-org.github.io/iptv/countries/us.m3u",
       "added_channels": 0,
       "removed_channels": 0,
-      "renamed_channels": 1,
-      "changed_stream_urls": 4,
+      "renamed_channels": 0,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
+      "content_hash_changed": false,
       "channel_order_changed": false,
       "samples": {
         "added": [],
         "removed": [],
-        "renamed": [
-          {
-            "key": "TomSingsTV.us@HD",
-            "before_fingerprint": "1d59eac6f3f31f86",
-            "after_fingerprint": "401cf1dada8b53bd"
-          }
-        ],
-        "stream_urls": [
-          {
-            "key": "ScaresbyShudder.us@SD",
-            "before_fingerprint": "1b99b5d3387896d4",
-            "after_fingerprint": "09bc590e5cd9dc85"
-          },
-          {
-            "key": "TomSingsTV.us@HD",
-            "before_fingerprint": "e826846dea4de624",
-            "after_fingerprint": "e9c9c1c83efa699b"
-          },
-          {
-            "key": "WeatherNation.us@SD",
-            "before_fingerprint": "f0f48f905cefd589",
-            "after_fingerprint": "cf03ad16a2500ff0"
-          },
-          {
-            "key": "WineWatchesWhiskey.us@HD",
-            "before_fingerprint": "164b3e2145127ba1",
-            "after_fingerprint": "e5331e56948480e4"
-          }
-        ],
+        "renamed": [],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
@@ -1136,28 +403,22 @@
     },
     {
       "source": "GOD/M3UCL-CL",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/CL.m3u",
       "new_source_url": "https://m3u.cl/lista/CL.m3u",
       "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 1,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
+      "content_hash_changed": false,
       "channel_order_changed": false,
       "samples": {
         "added": [],
         "removed": [],
         "renamed": [],
-        "stream_urls": [
-          {
-            "key": "1282",
-            "before_fingerprint": "bf8498effbff0dad",
-            "after_fingerprint": "63cffd8d92439cdd"
-          }
-        ],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": true
@@ -1384,7 +645,7 @@
     },
     {
       "source": "GOD/M3UCL-TOP",
-      "status": "unchanged",
+      "status": "changed",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/top.m3u",
       "new_source_url": "https://m3u.cl/lista/top.m3u",
@@ -1393,8 +654,8 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
       "samples": {
         "added": [],
         "removed": [],
@@ -1692,22 +953,28 @@
     },
     {
       "source": "PRINCIPAL/M3UCL-CL",
-      "status": "unchanged",
+      "status": "changed",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/CL.m3u",
       "new_source_url": "https://m3u.cl/lista/CL.m3u",
       "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 0,
+      "changed_stream_urls": 1,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
         "removed": [],
         "renamed": [],
-        "stream_urls": [],
+        "stream_urls": [
+          {
+            "key": "1282",
+            "before_fingerprint": "bf8498effbff0dad",
+            "after_fingerprint": "63cffd8d92439cdd"
+          }
+        ],
         "categories": []
       },
       "readonly": false
@@ -1934,7 +1201,7 @@
     },
     {
       "source": "PRINCIPAL/M3UCL-TOP",
-      "status": "unchanged",
+      "status": "changed",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/top.m3u",
       "new_source_url": "https://m3u.cl/lista/top.m3u",
@@ -1943,8 +1210,8 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
       "samples": {
         "added": [],
         "removed": [],
@@ -1956,22 +1223,28 @@
     },
     {
       "source": "PRINCIPAL/M3UCL-TOTAL",
-      "status": "unchanged",
+      "status": "changed",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/total.m3u",
       "new_source_url": "https://m3u.cl/lista/total.m3u",
       "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 0,
+      "changed_stream_urls": 1,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
       "samples": {
         "added": [],
         "removed": [],
         "renamed": [],
-        "stream_urls": [],
+        "stream_urls": [
+          {
+            "key": "1282",
+            "before_fingerprint": "bf8498effbff0dad",
+            "after_fingerprint": "63cffd8d92439cdd"
+          }
+        ],
         "categories": []
       },
       "readonly": false
