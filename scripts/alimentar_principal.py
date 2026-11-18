@@ -2548,6 +2548,12 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
     if not actuales:
         return lineas
 
+    def categoria_canonica(categoria):
+        key = normalizar(categoria)
+        key = normalizar(CATEGORIAS_CANONICAS.get(key, key))
+        key = normalizar(PAISES_CANONICOS.get(key, key))
+        return key
+
     # Si una fuente entrega varias señales con IDs distintos bajo el mismo
     # nombre (p. ej. Canal Capital | CO, IDs 115 y 495), no deben heredar
     # todas la posición de un único alias histórico sin ID. Cada ID conserva
@@ -2572,12 +2578,6 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
         channel_id = tvg_id_valido(match.group(1)) if match and match.group(1).strip() else ""
         nombre = normalizar_nombre_canal(extraer_nombre(extinf))
         return channel_id, nombre
-
-    def categoria_canonica(categoria):
-        key = normalizar(categoria)
-        key = normalizar(CATEGORIAS_CANONICAS.get(key, key))
-        key = normalizar(PAISES_CANONICOS.get(key, key))
-        return key
 
     # Índices separados por ID y nombre. El nombre solo sirve de fallback
     # cuando una de las dos versiones carece de tvg-id; dos IDs distintos
