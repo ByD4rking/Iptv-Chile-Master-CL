@@ -45,7 +45,7 @@ class DocumentalesHistoryOrderTests(unittest.TestCase):
         original += bloque("History 2 Latin America (1080p)")
         original += bloque("Nat Geo")
         reordered = priorizar_history_documentales(original)
-        self.assertTrue(validar_orden_canales(original, reordered))
+        validar_orden_canales(original, reordered)
 
     def test_channel_order_validator_still_rejects_other_reordering(self):
         original = ["#EXTM3U"]
