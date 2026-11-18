@@ -117,14 +117,15 @@ def normalizar_nombre_canal(value):
         value,
         flags=re.I,
     )
-    return re.sub(r"[^a-z0-9]+", "", value)
+    value = re.sub(r"[^a-z0-9]+", "", value)
+    # [Geo-blocked] es metadato, no parte de la identidad del canal.
+    return re.sub(r"geoblocked$", "", value)
 TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
 
 # Lista blanca estricta: ningún otro canal puede recibir cambios automáticos de logo.
 NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL = {
     "TVN HD (LOCAL)",
     "TV Chile (1080p) [Geo-blocked]",
-    "TV Chile (1080p)",
     "Caracola TV | CL",
     "La Chilena TV ✪ | CL",
     "Radio Rancagua | CL",
@@ -136,7 +137,6 @@ NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL = {
 LOGOS_AUTORIZADOS_PRINCIPAL = {
     "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
     "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/3FKZHL4.png",
-    "TV Chile (1080p)": "https://i.imgur.com/3FKZHL4.png",
     "Caracola TV | CL": "https://i.imgur.com/QGvfqug.png",
     "La Chilena TV ✪ | CL": "https://i.imgur.com/GHJkxaB.png",
     "Radio Rancagua | CL": "https://i.imgur.com/ZzUc6je.png",
