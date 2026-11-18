@@ -200,7 +200,7 @@ def priorizar_history_documentales(lineas):
         record for record in category_records
         if record["name"] == "history 2"
         or record["name"].startswith("history 2 ")
-        or re.match(r"^h\\s*2(?:\\b|$)", record["name"])
+        or re.match(r"^h\s*2(?:\b|$)", record["name"])
     ]
     prioritized_ids = {id(record) for record in history + history2}
     if not prioritized_ids:
