@@ -2671,15 +2671,16 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                         idx for idx in candidates
                         if not identidad_anterior[idx][1]
                     ]
-                    if sin_id:
-                        # Si una fuente añadió tvg-id a un canal histórico que
-                        # ya existía sin ID, conserva la primera posición por
-                        # nombre. El ID puede aparecer más tarde en la maestra
-                        # como otra URL del mismo canal.
-                        ranks = [min([*ranks, *sin_id])] if ranks else [min(sin_id)]
-                    elif not ranks and len(candidates) == 1:
-                        # Si el nombre es único, permite conservar orden aunque
-                        # la fuente haya cambiado el tvg-id.
+                    if channel_id and not ranks and len(sin_id) == 1:
+                        # Solo asociar por nombre un bloque histórico sin ID
+                        # cuando la versión actual sí aporta un ID nuevo.
+                        # Si ambos bloques carecen de ID y hay homónimos, no
+                        # confundir una señal nueva con el único alias antiguo
+                        # sin ID (p. ej. Canal Capital [Geo-Blocked]).
+                        ranks = sin_id
+                    elif not ranks and not channel_id and len(candidates) == 1:
+                        # Sin ID en ambas versiones, el nombre solo es seguro
+                        # cuando existe una única coincidencia histórica.
                         ranks = candidates
                 # Cuando hay homónimos/variantes sin ID (p. ej. Golden HD/SD),
                 # la URL exacta es una identidad inequívoca y conserva el orden
