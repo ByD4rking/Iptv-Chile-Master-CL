@@ -551,14 +551,14 @@ def main(args: argparse.Namespace) -> None:
                 family for family in before_families
                 if not (
                     family.split(":", 1)[-1].startswith("history")
-                    or re.match(r"^h\\s*2(?:\\b|$)", family.split(":", 1)[-1])
+                    or re.match(r"^h\s*2(?:\b|$)", family.split(":", 1)[-1])
                 )
             ]
             after_families = [
                 family for family in after_families
                 if not (
                     family.split(":", 1)[-1].startswith("history")
-                    or re.match(r"^h\\s*2(?:\\b|$)", family.split(":", 1)[-1])
+                    or re.match(r"^h\s*2(?:\b|$)", family.split(":", 1)[-1])
                 )
             ]
         expected_order = [
