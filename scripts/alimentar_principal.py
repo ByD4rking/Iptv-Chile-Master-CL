@@ -3039,14 +3039,14 @@ def validar_orden_canales(
                 item for item in old_items
                 if not (
                     item["name"].split(":", 1)[-1].startswith("history")
-                    or re.match(r"^h\\s*2(?:\\b|$)", item["name"].split(":", 1)[-1])
+                    or re.match(r"^h\s*2(?:\b|$)", item["name"].split(":", 1)[-1])
                 )
             ]
             new_items = [
                 item for item in new_items
                 if not (
                     item["name"].split(":", 1)[-1].startswith("history")
-                    or re.match(r"^h\\s*2(?:\\b|$)", item["name"].split(":", 1)[-1])
+                    or re.match(r"^h\s*2(?:\b|$)", item["name"].split(":", 1)[-1])
                 )
             ]
         pairs = []
