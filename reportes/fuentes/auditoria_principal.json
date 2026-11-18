@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "scope": "principal",
-  "checked_at": "2026-11-18T01:12:59.223729+00:00",
+  "checked_at": "2026-11-18T01:28:15.266696+00:00",
   "sources_configured": 64,
   "sources_unique_urls": 42,
   "sources_checked": 62,
   "sources_failed": 2,
-  "changed_sources": 4,
+  "changed_sources": 5,
   "new_sources": 0,
   "total_added_channels": 0,
   "total_removed_channels": 0,
-  "total_changed_stream_urls": 3,
+  "total_changed_stream_urls": 4,
   "total_source_url_changes": 0,
   "configured_source_url_changes": [],
   "removed_sources": [],
@@ -421,8 +421,8 @@
         "stream_urls": [
           {
             "key": "1282",
-            "before_fingerprint": "63cffd8d92439cdd",
-            "after_fingerprint": "bf8498effbff0dad"
+            "before_fingerprint": "bf8498effbff0dad",
+            "after_fingerprint": "63cffd8d92439cdd"
           }
         ],
         "categories": []
@@ -673,22 +673,28 @@
     },
     {
       "source": "GOD/M3UCL-TOTAL",
-      "status": "unchanged",
+      "status": "changed",
       "source_url_changed": false,
       "old_source_url": "https://m3u.cl/lista/total.m3u",
       "new_source_url": "https://m3u.cl/lista/total.m3u",
       "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 0,
+      "changed_stream_urls": 1,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
+      "content_hash_changed": true,
+      "channel_order_changed": true,
       "samples": {
         "added": [],
         "removed": [],
         "renamed": [],
-        "stream_urls": [],
+        "stream_urls": [
+          {
+            "key": "1282",
+            "before_fingerprint": "bf8498effbff0dad",
+            "after_fingerprint": "63cffd8d92439cdd"
+          }
+        ],
         "categories": []
       },
       "readonly": true
@@ -977,8 +983,8 @@
         "stream_urls": [
           {
             "key": "1282",
-            "before_fingerprint": "63cffd8d92439cdd",
-            "after_fingerprint": "bf8498effbff0dad"
+            "before_fingerprint": "bf8498effbff0dad",
+            "after_fingerprint": "63cffd8d92439cdd"
           }
         ],
         "categories": []
@@ -1247,8 +1253,8 @@
         "stream_urls": [
           {
             "key": "1282",
-            "before_fingerprint": "63cffd8d92439cdd",
-            "after_fingerprint": "bf8498effbff0dad"
+            "before_fingerprint": "bf8498effbff0dad",
+            "after_fingerprint": "63cffd8d92439cdd"
           }
         ],
         "categories": []
