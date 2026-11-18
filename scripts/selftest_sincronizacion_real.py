@@ -541,6 +541,20 @@ def main(args: argparse.Namespace) -> None:
         # debe permanecer estable es el orden histórico de las familias.
         before_families = before_families_by_category.get(category, [])
         after_families = after_families_by_category.get(category, [])
+
+        # History y History 2 tienen prioridad explícita al inicio de
+        # Documentales y Cultura. Se excluyen solo de esta comparación;
+        # las pruebas unitarias verifican su orden y el resto debe conservar
+        # exactamente su orden relativo.
+        if category == norm("Documentales y Cultura"):
+            before_families = [
+                family for family in before_families
+                if not family.split(":", 1)[-1].startswith("history")
+            ]
+            after_families = [
+                family for family in after_families
+                if not family.split(":", 1)[-1].startswith("history")
+            ]
         expected_order = [
             family for family in before_families if family in after_families
         ]
