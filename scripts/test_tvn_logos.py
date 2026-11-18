@@ -33,13 +33,18 @@ class TvnLogoTests(unittest.TestCase):
 
     def test_tv_chile_geo_blocked_alias_also_uses_canonical_tvn_logo(self):
         reference = ["#EXTM3U"] + channel("TVN (1080p)", TVN_LOGO)
-        current = ["#EXTM3U"] + channel(
+        current = ["#EXTM3U"]
+        current += channel("TVN HD (LOCAL)", TVN_LOGO)
+        current += channel(
             "TV Chile (1080p) [Geo-blocked]", "https://i.imgur.com/oYFto0V.png"
         )
         result, stats = blindar_logos(current, reference)
-        extinf = next(line for line in result if line.startswith("#EXTINF"))
-        self.assertIn(f'tvg-logo="{TVN_LOGO}"', extinf)
-        self.assertEqual(stats["logos_autorizados"], 1)
+        extinf = [line for line in result if line.startswith("#EXTINF")]
+        tvn_local = next(line for line in extinf if "TVN HD (LOCAL)" in line)
+        tv_chile = next(line for line in extinf if "TV Chile (1080p)" in line)
+        self.assertIn(f'tvg-logo="{TVN_LOGO}"', tvn_local)
+        self.assertIn(f'tvg-logo="{TVN_LOGO}"', tv_chile)
+        self.assertEqual(stats["logos_autorizados"], 2)
         self.assertTrue(validar_logos_tvn_autorizados(result))
 
     def test_other_existing_logo_is_preserved(self):
