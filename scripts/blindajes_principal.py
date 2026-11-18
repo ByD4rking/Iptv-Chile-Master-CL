@@ -191,17 +191,19 @@ def priorizar_history_documentales(lineas):
     if not category_records:
         return list(lineas)
 
-    history = [
-        record for record in category_records
-        if record["name"] == "history"
-        or (record["name"].startswith("history ") and not record["name"].startswith("history 2"))
-    ]
-    history2 = [
-        record for record in category_records
-        if record["name"] == "history 2"
-        or record["name"].startswith("history 2 ")
-        or re.match(r"^h\s*2(?:\b|$)", record["name"])
-    ]
+    def is_history2(record):
+        names = (record["name"], record["tvg_name"])
+        return any(
+            re.match(r"^(?:history\s*2|h\s*2)(?:\s|$)", name)
+            for name in names if name
+        )
+
+    def is_history(record):
+        names = (record["name"], record["tvg_name"])
+        return any(name.startswith("history") for name in names if name) and not is_history2(record)
+
+    history = [record for record in category_records if is_history(record)]
+    history2 = [record for record in category_records if is_history2(record)]
     prioritized_ids = {id(record) for record in history + history2}
     if not prioritized_ids:
         return list(lineas)
