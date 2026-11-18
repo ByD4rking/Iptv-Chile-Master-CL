@@ -537,6 +537,11 @@ def main(args: argparse.Namespace) -> None:
         if category == norm("Informativos"):
             continue
 
+        # La agrupación puede mover miembros dentro de una familia; lo que
+        # debe permanecer estable es el orden histórico de las familias.
+        before_families = before_families_by_category.get(category, [])
+        after_families = after_families_by_category.get(category, [])
+
         # History se prioriza explícitamente al inicio de Documentales y Cultura.
         # Se excluyen esas familias prioritarias de la comparación, pero se exige
         # que todas las demás familias mantengan exactamente su orden relativo.
@@ -545,11 +550,6 @@ def main(args: argparse.Namespace) -> None:
                 family for family in after_families
                 if not family.startswith("history")
             ]
-
-        # La agrupación puede mover miembros dentro de una familia; lo que
-        # debe permanecer estable es el orden histórico de las familias.
-        before_families = before_families_by_category.get(category, [])
-        after_families = after_families_by_category.get(category, [])
         expected_order = [
             family for family in before_families if family in after_families
         ]
