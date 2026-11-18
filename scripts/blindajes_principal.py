@@ -12,7 +12,7 @@ _ATTRS = ("tvg-logo", "logo")
 # Únicas excepciones autorizadas por el usuario para cambiar logos existentes.
 LOGOS_AUTORIZADOS_POR_NOMBRE = {
     "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
-    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/3FKZHL4.png",
+    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/oYFto0V.png",
 }
 
 
@@ -181,8 +181,15 @@ def validar_logos_chile_tv(lineas, referencia):
         if len(values) == 1
     }
 
+    excepciones_autorizadas = {
+        _norm(name) for name in LOGOS_AUTORIZADOS_POR_NOMBRE
+    }
     for record in current_blocks:
         if record["category_key"] != target:
+            continue
+        # Solo estas dos señales quedan fuera de la comparación histórica:
+        # sus logos se corrigen con la lista blanca y se vuelven a validar abajo.
+        if record["name"] in excepciones_autorizadas or record["tvg_name"] in excepciones_autorizadas:
             continue
         actual = tuple(_attr(record["lines"][0], name) for name in _ATTRS)
         match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
