@@ -69,7 +69,7 @@ class DocumentalesHistoryOrderTests(unittest.TestCase):
         for i in extinf_positions:
             end = next((j for j in extinf_positions if j > i), len(reordered))
             blocks.append(reordered[i:end])
-        blocks[2], blocks[3] = blocks[3], blocks[2]
+        blocks[3], blocks[4] = blocks[4], blocks[3]
         invalid = ["#EXTM3U"] + [line for block in blocks for line in block]
         with self.assertRaisesRegex(RuntimeError, "ORDEN BLOQUEADO"):
             validar_orden_canales(original, invalid)
