@@ -1,4 +1,8 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
+from unittest.mock import patch
 
 from scripts.blindajes_principal import (
     blindar_logos,
@@ -77,6 +81,25 @@ class TvnLogoTests(unittest.TestCase):
         self.assertIn(f'tvg-logo="{logo}"', entry)
         self.assertIn(f'logo="{logo}"', entry)
         self.assertTrue(validar_logos_chile_tv(result, reference))
+
+    def test_manual_logo_override_is_easy_and_survives_chile_tv_validation(self):
+        old_logo = "https://logos.example/mega-original.png"
+        new_logo = "https://logos.example/mega-manual.png"
+        reference = ["#EXTM3U"] + channel("Mega", old_logo)
+        current = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega-source.png")
+
+        with tempfile.TemporaryDirectory() as folder:
+            config = Path(folder) / "logos_autorizados.json"
+            config.write_text(
+                json.dumps({"logos": {"CHILE TV::Mega": new_logo}}),
+                encoding="utf-8",
+            )
+            with patch("scripts.blindajes_principal.LOGOS_AUTORIZADOS_PATH", config):
+                result, stats = blindar_logos(current, reference)
+                entry = next(line for line in result if line.startswith("#EXTINF"))
+                self.assertIn('tvg-logo="' + new_logo + '"', entry)
+                self.assertEqual(stats["logos_autorizados"], 1)
+                self.assertTrue(validar_logos_chile_tv(result, reference))
 
     def test_chile_tv_validator_rejects_any_unapproved_logo_change(self):
         reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")

@@ -2,12 +2,15 @@
 """Blindajes terminales de identidad de logos, Anime y orden global de categorías."""
 from __future__ import annotations
 
+import json
 import re
 import unicodedata
+from pathlib import Path
 from collections import defaultdict
 
 
 _ATTRS = ("tvg-logo", "logo")
+LOGOS_AUTORIZADOS_PATH = Path(__file__).resolve().parents[1] / "config" / "logos_autorizados.json"
 
 # Únicas excepciones autorizadas por el usuario para cambiar logos existentes.
 LOGOS_AUTORIZADOS_POR_NOMBRE = {
@@ -24,6 +27,48 @@ def _norm(value: str) -> str:
     value = re.sub(r"\s+", " ", value).strip()
     # [Geo-blocked] es metadato, no parte de la identidad del canal.
     return re.sub(r"\s+geo blocked$", "", value)
+
+
+def _cargar_logos_autorizados():
+    """Carga excepciones manuales desde config; ante errores, detiene el proceso."""
+    autorizados = {
+        _norm(nombre): url
+        for nombre, url in LOGOS_AUTORIZADOS_POR_NOMBRE.items()
+    }
+    if not LOGOS_AUTORIZADOS_PATH.is_file():
+        return autorizados
+    try:
+        data = json.loads(LOGOS_AUTORIZADOS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError("No se pudo leer " + str(LOGOS_AUTORIZADOS_PATH) + ": " + str(error)) from error
+    if not isinstance(data, dict):
+        raise RuntimeError("config/logos_autorizados.json debe contener un objeto JSON.")
+    logos = data.get("logos", {})
+    if not isinstance(logos, dict):
+        raise RuntimeError("config/logos_autorizados.json: 'logos' debe ser un objeto.")
+    for identidad, url in logos.items():
+        identidad = str(identidad).strip()
+        url = str(url).strip()
+        if not identidad or not re.match(r"^https?://\S+$", url, re.I):
+            raise RuntimeError("Override de logo inválido para " + repr(identidad) + ": se requiere una URL HTTP(S).")
+        autorizados[_norm(identidad)] = url
+    return autorizados
+
+
+def _buscar_logo_autorizado(record, autorizados):
+    """Prioriza identidad categoría::canal; permite nombre simple como alias global."""
+    nombres = (record.get("name", ""), record.get("tvg_name", ""))
+    if record.get("category_key"):
+        for nombre in nombres:
+            if nombre:
+                clave = _norm(record["category_key"] + "::" + nombre)
+                if clave in autorizados:
+                    return autorizados[clave]
+    for nombre in nombres:
+        if nombre and _norm(nombre) in autorizados:
+            return autorizados[_norm(nombre)]
+    return None
+
 
 
 def _attr(line: str, name: str) -> str:
@@ -122,19 +167,14 @@ def blindar_logos(lineas, referencia):
     preserved = 0
     stripped_new = 0
     unmatched = []
-    authorized = {
-        _norm(name): logo
-        for name, logo in LOGOS_AUTORIZADOS_POR_NOMBRE.items()
-    }
+    authorized = _cargar_logos_autorizados()
     authorized_count = 0
     for record in current_blocks:
         match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
         extinf = output[record["start"]]
-        override = authorized.get(record["name"]) or authorized.get(record["tvg_name"])
+        override = _buscar_logo_autorizado(record, authorized)
         if override:
-            # Estos dos nombres fueron autorizados expresamente: copiar el
-            # logo canónico de TVN incluso si la identidad no coincide con
-            # la entrada histórica (caso que antes impedía aplicar el cambio).
+            # Una autorización manual explícita prevalece sobre el logo histórico.
             previous_legacy = match[1] if match else ""
             values = (override, override if previous_legacy else "")
             authorized_count += 1
@@ -181,11 +221,22 @@ def validar_logos_chile_tv(lineas, referencia):
         if len(values) == 1
     }
 
+    authorized = _cargar_logos_autorizados()
     for record in current_blocks:
         if record["category_key"] != target:
             continue
         actual = tuple(_attr(record["lines"][0], name) for name in _ATTRS)
         match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
+        override = _buscar_logo_autorizado(record, authorized)
+        if override:
+            expected = (override, override if match and match[1] else "")
+            if actual != expected:
+                name = record["name"] or record["tvg_name"] or "(sin nombre)"
+                raise AssertionError(
+                    "Logo manual autorizado incorrecto en CHILE TV: " + name
+                    + "; esperado=" + repr(expected) + ", actual=" + repr(actual)
+                )
+            continue
         if match is None:
             if any(actual):
                 name = record["name"] or record["tvg_name"] or "(sin nombre)"
