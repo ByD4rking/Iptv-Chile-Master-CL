@@ -41,6 +41,8 @@ def _cargar_logos_autorizados():
         data = json.loads(LOGOS_AUTORIZADOS_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
         raise RuntimeError("No se pudo leer " + str(LOGOS_AUTORIZADOS_PATH) + ": " + str(error)) from error
+    if not isinstance(data, dict):
+        raise RuntimeError("config/logos_autorizados.json debe contener un objeto JSON.")
     logos = data.get("logos", {})
     if not isinstance(logos, dict):
         raise RuntimeError("config/logos_autorizados.json: 'logos' debe ser un objeto.")
@@ -172,9 +174,7 @@ def blindar_logos(lineas, referencia):
         extinf = output[record["start"]]
         override = _buscar_logo_autorizado(record, authorized)
         if override:
-            # Estos dos nombres fueron autorizados expresamente: copiar el
-            # logo canónico de TVN incluso si la identidad no coincide con
-            # la entrada histórica (caso que antes impedía aplicar el cambio).
+            # Una autorización manual explícita prevalece sobre el logo histórico.
             previous_legacy = match[1] if match else ""
             values = (override, override if previous_legacy else "")
             authorized_count += 1
