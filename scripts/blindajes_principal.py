@@ -12,7 +12,7 @@ _ATTRS = ("tvg-logo", "logo")
 # Únicas excepciones autorizadas por el usuario para cambiar logos existentes.
 LOGOS_AUTORIZADOS_POR_NOMBRE = {
     "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
-    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/oYFto0V.png",
+    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/3FKZHL4.png",
 }
 
 
