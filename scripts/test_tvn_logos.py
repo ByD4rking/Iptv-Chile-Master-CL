@@ -13,13 +13,13 @@ def channel(name, logo):
 
 
 class TvnLogoTests(unittest.TestCase):
-    def test_both_tvn_signals_use_the_same_authorized_logo(self):
-        reference = ["#EXTM3U"]
-        reference += channel("TVN HD (LOCAL)", TVN_LOGO)
-        reference += channel("TV Chile (1080p) [Geo-blocked]", "https://i.imgur.com/oYFto0V.png")
+    def test_both_tvn_signals_copy_logo_even_without_historical_identity_match(self):
+        # El logo canónico se toma de la señal TVN ya existente.
+        reference = ["#EXTM3U"] + channel("TVN (1080p)", TVN_LOGO)
 
+        # Las dos señales objetivo tienen IDs/URLs distintos y logos incorrectos.
         current = ["#EXTM3U"]
-        current += channel("TVN HD (LOCAL)", TVN_LOGO)
+        current += channel("TVN HD (LOCAL)", "https://i.imgur.com/old-tvn.png")
         current += channel("TV Chile (1080p) [Geo-blocked]", "https://i.imgur.com/oYFto0V.png")
 
         result, stats = blindar_logos(current, reference)
