@@ -1,7 +1,11 @@
+import sys
 import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from scripts.blindajes_principal import priorizar_history_documentales
-from scripts.alimentar_principal import validar_orden_canales
+from alimentar_principal import validar_orden_canales
 
 
 def bloque(nombre, categoria="Documentales y Cultura"):
