@@ -224,6 +224,41 @@ def priorizar_history_documentales(lineas):
     return output
 
 
+def validar_prioridad_history_documentales(lineas):
+    """Verifica que todas las señales History y H2 estén antes del resto."""
+    expected = priorizar_history_documentales(lineas)
+    if expected != list(lineas):
+        raise AssertionError(
+            "History y History 2/H2 no están completos y agrupados al inicio "
+            "de Documentales y Cultura."
+        )
+    return True
+
+
+def validar_logos_tvn_autorizados(lineas):
+    """Exige los dos logos TVN autorizados en sus canales exactos."""
+    authorized = {_norm(name): logo for name, logo in LOGOS_AUTORIZADOS_POR_NOMBRE.items()}
+    found = set()
+    for record in _split_blocks(lineas)[1]:
+        names = {record["name"], record["tvg_name"]}
+        matched = next((name for name in names if name in authorized), None)
+        if matched is None:
+            continue
+        logo = _attr(record["lines"][0], "tvg-logo")
+        if logo != authorized[matched]:
+            raise AssertionError(
+                f"Logo incorrecto en {matched}: esperado={authorized[matched]!r}, actual={logo!r}"
+            )
+        found.add(matched)
+    missing = set(authorized) - found
+    if missing:
+        raise AssertionError(
+            "No se encontraron las dos señales TVN autorizadas en la principal: "
+            + ", ".join(sorted(missing))
+        )
+    return True
+
+
 def ordenar_categorias_definitivo(lineas):
     """Aplica el orden global acordado sin reordenar canales dentro de cada carpeta."""
     from alimentar_principal import PAISES_ORDEN_FINAL, CATEGORIAS_PAIS, PAIS_POR_FUENTE
