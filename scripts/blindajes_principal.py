@@ -176,6 +176,48 @@ def restaurar_categoria_bloqueada(lineas, referencia, categoria="Anime"):
     return output
 
 
+def priorizar_history_documentales(lineas):
+    """Mueve History y luego History 2 al inicio de Documentales y Cultura.
+
+    Conserva el orden original dentro de cada familia y el orden relativo
+    de todos los demás canales y categorías.
+    """
+    prefix, blocks = _split_blocks(lineas)
+    target = _norm("Documentales y Cultura")
+    category_records = [record for record in blocks if record["category_key"] == target]
+    if not category_records:
+        return list(lineas)
+
+    history = [
+        record for record in category_records
+        if record["name"] == "history"
+        or (record["name"].startswith("history ") and not record["name"].startswith("history 2"))
+    ]
+    history2 = [
+        record for record in category_records
+        if record["name"] == "history 2"
+        or record["name"].startswith("history 2 ")
+    ]
+    prioritized_ids = {id(record) for record in history + history2}
+    if not prioritized_ids:
+        return list(lineas)
+
+    reordered = history + history2 + [
+        record for record in category_records if id(record) not in prioritized_ids
+    ]
+    output = list(prefix)
+    inserted = False
+    for record in blocks:
+        if record["category_key"] == target:
+            if not inserted:
+                for prioritized in reordered:
+                    output.extend(prioritized["lines"])
+                inserted = True
+            continue
+        output.extend(record["lines"])
+    return output
+
+
 def ordenar_categorias_definitivo(lineas):
     """Aplica el orden global acordado sin reordenar canales dentro de cada carpeta."""
     from alimentar_principal import PAISES_ORDEN_FINAL, CATEGORIAS_PAIS, PAIS_POR_FUENTE
