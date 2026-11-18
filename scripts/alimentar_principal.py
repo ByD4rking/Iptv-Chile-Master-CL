@@ -2671,16 +2671,17 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                         idx for idx in candidates
                         if not identidad_anterior[idx][1]
                     ]
-                    if channel_id and not ranks and len(sin_id) == 1:
-                        # Solo asociar por nombre un bloque histórico sin ID
-                        # cuando la versión actual sí aporta un ID nuevo.
-                        # Si ambos bloques carecen de ID y hay homónimos, no
-                        # confundir una señal nueva con el único alias antiguo
-                        # sin ID (p. ej. Canal Capital [Geo-Blocked]).
-                        ranks = sin_id
-                    elif not ranks and not channel_id and len(candidates) == 1:
+                    if channel_id and sin_id:
+                        # Si la señal actual incorpora ID, conserva la posición
+                        # de la señal principal histórica sin ID cuando ambas
+                        # comparten nombre. Puede existir además una variante
+                        # histórica con ese ID (p. ej. C y G TV); se elige la
+                        # primera posición del grupo, no la variante posterior.
+                        ranks = [min([*ranks, *sin_id])] if ranks else [min(sin_id)]
+                    elif not channel_id and len(candidates) == 1:
                         # Sin ID en ambas versiones, el nombre solo es seguro
                         # cuando existe una única coincidencia histórica.
+                        # Si hay homónimos, una señal nueva no hereda posiciones.
                         ranks = candidates
                 # Cuando hay homónimos/variantes sin ID (p. ej. Golden HD/SD),
                 # la URL exacta es una identidad inequívoca y conserva el orden
