@@ -84,6 +84,7 @@ jobs:
             scripts/selftest_reconexion_principal.py \
             scripts/auditar_fuentes.py \
             scripts/test_pluto_identity_validation.py
+            scripts/test_history_documentales.py
 
       - name: Probar detector de cambios de fuentes
         run: python -m unittest scripts.test_auditar_fuentes
@@ -93,6 +94,9 @@ jobs:
 
       - name: Probar logos compartidos de TVN
         run: python -m unittest scripts.test_tvn_logos -v
+
+      - name: Probar prioridad History en Documentales y Cultura
+        run: python -m unittest scripts.test_history_documentales -v
 
       - name: Pruebas unitarias de sincronización complementaria
         run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v

@@ -3030,6 +3030,19 @@ def validar_orden_canales(
             continue
         old_items = anterior.get(categoria, [])
         new_items = actual.get(categoria, [])
+
+        # Única excepción solicitada: History y History 2 pueden adelantarse
+        # al inicio de Documentales y Cultura. Se excluyen de la comparación
+        # posicional, pero el resto de familias sigue protegido.
+        if categoria == normalizar("Documentales y Cultura"):
+            old_items = [
+                item for item in old_items
+                if not item["name"].split(":", 1)[-1].startswith("history")
+            ]
+            new_items = [
+                item for item in new_items
+                if not item["name"].split(":", 1)[-1].startswith("history")
+            ]
         pairs = []
         used_old = set()
         used_new = set()

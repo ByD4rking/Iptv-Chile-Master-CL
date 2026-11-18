@@ -11,6 +11,7 @@ import alimentar_principal as alimentador
 from blindajes_principal import (
     blindar_logos,
     ordenar_categorias_definitivo,
+    priorizar_history_documentales,
     restaurar_categoria_bloqueada,
     validar_orden_categorias,
 )
@@ -253,6 +254,7 @@ def main():
         ordered_lines, original_lines
     )
     ordered_lines = ordenar_categorias_definitivo(ordered_lines)
+    ordered_lines = priorizar_history_documentales(ordered_lines)
     validar_orden_categorias(ordered_lines)
     print("[ORQUESTADOR] Blindaje global de logos:", blindaje_logos_stats)
     print("[ORQUESTADOR] Orden global definitivo de categorías: validado.")
