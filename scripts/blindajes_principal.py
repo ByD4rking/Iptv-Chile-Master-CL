@@ -13,6 +13,7 @@ _ATTRS = ("tvg-logo", "logo")
 LOGOS_AUTORIZADOS_POR_NOMBRE = {
     "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
     "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/3FKZHL4.png",
+    "TV Chile (1080p)": "https://i.imgur.com/3FKZHL4.png",
 }
 
 
