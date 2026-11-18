@@ -2548,6 +2548,25 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
     if not actuales:
         return lineas
 
+    # Si una fuente entrega varias señales con IDs distintos bajo el mismo
+    # nombre (p. ej. Canal Capital | CO, IDs 115 y 495), no deben heredar
+    # todas la posición de un único alias histórico sin ID. Cada ID conserva
+    # su posición propia; el fallback por nombre queda reservado al caso
+    # inequívoco de una sola señal actual con ID (p. ej. C y G TV).
+    ids_actuales_por_nombre = defaultdict(set)
+    for bloque_actual in actuales:
+        extinf_actual = bloque_actual["lineas"][0]
+        id_actual, nombre_actual = (
+            tvg_id_valido(re.search(r'tvg-id="([^"]+)"', extinf_actual, re.I).group(1))
+            if re.search(r'tvg-id="([^"]+)"', extinf_actual, re.I)
+            else "",
+            normalizar_nombre_canal(extraer_nombre(extinf_actual)),
+        )
+        if id_actual and nombre_actual:
+            ids_actuales_por_nombre[
+                (categoria_canonica(extraer_categoria(extinf_actual)), nombre_actual)
+            ].add(id_actual)
+
     def identidad(extinf):
         match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         channel_id = tvg_id_valido(match.group(1)) if match and match.group(1).strip() else ""
@@ -2672,12 +2691,15 @@ def restaurar_orden_original_por_categoria(lineas, lineas_anteriores, categorias
                         if not identidad_anterior[idx][1]
                     ]
                     if channel_id and sin_id:
-                        # Si la señal actual incorpora ID, conserva la posición
-                        # de la señal principal histórica sin ID cuando ambas
-                        # comparten nombre. Puede existir además una variante
-                        # histórica con ese ID (p. ej. C y G TV); se elige la
-                        # primera posición del grupo, no la variante posterior.
-                        ranks = [min([*ranks, *sin_id])] if ranks else [min(sin_id)]
+                        # Solo asociar por nombre si hay una única señal actual
+                        # con ID para ese nombre. Varias IDs bajo el mismo nombre
+                        # son opciones independientes (p. ej. Canal Capital 115/495)
+                        # y deben conservar sus posiciones históricas propias.
+                        ids_actuales = ids_actuales_por_nombre.get(
+                            (categoria_actual, nombre), set()
+                        )
+                        if len(ids_actuales) <= 1:
+                            ranks = [min([*ranks, *sin_id])] if ranks else [min(sin_id)]
                     elif not channel_id and len(candidates) == 1:
                         # Sin ID en ambas versiones, el nombre solo es seguro
                         # cuando existe una única coincidencia histórica.
