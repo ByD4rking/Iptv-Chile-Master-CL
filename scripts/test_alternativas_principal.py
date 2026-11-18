@@ -260,6 +260,28 @@ class TestAlternativasPrincipal(unittest.TestCase):
         ])
         ap.validar_orden_canales(original, restored)
 
+    def test_multiple_current_ids_do_not_inherit_one_idless_alias_position(self):
+        original = ["#EXTM3U"]
+        original += block("", "Colombia", "Canal Capital [Geo-Blocked]", "https://old.example/capital-geo.m3u8")
+        original += block("", "Colombia", "Canal Dos Yopal HD (Casanare)", "https://old.example/dos-yopal.m3u8")
+        original += block("", "Colombia", "Canal Institucional [No 24/7] (Nacional) [Geo-Blocked]", "https://old.example/institucional.m3u8")
+        original += block("115", "Colombia", "Canal Capital | CO", "https://old.example/capital-115.m3u8")
+        original += block("495", "Colombia", "Canal Capital | CO", "https://old.example/capital-495.m3u8")
+
+        current = ["#EXTM3U"]
+        current += block("115", "Colombia", "Canal Capital | CO", "https://new.example/capital-115.m3u8")
+        current += block("495", "Colombia", "Canal Capital | CO", "https://new.example/capital-495.m3u8")
+        current += block("", "Colombia", "Canal Dos Yopal HD (Casanare)", "https://old.example/dos-yopal.m3u8")
+        current += block("", "Colombia", "Canal Institucional [No 24/7] (Nacional) [Geo-Blocked]", "https://old.example/institucional.m3u8")
+
+        restored = ap.restaurar_orden_original_por_categoria(current, original)
+        parsed = self.entries(restored)
+        names = [item[0].split(",", 1)[1] for item in parsed]
+        self.assertLess(names.index("Canal Dos Yopal HD (Casanare)"),
+                        names.index("Canal Capital | CO"))
+        self.assertEqual(names.count("Canal Capital | CO"), 2)
+        ap.validar_orden_canales(original, restored)
+
     def test_restore_matches_delmi_v2_historical_label(self):
         original = ["#EXTM3U"]
         original += block("", "Anime", "Delmi TV [V2]", "https://a.example/delmi-v2.m3u8")
