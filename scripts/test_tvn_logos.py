@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.blindajes_principal import blindar_logos
+from scripts.blindajes_principal import blindar_logos, validar_logos_tvn_autorizados
 
 TVN_LOGO = "https://i.imgur.com/3FKZHL4.png"
 
@@ -27,6 +27,7 @@ class TvnLogoTests(unittest.TestCase):
         self.assertEqual(len(extinf), 2)
         self.assertTrue(all(f'tvg-logo="{TVN_LOGO}"' in line for line in extinf))
         self.assertEqual(stats["logos_autorizados"], 2)
+        self.assertTrue(validar_logos_tvn_autorizados(result))
 
     def test_other_existing_logo_is_preserved(self):
         other_logo = "https://example.com/other.png"
