@@ -4,7 +4,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from scripts.blindajes_principal import priorizar_history_documentales
+from scripts.blindajes_principal import (
+    priorizar_history_documentales,
+    validar_prioridad_history_documentales,
+)
 from alimentar_principal import validar_orden_canales
 
 
@@ -42,6 +45,7 @@ class DocumentalesHistoryOrderTests(unittest.TestCase):
             "Nat Geo",
             "H2O Science",
         ])
+        self.assertTrue(validar_prioridad_history_documentales(result))
 
     def test_channel_order_validator_allows_only_history_priority(self):
         original = ["#EXTM3U"]
