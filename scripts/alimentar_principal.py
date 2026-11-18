@@ -117,7 +117,9 @@ def normalizar_nombre_canal(value):
         value,
         flags=re.I,
     )
-    return re.sub(r"[^a-z0-9]+", "", value)
+    value = re.sub(r"[^a-z0-9]+", "", value)
+    # [Geo-blocked] es metadato, no parte de la identidad del canal.
+    return re.sub(r"geoblocked$", "", value)
 TVG_IDS_INVALIDOS = {"", "-1", "0", "none", "null", "na", "n/a", "undefined"}
 
 # Lista blanca estricta: ningún otro canal puede recibir cambios automáticos de logo.

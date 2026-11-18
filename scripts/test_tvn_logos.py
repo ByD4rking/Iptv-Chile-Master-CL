@@ -21,7 +21,7 @@ class TvnLogoTests(unittest.TestCase):
         # Las dos señales objetivo tienen IDs/URLs distintos y logos incorrectos.
         current = ["#EXTM3U"]
         current += channel("TVN HD (LOCAL)", "https://i.imgur.com/old-tvn.png")
-        current += channel("TV Chile (1080p) [Geo-blocked]", "https://i.imgur.com/oYFto0V.png")
+        current += channel("TV Chile (1080p)", "https://i.imgur.com/oYFto0V.png")
 
         result, stats = blindar_logos(current, reference)
         extinf = [line for line in result if line.startswith("#EXTINF")]
@@ -29,6 +29,17 @@ class TvnLogoTests(unittest.TestCase):
         self.assertIn(f'tvg-logo="{TVN_LOGO}"', extinf[0])
         self.assertIn(f'tvg-logo="{TVN_LOGO}"', extinf[1])
         self.assertEqual(stats["logos_autorizados"], 2)
+        self.assertTrue(validar_logos_tvn_autorizados(result))
+
+    def test_tv_chile_geo_blocked_alias_also_uses_canonical_tvn_logo(self):
+        reference = ["#EXTM3U"] + channel("TVN (1080p)", TVN_LOGO)
+        current = ["#EXTM3U"] + channel(
+            "TV Chile (1080p) [Geo-blocked]", "https://i.imgur.com/oYFto0V.png"
+        )
+        result, stats = blindar_logos(current, reference)
+        extinf = next(line for line in result if line.startswith("#EXTINF"))
+        self.assertIn(f'tvg-logo="{TVN_LOGO}"', extinf)
+        self.assertEqual(stats["logos_autorizados"], 1)
         self.assertTrue(validar_logos_tvn_autorizados(result))
 
     def test_other_existing_logo_is_preserved(self):

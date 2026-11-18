@@ -21,7 +21,9 @@ def _norm(value: str) -> str:
     value = "".join(char for char in value if unicodedata.category(char) != "Mn")
     value = value.casefold()
     value = re.sub(r"[^a-z0-9]+", " ", value)
-    return re.sub(r"\s+", " ", value).strip()
+    value = re.sub(r"\s+", " ", value).strip()
+    # [Geo-blocked] es metadato, no parte de la identidad del canal.
+    return re.sub(r"\s+geo blocked$", "", value)
 
 
 def _attr(line: str, name: str) -> str:
