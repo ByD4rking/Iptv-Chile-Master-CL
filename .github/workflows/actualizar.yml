@@ -91,6 +91,9 @@ jobs:
       - name: Probar identidad y cobertura de canales Pluto
         run: python -m unittest scripts.test_pluto_identity_validation
 
+      - name: Probar logos compartidos de TVN
+        run: python -m unittest scripts.test_tvn_logos -v
+
       - name: Pruebas unitarias de sincronización complementaria
         run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
 
