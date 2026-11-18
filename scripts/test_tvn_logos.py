@@ -7,7 +7,7 @@ from scripts.blindajes_principal import (
 )
 
 TVN_LOGO = "https://i.imgur.com/3FKZHL4.png"
-TV_CHILE_LOGO = TVN_LOGO
+TV_CHILE_LOGO = "https://i.imgur.com/oYFto0V.png"
 
 
 def channel(name, logo):
@@ -31,7 +31,7 @@ class TvnLogoTests(unittest.TestCase):
         extinf = [line for line in result if line.startswith("#EXTINF")]
         self.assertEqual(len(extinf), 2)
         self.assertIn(f'tvg-logo="{TVN_LOGO}"', extinf[0])
-        self.assertIn(f'tvg-logo="{TVN_LOGO}"', extinf[1])
+        self.assertIn(f'tvg-logo="{TV_CHILE_LOGO}"', extinf[1])
         self.assertEqual(stats["logos_autorizados"], 2)
         self.assertTrue(validar_logos_tvn_autorizados(result))
 
@@ -47,7 +47,7 @@ class TvnLogoTests(unittest.TestCase):
         tvn_local = next(line for line in extinf if "TVN HD (LOCAL)" in line)
         tv_chile = next(line for line in extinf if "TV Chile (1080p)" in line)
         self.assertIn(f'tvg-logo="{TVN_LOGO}"', tvn_local)
-        self.assertIn(f'tvg-logo="{TVN_LOGO}"', tv_chile)
+        self.assertIn(f'tvg-logo="{TV_CHILE_LOGO}"', tv_chile)
         self.assertEqual(stats["logos_autorizados"], 2)
         self.assertTrue(validar_logos_tvn_autorizados(result))
 
