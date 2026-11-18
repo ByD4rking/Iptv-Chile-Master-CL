@@ -136,7 +136,7 @@ NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL = {
 }
 LOGOS_AUTORIZADOS_PRINCIPAL = {
     "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
-    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/3FKZHL4.png",
+    "TV Chile (1080p) [Geo-blocked]": "https://i.imgur.com/oYFto0V.png",
     "Caracola TV | CL": "https://i.imgur.com/QGvfqug.png",
     "La Chilena TV ✪ | CL": "https://i.imgur.com/GHJkxaB.png",
     "Radio Rancagua | CL": "https://i.imgur.com/ZzUc6je.png",
