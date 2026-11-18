@@ -61,7 +61,8 @@ def _split_blocks(lines):
         category = _attr(extinf, "group-title")
         display_name = extinf.split(",", 1)[1].strip() if "," in extinf else ""
         tvg_name = _attr(extinf, "tvg-name")
-        channel_id = _attr(extinf, "tvg-id")
+        channel_id = _attr(extinf, "channelId")
+        tvg_id = _attr(extinf, "tvg-id")
         url = next(
             (item.strip() for item in raw[1:] if item.strip().lower().startswith(("http://", "https://"))),
             "",
@@ -73,7 +74,8 @@ def _split_blocks(lines):
             "category_key": _norm(category),
             "name": _norm(display_name),
             "tvg_name": _norm(tvg_name),
-            "id": _norm(channel_id),
+            "channel_id": _norm(channel_id),
+            "id": _norm(tvg_id),
             "url": url,
         })
         index = end
@@ -84,6 +86,8 @@ def _identity_keys(record):
     keys = []
     if record["url"]:
         keys.append(("url", record["url"]))
+    if record.get("channel_id"):
+        keys.append(("channel_id", record["channel_id"]))
     if record["id"]:
         keys.append(("id", record["id"]))
     if record["category_key"] and record["name"]:
@@ -154,6 +158,47 @@ def blindar_logos(lineas, referencia):
         "logos_autorizados": authorized_count,
         "canales_sin_identidad_historica": len(unmatched),
     }
+
+
+
+def validar_logos_chile_tv(lineas, referencia):
+    """Falla si un logo histórico de CHILE TV cambia o si una señal nueva trae uno no autorizado."""
+    _, original_blocks = _split_blocks(referencia)
+    _, current_blocks = _split_blocks(lineas)
+    target = _norm("CHILE TV")
+
+    candidates = defaultdict(set)
+    for record in original_blocks:
+        if record["category_key"] != target:
+            continue
+        metadata = tuple(_attr(record["lines"][0], name) for name in _ATTRS)
+        for key in _identity_keys(record):
+            candidates[key].add(metadata)
+
+    frozen = {
+        key: next(iter(values))
+        for key, values in candidates.items()
+        if len(values) == 1
+    }
+
+    for record in current_blocks:
+        if record["category_key"] != target:
+            continue
+        actual = tuple(_attr(record["lines"][0], name) for name in _ATTRS)
+        match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
+        if match is None:
+            if any(actual):
+                name = record["name"] or record["tvg_name"] or "(sin nombre)"
+                raise AssertionError(
+                    f"Logo no autorizado en señal nueva de CHILE TV: {name}"
+                )
+            continue
+        if actual != match:
+            name = record["name"] or record["tvg_name"] or "(sin nombre)"
+            raise AssertionError(
+                f"Logo alterado en CHILE TV: {name}; esperado={match!r}, actual={actual!r}"
+            )
+    return True
 
 
 def restaurar_categoria_bloqueada(lineas, referencia, categoria="Anime"):

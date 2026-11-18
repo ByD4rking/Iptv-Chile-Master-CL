@@ -1,6 +1,10 @@
 import unittest
 
-from scripts.blindajes_principal import blindar_logos, validar_logos_tvn_autorizados
+from scripts.blindajes_principal import (
+    blindar_logos,
+    validar_logos_chile_tv,
+    validar_logos_tvn_autorizados,
+)
 
 TVN_LOGO = "https://i.imgur.com/3FKZHL4.png"
 TV_CHILE_LOGO = TVN_LOGO
@@ -54,6 +58,41 @@ class TvnLogoTests(unittest.TestCase):
         result, _ = blindar_logos(current, reference)
         extinf = next(line for line in result if line.startswith("#EXTINF"))
         self.assertIn(f'tvg-logo="{other_logo}"', extinf)
+
+
+    def test_chile_tv_logo_is_frozen_by_channel_id_when_stream_url_rotates(self):
+        logo = "https://logos.example/mega-original.png"
+        reference = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="mega-cl" tvg-name="Mega" tvg-logo="{logo}" logo="{logo}" group-title="CHILE TV",Mega',
+            "https://old.example/mega.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 channelId="mega-cl" tvg-name="Mega" tvg-logo="https://wrong.example/mega.png" logo="https://wrong.example/mega.png" group-title="CHILE TV",Mega',
+            "https://new.example/mega.m3u8",
+        ]
+        result, _ = blindar_logos(current, reference)
+        entry = next(line for line in result if line.startswith("#EXTINF"))
+        self.assertIn(f'tvg-logo="{logo}"', entry)
+        self.assertIn(f'logo="{logo}"', entry)
+        self.assertTrue(validar_logos_chile_tv(result, reference))
+
+    def test_chile_tv_validator_rejects_any_unapproved_logo_change(self):
+        reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
+        changed = ["#EXTM3U"] + channel("Mega", "https://logos.example/wrong.png")
+        with self.assertRaisesRegex(AssertionError, "Logo alterado en CHILE TV"):
+            validar_logos_chile_tv(changed, reference)
+
+    def test_chile_tv_validator_rejects_logo_on_unmatched_new_channel(self):
+        reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-name="Canal nuevo" tvg-logo="https://logos.example/new.png" group-title="CHILE TV",Canal nuevo',
+            "https://new.example/channel.m3u8",
+        ]
+        with self.assertRaisesRegex(AssertionError, "Logo no autorizado en señal nueva"):
+            validar_logos_chile_tv(current, reference)
 
 
 if __name__ == "__main__":
