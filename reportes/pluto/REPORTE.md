@@ -3,7 +3,7 @@
 ## Playlists regionales
 
 - **AR**: 207 canales, 207 streams
-- **BR**: 193 canales, 193 streams
+- **BR**: 194 canales, 194 streams
 - **CL**: 207 canales, 207 streams
 - **ES**: 159 canales, 159 streams
 - **LATAM**: 215 canales, 215 streams
@@ -12,8 +12,8 @@
 
 ## Salud de streams
 - Archivo: `pluto/output/health/streams.json`
-- Registros: **1661**
+- Registros: **1662**
 
-**Total de canales publicados: 1661**
+**Total de canales publicados: 1662**
 
 Este reporte pertenece exclusivamente al pipeline Pluto y no modifica Principal, GOD ni Generador.
