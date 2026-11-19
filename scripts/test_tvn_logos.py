@@ -104,12 +104,12 @@ class TvnLogoTests(unittest.TestCase):
     def test_energeek_radio_keeps_its_exact_source_logo_in_chile_tv(self):
         logo = "https://cdn.m3u.cl/logo/1266_EnerGeek_Radio.png"
         reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
-        current = ["#EXTM3U"] + channel("EnerGeek Radio", logo)
+        current = ["#EXTM3U"] + channel("EnerGeek Radio ✪ | CL", logo)
 
         with tempfile.TemporaryDirectory() as folder:
             config = Path(folder) / "logos_autorizados.json"
             config.write_text(
-                json.dumps({"logos": {"CHILE TV::EnerGeek Radio": logo}}),
+                json.dumps({"logos": {"CHILE TV::EnerGeek Radio ✪ | CL": logo}}),
                 encoding="utf-8",
             )
             with patch("scripts.blindajes_principal.LOGOS_AUTORIZADOS_PATH", config):
