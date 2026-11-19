@@ -84,10 +84,14 @@ jobs:
             scripts/selftest_reconexion_principal.py \
             scripts/auditar_fuentes.py \
             scripts/test_pluto_identity_validation.py \
+            scripts/test_m3ucl_resilience.py \
             scripts/test_history_documentales.py
 
       - name: Probar detector de cambios de fuentes
         run: python -m unittest scripts.test_auditar_fuentes
+
+      - name: Probar reintentos seguros y validación M3U.CL
+        run: python -m unittest scripts.test_m3ucl_resilience -v
 
       - name: Probar identidad y cobertura de canales Pluto
         run: python -m unittest scripts.test_pluto_identity_validation

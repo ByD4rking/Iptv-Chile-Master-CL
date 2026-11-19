@@ -42,7 +42,9 @@ jobs:
       - name: Validar sintaxis
         run: |
           python -m py_compile scripts/auditar_fuentes.py scripts/test_auditar_fuentes.py scripts/sincronizar_complementos.py scripts/ejecutar_actualizacion_principal.py
-          python -m py_compile scripts/alimentar_principal.py scripts/blindajes_principal.py scripts/test_history_documentales.py
+          python -m py_compile scripts/alimentar_principal.py scripts/blindajes_principal.py scripts/test_history_documentales.py scripts/test_m3ucl_resilience.py
+      - name: Probar reintentos seguros M3U.CL
+        run: python -m unittest scripts.test_m3ucl_resilience -v
       - name: Probar auditoría histórica de fuentes
         run: python -m unittest scripts.test_auditar_fuentes -v
       - name: Probar sincronización complementaria

@@ -1618,6 +1618,37 @@ def limpiar_total_otros_y_sin_nombre(lineas):
         "movidos_por_categoria":dict(movidos),
     }
 
+def obtener_respuesta_fuente(session, url, timeout=30):
+    """Descarga M3U.CL con variantes HTTP normales; no elude controles de acceso."""
+    from urllib.parse import urlparse
+
+    host = (urlparse(url).hostname or "").lower()
+    if host != "m3u.cl" and not host.endswith(".m3u.cl"):
+        respuesta = session.get(url, timeout=timeout)
+        respuesta.raise_for_status()
+        return respuesta
+
+    variantes = [
+        {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36",
+         "Accept": "text/plain, application/vnd.apple.mpegurl, application/x-mpegURL, */*"},
+        {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36",
+         "Accept": "text/plain, application/vnd.apple.mpegurl, application/x-mpegURL, */*",
+         "Referer": "https://m3u.cl/"},
+        {"User-Agent": "IPTV-Chile-Source-Audit/1.0", "Accept": "*/*", "Referer": "https://m3u.cl/"},
+    ]
+    ultimo_error = None
+    for headers in variantes:
+        try:
+            respuesta = session.get(url, timeout=timeout, headers=headers)
+            respuesta.raise_for_status()
+            if not respuesta.text.lstrip("\ufeff \r\n").startswith("#EXTM3U"):
+                raise ValueError("M3U.CL respondió sin cabecera #EXTM3U")
+            return respuesta
+        except Exception as exc:
+            ultimo_error = exc
+    raise RuntimeError(f"M3U.CL no entregó una playlist válida tras {len(variantes)} variantes HTTP: {ultimo_error}")
+
+
 def agregar_bloque(canal, destino, urls_globales, bloques):
     url = canal["url"].strip()
     if url in urls_globales:
@@ -4429,8 +4460,7 @@ def main():
     for i, fuente in enumerate(FUENTES, 1):
         print(f"\n[FUENTE {i}/{len(FUENTES)}] {fuente}")
         try:
-            r = session.get(fuente, timeout=30)
-            r.raise_for_status()
+            r = obtener_respuesta_fuente(session, fuente, timeout=30)
             canales = parsear_m3u(r.text)
             if fuente == FUENTE_MAGMA:
                 canales, rechazados_calidad, no_verificados_calidad = _audit_magma_cinema(
