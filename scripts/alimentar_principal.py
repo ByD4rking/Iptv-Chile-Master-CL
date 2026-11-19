@@ -25,6 +25,7 @@ _SPECIAL_SOURCES = _SOURCE_SETTINGS["special_sources"]
 FUENTE_IPTVSV = _SPECIAL_SOURCES["iptvsv"]
 FUENTE_MAGMA = _SPECIAL_SOURCES["magma"]
 FUENTE_PLUTO_ALTERNATIVAS = _SPECIAL_SOURCES["pluto_mx_alternatives"]
+FUENTE_PLUTO_BR_RENOVACION = _SPECIAL_SOURCES.get("pluto_br_renewal", "")
 FUENTE_FEAR_FACTOR = _SPECIAL_SOURCES.get("fear_factor", "")
 
 # Identidad histórica de Pluto TV Anime España; se mantiene fuera de Anime.
@@ -42,13 +43,21 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = [*FUENTES_PLUTO[:2], FUENTE_PLUTO_ALTERNATIVAS, *FUENTES_PLUTO[2:]]
+# El catálogo BR se usa exclusivamente para renovar URLs existentes:
+# nunca se incorpora como fuente de canales nuevos a la maestra.
+FUENTES_PLUTO_CATALOGO = [
+    *FUENTES_PLUTO[:2],
+    FUENTE_PLUTO_ALTERNATIVAS,
+    *FUENTES_PLUTO[2:],
+    FUENTE_PLUTO_BR_RENOVACION,
+]
 # Umbrales conservadores: una descarga truncada no debe provocar bajas masivas.
 PLUTO_CATALOGO_MINIMOS = {
     FUENTES_PLUTO[0]: 100,
     FUENTES_PLUTO[1]: 50,
     FUENTE_PLUTO_ALTERNATIVAS: 50,
     **{fuente: 100 for fuente in FUENTES_PLUTO[2:]},
+    FUENTE_PLUTO_BR_RENOVACION: 100,
 }
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
@@ -1082,9 +1091,10 @@ def obtener_ids_pluto_existentes(lineas):
 
 
 def cargar_catalogo_pluto_propio(session):
-    """Carga LATAM, ES y MX; LATAM/ES tienen prioridad y MX es fallback sin JWT."""
+    """Carga LATAM, ES, MX y BR; BR aporta cobertura regional para sus propios IDs."""
     por_id = {}
     por_nombre = {}
+    nombres_ambiguos = set()
     por_region = defaultdict(dict)
     errores = 0
     fuentes_ok = 0
@@ -1119,20 +1129,37 @@ def cargar_catalogo_pluto_propio(session):
                 tvg_id = m_id.group(1).strip().lower() if m_id else ""
                 url_id = extraer_pluto_id(url)
 
-                # Guardar ambas identidades: algunos tvg-id son alias EPG y
-                # no coinciden con el channel ID real incluido en la URL.
+                # El ID de la URL es la identidad canónica del stream.
+                # tvg-id se conserva como alias EPG, pero nunca debe desplazar
+                # una coincidencia exacta del channel ID.
                 ids = []
-                if tvg_id:
-                    ids.append(tvg_id)
-                if url_id and url_id not in ids:
+                if url_id:
                     ids.append(url_id)
+                if tvg_id and tvg_id not in ids:
+                    ids.append(tvg_id)
 
                 for cid in ids:
                     # LATAM aparece primero y gana en el catálogo global.
                     por_id.setdefault(cid, canal)
                     por_region[region].setdefault(cid, canal)
                 if nombre:
-                    por_nombre.setdefault(nombre, canal)
+                    # Indexar también nombres normalizados (quita sufijos de
+                    # proveedor/opción), sin aceptar colisiones entre canales
+                    # con identidades distintas.
+                    claves_nombre = {nombre, normalizar_nombre_canal(canal.get("nombre", ""))}
+                    identidad = url_id or tvg_id or url
+                    for clave in claves_nombre - {""}:
+                        anterior = por_nombre.get(clave)
+                        if clave not in nombres_ambiguos:
+                            if anterior is None:
+                                por_nombre[clave] = canal
+                            else:
+                                anterior_id = extraer_pluto_id(anterior.get("url", ""))
+                                anterior_tvg = re.search(r'tvg-id="([^"]+)"', anterior.get("extinf", ""), re.I)
+                                anterior_identidad = anterior_id or (anterior_tvg.group(1).strip().lower() if anterior_tvg else "") or anterior.get("url", "")
+                                if anterior_identidad != identidad:
+                                    por_nombre.pop(clave, None)
+                                    nombres_ambiguos.add(clave)
         except Exception as e:
             errores += 1
             print(f"  -> No se pudo cargar Pluto propio: {fuente} :: {e}")
@@ -1170,25 +1197,30 @@ def jwt_necesita_renovacion_en_url(url, margen_segundos=6 * 60 * 60, ahora=None)
     if not m:
         return False
     partes = m.group(1).split(".")
-    if len(partes) < 2:
-        return False
+    # Un JWT presente pero malformado/sin exp no puede considerarse vigente.
+    # Se marca para renovación y la barrera final impide publicar una URL dudosa.
+    if len(partes) != 3:
+        return True
     payload = partes[1]
     payload += "=" * ((4 - len(payload) % 4) % 4)
     try:
         datos = json.loads(base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8"))
+        if not isinstance(datos, dict):
+            return True
         exp = datos.get("exp")
         if isinstance(exp, str) and exp.isdigit():
             exp = int(exp)
-        if not isinstance(exp, (int, float)):
-            return False
+        if isinstance(exp, bool) or not isinstance(exp, (int, float)):
+            return True
         return exp <= (ahora if ahora is not None else time.time()) + max(0, margen_segundos)
     except Exception:
-        return False
+        return True
 
 
 def reemplazar_pluto_tercero_por_propio(lineas, session):
     """
-    Renueva las URLs Pluto con LATAM > ES > MX.
+    Renueva las URLs Pluto con prioridad global LATAM > ES > MX.
+    Para country=BR consulta primero el catálogo BR y luego usa el global.
     Si un JWT expiró y no existe en ningún catálogo completo, retira ese canal
     obsoleto. Si alguna fuente falla, conserva los canales sin correspondencia.
     Todo lo que no sea Pluto se conserva exactamente.
@@ -1253,42 +1285,55 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         tvg_id = m_id.group(1).strip().lower() if m_id else ""
         url_id = extraer_pluto_id(url)
+        # La URL contiene el channel ID real; tvg-id puede ser un alias EPG.
+        # Priorizar la URL evita renovar con otro canal cuando un alias colisiona.
         ids = []
-        if tvg_id:
-            ids.append(tvg_id)
-        if url_id and url_id not in ids:
+        if url_id:
             ids.append(url_id)
+        if tvg_id and tvg_id not in ids:
+            ids.append(tvg_id)
 
         country = re.search(r'(?:[?&])country=([A-Za-z]{2})', url, re.I)
         region = country.group(1).lower() if country else ""
 
-        # La prioridad real es LATAM > ES > MX, no el parámetro country
-        # del JWT. Pluto LATAM suele emitir URLs con country=MX incluso para
-        # canales agregados desde Chile o Argentina; consultar primero por
-        # región convertía esas señales a la variante MX y podía degradar la
-        # reproducción respecto de la lista LATAM independiente.
+        # LATAM > ES > MX sigue siendo la prioridad global habitual.
+        # Excepción regional: las señales country=BR deben usar primero BR,
+        # porque Brasil no forma parte del catálogo LATAM y sus JWT antiguos
+        # quedaban sin renovar aunque pluto_br.m3u tuviera los mismos IDs.
         reemplazo = None
-        for cid in ids:
-            reemplazo = por_id.get(cid)
-            if reemplazo is not None:
-                break
+        if region == "br" and region in por_region:
+            for cid in ids:
+                reemplazo = por_region[region].get(cid)
+                if reemplazo is not None:
+                    break
+        if reemplazo is None:
+            for cid in ids:
+                reemplazo = por_id.get(cid)
+                if reemplazo is not None:
+                    break
         if reemplazo is None and region in por_region:
             for cid in ids:
                 reemplazo = por_region[region].get(cid)
                 if reemplazo is not None:
                     break
         if reemplazo is None:
-            reemplazo = por_nombre.get(normalizar(nombre))
+            reemplazo = por_nombre.get(normalizar_nombre_canal(nombre))
 
+        reemplazo_invalido = False
         if reemplazo is not None and jwt_necesita_renovacion_en_url(reemplazo["url"].strip()):
+            # Un canal encontrado en el catálogo con un JWT también vencido
+            # no equivale a un canal eliminado. Se conserva y la barrera final
+            # bloquea la publicación hasta disponer de una URL realmente válida.
+            reemplazo_invalido = True
             reemplazo = None
 
         if reemplazo is None:
-            # Solo se retiran canales expirados de regiones efectivamente
-            # cubiertas por los catálogos cargados. BR/US u otras regiones no
-            # incluidas nunca se consideran ausentes por una falsa cobertura.
+            # Solo se retiran canales expirados si el catálogo completo confirma
+            # que no existen. Si existe una coincidencia con URL inválida, nunca
+            # se interpreta como desaparición.
             if (
-                catalogo_completo
+                not reemplazo_invalido
+                and catalogo_completo
                 and region in por_region
                 and jwt_expirado_en_url(url)
             ):

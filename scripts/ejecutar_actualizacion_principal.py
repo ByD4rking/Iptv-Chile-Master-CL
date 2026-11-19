@@ -232,9 +232,15 @@ def main():
     # respeten la secuencia canónica después de todas las reconciliaciones.
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
-    # Última reconciliación de Pluto después de todas las restauraciones,
-    # agrupaciones y sincronizaciones complementarias. Evita que una etapa
-    # posterior vuelva a introducir JWT antiguos en la maestra.
+    # Primero se restaura la categoría protegida Anime; los logos y el orden
+    # se blindan después de renovar las URLs para no reintroducir JWT antiguos.
+    ordered_lines = restaurar_categoria_bloqueada(
+        ordered_lines, original_lines, "Anime"
+    )
+
+    # Restaurar Anime primero protege íntegramente sus metadatos, nombres,
+    # logos y orden. Después se renuevan SOLO las URLs Pluto: así el blindaje
+    # no vuelve a insertar JWT vencidos que ya se habían actualizado.
     ordered_lines, pluto_renovacion_final = alimentador.reemplazar_pluto_tercero_por_propio(
         ordered_lines,
         session,
@@ -247,12 +253,6 @@ def main():
         f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas."
     )
 
-    # Blindajes terminales: Anime se restaura íntegro desde la maestra de entrada;
-    # todos los logos existentes se congelan por identidad; el orden global de
-    # carpetas se aplica al final para que ninguna sincronización lo deshaga.
-    ordered_lines = restaurar_categoria_bloqueada(
-        ordered_lines, original_lines, "Anime"
-    )
     ordered_lines, blindaje_logos_stats = blindar_logos(
         ordered_lines, original_lines
     )
@@ -273,9 +273,9 @@ def main():
         if "jwt=" not in url.lower() or not alimentador.es_url_pluto(url):
             continue
         country_match = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
-        # Solo bloquear la publicación por regiones que este reconciliador
-        # puede renovar (LATAM/ES/MX). Regiones ajenas al catálogo se preservan.
-        if country_match and country_match.group(1).lower() not in {"mx", "es"}:
+        # Bloquear JWT vencidos en regiones cubiertas por catálogos propios:
+        # MX/CL/AR por LATAM, ES por su lista y BR por pluto_br.m3u.
+        if country_match and country_match.group(1).lower() not in {"mx", "es", "br", "cl", "ar"}:
             continue
         if alimentador.jwt_necesita_renovacion_en_url(url):
             jwt_pendientes.append(url)

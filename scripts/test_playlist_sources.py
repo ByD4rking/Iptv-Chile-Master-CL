@@ -66,10 +66,10 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
     def test_stable_pluto_mx_is_used_as_fallback_catalog(self):
         self.assertEqual(
             ap.FUENTES_PLUTO_CATALOGO,
-            [*ap.FUENTES_PLUTO[:2], ap.FUENTE_PLUTO_ALTERNATIVAS, *ap.FUENTES_PLUTO[2:]],
+            [*ap.FUENTES_PLUTO[:2], ap.FUENTE_PLUTO_ALTERNATIVAS, *ap.FUENTES_PLUTO[2:], ap.FUENTE_PLUTO_BR_RENOVACION],
         )
 
-    def test_pluto_refresh_prefers_stable_mx_and_removes_only_expired_orphans(self):
+    def test_pluto_refresh_prefers_stable_mx_and_preserves_invalid_catalog_matches(self):
         class Response:
             def __init__(self, text):
                 self.text = text
@@ -109,9 +109,10 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         orphan_id = "dddddddddddddddddddddddd"
         live_orphan_id = "eeeeeeeeeeeeeeeeeeeeeeee"
         internal_only_id = "ffffffffffffffffffffffff"
+        br_id = "999999999999999999999999"
 
         sources = list(ap.FUENTES_PLUTO_CATALOGO)
-        self.assertEqual(len(sources), 4)
+        self.assertEqual(len(sources), 5)
         contents = {
             sources[0]: "#EXTM3U\n" + m3u(latam_id, "Canal LATAM", f"https://jmp2.uk/plu-{latam_id}.m3u8"),
             sources[1]: "#EXTM3U\n" + m3u(es_id, "Canal ES", f"https://jmp2.uk/plu-{es_id}.m3u8"),
@@ -123,6 +124,8 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
                 + m3u(mx_id, "Canal MX tokenizado", token_url(mx_id, 1))
                 + m3u(internal_only_id, "Canal MX solo interno", token_url(internal_only_id, 1))
             ),
+            # Brasil é somente catálogo de renovación: no agrega canales a la maestra.
+            sources[4]: "#EXTM3U\n" + m3u(br_id, "Canal BR de catálogo", token_url(br_id, 4102444800, "BR")),
         }
 
         lineas = ["#EXTM3U"]
@@ -149,11 +152,13 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             )
             joined = "\n".join(result)
             self.assertTrue(stats["catalogo_completo"])
-            self.assertEqual(stats["expirados_eliminados"], 2)
+            self.assertEqual(stats["expirados_eliminados"], 1)
             self.assertIn(f"https://jmp2.uk/plu-{latam_id}.m3u8", joined)
             self.assertIn(f"https://jmp2.uk/plu-{mx_id}.m3u8", joined)
             self.assertNotIn("Canal retirado", joined)
-            self.assertNotIn("Canal MX solo interno", joined)
+            # El ID existe, pero el catálogo también entrega un JWT vencido:
+            # se conserva el canal y la barrera final impide publicar esa URL.
+            self.assertIn("Canal MX solo interno", joined)
             self.assertIn("Canal temporal aún vigente", joined)
             self.assertIn("https://example.com/live.m3u8", joined)
     
@@ -184,6 +189,8 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         self.assertEqual(special["iptvsv"], "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/IPTVSV.m3u")
         self.assertEqual(special["magma"], "https://raw.githubusercontent.com/Rayder378/IPTV-SV/refs/heads/main/Magma%20TV%20-Titan2022_XD.m3u")
         self.assertEqual(special["pluto_mx_alternatives"], "https://raw.githubusercontent.com/JMigue85/IPTV-SV/refs/heads/main/PlutoTV.MX.m3u")
+        self.assertIn("pluto_br.m3u", special["pluto_br_renewal"])
+        self.assertNotIn(special["pluto_br_renewal"], load_principal_settings()["pluto_sources"])
 
 
 if __name__ == "__main__":

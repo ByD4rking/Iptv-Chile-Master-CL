@@ -14,7 +14,10 @@ from alimentar_principal import (
     calcular_ids_pluto_faltantes,
     reemplazar_pluto_tercero_por_propio,
     jwt_necesita_renovacion_en_url,
+    FUENTES_PLUTO,
+    FUENTE_PLUTO_BR_RENOVACION,
 )
+from blindajes_principal import restaurar_categoria_bloqueada
 
 
 class PlutoIdentityValidationTests(unittest.TestCase):
@@ -133,6 +136,159 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertTrue(jwt_necesita_renovacion_en_url(url, margen_segundos=600, ahora=500))
         self.assertFalse(jwt_necesita_renovacion_en_url(url, margen_segundos=100, ahora=500))
 
+
+
+    def test_exact_url_channel_id_beats_conflicting_epg_alias(self):
+        old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?jwt=old"
+        expected_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?jwt=latam"
+        wrong_url = "https://service-stitcher.pluto.tv/channel/abcdef0123456789abcdef01/master.m3u8?jwt=wrong"
+        extinf = '#EXTINF:-1 tvg-id="epg.alias" group-title="Infantiles",Canal'
+        catalog = (
+            {"epg.alias": {"url": wrong_url}, "0123456789abcdef01234567": {"url": expected_url}},
+            {},
+            {"latam": {}, "es": {}, "mx": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=old" in url), \
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=False):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], expected_url)
+        self.assertEqual(stats["reemplazados"], 1)
+
+    def test_name_fallback_uses_normalized_channel_name(self):
+        old_url = "https://service-stitcher.pluto.tv/channel/aaaaaaaaaaaaaaaaaaaaaaaa/master.m3u8?jwt=old"
+        expected_url = "https://service-stitcher.pluto.tv/channel/bbbbbbbbbbbbbbbbbbbbbbbb/master.m3u8?jwt=fresh"
+        extinf = '#EXTINF:-1 tvg-id="unmatched.alias" group-title="Infantiles",Canal Kids [Opción 2]'
+        catalog = (
+            {},
+            {"canalkids": {"url": expected_url}},
+            {"latam": {}, "es": {}, "mx": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=old" in url), \
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=False):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], expected_url)
+        self.assertEqual(stats["reemplazados"], 1)
+
+
+    def test_brazil_url_prefers_brazil_regional_catalog(self):
+        old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=BR&jwt=old"
+        wrong_mx_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=wrong"
+        expected_br_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=BR&jwt=fresh"
+        extinf = '#EXTINF:-1 tvg-id="0123456789abcdef01234567" group-title="Brasil",Canal Brasil'
+        catalog = (
+            {"0123456789abcdef01234567": {"url": wrong_mx_url}},
+            {},
+            {
+                "latam": {},
+                "es": {},
+                "mx": {"0123456789abcdef01234567": {"url": wrong_mx_url}},
+                "br": {"0123456789abcdef01234567": {"url": expected_br_url}},
+            },
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=old" in url), \
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=False):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], expected_br_url)
+        self.assertEqual(stats["reemplazados"], 1)
+
+    def test_brazil_playlist_is_catalog_only_not_a_new_channel_source(self):
+        self.assertIn("pluto_br.m3u", FUENTE_PLUTO_BR_RENOVACION)
+        self.assertNotIn(FUENTE_PLUTO_BR_RENOVACION, FUENTES_PLUTO)
+
+    def test_final_refresh_after_anime_restore_keeps_anime_metadata_and_renews_jwt(self):
+        old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=old"
+        expected_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=fresh"
+        extinf = '#EXTINF:-1 tvg-id="0123456789abcdef01234567" tvg-logo="https://logo.example/anime.png" group-title="Anime",Anime protegido'
+        original = ["#EXTM3U", extinf, old_url]
+        already_refreshed = [
+            "#EXTM3U",
+            extinf,
+            expected_url,
+        ]
+
+        # Reproducir el orden anterior: la restauración literal de Anime
+        # vuelve a insertar la URL vieja, por lo que el último paso debe
+        # renovar después de restaurar la categoría protegida.
+        restored = restaurar_categoria_bloqueada(
+            already_refreshed,
+            original,
+            "Anime",
+        )
+        self.assertEqual(restored[-1], old_url)
+
+        catalog = (
+            {"0123456789abcdef01234567": {"url": expected_url}},
+            {},
+            {"latam": {}, "es": {}, "mx": {}, "br": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=old" in url), \
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=False):
+            final, stats = reemplazar_pluto_tercero_por_propio(restored, session=None)
+
+        self.assertEqual(final[-1], expected_url)
+        self.assertEqual(final[1], extinf)
+        self.assertEqual(stats["reemplazados"], 1)
+
+
+    def test_malformed_or_missing_exp_jwt_is_marked_for_renewal(self):
+        self.assertTrue(
+            jwt_necesita_renovacion_en_url(
+                "https://service-stitcher.pluto.tv/master.m3u8?jwt=not-a-jwt"
+            )
+        )
+        self.assertTrue(
+            jwt_necesita_renovacion_en_url(
+                "https://service-stitcher.pluto.tv/master.m3u8?jwt=header.e30.signature"
+            )
+        )
+
+    def test_expired_channel_is_not_deleted_when_catalog_match_has_expired_jwt(self):
+        old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=old"
+        stale_catalog_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=stale"
+        extinf = '#EXTINF:-1 tvg-id="0123456789abcdef01234567" group-title="Anime",Canal Anime'
+        catalog = (
+            {"0123456789abcdef01234567": {"url": stale_catalog_url}},
+            {},
+            {"latam": {}, "es": {}, "mx": {"0123456789abcdef01234567": {"url": stale_catalog_url}}, "br": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=" in url), \
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=True):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], old_url)
+        self.assertEqual(stats["expirados_eliminados"], 0)
+        self.assertEqual(stats["conservados_sin_reemplazo"], 1)
 
 if __name__ == "__main__":
     unittest.main()
