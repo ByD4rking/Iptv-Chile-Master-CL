@@ -232,9 +232,8 @@ def main():
     # respeten la secuencia canónica después de todas las reconciliaciones.
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
-    # Blindajes terminales: todos los logos existentes se congelan por identidad;
-    # el orden global de carpetas se aplica al final para que ninguna
-    # sincronización ni renovación de URLs lo deshaga.
+    # Primero se restaura la categoría protegida Anime; los logos y el orden
+    # se blindan después de renovar las URLs para no reintroducir JWT antiguos.
     ordered_lines = restaurar_categoria_bloqueada(
         ordered_lines, original_lines, "Anime"
     )
@@ -274,8 +273,8 @@ def main():
         if "jwt=" not in url.lower() or not alimentador.es_url_pluto(url):
             continue
         country_match = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
-        # Solo bloquear la publicación por regiones que este reconciliador
-        # puede renovar (LATAM/ES/MX). Regiones ajenas al catálogo se preservan.
+        # Bloquear JWT vencidos en regiones con catálogo de renovación:
+        # LATAM/ES/MX y Brasil. Las demás regiones no se alteran aquí.
         if country_match and country_match.group(1).lower() not in {"mx", "es", "br"}:
             continue
         if alimentador.jwt_necesita_renovacion_en_url(url):
