@@ -74,16 +74,16 @@ class M3UCLResilienceTests(unittest.TestCase):
         class CandidateSession:
             def __init__(self):
                 self.calls = []
+                self.m3ucl_responses = [
+                    Response(403, "Forbidden"),
+                    Response(403, "Forbidden"),
+                    Response(200, "#EXTM3U\\n#EXTINF:-1 group-title=\\"CHILE TV\\",Canal CL\\nhttps://stream.example/cl.m3u8\\n"),
+                ]
 
             def get(self, url, timeout=30, headers=None):
                 self.calls.append((url, headers))
                 if url == m3ucl:
-                    responses = [
-                        Response(403, "Forbidden"),
-                        Response(403, "Forbidden"),
-                        Response(200, "#EXTM3U\\n#EXTINF:-1 group-title=\\"CHILE TV\\",Canal CL\\nhttps://stream.example/cl.m3u8\\n"),
-                    ]
-                    return responses.pop(0)
+                    return self.m3ucl_responses.pop(0)
                 return Response(200, "#EXTM3U\\n")
 
         session = CandidateSession()
