@@ -6,6 +6,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import alimentar_principal as ap
+import sincronizar_complementos as sc
+from unittest.mock import patch
 
 
 class Response:
@@ -65,6 +67,37 @@ class M3UCLResilienceTests(unittest.TestCase):
         self.assertEqual(len(session.calls), 1)
         self.assertIsNone(session.calls[0]["headers"])
 
+
+    def test_collect_candidates_uses_resilient_fetch_for_m3ucl(self):
+        m3ucl = "https://m3u.cl/lista/CL.m3u"
+
+        class CandidateSession:
+            def __init__(self):
+                self.calls = []
+                self.m3ucl_responses = [
+                    Response(403, "Forbidden"),
+                    Response(403, "Forbidden"),
+                    Response(200, "#EXTM3U\n#EXTINF:-1 group-title=\"CHILE TV\",Canal CL\nhttps://stream.example/cl.m3u8\n"),
+                ]
+
+            def get(self, url, timeout=30, headers=None):
+                self.calls.append((url, headers))
+                if url == m3ucl:
+                    return self.m3ucl_responses.pop(0)
+                return Response(200, "#EXTM3U\n")
+
+        session = CandidateSession()
+        with patch.object(ap, "FUENTE_IPTVSV", "https://source-one.example/list.m3u"), \
+             patch.object(ap, "FUENTE_MAGMA", "https://source-two.example/list.m3u"), \
+             patch.object(ap, "FUENTES", [m3ucl]), \
+             patch.object(sc, "FUENTES_PLUTO_COMPLETAS", []):
+            with patch.object(ap, "obtener_respuesta_fuente", wraps=ap.obtener_respuesta_fuente) as fetch:
+                candidates, stats = sc.collect_candidates(session)
+
+        self.assertEqual(fetch.call_count, 3)
+        self.assertEqual(len([call for call in session.calls if call[0] == m3ucl]), 3)
+        self.assertEqual(stats["fuentes_ok"], 1)
+        self.assertTrue(any(item["url"] == "https://stream.example/cl.m3u8" for item in candidates))
 
 if __name__ == "__main__":
     unittest.main()
