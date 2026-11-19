@@ -25,6 +25,7 @@ _SPECIAL_SOURCES = _SOURCE_SETTINGS["special_sources"]
 FUENTE_IPTVSV = _SPECIAL_SOURCES["iptvsv"]
 FUENTE_MAGMA = _SPECIAL_SOURCES["magma"]
 FUENTE_PLUTO_ALTERNATIVAS = _SPECIAL_SOURCES["pluto_mx_alternatives"]
+FUENTE_PLUTO_BR_RENOVACION = _SPECIAL_SOURCES.get("pluto_br_renewal", "")
 FUENTE_FEAR_FACTOR = _SPECIAL_SOURCES.get("fear_factor", "")
 
 # Identidad histórica de Pluto TV Anime España; se mantiene fuera de Anime.
@@ -42,13 +43,21 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = [*FUENTES_PLUTO[:2], FUENTE_PLUTO_ALTERNATIVAS, *FUENTES_PLUTO[2:]]
+# El catálogo BR se usa exclusivamente para renovar URLs existentes:
+# nunca se incorpora como fuente de canales nuevos a la maestra.
+FUENTES_PLUTO_CATALOGO = [
+    *FUENTES_PLUTO[:2],
+    FUENTE_PLUTO_ALTERNATIVAS,
+    *FUENTES_PLUTO[2:],
+    FUENTE_PLUTO_BR_RENOVACION,
+]
 # Umbrales conservadores: una descarga truncada no debe provocar bajas masivas.
 PLUTO_CATALOGO_MINIMOS = {
     FUENTES_PLUTO[0]: 100,
     FUENTES_PLUTO[1]: 50,
     FUENTE_PLUTO_ALTERNATIVAS: 50,
     **{fuente: 100 for fuente in FUENTES_PLUTO[2:]},
+    FUENTE_PLUTO_BR_RENOVACION: 100,
 }
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
