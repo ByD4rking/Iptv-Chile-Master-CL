@@ -1188,20 +1188,24 @@ def jwt_necesita_renovacion_en_url(url, margen_segundos=6 * 60 * 60, ahora=None)
     if not m:
         return False
     partes = m.group(1).split(".")
-    if len(partes) < 2:
-        return False
+    # Un JWT presente pero malformado/sin exp no puede considerarse vigente.
+    # Se marca para renovación y la barrera final impide publicar una URL dudosa.
+    if len(partes) != 3:
+        return True
     payload = partes[1]
     payload += "=" * ((4 - len(payload) % 4) % 4)
     try:
         datos = json.loads(base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8"))
+        if not isinstance(datos, dict):
+            return True
         exp = datos.get("exp")
         if isinstance(exp, str) and exp.isdigit():
             exp = int(exp)
-        if not isinstance(exp, (int, float)):
-            return False
+        if isinstance(exp, bool) or not isinstance(exp, (int, float)):
+            return True
         return exp <= (ahora if ahora is not None else time.time()) + max(0, margen_segundos)
     except Exception:
-        return False
+        return True
 
 
 def reemplazar_pluto_tercero_por_propio(lineas, session):
@@ -1306,15 +1310,21 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         if reemplazo is None:
             reemplazo = por_nombre.get(normalizar_nombre_canal(nombre))
 
+        reemplazo_invalido = False
         if reemplazo is not None and jwt_necesita_renovacion_en_url(reemplazo["url"].strip()):
+            # Un canal encontrado en el catálogo con un JWT también vencido
+            # no equivale a un canal eliminado. Se conserva y la barrera final
+            # bloquea la publicación hasta disponer de una URL realmente válida.
+            reemplazo_invalido = True
             reemplazo = None
 
         if reemplazo is None:
-            # Solo se retiran canales expirados de regiones efectivamente
-            # cubiertas por los catálogos cargados. BR/US u otras regiones no
-            # incluidas nunca se consideran ausentes por una falsa cobertura.
+            # Solo se retiran canales expirados si el catálogo completo confirma
+            # que no existen. Si existe una coincidencia con URL inválida, nunca
+            # se interpreta como desaparición.
             if (
-                catalogo_completo
+                not reemplazo_invalido
+                and catalogo_completo
                 and region in por_region
                 and jwt_expirado_en_url(url)
             ):
