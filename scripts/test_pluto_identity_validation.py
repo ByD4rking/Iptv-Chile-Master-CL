@@ -136,9 +136,9 @@ class PlutoIdentityValidationTests(unittest.TestCase):
 
 
     def test_exact_url_channel_id_beats_conflicting_epg_alias(self):
-        old_url = "https://service.example/channel/0123456789abcdef01234567/master.m3u8?jwt=old"
-        expected_url = "https://service.example/channel/0123456789abcdef01234567/master.m3u8?jwt=latam"
-        wrong_url = "https://service.example/channel/abcdef0123456789abcdef01/master.m3u8?jwt=wrong"
+        old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?jwt=old"
+        expected_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?jwt=latam"
+        wrong_url = "https://service-stitcher.pluto.tv/channel/abcdef0123456789abcdef01/master.m3u8?jwt=wrong"
         extinf = '#EXTINF:-1 tvg-id="epg.alias" group-title="Infantiles",Canal'
         catalog = (
             {"epg.alias": {"url": wrong_url}, "0123456789abcdef01234567": {"url": expected_url}},
@@ -159,8 +159,8 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertEqual(stats["reemplazados"], 1)
 
     def test_name_fallback_uses_normalized_channel_name(self):
-        old_url = "https://service.example/channel/aaaaaaaaaaaaaaaaaaaaaaaa/master.m3u8?jwt=old"
-        expected_url = "https://service.example/channel/bbbbbbbbbbbbbbbbbbbbbbbb/master.m3u8?jwt=fresh"
+        old_url = "https://service-stitcher.pluto.tv/channel/aaaaaaaaaaaaaaaaaaaaaaaa/master.m3u8?jwt=old"
+        expected_url = "https://service-stitcher.pluto.tv/channel/bbbbbbbbbbbbbbbbbbbbbbbb/master.m3u8?jwt=fresh"
         extinf = '#EXTINF:-1 tvg-id="unmatched.alias" group-title="Infantiles",Canal Kids [Opción 2]'
         catalog = (
             {},
