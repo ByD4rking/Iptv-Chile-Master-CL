@@ -99,5 +99,17 @@ class M3UCLResilienceTests(unittest.TestCase):
         self.assertEqual(stats["fuentes_ok"], 1)
         self.assertTrue(any(item["url"] == "https://stream.example/cl.m3u8" for item in candidates))
 
+    def test_energeek_fan_is_routed_to_anime_without_moving_energeek_radio(self):
+        categories = ["CHILE TV", "Anime"]
+        self.assertEqual(
+            ap.determinar_destino("CHILE TV", "EnerGeek FAN ✪ | CL", "chile", categories),
+            "Anime",
+        )
+        self.assertEqual(
+            ap.determinar_destino("CHILE TV", "EnerGeek Radio ✪ | CL", "chile", categories),
+            "CHILE TV",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
