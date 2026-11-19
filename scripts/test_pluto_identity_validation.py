@@ -14,7 +14,9 @@ from alimentar_principal import (
     calcular_ids_pluto_faltantes,
     reemplazar_pluto_tercero_por_propio,
     jwt_necesita_renovacion_en_url,
+    FUENTES_PLUTO,
 )
+from blindajes_principal import restaurar_categoria_bloqueada
 
 
 class PlutoIdentityValidationTests(unittest.TestCase):
@@ -178,6 +180,76 @@ class PlutoIdentityValidationTests(unittest.TestCase):
                 session=None,
             )
         self.assertEqual(result[-1], expected_url)
+        self.assertEqual(stats["reemplazados"], 1)
+
+
+    def test_brazil_url_prefers_brazil_regional_catalog(self):
+        old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=BR&jwt=old"
+        wrong_mx_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=wrong"
+        expected_br_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=BR&jwt=fresh"
+        extinf = '#EXTINF:-1 tvg-id="0123456789abcdef01234567" group-title="Brasil",Canal Brasil'
+        catalog = (
+            {"0123456789abcdef01234567": {"url": wrong_mx_url}},
+            {},
+            {
+                "latam": {},
+                "es": {},
+                "mx": {"0123456789abcdef01234567": {"url": wrong_mx_url}},
+                "br": {"0123456789abcdef01234567": {"url": expected_br_url}},
+            },
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \\
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=old" in url), \\
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=False):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], expected_br_url)
+        self.assertEqual(stats["reemplazados"], 1)
+
+    def test_brazil_playlist_is_registered_as_a_pluto_catalog_source(self):
+        self.assertTrue(any("pluto_br.m3u" in source for source in FUENTES_PLUTO))
+
+    def test_final_refresh_after_anime_restore_keeps_anime_metadata_and_renews_jwt(self):
+        old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=old"
+        expected_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=fresh"
+        extinf = '#EXTINF:-1 tvg-id="0123456789abcdef01234567" tvg-logo="https://logo.example/anime.png" group-title="Anime",Anime protegido'
+        original = ["#EXTM3U", extinf, old_url]
+        already_refreshed = [
+            "#EXTM3U",
+            extinf,
+            expected_url,
+        ]
+
+        # Reproducir el orden anterior: la restauración literal de Anime
+        # vuelve a insertar la URL vieja, por lo que el último paso debe
+        # renovar después de restaurar la categoría protegida.
+        restored = restaurar_categoria_bloqueada(
+            already_refreshed,
+            original,
+            "Anime",
+        )
+        self.assertEqual(restored[-1], old_url)
+
+        catalog = (
+            {"0123456789abcdef01234567": {"url": expected_url}},
+            {},
+            {"latam": {}, "es": {}, "mx": {}, "br": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \\
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=old" in url), \\
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=False):
+            final, stats = reemplazar_pluto_tercero_por_propio(restored, session=None)
+
+        self.assertEqual(final[-1], expected_url)
+        self.assertEqual(final[1], extinf)
         self.assertEqual(stats["reemplazados"], 1)
 
 if __name__ == "__main__":
