@@ -101,6 +101,24 @@ class TvnLogoTests(unittest.TestCase):
                 self.assertEqual(stats["logos_autorizados"], 1)
                 self.assertTrue(validar_logos_chile_tv(result, reference))
 
+    def test_energeek_radio_keeps_its_exact_source_logo_in_chile_tv(self):
+        logo = "https://cdn.m3u.cl/logo/1266_EnerGeek_Radio.png"
+        reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
+        current = ["#EXTM3U"] + channel("EnerGeek Radio", logo)
+
+        with tempfile.TemporaryDirectory() as folder:
+            config = Path(folder) / "logos_autorizados.json"
+            config.write_text(
+                json.dumps({"logos": {"CHILE TV::EnerGeek Radio": logo}}),
+                encoding="utf-8",
+            )
+            with patch("scripts.blindajes_principal.LOGOS_AUTORIZADOS_PATH", config):
+                result, stats = blindar_logos(current, reference)
+                entry = next(line for line in result if line.startswith("#EXTINF"))
+                self.assertIn('tvg-logo="' + logo + '"', entry)
+                self.assertEqual(stats["logos_autorizados"], 1)
+                self.assertTrue(validar_logos_chile_tv(result, reference))
+
     def test_chile_tv_validator_rejects_any_unapproved_logo_change(self):
         reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
         changed = ["#EXTM3U"] + channel("Mega", "https://logos.example/wrong.png")
