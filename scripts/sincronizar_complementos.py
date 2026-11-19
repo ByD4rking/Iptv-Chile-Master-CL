@@ -677,8 +677,7 @@ def collect_candidates(session: requests.Session) -> tuple[list[dict], dict]:
     stats = {"fuentes_ok": 0, "fuentes_error": 0, "canales_fuente": 0, "sin_categoria": 0, "magma_cine_rejected_urls": [], "magma_cine_unverified": 0}
     for source_url in ordered:
         try:
-            response = session.get(source_url, timeout=TIMEOUT)
-            response.raise_for_status()
+            response = ap.obtener_respuesta_fuente(session, source_url, timeout=TIMEOUT)
             body = response.text or ""
             if not body.lstrip("\ufeff \r\n\t").startswith("#EXTM3U"):
                 raise ValueError("respuesta sin cabecera #EXTM3U")
