@@ -276,9 +276,9 @@ class PlutoIdentityValidationTests(unittest.TestCase):
             0,
             True,
         )
-        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \\
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
              patch("alimentar_principal.jwt_necesita_renovacion_en_url",
-                   side_effect=lambda url, *args, **kwargs: "jwt=" in url), \\
+                   side_effect=lambda url, *args, **kwargs: "jwt=" in url), \
              patch("alimentar_principal.jwt_expirado_en_url", return_value=True):
             result, stats = reemplazar_pluto_tercero_por_propio(
                 ["#EXTM3U", extinf, old_url],
