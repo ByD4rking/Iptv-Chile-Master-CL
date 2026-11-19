@@ -230,11 +230,17 @@ def validar_logos_chile_tv(lineas, referencia):
         override = _buscar_logo_autorizado(record, authorized)
         if override:
             expected = (override, override if match and match[1] else "")
-            if actual != expected:
+            allowed = {expected}
+            # Una señal nueva puede llegar con ambos atributos de logo iguales.
+            # Si el segundo atributo coincide exactamente con el override
+            # explícito, se conserva; cualquier URL distinta sigue bloqueada.
+            if not match or not match[1]:
+                allowed.add((override, override))
+            if actual not in allowed:
                 name = record["name"] or record["tvg_name"] or "(sin nombre)"
                 raise AssertionError(
                     "Logo manual autorizado incorrecto en CHILE TV: " + name
-                    + "; esperado=" + repr(expected) + ", actual=" + repr(actual)
+                    + "; esperado=" + repr(sorted(allowed)) + ", actual=" + repr(actual)
                 )
             continue
         if match is None:
