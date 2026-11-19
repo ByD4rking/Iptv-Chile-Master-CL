@@ -15,6 +15,7 @@ from alimentar_principal import (
     reemplazar_pluto_tercero_por_propio,
     jwt_necesita_renovacion_en_url,
     FUENTES_PLUTO,
+    FUENTE_PLUTO_BR_RENOVACION,
 )
 from blindajes_principal import restaurar_categoria_bloqueada
 
@@ -211,8 +212,9 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertEqual(result[-1], expected_br_url)
         self.assertEqual(stats["reemplazados"], 1)
 
-    def test_brazil_playlist_is_registered_as_a_pluto_catalog_source(self):
-        self.assertTrue(any("pluto_br.m3u" in source for source in FUENTES_PLUTO))
+    def test_brazil_playlist_is_catalog_only_not_a_new_channel_source(self):
+        self.assertIn("pluto_br.m3u", FUENTE_PLUTO_BR_RENOVACION)
+        self.assertNotIn(FUENTE_PLUTO_BR_RENOVACION, FUENTES_PLUTO)
 
     def test_final_refresh_after_anime_restore_keeps_anime_metadata_and_renews_jwt(self):
         old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=old"
