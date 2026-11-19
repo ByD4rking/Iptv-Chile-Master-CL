@@ -97,7 +97,7 @@ def fetch_url(url: str) -> bytes:
                 data = response.read(MAX_BYTES + 1)
             if len(data) > MAX_BYTES:
                 raise ValueError(f"fuente supera límite de {MAX_BYTES} bytes")
-            if not data.lstrip(b"\\xef\\xbb\\xbf \\r\\n").startswith(b"#EXTM3U"):
+            if not data.lstrip(b"\xef\xbb\xbf \r\n").startswith(b"#EXTM3U"):
                 raise ValueError("respuesta no contiene cabecera #EXTM3U")
             return data
         except Exception as exc:
