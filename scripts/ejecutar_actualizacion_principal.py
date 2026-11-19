@@ -273,9 +273,9 @@ def main():
         if "jwt=" not in url.lower() or not alimentador.es_url_pluto(url):
             continue
         country_match = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
-        # Bloquear JWT vencidos en regiones con catálogo de renovación:
-        # LATAM/ES/MX y Brasil. Las demás regiones no se alteran aquí.
-        if country_match and country_match.group(1).lower() not in {"mx", "es", "br"}:
+        # Bloquear JWT vencidos en regiones cubiertas por catálogos propios:
+        # MX/CL/AR por LATAM, ES por su lista y BR por pluto_br.m3u.
+        if country_match and country_match.group(1).lower() not in {"mx", "es", "br", "cl", "ar"}:
             continue
         if alimentador.jwt_necesita_renovacion_en_url(url):
             jwt_pendientes.append(url)
