@@ -1085,6 +1085,7 @@ def cargar_catalogo_pluto_propio(session):
     """Carga LATAM, ES y MX; LATAM/ES tienen prioridad y MX es fallback sin JWT."""
     por_id = {}
     por_nombre = {}
+    nombres_ambiguos = set()
     por_region = defaultdict(dict)
     errores = 0
     fuentes_ok = 0
@@ -1119,20 +1120,37 @@ def cargar_catalogo_pluto_propio(session):
                 tvg_id = m_id.group(1).strip().lower() if m_id else ""
                 url_id = extraer_pluto_id(url)
 
-                # Guardar ambas identidades: algunos tvg-id son alias EPG y
-                # no coinciden con el channel ID real incluido en la URL.
+                # El ID de la URL es la identidad canónica del stream.
+                # tvg-id se conserva como alias EPG, pero nunca debe desplazar
+                # una coincidencia exacta del channel ID.
                 ids = []
-                if tvg_id:
-                    ids.append(tvg_id)
-                if url_id and url_id not in ids:
+                if url_id:
                     ids.append(url_id)
+                if tvg_id and tvg_id not in ids:
+                    ids.append(tvg_id)
 
                 for cid in ids:
                     # LATAM aparece primero y gana en el catálogo global.
                     por_id.setdefault(cid, canal)
                     por_region[region].setdefault(cid, canal)
                 if nombre:
-                    por_nombre.setdefault(nombre, canal)
+                    # Indexar también nombres normalizados (quita sufijos de
+                    # proveedor/opción), sin aceptar colisiones entre canales
+                    # con identidades distintas.
+                    claves_nombre = {nombre, normalizar_nombre_canal(canal.get("nombre", ""))}
+                    identidad = url_id or tvg_id or url
+                    for clave in claves_nombre - {""}:
+                        anterior = por_nombre.get(clave)
+                        if clave not in nombres_ambiguos:
+                            if anterior is None:
+                                por_nombre[clave] = canal
+                            else:
+                                anterior_id = extraer_pluto_id(anterior.get("url", ""))
+                                anterior_tvg = re.search(r'tvg-id="([^"]+)"', anterior.get("extinf", ""), re.I)
+                                anterior_identidad = anterior_id or (anterior_tvg.group(1).strip().lower() if anterior_tvg else "") or anterior.get("url", "")
+                                if anterior_identidad != identidad:
+                                    por_nombre.pop(clave, None)
+                                    nombres_ambiguos.add(clave)
         except Exception as e:
             errores += 1
             print(f"  -> No se pudo cargar Pluto propio: {fuente} :: {e}")
@@ -1253,11 +1271,13 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         tvg_id = m_id.group(1).strip().lower() if m_id else ""
         url_id = extraer_pluto_id(url)
+        # La URL contiene el channel ID real; tvg-id puede ser un alias EPG.
+        # Priorizar la URL evita renovar con otro canal cuando un alias colisiona.
         ids = []
-        if tvg_id:
-            ids.append(tvg_id)
-        if url_id and url_id not in ids:
+        if url_id:
             ids.append(url_id)
+        if tvg_id and tvg_id not in ids:
+            ids.append(tvg_id)
 
         country = re.search(r'(?:[?&])country=([A-Za-z]{2})', url, re.I)
         region = country.group(1).lower() if country else ""
@@ -1278,7 +1298,7 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
                 if reemplazo is not None:
                     break
         if reemplazo is None:
-            reemplazo = por_nombre.get(normalizar(nombre))
+            reemplazo = por_nombre.get(normalizar_nombre_canal(nombre))
 
         if reemplazo is not None and jwt_necesita_renovacion_en_url(reemplazo["url"].strip()):
             reemplazo = None
