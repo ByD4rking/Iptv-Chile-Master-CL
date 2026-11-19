@@ -111,5 +111,23 @@ class M3UCLResilienceTests(unittest.TestCase):
         )
 
 
+    def test_m3ucl_total_and_top_route_chile_channels_without_keyerror(self):
+        channel = {
+            "categoria": "General",
+            "nombre": "Canal Chile",
+            "url": "https://stream.example/chile.m3u8",
+        }
+        categories = ["CHILE TV"]
+        for source_url in (
+            "https://m3u.cl/lista/total.m3u",
+            "https://m3u.cl/lista/top.m3u",
+        ):
+            with self.subTest(source=source_url):
+                self.assertEqual(
+                    sc._destination(source_url, channel, categories),
+                    "CHILE TV",
+                )
+
+
 if __name__ == "__main__":
     unittest.main()
