@@ -208,9 +208,11 @@ def validar_logos_chile_tv(lineas, referencia):
     target = _norm("CHILE TV")
 
     candidates = defaultdict(set)
+    # La identidad histórica es global: un canal que se reclasifica a CHILE TV
+    # conserva exactamente su logo previo aunque antes estuviera en otra carpeta.
+    # La categoría sigue formando parte de la clave category_name, por lo que
+    # un nombre coincidente por sí solo no autoriza logos de otra categoría.
     for record in original_blocks:
-        if record["category_key"] != target:
-            continue
         metadata = tuple(_attr(record["lines"][0], name) for name in _ATTRS)
         for key in _identity_keys(record):
             candidates[key].add(metadata)
