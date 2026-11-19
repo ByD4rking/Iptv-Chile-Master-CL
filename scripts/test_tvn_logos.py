@@ -104,7 +104,11 @@ class TvnLogoTests(unittest.TestCase):
     def test_energeek_radio_keeps_its_exact_source_logo_in_chile_tv(self):
         logo = "https://cdn.m3u.cl/logo/1266_EnerGeek_Radio.png"
         reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
-        current = ["#EXTM3U"] + channel("EnerGeek Radio ✪ | CL", logo)
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 tvg-name="EnerGeek Radio ✪ | CL" tvg-logo="{logo}" logo="{logo}" group-title="CHILE TV",EnerGeek Radio ✪ | CL',
+            "https://example.com/energeek-radio.m3u8",
+        ]
 
         with tempfile.TemporaryDirectory() as folder:
             config = Path(folder) / "logos_autorizados.json"
@@ -116,6 +120,7 @@ class TvnLogoTests(unittest.TestCase):
                 result, stats = blindar_logos(current, reference)
                 entry = next(line for line in result if line.startswith("#EXTINF"))
                 self.assertIn('tvg-logo="' + logo + '"', entry)
+                self.assertIn('logo="' + logo + '"', entry)
                 self.assertEqual(stats["logos_autorizados"], 1)
                 self.assertTrue(validar_logos_chile_tv(result, reference))
 
