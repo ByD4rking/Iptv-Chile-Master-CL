@@ -22,6 +22,7 @@ from pathlib import Path
 import requests
 
 import alimentar_principal as ap
+from blindajes_principal import _buscar_logo_autorizado, _cargar_logos_autorizados
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -624,8 +625,21 @@ def main(args: argparse.Namespace) -> None:
         ap.normalizar_nombre_canal(nombre)
         for nombre in ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL
     }
+    # Los overrides manuales de config son autorizaciones explícitas del usuario.
+    # La auditoría debe reconocerlos por categoría + nombre, no rechazarlos como
+    # si fueran cambios automáticos de logos históricos.
+    logos_autorizados_config = _cargar_logos_autorizados()
     for item in after_playable:
         if ap.normalizar_nombre_canal(item.get("display_raw", "")) in logos_autorizados:
+            continue
+        if _buscar_logo_autorizado(
+            {
+                "name": item.get("display_raw", ""),
+                "tvg_name": item.get("tvg_name", ""),
+                "category_key": item.get("category", ""),
+            },
+            logos_autorizados_config,
+        ):
             continue
         previous = old_logo_by_url.get(item.get("url", ""), set())
         if len(previous) == 1:
