@@ -42,13 +42,21 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = [*FUENTES_PLUTO[:2], FUENTE_PLUTO_ALTERNATIVAS, *FUENTES_PLUTO[2:]]
+FUENTES_PLUTO_CATALOGO_EXTRA = _SOURCE_SETTINGS.get("pluto_catalog_sources", [])
+# Las fuentes extra son exclusivamente de renovación: no se importan ni se usan
+# para reclasificar canales, preservar así las categorías ya existentes.
+FUENTES_PLUTO_CATALOGO = [
+    *FUENTES_PLUTO[:2],
+    FUENTE_PLUTO_ALTERNATIVAS,
+    *FUENTES_PLUTO[2:],
+    *FUENTES_PLUTO_CATALOGO_EXTRA,
+]
 # Umbrales conservadores: una descarga truncada no debe provocar bajas masivas.
 PLUTO_CATALOGO_MINIMOS = {
     FUENTES_PLUTO[0]: 100,
     FUENTES_PLUTO[1]: 50,
     FUENTE_PLUTO_ALTERNATIVAS: 50,
-    **{fuente: 100 for fuente in FUENTES_PLUTO[2:]},
+    **{fuente: 100 for fuente in [*FUENTES_PLUTO[2:], *FUENTES_PLUTO_CATALOGO_EXTRA]},
 }
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
