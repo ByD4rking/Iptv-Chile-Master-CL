@@ -1082,7 +1082,7 @@ def obtener_ids_pluto_existentes(lineas):
 
 
 def cargar_catalogo_pluto_propio(session):
-    """Carga LATAM, ES y MX; LATAM/ES tienen prioridad y MX es fallback sin JWT."""
+    """Carga LATAM, ES, MX y BR; BR aporta cobertura regional para sus propios IDs."""
     por_id = {}
     por_nombre = {}
     nombres_ambiguos = set()
@@ -1206,7 +1206,8 @@ def jwt_necesita_renovacion_en_url(url, margen_segundos=6 * 60 * 60, ahora=None)
 
 def reemplazar_pluto_tercero_por_propio(lineas, session):
     """
-    Renueva las URLs Pluto con LATAM > ES > MX.
+    Renueva las URLs Pluto con prioridad global LATAM > ES > MX.
+    Para country=BR consulta primero el catálogo BR y luego usa el global.
     Si un JWT expiró y no existe en ningún catálogo completo, retira ese canal
     obsoleto. Si alguna fuente falla, conserva los canales sin correspondencia.
     Todo lo que no sea Pluto se conserva exactamente.
@@ -1282,16 +1283,21 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
         country = re.search(r'(?:[?&])country=([A-Za-z]{2})', url, re.I)
         region = country.group(1).lower() if country else ""
 
-        # La prioridad real es LATAM > ES > MX, no el parámetro country
-        # del JWT. Pluto LATAM suele emitir URLs con country=MX incluso para
-        # canales agregados desde Chile o Argentina; consultar primero por
-        # región convertía esas señales a la variante MX y podía degradar la
-        # reproducción respecto de la lista LATAM independiente.
+        # LATAM > ES > MX sigue siendo la prioridad global habitual.
+        # Excepción regional: las señales country=BR deben usar primero BR,
+        # porque Brasil no forma parte del catálogo LATAM y sus JWT antiguos
+        # quedaban sin renovar aunque pluto_br.m3u tuviera los mismos IDs.
         reemplazo = None
-        for cid in ids:
-            reemplazo = por_id.get(cid)
-            if reemplazo is not None:
-                break
+        if region == "br" and region in por_region:
+            for cid in ids:
+                reemplazo = por_region[region].get(cid)
+                if reemplazo is not None:
+                    break
+        if reemplazo is None:
+            for cid in ids:
+                reemplazo = por_id.get(cid)
+                if reemplazo is not None:
+                    break
         if reemplazo is None and region in por_region:
             for cid in ids:
                 reemplazo = por_region[region].get(cid)
