@@ -252,5 +252,41 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertEqual(final[1], extinf)
         self.assertEqual(stats["reemplazados"], 1)
 
+
+    def test_malformed_or_missing_exp_jwt_is_marked_for_renewal(self):
+        self.assertTrue(
+            jwt_necesita_renovacion_en_url(
+                "https://service-stitcher.pluto.tv/master.m3u8?jwt=not-a-jwt"
+            )
+        )
+        self.assertTrue(
+            jwt_necesita_renovacion_en_url(
+                "https://service-stitcher.pluto.tv/master.m3u8?jwt=header.e30.signature"
+            )
+        )
+
+    def test_expired_channel_is_not_deleted_when_catalog_match_has_expired_jwt(self):
+        old_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=old"
+        stale_catalog_url = "https://service-stitcher.pluto.tv/channel/0123456789abcdef01234567/master.m3u8?country=MX&jwt=stale"
+        extinf = '#EXTINF:-1 tvg-id="0123456789abcdef01234567" group-title="Anime",Canal Anime'
+        catalog = (
+            {"0123456789abcdef01234567": {"url": stale_catalog_url}},
+            {},
+            {"latam": {}, "es": {}, "mx": {"0123456789abcdef01234567": {"url": stale_catalog_url}}, "br": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \\
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=" in url), \\
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=True):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], old_url)
+        self.assertEqual(stats["expirados_eliminados"], 0)
+        self.assertEqual(stats["conservados_sin_reemplazo"], 1)
+
 if __name__ == "__main__":
     unittest.main()
