@@ -1092,6 +1092,7 @@ def cargar_catalogo_pluto_propio(session):
     for fuente in FUENTES_PLUTO_CATALOGO:
         try:
             r = session.get(fuente, timeout=30)
+            r.raise_for_status()
             canales = parsear_m3u(r.text)
             minimo = PLUTO_CATALOGO_MINIMOS.get(fuente, 1)
             if len(canales) < minimo:
