@@ -1091,7 +1091,7 @@ def cargar_catalogo_pluto_propio(session):
 
     for fuente in FUENTES_PLUTO_CATALOGO:
         try:
-            r = obtener_respuesta_fuente(session, fuente, timeout=30)
+            r = session.get(fuente, timeout=30)
             canales = parsear_m3u(r.text)
             minimo = PLUTO_CATALOGO_MINIMOS.get(fuente, 1)
             if len(canales) < minimo:
@@ -4459,8 +4459,7 @@ def main():
     for i, fuente in enumerate(FUENTES, 1):
         print(f"\n[FUENTE {i}/{len(FUENTES)}] {fuente}")
         try:
-            r = session.get(fuente, timeout=30)
-            r.raise_for_status()
+            r = obtener_respuesta_fuente(session, fuente, timeout=30)
             canales = parsear_m3u(r.text)
             if fuente == FUENTE_MAGMA:
                 canales, rechazados_calidad, no_verificados_calidad = _audit_magma_cinema(
