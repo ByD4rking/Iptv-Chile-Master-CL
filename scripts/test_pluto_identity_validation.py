@@ -134,5 +134,51 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertFalse(jwt_necesita_renovacion_en_url(url, margen_segundos=100, ahora=500))
 
 
+
+    def test_exact_url_channel_id_beats_conflicting_epg_alias(self):
+        old_url = "https://service.example/channel/0123456789abcdef01234567/master.m3u8?jwt=old"
+        expected_url = "https://service.example/channel/0123456789abcdef01234567/master.m3u8?jwt=latam"
+        wrong_url = "https://service.example/channel/abcdef0123456789abcdef01/master.m3u8?jwt=wrong"
+        extinf = '#EXTINF:-1 tvg-id="epg.alias" group-title="Infantiles",Canal'
+        catalog = (
+            {"epg.alias": {"url": wrong_url}, "0123456789abcdef01234567": {"url": expected_url}},
+            {},
+            {"latam": {}, "es": {}, "mx": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=old" in url), \
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=False):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], expected_url)
+        self.assertEqual(stats["reemplazados"], 1)
+
+    def test_name_fallback_uses_normalized_channel_name(self):
+        old_url = "https://service.example/channel/aaaaaaaaaaaaaaaaaaaaaaaa/master.m3u8?jwt=old"
+        expected_url = "https://service.example/channel/bbbbbbbbbbbbbbbbbbbbbbbb/master.m3u8?jwt=fresh"
+        extinf = '#EXTINF:-1 tvg-id="unmatched.alias" group-title="Infantiles",Canal Kids [Opción 2]'
+        catalog = (
+            {},
+            {"canalkids": {"url": expected_url}},
+            {"latam": {}, "es": {}, "mx": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url",
+                   side_effect=lambda url, *args, **kwargs: "jwt=old" in url), \
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=False):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], expected_url)
+        self.assertEqual(stats["reemplazados"], 1)
+
 if __name__ == "__main__":
     unittest.main()
