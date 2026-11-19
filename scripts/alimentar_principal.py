@@ -84,7 +84,6 @@ CATEGORIAS_PAIS = {
     "espana": "España",
     "costa rica": "Costa Rica",
     "republica dominicana": "República Dominicana",
-    "chile": "CHILE TV",
 }
 
 def normalizar(s):
@@ -596,7 +595,11 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     }
     for pais, nombres in aliases.items():
         if any(normalizar(alias) in texto for alias in nombres):
-            destino = buscar_categoria_existente(CATEGORIAS_PAIS[pais], categorias)
+            # Chile usa CHILE TV como destino, pero no se agrega al mapa general
+            # de países: esa colección también controla el orden final y CHILE TV
+            # debe permanecer siempre en la primera posición.
+            categoria_destino = "CHILE TV" if pais == "chile" else CATEGORIAS_PAIS[pais]
+            destino = buscar_categoria_existente(categoria_destino, categorias)
             if destino:
                 return destino
 
