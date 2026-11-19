@@ -84,6 +84,7 @@ CATEGORIAS_PAIS = {
     "espana": "España",
     "costa rica": "Costa Rica",
     "republica dominicana": "República Dominicana",
+    "chile": "CHILE TV",
 }
 
 def normalizar(s):
