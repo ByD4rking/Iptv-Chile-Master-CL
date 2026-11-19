@@ -147,6 +147,36 @@ class TvnLogoTests(unittest.TestCase):
                 self.assertEqual(stats["logos_autorizados"], 1)
                 self.assertTrue(validar_logos_chile_tv(result, reference))
 
+    def test_chile_tv_accepts_exact_historical_logo_when_channel_moves_from_another_category(self):
+        logo = "https://logos.example/24-horas-historico.png"
+        reference = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="24horas-cl" tvg-id="24horas.cl" tvg-name="24 horas tvn" tvg-logo="{logo}" logo="{logo}" group-title="Informativos",24 horas tvn',
+            "https://old.example/24horas.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="24horas-cl" tvg-id="24horas.cl" tvg-name="24 horas tvn" tvg-logo="{logo}" logo="{logo}" group-title="CHILE TV",24 horas tvn',
+            "https://new.example/24horas.m3u8",
+        ]
+        self.assertTrue(validar_logos_chile_tv(current, reference))
+
+    def test_chile_tv_still_rejects_changed_logo_after_category_migration(self):
+        old_logo = "https://logos.example/24-horas-historico.png"
+        wrong_logo = "https://logos.example/24-horas-no-autorizado.png"
+        reference = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="24horas-cl" tvg-id="24horas.cl" tvg-name="24 horas tvn" tvg-logo="{old_logo}" logo="{old_logo}" group-title="Informativos",24 horas tvn',
+            "https://old.example/24horas.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="24horas-cl" tvg-id="24horas.cl" tvg-name="24 horas tvn" tvg-logo="{wrong_logo}" logo="{wrong_logo}" group-title="CHILE TV",24 horas tvn',
+            "https://new.example/24horas.m3u8",
+        ]
+        with self.assertRaisesRegex(AssertionError, "Logo alterado en CHILE TV"):
+            validar_logos_chile_tv(current, reference)
+
     def test_chile_tv_validator_rejects_any_unapproved_logo_change(self):
         reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
         changed = ["#EXTM3U"] + channel("Mega", "https://logos.example/wrong.png")
