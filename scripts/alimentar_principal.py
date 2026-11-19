@@ -222,7 +222,7 @@ def buscar_categoria_existente(nombre, categorias):
 def encontrar_categoria_tematica(texto, categorias):
     texto = normalizar(texto)
     reglas = [
-        ("ANIME", [r"\banime\b"]),
+        ("ANIME", [r"\banime\b", r"\benergeek\s+fan\b"]),
         ("INFANTILES", [r"\b(infantil|infantiles|kids|kid|teen|nick)\b"]),
         ("DEPORTES", [r"\b(deporte|deportes|sport|sports|futbol|football)\b"]),
         ("MUSICA", [r"\b(musica|music)\b"]),
