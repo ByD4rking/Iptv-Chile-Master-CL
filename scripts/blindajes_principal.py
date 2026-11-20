@@ -157,8 +157,9 @@ def blindar_logos(lineas, referencia):
         metadata = tuple(_attr(record["lines"][0], name) for name in _ATTRS)
         for key in _identity_keys(record):
             for index, value in enumerate(metadata):
-                if value:
-                    candidates[key][index].add(value)
+                # El atributo vacío también es metadato histórico: no agregar
+                # logo="..." cuando la referencia solo tenía tvg-logo.
+                candidates[key][index].add(value)
 
     output = list(lineas)
     preserved = 0
@@ -187,7 +188,7 @@ def blindar_logos(lineas, referencia):
             # ambigua no autoriza a sustituir el valor actual de ese atributo.
             values = []
             for index, name in enumerate(_ATTRS):
-                selected = ""
+                selected = None
                 for key in keys:
                     candidates_for_key = candidates.get(key)
                     if not candidates_for_key:
@@ -196,7 +197,7 @@ def blindar_logos(lineas, referencia):
                     if len(options) == 1:
                         selected = next(iter(options))
                         break
-                values.append(selected or _attr(extinf, name))
+                values.append(_attr(extinf, name) if selected is None else selected)
         for name, value in zip(_ATTRS, values):
             before = _attr(extinf, name)
             extinf = _set_attr(extinf, name, value)
