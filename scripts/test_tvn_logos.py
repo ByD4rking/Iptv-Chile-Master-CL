@@ -55,6 +55,29 @@ class TvnLogoTests(unittest.TestCase):
         self.assertEqual(stats["logos_autorizados"], 2)
         self.assertTrue(validar_logos_tvn_autorizados(result))
 
+    def test_exact_url_nonempty_tvg_logo_wins_over_duplicate_empty_metadata(self):
+        logo = "https://proyectoesperanza.es/wp-content/uploads/2017/02/logos-logo-big.png"
+        url = "https://streams.example/logos-tv-kids.m3u8"
+        reference = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="logos-kids" tvg-id="logos.kids" tvg-name="Logos TV Kids (Latam)" tvg-logo="{logo}" group-title="Infantiles",Logos TV Kids (Latam)',
+            url,
+            '#EXTINF:-1 channelId="duplicate-empty" tvg-id="duplicate.empty" tvg-name="Otro registro" tvg-logo="" group-title="Infantiles",Otro registro',
+            url,
+            f'#EXTINF:-1 channelId="logos-kids" tvg-id="logos.kids" tvg-name="Logos TV Kids (Latam)" tvg-logo="https://i.imgur.com/Kr3U3Ub.png" group-title="Infantiles",Logos TV Kids (Latam)',
+            "https://streams.example/duplicate-identity.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 channelId="logos-kids" tvg-id="logos.kids" tvg-name="Logos TV Kids (Latam)" tvg-logo="https://i.imgur.com/Kr3U3Ub.png" logo="https://i.imgur.com/Kr3U3Ub.png" group-title="Infantiles",Logos TV Kids (Latam)',
+            url,
+        ]
+
+        result, _ = blindar_logos(current, reference)
+        entry = next(line for line in result if line.startswith("#EXTINF"))
+        self.assertIn(f'tvg-logo="{logo}"', entry)
+        self.assertNotIn('logo="', entry)
+
     def test_other_existing_logo_is_preserved(self):
         other_logo = "https://example.com/other.png"
         reference = ["#EXTM3U"] + channel("Canal de prueba", other_logo)
