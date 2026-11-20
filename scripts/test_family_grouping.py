@@ -297,6 +297,37 @@ class FamilyGroupingTests(unittest.TestCase):
         self.assertIn('tvg-logo="https://logos.example/permitido.png"', permitido)
         self.assertIn('tvg-logo="https://logos.example/bloqueado.png"', bloqueado)
 
+    def test_non_authorized_logo_survives_category_move_without_valid_tvg_id(self):
+        reference = [
+            '#EXTINF:-1 channelId="-1" tvg-name="Chinola TV (Rep. Dominicana)" tvg-logo="https://logos.example/chinola-original.png" group-title="Infantiles",Chinola TV (Rep. Dominicana)',
+            "https://old.example/chinola.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            '#EXTINF:-1 channelId="-1" tvg-name="Chinola TV (Rep. Dominicana)" tvg-logo="https://logos.example/wrong.png" group-title="Rep. Dominicana",Chinola TV (Rep. Dominicana)',
+            "https://new.example/chinola.m3u8",
+        ]
+        result, stats = ap.restaurar_logos_historicos(
+            current,
+            reference,
+            nombres_autorizados={"Canal Permitido"},
+            logos_bloqueados_por_identidad=ap.extraer_logos_bloqueados_por_identidad(reference),
+        )
+        entry = next(x for x in result if x.startswith("#EXTINF"))
+        self.assertIn('tvg-logo="https://logos.example/chinola-original.png"', entry)
+        self.assertNotIn("wrong.png", entry)
+        self.assertEqual(stats["protegidos"], 1)
+
+    def test_name_only_logo_protection_refuses_ambiguous_logos(self):
+        reference = [
+            '#EXTINF:-1 tvg-logo="https://logos.example/a.png" group-title="Pais A",Canal Compartido',
+            "https://a.example/live.m3u8",
+            '#EXTINF:-1 tvg-logo="https://logos.example/b.png" group-title="Pais B",Canal Compartido',
+            "https://b.example/live.m3u8",
+        ]
+        blocked = ap.extraer_logos_bloqueados_por_identidad(reference)
+        self.assertNotIn("canalcompartido", blocked.get("nombre", {}))
+
     def test_non_authorized_logo_survives_stream_url_rotation_by_tvg_id(self):
         reference = [
             '#EXTINF:-1 tvg-id="babyfirst.us" tvg-name="BabyFirst SD" tvg-logo="https://images.pluto.tv/babyfirst.png" group-title="Infantiles",BabyFirst SD',
