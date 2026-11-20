@@ -76,7 +76,7 @@ class TvnLogoTests(unittest.TestCase):
         result, _ = blindar_logos(current, reference)
         entry = next(line for line in result if line.startswith("#EXTINF"))
         self.assertIn(f'tvg-logo="{logo}"', entry)
-        self.assertNotIn('logo="', entry)
+        self.assertNotRegex(entry, r'(?<!tvg-)logo="')
 
     def test_other_existing_logo_is_preserved(self):
         other_logo = "https://example.com/other.png"
