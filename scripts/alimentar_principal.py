@@ -3891,6 +3891,7 @@ def extraer_logos_bloqueados_por_identidad(lineas):
     """Congela logos por tvg-id o, sin ID, por categoria/nombre unicos; soporta URL rotada."""
     por_id = defaultdict(set)
     por_categoria_nombre = defaultdict(set)
+    por_nombre = defaultdict(set)
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
@@ -3909,14 +3910,19 @@ def extraer_logos_bloqueados_por_identidad(lineas):
             cid = m_id.group(1).strip().lower() if m_id else ""
             categoria = normalizar(extraer_categoria(extinf))
             nombre = normalizar_nombre_canal(extraer_nombre(extinf))
-            if cid:
+            if cid and cid not in TVG_IDS_INVALIDOS:
                 por_id[cid].add(logo)
             if categoria and nombre:
                 por_categoria_nombre[(categoria, nombre)].add(logo)
+            if nombre:
+                por_nombre[nombre].add(logo)
         i = j
     return {
         "id": {k: next(iter(v)) for k, v in por_id.items() if len(v) == 1},
         "categoria_nombre": {k: next(iter(v)) for k, v in por_categoria_nombre.items() if len(v) == 1},
+        # Para cambios de categoría sin tvg-id útil, solo protege si el nombre
+        # identifica inequívocamente un único logo en la playlist original.
+        "nombre": {k: next(iter(v)) for k, v in por_nombre.items() if len(v) == 1},
     }
 
 
@@ -4035,6 +4041,8 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
                 logo_bloqueado = logos_bloqueados_por_identidad.get("id", {}).get(item["id"], "")
             if not logo_bloqueado and item["category"] and item["name"]:
                 logo_bloqueado = logos_bloqueados_por_identidad.get("categoria_nombre", {}).get((item["category"], item["name"]), "")
+            if not logo_bloqueado and item["name"]:
+                logo_bloqueado = logos_bloqueados_por_identidad.get("nombre", {}).get(item["name"], "")
             logo_actual = actual.group(1).strip() if actual else ""
             if logo_bloqueado and url_es_valida(logo_bloqueado) and logo_actual != logo_bloqueado:
                 salida[item["index"]] = poner_logo(extinf, logo_bloqueado)
