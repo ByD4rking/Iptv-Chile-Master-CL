@@ -5255,14 +5255,22 @@ def main():
         if extinf_ref.startswith("#EXTINF") and url_es_valida(url_ref):
             referencias_logos.extend((extinf_ref, url_ref))
     ruta_god = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
+    lineas_god = []
     if ruta_god.is_file():
-        referencias_logos.extend(
-            ruta_god.read_text(encoding="utf-8-sig", errors="replace").splitlines()
-        )
+        lineas_god = ruta_god.read_text(
+            encoding="utf-8-sig", errors="replace"
+        ).splitlines()
+        referencias_logos.extend(lineas_god)
+    # La identidad histórica de GOD tiene prioridad sobre la maestra de entrada:
+    # si la maestra ya recibió un logo incorrecto, no debe convertirlo en referencia.
+    logos_identidad_bloqueados = extraer_logos_bloqueados_por_identidad(lineas_iniciales)
+    logos_identidad_bloqueados.update(
+        extraer_logos_bloqueados_por_identidad(lineas_god)
+    )
     lineas, logos_restaurados = restaurar_logos_historicos(
         lineas, referencias_logos, pluto_por_id, pluto_por_nombre, logos_historicos,
         logos_bloqueados_por_url=extraer_logos_bloqueados_por_url(lineas_iniciales),
-        logos_bloqueados_por_identidad=extraer_logos_bloqueados_por_identidad(lineas_iniciales),
+        logos_bloqueados_por_identidad=logos_identidad_bloqueados,
         nombres_autorizados=NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL,
         logos_autorizados_por_nombre=LOGOS_AUTORIZADOS_PRINCIPAL,
     )
