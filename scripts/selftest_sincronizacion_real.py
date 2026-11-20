@@ -200,18 +200,20 @@ def identity_key(item: dict, name_to_ids: dict[str, set[str]]) -> str:
     valid_id = channel_id if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"} else ""
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
+    if valid_id:
+        # Un tvg-id válido identifica una señal concreta incluso cuando el
+        # mismo nombre visible agrupa otras señales (p. ej. Canal 10 AR/CR).
+        return "id:" + valid_id
     mapped_ids = name_to_ids.get(name_key, set()) if name_key else set()
     if len(mapped_ids) == 1:
         return "id:" + next(iter(mapped_ids))
     if len(mapped_ids) > 1 and name_key:
-        # El mismo nombre puede representar SD/HD con IDs distintos. Si la
-        # URL coincide, conservar esa identidad evita falsos cambios de orden.
+        # Sin ID explícito, una etiqueta compartida no permite inferir cuál
+        # señal es; en ese caso la URL sigue siendo la identidad conservadora.
         url = str(item.get("url") or "").strip()
         if url:
             return "url:" + url
         return "name:" + name_key
-    if valid_id:
-        return "id:" + valid_id
     return "name:" + name_key if name_key else "name:"
 def main(args: argparse.Namespace) -> None:
     if not PRINCIPAL.is_file() or PRINCIPAL.stat().st_size == 0:
