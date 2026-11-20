@@ -58,5 +58,10 @@ def load_principal_settings() -> dict:
         "special_sources": special,
         "sources": load_sources("principal"),
         "pluto_sources": [x["url"] for x in pluto],
+        "pluto_catalog_sources": [
+            str(x.get("url") or "").strip()
+            for x in (principal.get("pluto_catalog_sources") or [])
+            if str(x.get("url") or "").strip()
+        ],
         "legacy_pluto_sources": [x["url"] for x in principal.get("legacy_pluto_sources", [])],
     }

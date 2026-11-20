@@ -53,6 +53,7 @@ jobs:
             scripts/sincronizar_complementos.py \
             scripts/ejecutar_actualizacion_principal.py \
             scripts/test_sincronizar_complementos.py \
+            scripts/test_pluto_identity_validation.py \
             scripts/selftest_sincronizacion_real.py \
             scripts/calidad_magma_cine.py \
             scripts/test_calidad_magma_cine.py
@@ -62,6 +63,9 @@ jobs:
 
       - name: Ejecutar pruebas unitarias de sincronización
         run: python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
+
+      - name: Validar identidad y renovación de JWT Pluto
+        run: python -m unittest discover -s scripts -p 'test_pluto_identity_validation.py' -v
 
       - name: Probar agrupación de familias sin alterar el orden de carpetas
         run: python -m unittest discover -s scripts -p 'test_family_grouping.py' -v

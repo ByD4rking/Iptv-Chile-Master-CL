@@ -42,13 +42,21 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = [*FUENTES_PLUTO[:2], FUENTE_PLUTO_ALTERNATIVAS, *FUENTES_PLUTO[2:]]
+FUENTES_PLUTO_CATALOGO_EXTRA = _SOURCE_SETTINGS.get("pluto_catalog_sources", [])
+# Las fuentes extra son exclusivamente de renovación: no se importan ni se usan
+# para reclasificar canales, preservar así las categorías ya existentes.
+FUENTES_PLUTO_CATALOGO = [
+    *FUENTES_PLUTO[:2],
+    FUENTE_PLUTO_ALTERNATIVAS,
+    *FUENTES_PLUTO[2:],
+    *FUENTES_PLUTO_CATALOGO_EXTRA,
+]
 # Umbrales conservadores: una descarga truncada no debe provocar bajas masivas.
 PLUTO_CATALOGO_MINIMOS = {
     FUENTES_PLUTO[0]: 100,
     FUENTES_PLUTO[1]: 50,
     FUENTE_PLUTO_ALTERNATIVAS: 50,
-    **{fuente: 100 for fuente in FUENTES_PLUTO[2:]},
+    **{fuente: 100 for fuente in [*FUENTES_PLUTO[2:], *FUENTES_PLUTO_CATALOGO_EXTRA]},
 }
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
@@ -222,7 +230,7 @@ def buscar_categoria_existente(nombre, categorias):
 def encontrar_categoria_tematica(texto, categorias):
     texto = normalizar(texto)
     reglas = [
-        ("ANIME", [r"\banime\b"]),
+        ("ANIME", [r"\banime\b", r"\benergeek\s+fan\b"]),
         ("INFANTILES", [r"\b(infantil|infantiles|kids|kid|teen|nick)\b"]),
         ("DEPORTES", [r"\b(deporte|deportes|sport|sports|futbol|football)\b"]),
         ("MUSICA", [r"\b(musica|music)\b"]),
@@ -595,7 +603,11 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     }
     for pais, nombres in aliases.items():
         if any(normalizar(alias) in texto for alias in nombres):
-            destino = buscar_categoria_existente(CATEGORIAS_PAIS[pais], categorias)
+            # Chile usa CHILE TV como destino, pero no se agrega al mapa general
+            # de países: esa colección también controla el orden final y CHILE TV
+            # debe permanecer siempre en la primera posición.
+            categoria_destino = "CHILE TV" if pais == "chile" else CATEGORIAS_PAIS[pais]
+            destino = buscar_categoria_existente(categoria_destino, categorias)
             if destino:
                 return destino
 
@@ -894,6 +906,46 @@ def deduplicar_pluto_existente(lineas):
         i = j
 
     return salida, eliminados
+
+def deduplicar_urls_exactas(lineas):
+    """Elimina bloques repetidos por URL exacta, conservando la primera aparición.
+
+    No compara nombres, IDs, logos ni categorías: solo evita que una misma
+    URL de reproducción quede publicada más de una vez. Conserva íntegro el
+    primer bloque y su posición histórica, incluidos sus metadatos y opciones.
+    """
+    salida = []
+    urls_vistas = set()
+    eliminados = 0
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+
+        bloque = [lineas[i]]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            bloque.append(lineas[j])
+            j += 1
+
+        url = lineas[j].strip() if j < len(lineas) and url_es_valida(lineas[j].strip()) else ""
+        if url:
+            bloque.append(lineas[j])
+            j += 1
+            if url in urls_vistas:
+                eliminados += 1
+                i = j
+                continue
+            urls_vistas.add(url)
+
+        salida.extend(bloque)
+        i = j
+
+    return salida, eliminados
+
 
 def deduplicar_pluto_por_prioridad(lineas, canales_por_id):
     """
@@ -3839,6 +3891,7 @@ def extraer_logos_bloqueados_por_identidad(lineas):
     """Congela logos por tvg-id o, sin ID, por categoria/nombre unicos; soporta URL rotada."""
     por_id = defaultdict(set)
     por_categoria_nombre = defaultdict(set)
+    por_nombre = defaultdict(set)
     i = 0
     while i < len(lineas):
         if not lineas[i].startswith("#EXTINF"):
@@ -3857,14 +3910,19 @@ def extraer_logos_bloqueados_por_identidad(lineas):
             cid = m_id.group(1).strip().lower() if m_id else ""
             categoria = normalizar(extraer_categoria(extinf))
             nombre = normalizar_nombre_canal(extraer_nombre(extinf))
-            if cid:
+            if cid and cid not in TVG_IDS_INVALIDOS:
                 por_id[cid].add(logo)
             if categoria and nombre:
                 por_categoria_nombre[(categoria, nombre)].add(logo)
+            if nombre:
+                por_nombre[nombre].add(logo)
         i = j
     return {
         "id": {k: next(iter(v)) for k, v in por_id.items() if len(v) == 1},
         "categoria_nombre": {k: next(iter(v)) for k, v in por_categoria_nombre.items() if len(v) == 1},
+        # Para cambios de categoría sin tvg-id útil, solo protege si el nombre
+        # identifica inequívocamente un único logo en la playlist original.
+        "nombre": {k: next(iter(v)) for k, v in por_nombre.items() if len(v) == 1},
     }
 
 
@@ -3983,6 +4041,8 @@ def restaurar_logos_historicos(lineas, referencia, pluto_por_id=None, pluto_por_
                 logo_bloqueado = logos_bloqueados_por_identidad.get("id", {}).get(item["id"], "")
             if not logo_bloqueado and item["category"] and item["name"]:
                 logo_bloqueado = logos_bloqueados_por_identidad.get("categoria_nombre", {}).get((item["category"], item["name"]), "")
+            if not logo_bloqueado and item["name"]:
+                logo_bloqueado = logos_bloqueados_por_identidad.get("nombre", {}).get(item["name"], "")
             logo_actual = actual.group(1).strip() if actual else ""
             if logo_bloqueado and url_es_valida(logo_bloqueado) and logo_actual != logo_bloqueado:
                 salida[item["index"]] = poner_logo(extinf, logo_bloqueado)
@@ -5195,14 +5255,22 @@ def main():
         if extinf_ref.startswith("#EXTINF") and url_es_valida(url_ref):
             referencias_logos.extend((extinf_ref, url_ref))
     ruta_god = BASE / "IPTV-CHILE-MAESTRA_GOD.m3u"
+    lineas_god = []
     if ruta_god.is_file():
-        referencias_logos.extend(
-            ruta_god.read_text(encoding="utf-8-sig", errors="replace").splitlines()
-        )
+        lineas_god = ruta_god.read_text(
+            encoding="utf-8-sig", errors="replace"
+        ).splitlines()
+        referencias_logos.extend(lineas_god)
+    # La identidad histórica de GOD tiene prioridad sobre la maestra de entrada:
+    # si la maestra ya recibió un logo incorrecto, no debe convertirlo en referencia.
+    logos_identidad_bloqueados = extraer_logos_bloqueados_por_identidad(lineas_iniciales)
+    logos_identidad_bloqueados.update(
+        extraer_logos_bloqueados_por_identidad(lineas_god)
+    )
     lineas, logos_restaurados = restaurar_logos_historicos(
         lineas, referencias_logos, pluto_por_id, pluto_por_nombre, logos_historicos,
         logos_bloqueados_por_url=extraer_logos_bloqueados_por_url(lineas_iniciales),
-        logos_bloqueados_por_identidad=extraer_logos_bloqueados_por_identidad(lineas_iniciales),
+        logos_bloqueados_por_identidad=logos_identidad_bloqueados,
         nombres_autorizados=NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL,
         logos_autorizados_por_nombre=LOGOS_AUTORIZADOS_PRINCIPAL,
     )

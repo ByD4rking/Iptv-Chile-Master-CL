@@ -25,6 +25,13 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         paths = [url.rsplit("/", 1)[-1] for url in principal["pluto_sources"]]
         self.assertEqual(paths, ["pluto_latam.m3u", "pluto_es.m3u", "pluto_mx.m3u"])
 
+    def test_brazil_catalog_is_refresh_only_and_not_an_import_source(self):
+        principal = load_principal_settings()
+        catalog_paths = [url.rsplit("/", 1)[-1] for url in principal["pluto_catalog_sources"]]
+        self.assertEqual(catalog_paths, ["pluto_br.m3u"])
+        self.assertNotIn(principal["pluto_catalog_sources"][0], principal["pluto_sources"])
+        self.assertEqual(ap.FUENTES_PLUTO_CATALOGO[-1], principal["pluto_catalog_sources"][0])
+
     def test_pluto_priority_dedup_preserves_distinct_urls_as_options(self):
         channel_id = "68a3a97fd8f7693ae3f8575f"
         base_url = (
@@ -63,10 +70,36 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         self.assertTrue(any("(OPCIÓN 2)" in name for name in names))
         self.assertTrue(any("(OPCIÓN 3)" in name for name in names))
 
+    def test_deduplicar_urls_exactas_conserva_primer_bloque_y_metadatos(self):
+        url_radio = "https://cl-2.backend.energeek.cl/bkp/egradioweb/index.m3u8?token=test"
+        url_retro = "https://cl-2.backend.energeek.cl/bkp/egretroweb/index.m3u8?token=test"
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-name="EnerGeek Radio" tvg-logo="https://cdn.example/radio.png" group-title="CHILE TV",EnerGeek Radio',
+            "#EXTVLCOPT:http-reconnect=true",
+            url_radio,
+            '#EXTINF:-1 tvg-name="Radio duplicada" group-title="Musica",Radio duplicada',
+            url_radio,
+            '#EXTINF:-1 tvg-name="EnerGeek Retro" tvg-logo="https://cdn.example/retro.png" group-title="CHILE TV",EnerGeek Retro',
+            url_retro,
+            '#EXTINF:-1 tvg-name="Retro duplicado" group-title="Series",Retro duplicado',
+            url_retro,
+        ]
+        result, removed = ap.deduplicar_urls_exactas(lines)
+        joined = "\n".join(result)
+        self.assertEqual(removed, 2)
+        self.assertEqual(joined.count(url_radio), 1)
+        self.assertEqual(joined.count(url_retro), 1)
+        self.assertIn('tvg-logo="https://cdn.example/radio.png"', joined)
+        self.assertIn('tvg-logo="https://cdn.example/retro.png"', joined)
+        self.assertIn("#EXTVLCOPT:http-reconnect=true", joined)
+        self.assertNotIn("Radio duplicada", joined)
+        self.assertNotIn("Retro duplicado", joined)
+
     def test_stable_pluto_mx_is_used_as_fallback_catalog(self):
         self.assertEqual(
             ap.FUENTES_PLUTO_CATALOGO,
-            [*ap.FUENTES_PLUTO[:2], ap.FUENTE_PLUTO_ALTERNATIVAS, *ap.FUENTES_PLUTO[2:]],
+            [*ap.FUENTES_PLUTO[:2], ap.FUENTE_PLUTO_ALTERNATIVAS, *ap.FUENTES_PLUTO[2:], *ap.FUENTES_PLUTO_CATALOGO_EXTRA],
         )
 
     def test_pluto_refresh_prefers_stable_mx_and_removes_only_expired_orphans(self):
@@ -109,9 +142,10 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         orphan_id = "dddddddddddddddddddddddd"
         live_orphan_id = "eeeeeeeeeeeeeeeeeeeeeeee"
         internal_only_id = "ffffffffffffffffffffffff"
+        br_id = "999999999999999999999999"
 
         sources = list(ap.FUENTES_PLUTO_CATALOGO)
-        self.assertEqual(len(sources), 4)
+        self.assertEqual(len(sources), 5)
         contents = {
             sources[0]: "#EXTM3U\n" + m3u(latam_id, "Canal LATAM", f"https://jmp2.uk/plu-{latam_id}.m3u8"),
             sources[1]: "#EXTM3U\n" + m3u(es_id, "Canal ES", f"https://jmp2.uk/plu-{es_id}.m3u8"),
@@ -123,6 +157,8 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
                 + m3u(mx_id, "Canal MX tokenizado", token_url(mx_id, 1))
                 + m3u(internal_only_id, "Canal MX solo interno", token_url(internal_only_id, 1))
             ),
+            # Brasil se consulta solo para renovar IDs ya presentes; no alimenta altas.
+            sources[4]: "#EXTM3U\n" + m3u(br_id, "Canal Brasil", f"https://jmp2.uk/plu-{br_id}.m3u8"),
         }
 
         lineas = ["#EXTM3U"]
@@ -135,6 +171,8 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             token_url(orphan_id, 1, "MX"),
             f'#EXTINF:-1 tvg-id="{internal_only_id}" group-title="Pluto",Canal MX solo interno',
             token_url(internal_only_id, 1, "MX"),
+            f'#EXTINF:-1 tvg-id="{br_id}" group-title="Brasil",Canal Brasil',
+            token_url(br_id, 1, "BR"),
             f'#EXTINF:-1 tvg-id="{live_orphan_id}" group-title="Pluto",Canal temporal aún vigente',
             token_url(live_orphan_id, 4102444800, "MX"),
             '#EXTINF:-1 tvg-id="no-pluto" group-title="Test",Canal no Pluto',
@@ -152,6 +190,7 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
             self.assertEqual(stats["expirados_eliminados"], 2)
             self.assertIn(f"https://jmp2.uk/plu-{latam_id}.m3u8", joined)
             self.assertIn(f"https://jmp2.uk/plu-{mx_id}.m3u8", joined)
+            self.assertIn(f"https://jmp2.uk/plu-{br_id}.m3u8", joined)
             self.assertNotIn("Canal retirado", joined)
             self.assertNotIn("Canal MX solo interno", joined)
             self.assertIn("Canal temporal aún vigente", joined)

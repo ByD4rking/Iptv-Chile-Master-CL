@@ -169,7 +169,10 @@ def main():
         pluto_por_id,
         pluto_por_nombre,
         logos_bloqueados_por_url=alimentador.extraer_logos_bloqueados_por_url(original_lines),
-        logos_bloqueados_por_identidad=alimentador.extraer_logos_bloqueados_por_identidad(original_lines),
+        # La identidad histórica se toma de GOD (solo lectura), no de la
+        # maestra corriente: esta puede traer ya un logo sustituido por error.
+        # Así se conserva el logo histórico cuando cambian URL/categoría.
+        logos_bloqueados_por_identidad=alimentador.extraer_logos_bloqueados_por_identidad(god_lines),
         nombres_autorizados=alimentador.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL,
         logos_autorizados_por_nombre=alimentador.LOGOS_AUTORIZADOS_PRINCIPAL,
     )
@@ -232,9 +235,16 @@ def main():
     # respeten la secuencia canónica después de todas las reconciliaciones.
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
-    # Última reconciliación de Pluto después de todas las restauraciones,
-    # agrupaciones y sincronizaciones complementarias. Evita que una etapa
-    # posterior vuelva a introducir JWT antiguos en la maestra.
+    # Blindaje terminal de Anime: se restaura íntegro desde la maestra de
+    # entrada antes de renovar Pluto. Restaurarlo después de la renovación
+    # reintroducía los 14 JWT históricos vencidos de esa categoría.
+    ordered_lines = restaurar_categoria_bloqueada(
+        ordered_lines, original_lines, "Anime"
+    )
+
+    # Última reconciliación de Pluto DESPUÉS de todas las restauraciones,
+    # agrupaciones y sincronizaciones complementarias. Así ningún bloque
+    # histórico (incluido Anime) puede reintroducir JWT antiguos.
     ordered_lines, pluto_renovacion_final = alimentador.reemplazar_pluto_tercero_por_propio(
         ordered_lines,
         session,
@@ -247,12 +257,9 @@ def main():
         f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas."
     )
 
-    # Blindajes terminales: Anime se restaura íntegro desde la maestra de entrada;
-    # todos los logos existentes se congelan por identidad; el orden global de
-    # carpetas se aplica al final para que ninguna sincronización lo deshaga.
-    ordered_lines = restaurar_categoria_bloqueada(
-        ordered_lines, original_lines, "Anime"
-    )
+    # Blindajes terminales: todos los logos existentes se congelan por identidad;
+    # el orden global de carpetas se aplica al final para que ninguna
+    # sincronización lo deshaga.
     ordered_lines, blindaje_logos_stats = blindar_logos(
         ordered_lines, original_lines
     )
@@ -303,6 +310,12 @@ def main():
         },
         ids_pluto_omitidos=ids_pluto_orden,
     )
+
+    # Última barrera: algunas fuentes heredadas repiten la misma URL bajo
+    # distintos nombres (EnerGeek Radio/Retro). Conservamos el primer bloque
+    # completo, sin tocar logos, nombres ni URLs únicas.
+    ordered_lines, urls_duplicadas_eliminadas = alimentador.deduplicar_urls_exactas(ordered_lines)
+    print(f"[ORQUESTADOR] URLs exactas duplicadas eliminadas: {urls_duplicadas_eliminadas}")
 
     _trace_pitufos_mx("antes de escribir", ordered_lines)
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")

@@ -143,25 +143,23 @@ def _identity_keys(record):
 
 
 def blindar_logos(lineas, referencia):
-    """Conserva los dos atributos de logo de cada canal existente.
+    """Conserva cada atributo de logo existente por identidad, sin mezclar metadatos.
 
-    La identidad se resuelve por URL, tvg-id, categoría/nombre, tvg-name y
-    nombre. Los logos de canales nuevos se retiran: no se heredan desde fuentes.
+    Cada atributo (tvg-logo y logo) se resuelve por separado. Así, una diferencia
+    secundaria en el atributo heredado no invalida una referencia tvg-logo única.
+    Los logos de canales nuevos se retiran: no se heredan desde fuentes.
     """
     _, original_blocks = _split_blocks(referencia)
     _, current_blocks = _split_blocks(lineas)
 
-    candidates = defaultdict(set)
+    candidates = defaultdict(lambda: [set() for _ in _ATTRS])
     for record in original_blocks:
         metadata = tuple(_attr(record["lines"][0], name) for name in _ATTRS)
         for key in _identity_keys(record):
-            candidates[key].add(metadata)
-
-    frozen = {
-        key: next(iter(values))
-        for key, values in candidates.items()
-        if len(values) == 1
-    }
+            for index, value in enumerate(metadata):
+                # El atributo vacío también es metadato histórico: no agregar
+                # logo="..." cuando la referencia solo tenía tvg-logo.
+                candidates[key][index].add(value)
 
     output = list(lineas)
     preserved = 0
@@ -170,26 +168,50 @@ def blindar_logos(lineas, referencia):
     authorized = _cargar_logos_autorizados()
     authorized_count = 0
     for record in current_blocks:
-        match = next((frozen[key] for key in _identity_keys(record) if key in frozen), None)
+        keys = _identity_keys(record)
+        matched = next((key for key in keys if key in candidates), None)
         extinf = output[record["start"]]
         override = _buscar_logo_autorizado(record, authorized)
         if override:
-            # Una autorización manual explícita prevalece sobre el logo histórico.
-            previous_legacy = match[1] if match else ""
-            values = (override, override if previous_legacy else "")
+            previous_legacy = _attr(extinf, _ATTRS[1]) if len(_ATTRS) > 1 else ""
+            values = [override]
+            if len(_ATTRS) > 1:
+                values.append(override if previous_legacy else "")
             authorized_count += 1
-        elif match is None:
-            values = ("", "")
+        elif matched is None:
+            values = ["" for _ in _ATTRS]
             unmatched.append(record["name"] or "(sin nombre)")
             if any(_attr(extinf, name) for name in _ATTRS):
                 stripped_new += 1
         else:
-            values = match
-            if any(_attr(extinf, name) != value for name, value in zip(_ATTRS, values)):
-                preserved += 1
+            # Congelar cada atributo de forma independiente. Una referencia
+            # ambigua no autoriza a sustituir el valor actual de ese atributo.
+            values = []
+            for index, name in enumerate(_ATTRS):
+                selected = None
+                for key in keys:
+                    candidates_for_key = candidates.get(key)
+                    if not candidates_for_key:
+                        continue
+                    options = candidates_for_key[index]
+                    # Para tvg-logo, una URL exacta con un único logo válido
+                    # prevalece sobre duplicados del mismo URL cuyo atributo
+                    # quedó vacío. Así un registro vacío no vuelve ambigua una
+                    # referencia visual verificable.
+                    if index == 0:
+                        non_empty = {value for value in options if value}
+                        if len(non_empty) == 1:
+                            selected = next(iter(non_empty))
+                            break
+                    if len(options) == 1:
+                        selected = next(iter(options))
+                        break
+                values.append(_attr(extinf, name) if selected is None else selected)
         for name, value in zip(_ATTRS, values):
+            before = _attr(extinf, name)
             extinf = _set_attr(extinf, name, value)
-        # Se usa el índice original del bloque: puede haber EXTINF idénticos.
+            if before != value:
+                preserved += 1
         output[record["start"]] = extinf
 
     return output, {
@@ -199,8 +221,6 @@ def blindar_logos(lineas, referencia):
         "canales_sin_identidad_historica": len(unmatched),
     }
 
-
-
 def validar_logos_chile_tv(lineas, referencia):
     """Falla si un logo histórico de CHILE TV cambia o si una señal nueva trae uno no autorizado."""
     _, original_blocks = _split_blocks(referencia)
@@ -208,9 +228,11 @@ def validar_logos_chile_tv(lineas, referencia):
     target = _norm("CHILE TV")
 
     candidates = defaultdict(set)
+    # La identidad histórica es global: un canal que se reclasifica a CHILE TV
+    # conserva exactamente su logo previo aunque antes estuviera en otra carpeta.
+    # La categoría sigue formando parte de la clave category_name, por lo que
+    # un nombre coincidente por sí solo no autoriza logos de otra categoría.
     for record in original_blocks:
-        if record["category_key"] != target:
-            continue
         metadata = tuple(_attr(record["lines"][0], name) for name in _ATTRS)
         for key in _identity_keys(record):
             candidates[key].add(metadata)
@@ -230,11 +252,17 @@ def validar_logos_chile_tv(lineas, referencia):
         override = _buscar_logo_autorizado(record, authorized)
         if override:
             expected = (override, override if match and match[1] else "")
-            if actual != expected:
+            allowed = {expected}
+            # Una señal nueva puede llegar con ambos atributos de logo iguales.
+            # Si el segundo atributo coincide exactamente con el override
+            # explícito, se conserva; cualquier URL distinta sigue bloqueada.
+            if not match or not match[1]:
+                allowed.add((override, override))
+            if actual not in allowed:
                 name = record["name"] or record["tvg_name"] or "(sin nombre)"
                 raise AssertionError(
                     "Logo manual autorizado incorrecto en CHILE TV: " + name
-                    + "; esperado=" + repr(expected) + ", actual=" + repr(actual)
+                    + "; esperado=" + repr(sorted(allowed)) + ", actual=" + repr(actual)
                 )
             continue
         if match is None:

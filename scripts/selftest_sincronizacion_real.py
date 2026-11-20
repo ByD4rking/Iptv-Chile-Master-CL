@@ -200,20 +200,21 @@ def identity_key(item: dict, name_to_ids: dict[str, set[str]]) -> str:
     valid_id = channel_id if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"} else ""
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
+    if valid_id:
+        # Un tvg-id válido identifica una señal concreta incluso cuando el
+        # mismo nombre visible agrupa otras señales (p. ej. Canal 10 AR/CR).
+        return "id:" + valid_id
     mapped_ids = name_to_ids.get(name_key, set()) if name_key else set()
     if len(mapped_ids) == 1:
         return "id:" + next(iter(mapped_ids))
     if len(mapped_ids) > 1 and name_key:
-        # El mismo nombre puede representar SD/HD con IDs distintos. Si la
-        # URL coincide, conservar esa identidad evita falsos cambios de orden.
+        # Sin ID explícito, una etiqueta compartida no permite inferir cuál
+        # señal es; en ese caso la URL sigue siendo la identidad conservadora.
         url = str(item.get("url") or "").strip()
         if url:
             return "url:" + url
         return "name:" + name_key
-    if valid_id:
-        return "id:" + valid_id
     return "name:" + name_key if name_key else "name:"
-
 def main(args: argparse.Namespace) -> None:
     if not PRINCIPAL.is_file() or PRINCIPAL.stat().st_size == 0:
         raise RuntimeError("No existe la playlist principal para la prueba end-to-end.")
@@ -554,6 +555,8 @@ def main(args: argparse.Namespace) -> None:
                     f"Se perdió una alternativa existente: {key} en {category}; "
                     f"antes={count}, después_total={global_after_counts.get(key, 0)}; "
                     f"URLs anteriores aún presentes={bool(old_urls.intersection(global_after_urls))}; "
+                    f"canal_anterior={[(x.get('display_raw'), x.get('id'), x.get('tvg_name'), x.get('url')) for x in before_kept if identity_key(x, name_to_ids) == key and norm(x.get('category')) == category][:5]!r}; "
+                    f"canales_finales_nombre_similar={[(x.get('display_raw'), x.get('id'), x.get('tvg_name'), x.get('url'), x.get('category')) for x in after_playable if channel_name_key(x.get('display_raw') or x.get('name') or '') == channel_name_key(next((y.get('display_raw') for y in before_kept if identity_key(y, name_to_ids) == key and norm(y.get('category')) == category), ''))][:8]!r}; "
                     f"resumen={result!r}"
                 )
 
@@ -625,7 +628,11 @@ def main(args: argparse.Namespace) -> None:
         for nombre in ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL
     }
     for item in after_playable:
-        if ap.normalizar_nombre_canal(item.get("display_raw", "")) in logos_autorizados:
+        nombre_logo = ap.normalizar_nombre_canal(item.get("display_raw", ""))
+        # Chinola TV conserva el logo que ya trae la maestra; no se fuerza la referencia histórica.
+        if nombre_logo == ap.normalizar_nombre_canal("Chinola TV (Rep. Dominicana)"):
+            continue
+        if nombre_logo in logos_autorizados:
             continue
         previous = old_logo_by_url.get(item.get("url", ""), set())
         if len(previous) == 1:

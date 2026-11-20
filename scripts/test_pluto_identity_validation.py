@@ -18,6 +18,15 @@ from alimentar_principal import (
 
 
 class PlutoIdentityValidationTests(unittest.TestCase):
+    def test_anime_restore_runs_before_final_pluto_jwt_renewal(self):
+        orchestrator = (ROOT / "scripts" / "ejecutar_actualizacion_principal.py").read_text(encoding="utf-8")
+        anime_restore = orchestrator.rfind("ordered_lines = restaurar_categoria_bloqueada(")
+        final_pluto_refresh = orchestrator.rfind(
+            "ordered_lines, pluto_renovacion_final = alimentador.reemplazar_pluto_tercero_por_propio("
+        )
+        self.assertGreaterEqual(anime_restore, 0)
+        self.assertGreater(final_pluto_refresh, anime_restore)
+
     def test_tvg_id_and_url_channel_id_are_both_retained_as_aliases(self):
         extinf = '#EXTINF:-1 tvg-id="epg.alias" group-title="Anime",Canal'
         url = "https://service.example/vod/channel/0123456789abcdef01234567/master.m3u8"
