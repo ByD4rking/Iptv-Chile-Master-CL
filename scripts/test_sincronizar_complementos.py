@@ -1179,10 +1179,10 @@ class AlternativeGroupingRegressionTests(unittest.TestCase):
         self.assertEqual(ap.extraer_nombre(output[extinf_index]), "ESPN 2 HD")
         self.assertLess(main_index, output.index("https://sports.example/espn3.m3u8"))
 
-    def test_identity_audit_uses_url_when_visible_name_has_multiple_ids(self):
+    def test_identity_audit_prefers_explicit_id_when_visible_name_has_multiple_ids(self):
         name_to_ids = {"espn2": {"344", "3746"}, "espn2hd": {"344", "3746"}}
-        original = {"id": "", "name": "ESPN 2", "tvg_name": "ESPN 2", "url": "https://sports.example/espn2.m3u8"}
-        updated = {"id": "3746", "name": "ESPN 2 HD", "tvg_name": "ESPN 2 HD", "url": "https://sports.example/espn2.m3u8"}
+        original = {"id": "3746", "name": "ESPN 2", "tvg_name": "ESPN 2", "url": "https://sports.example/espn2.m3u8"}
+        updated = {"id": "3746", "name": "ESPN 2 HD", "tvg_name": "ESPN 2 HD", "url": "https://sports.example/espn2-new.m3u8"}
         alternative = {"id": "344", "name": "ESPN 2", "tvg_name": "ESPN 2", "url": "https://sports.example/espn2-alt.m3u8"}
         self.assertEqual(identity_key(original, name_to_ids), identity_key(updated, name_to_ids))
         self.assertNotEqual(identity_key(original, name_to_ids), identity_key(alternative, name_to_ids))
