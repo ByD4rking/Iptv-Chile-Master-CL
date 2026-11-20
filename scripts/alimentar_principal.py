@@ -907,6 +907,46 @@ def deduplicar_pluto_existente(lineas):
 
     return salida, eliminados
 
+def deduplicar_urls_exactas(lineas):
+    """Elimina bloques repetidos por URL exacta, conservando la primera aparición.
+
+    No compara nombres, IDs, logos ni categorías: solo evita que una misma
+    URL de reproducción quede publicada más de una vez. Conserva íntegro el
+    primer bloque y su posición histórica, incluidos sus metadatos y opciones.
+    """
+    salida = []
+    urls_vistas = set()
+    eliminados = 0
+    i = 0
+
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            salida.append(lineas[i])
+            i += 1
+            continue
+
+        bloque = [lineas[i]]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            bloque.append(lineas[j])
+            j += 1
+
+        url = lineas[j].strip() if j < len(lineas) and url_es_valida(lineas[j].strip()) else ""
+        if url:
+            bloque.append(lineas[j])
+            j += 1
+            if url in urls_vistas:
+                eliminados += 1
+                i = j
+                continue
+            urls_vistas.add(url)
+
+        salida.extend(bloque)
+        i = j
+
+    return salida, eliminados
+
+
 def deduplicar_pluto_por_prioridad(lineas, canales_por_id):
     """
     Consolida bloques del mismo channel ID sin perder URLs alternativas.
