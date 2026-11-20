@@ -194,6 +194,15 @@ def blindar_logos(lineas, referencia):
                     if not candidates_for_key:
                         continue
                     options = candidates_for_key[index]
+                    # Para tvg-logo, una URL exacta con un único logo válido
+                    # prevalece sobre duplicados del mismo URL cuyo atributo
+                    # quedó vacío. Así un registro vacío no vuelve ambigua una
+                    # referencia visual verificable.
+                    if index == 0:
+                        non_empty = {value for value in options if value}
+                        if len(non_empty) == 1:
+                            selected = next(iter(non_empty))
+                            break
                     if len(options) == 1:
                         selected = next(iter(options))
                         break
