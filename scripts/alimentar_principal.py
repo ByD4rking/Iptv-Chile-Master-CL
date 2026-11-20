@@ -141,8 +141,6 @@ NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL = {
     "MAX Anime (1080p)",
     "Primire Anime",
     "TL+ (El Salvador)",
-    # Restauración puntual de la referencia histórica verificada de Chinola TV.
-    "Chinola TV (Rep. Dominicana)",
 }
 LOGOS_AUTORIZADOS_PRINCIPAL = {
     "TVN HD (LOCAL)": "https://i.imgur.com/3FKZHL4.png",
@@ -152,7 +150,6 @@ LOGOS_AUTORIZADOS_PRINCIPAL = {
     "Radio Rancagua | CL": "https://i.imgur.com/ZzUc6je.png",
     "MAX Anime (1080p)": "https://upload.wikimedia.org/wikipedia/commons/f/fa/Max_Anime_Logo.png",
     "TL+ (El Salvador)": "https://kift.live/media/avatars/27ffc836-28d5-457b-9ebe-f65b0c2f5fb9/091fff8e-0e9e-46f9-b5ff-50cf24ce481b.png",
-    "Chinola TV (Rep. Dominicana)": "https://hostlagarto.com/streaming/wp-content/uploads/2020/07/Chinola-TV-logo-300.png",
 }
 
 
