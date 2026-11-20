@@ -193,25 +193,28 @@ def protected_hashes() -> dict[str, str]:
 
 
 def identity_key(item: dict, name_to_ids: dict[str, set[str]]) -> str:
-    # Un canal puede tener una entrada sin ID y otra con ID válido. Si el nombre
-    # tiene un único ID asociado en ambas versiones, ambas entradas representan
-    # la misma identidad lógica y no deben contarse como una pérdida.
+    # El tvg-id explícito del bloque es la identidad más fuerte. No debe
+    # degradarse a URL solo porque otros canales compartan el mismo nombre
+    # (por ejemplo, variantes SD/HD o señales regionales).
     channel_id = norm(item.get("id", ""))
     valid_id = channel_id if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"} else ""
+    if valid_id:
+        return "id:" + valid_id
+
+    # Si falta tvg-id, un único ID asociado al nombre permite reconciliar
+    # versiones con metadatos incompletos.
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
     mapped_ids = name_to_ids.get(name_key, set()) if name_key else set()
     if len(mapped_ids) == 1:
         return "id:" + next(iter(mapped_ids))
     if len(mapped_ids) > 1 and name_key:
-        # El mismo nombre puede representar SD/HD con IDs distintos. Si la
-        # URL coincide, conservar esa identidad evita falsos cambios de orden.
+        # Sin ID explícito y con varios IDs posibles, la URL evita confundir
+        # señales distintas que comparten etiqueta.
         url = str(item.get("url") or "").strip()
         if url:
             return "url:" + url
         return "name:" + name_key
-    if valid_id:
-        return "id:" + valid_id
     return "name:" + name_key if name_key else "name:"
 
 def main(args: argparse.Namespace) -> None:
