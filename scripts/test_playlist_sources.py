@@ -70,6 +70,32 @@ class PlaylistSourceRegistryTests(unittest.TestCase):
         self.assertTrue(any("(OPCIÓN 2)" in name for name in names))
         self.assertTrue(any("(OPCIÓN 3)" in name for name in names))
 
+    def test_deduplicar_urls_exactas_conserva_primer_bloque_y_metadatos(self):
+        url_radio = "https://cl-2.backend.energeek.cl/bkp/egradioweb/index.m3u8?token=test"
+        url_retro = "https://cl-2.backend.energeek.cl/bkp/egretroweb/index.m3u8?token=test"
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-name="EnerGeek Radio" tvg-logo="https://cdn.example/radio.png" group-title="CHILE TV",EnerGeek Radio',
+            "#EXTVLCOPT:http-reconnect=true",
+            url_radio,
+            '#EXTINF:-1 tvg-name="Radio duplicada" group-title="Musica",Radio duplicada',
+            url_radio,
+            '#EXTINF:-1 tvg-name="EnerGeek Retro" tvg-logo="https://cdn.example/retro.png" group-title="CHILE TV",EnerGeek Retro',
+            url_retro,
+            '#EXTINF:-1 tvg-name="Retro duplicado" group-title="Series",Retro duplicado',
+            url_retro,
+        ]
+        result, removed = ap.deduplicar_urls_exactas(lines)
+        joined = "\n".join(result)
+        self.assertEqual(removed, 2)
+        self.assertEqual(joined.count(url_radio), 1)
+        self.assertEqual(joined.count(url_retro), 1)
+        self.assertIn("tvg-logo=\\"https://cdn.example/radio.png\\"", joined)
+        self.assertIn("tvg-logo=\\"https://cdn.example/retro.png\\"", joined)
+        self.assertIn("#EXTVLCOPT:http-reconnect=true", joined)
+        self.assertNotIn("Radio duplicada", joined)
+        self.assertNotIn("Retro duplicado", joined)
+
     def test_stable_pluto_mx_is_used_as_fallback_catalog(self):
         self.assertEqual(
             ap.FUENTES_PLUTO_CATALOGO,
