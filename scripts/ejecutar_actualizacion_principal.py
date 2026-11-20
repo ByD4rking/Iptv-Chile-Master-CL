@@ -308,6 +308,12 @@ def main():
         ids_pluto_omitidos=ids_pluto_orden,
     )
 
+    # Última barrera: algunas fuentes heredadas repiten la misma URL bajo
+    # distintos nombres (EnerGeek Radio/Retro). Conservamos el primer bloque
+    # completo, sin tocar logos, nombres ni URLs únicas.
+    ordered_lines, urls_duplicadas_eliminadas = alimentador.deduplicar_urls_exactas(ordered_lines)
+    print(f"[ORQUESTADOR] URLs exactas duplicadas eliminadas: {urls_duplicadas_eliminadas}")
+
     _trace_pitufos_mx("antes de escribir", ordered_lines)
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
     temporary.write_text("\n".join(ordered_lines) + "\n", encoding="utf-8")
