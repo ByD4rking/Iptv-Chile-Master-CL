@@ -193,30 +193,26 @@ def protected_hashes() -> dict[str, str]:
 
 
 def identity_key(item: dict, name_to_ids: dict[str, set[str]]) -> str:
-    # El tvg-id explícito del bloque es la identidad más fuerte. No debe
-    # degradarse a URL solo porque otros canales compartan el mismo nombre
-    # (por ejemplo, variantes SD/HD o señales regionales).
+    # Un canal puede tener una entrada sin ID y otra con ID válido. Si el nombre
+    # tiene un único ID asociado en ambas versiones, ambas entradas representan
+    # la misma identidad lógica y no deben contarse como una pérdida.
     channel_id = norm(item.get("id", ""))
     valid_id = channel_id if channel_id and channel_id not in {"-1", "0", "none", "null", "na", "n/a", "undefined"} else ""
-    if valid_id:
-        return "id:" + valid_id
-
-    # Si falta tvg-id, un único ID asociado al nombre permite reconciliar
-    # versiones con metadatos incompletos.
     name = item.get("tvg_name") or item.get("name") or ""
     name_key = channel_name_key(name)
     mapped_ids = name_to_ids.get(name_key, set()) if name_key else set()
     if len(mapped_ids) == 1:
         return "id:" + next(iter(mapped_ids))
     if len(mapped_ids) > 1 and name_key:
-        # Sin ID explícito y con varios IDs posibles, la URL evita confundir
-        # señales distintas que comparten etiqueta.
+        # El mismo nombre puede representar SD/HD con IDs distintos. Si la
+        # URL coincide, conservar esa identidad evita falsos cambios de orden.
         url = str(item.get("url") or "").strip()
         if url:
             return "url:" + url
         return "name:" + name_key
+    if valid_id:
+        return "id:" + valid_id
     return "name:" + name_key if name_key else "name:"
-
 def main(args: argparse.Namespace) -> None:
     if not PRINCIPAL.is_file() or PRINCIPAL.stat().st_size == 0:
         raise RuntimeError("No existe la playlist principal para la prueba end-to-end.")
@@ -557,6 +553,8 @@ def main(args: argparse.Namespace) -> None:
                     f"Se perdió una alternativa existente: {key} en {category}; "
                     f"antes={count}, después_total={global_after_counts.get(key, 0)}; "
                     f"URLs anteriores aún presentes={bool(old_urls.intersection(global_after_urls))}; "
+                    f"canal_anterior={[(x.get('display_raw'), x.get('id'), x.get('tvg_name'), x.get('url')) for x in before_kept if identity_key(x, name_to_ids) == key and norm(x.get('category')) == category][:5]!r}; "
+                    f"canales_finales_nombre_similar={[(x.get('display_raw'), x.get('id'), x.get('tvg_name'), x.get('url'), x.get('category')) for x in after_playable if channel_name_key(x.get('display_raw') or x.get('name') or '') == channel_name_key(next((y.get('display_raw') for y in before_kept if identity_key(y, name_to_ids) == key and norm(y.get('category')) == category), ''))][:8]!r}; "
                     f"resumen={result!r}"
                 )
 
