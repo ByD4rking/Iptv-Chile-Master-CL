@@ -628,7 +628,11 @@ def main(args: argparse.Namespace) -> None:
         for nombre in ap.NOMBRES_LOGOS_AUTORIZADOS_PRINCIPAL
     }
     for item in after_playable:
-        if ap.normalizar_nombre_canal(item.get("display_raw", "")) in logos_autorizados:
+        nombre_logo = ap.normalizar_nombre_canal(item.get("display_raw", ""))
+        # Chinola TV conserva el logo que ya trae la maestra; no se fuerza la referencia histórica.
+        if nombre_logo == ap.normalizar_nombre_canal("Chinola TV (Rep. Dominicana)"):
+            continue
+        if nombre_logo in logos_autorizados:
             continue
         previous = old_logo_by_url.get(item.get("url", ""), set())
         if len(previous) == 1:
