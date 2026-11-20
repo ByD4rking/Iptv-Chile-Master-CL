@@ -42,13 +42,21 @@ CATEGORIAS_PAIS_NO_AUTORIZADAS = {
     "estados unidos",
 }
 
-FUENTES_PLUTO_CATALOGO = [*FUENTES_PLUTO[:2], FUENTE_PLUTO_ALTERNATIVAS, *FUENTES_PLUTO[2:]]
+FUENTES_PLUTO_CATALOGO_EXTRA = _SOURCE_SETTINGS.get("pluto_catalog_sources", [])
+# Las fuentes extra son exclusivamente de renovación: no se importan ni se usan
+# para reclasificar canales, preservar así las categorías ya existentes.
+FUENTES_PLUTO_CATALOGO = [
+    *FUENTES_PLUTO[:2],
+    FUENTE_PLUTO_ALTERNATIVAS,
+    *FUENTES_PLUTO[2:],
+    *FUENTES_PLUTO_CATALOGO_EXTRA,
+]
 # Umbrales conservadores: una descarga truncada no debe provocar bajas masivas.
 PLUTO_CATALOGO_MINIMOS = {
     FUENTES_PLUTO[0]: 100,
     FUENTES_PLUTO[1]: 50,
     FUENTE_PLUTO_ALTERNATIVAS: 50,
-    **{fuente: 100 for fuente in FUENTES_PLUTO[2:]},
+    **{fuente: 100 for fuente in [*FUENTES_PLUTO[2:], *FUENTES_PLUTO_CATALOGO_EXTRA]},
 }
 FUENTES_PLUTO_ANTIGUAS = _SOURCE_SETTINGS["legacy_pluto_sources"]
 
@@ -222,7 +230,7 @@ def buscar_categoria_existente(nombre, categorias):
 def encontrar_categoria_tematica(texto, categorias):
     texto = normalizar(texto)
     reglas = [
-        ("ANIME", [r"\banime\b"]),
+        ("ANIME", [r"\banime\b", r"\benergeek\s+fan\b"]),
         ("INFANTILES", [r"\b(infantil|infantiles|kids|kid|teen|nick)\b"]),
         ("DEPORTES", [r"\b(deporte|deportes|sport|sports|futbol|football)\b"]),
         ("MUSICA", [r"\b(musica|music)\b"]),
@@ -595,7 +603,11 @@ def determinar_destino(categoria, nombre, pais_fuente, categorias):
     }
     for pais, nombres in aliases.items():
         if any(normalizar(alias) in texto for alias in nombres):
-            destino = buscar_categoria_existente(CATEGORIAS_PAIS[pais], categorias)
+            # Chile usa CHILE TV como destino, pero no se agrega al mapa general
+            # de países: esa colección también controla el orden final y CHILE TV
+            # debe permanecer siempre en la primera posición.
+            categoria_destino = "CHILE TV" if pais == "chile" else CATEGORIAS_PAIS[pais]
+            destino = buscar_categoria_existente(categoria_destino, categorias)
             if destino:
                 return destino
 

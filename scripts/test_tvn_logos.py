@@ -101,6 +101,82 @@ class TvnLogoTests(unittest.TestCase):
                 self.assertEqual(stats["logos_autorizados"], 1)
                 self.assertTrue(validar_logos_chile_tv(result, reference))
 
+    def test_energeek_keeps_its_exact_source_logo_in_chile_tv(self):
+        logo = "https://cdn.m3u.cl/logo/947_EnerGeek.png"
+        reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 tvg-name="EnerGeek ✪ | CL" tvg-logo="{logo}" logo="{logo}" group-title="CHILE TV",EnerGeek ✪ | CL',
+            "https://cl-2.backend.energeek.cl/bkp/egretroweb/index.m3u8?token=D3m0M3UCLWeb&PlaylistM3UCL",
+        ]
+
+        with tempfile.TemporaryDirectory() as folder:
+            config = Path(folder) / "logos_autorizados.json"
+            config.write_text(
+                json.dumps({"logos": {"CHILE TV::EnerGeek ✪ | CL": logo}}),
+                encoding="utf-8",
+            )
+            with patch("scripts.blindajes_principal.LOGOS_AUTORIZADOS_PATH", config):
+                result, stats = blindar_logos(current, reference)
+                entry = next(line for line in result if line.startswith("#EXTINF"))
+                self.assertIn('tvg-logo="' + logo + '"', entry)
+                self.assertIn('logo="' + logo + '"', entry)
+                self.assertEqual(stats["logos_autorizados"], 1)
+                self.assertTrue(validar_logos_chile_tv(result, reference))
+
+    def test_energeek_radio_keeps_its_exact_source_logo_in_chile_tv(self):
+        logo = "https://cdn.m3u.cl/logo/1266_EnerGeek_Radio.png"
+        reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 tvg-name="EnerGeek Radio ✪ | CL" tvg-logo="{logo}" logo="{logo}" group-title="CHILE TV",EnerGeek Radio ✪ | CL',
+            "https://example.com/energeek-radio.m3u8",
+        ]
+
+        with tempfile.TemporaryDirectory() as folder:
+            config = Path(folder) / "logos_autorizados.json"
+            config.write_text(
+                json.dumps({"logos": {"CHILE TV::EnerGeek Radio ✪ | CL": logo}}),
+                encoding="utf-8",
+            )
+            with patch("scripts.blindajes_principal.LOGOS_AUTORIZADOS_PATH", config):
+                result, stats = blindar_logos(current, reference)
+                entry = next(line for line in result if line.startswith("#EXTINF"))
+                self.assertIn('tvg-logo="' + logo + '"', entry)
+                self.assertIn('logo="' + logo + '"', entry)
+                self.assertEqual(stats["logos_autorizados"], 1)
+                self.assertTrue(validar_logos_chile_tv(result, reference))
+
+    def test_chile_tv_accepts_exact_historical_logo_when_channel_moves_from_another_category(self):
+        logo = "https://logos.example/24-horas-historico.png"
+        reference = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="24horas-cl" tvg-id="24horas.cl" tvg-name="24 horas tvn" tvg-logo="{logo}" logo="{logo}" group-title="Informativos",24 horas tvn',
+            "https://old.example/24horas.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="24horas-cl" tvg-id="24horas.cl" tvg-name="24 horas tvn" tvg-logo="{logo}" logo="{logo}" group-title="CHILE TV",24 horas tvn',
+            "https://new.example/24horas.m3u8",
+        ]
+        self.assertTrue(validar_logos_chile_tv(current, reference))
+
+    def test_chile_tv_still_rejects_changed_logo_after_category_migration(self):
+        old_logo = "https://logos.example/24-horas-historico.png"
+        wrong_logo = "https://logos.example/24-horas-no-autorizado.png"
+        reference = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="24horas-cl" tvg-id="24horas.cl" tvg-name="24 horas tvn" tvg-logo="{old_logo}" logo="{old_logo}" group-title="Informativos",24 horas tvn',
+            "https://old.example/24horas.m3u8",
+        ]
+        current = [
+            "#EXTM3U",
+            f'#EXTINF:-1 channelId="24horas-cl" tvg-id="24horas.cl" tvg-name="24 horas tvn" tvg-logo="{wrong_logo}" logo="{wrong_logo}" group-title="CHILE TV",24 horas tvn',
+            "https://new.example/24horas.m3u8",
+        ]
+        with self.assertRaisesRegex(AssertionError, "Logo alterado en CHILE TV"):
+            validar_logos_chile_tv(current, reference)
+
     def test_chile_tv_validator_rejects_any_unapproved_logo_change(self):
         reference = ["#EXTM3U"] + channel("Mega", "https://logos.example/mega.png")
         changed = ["#EXTM3U"] + channel("Mega", "https://logos.example/wrong.png")
