@@ -265,6 +265,15 @@ def main():
     )
     validar_logos_chile_tv(ordered_lines, original_lines)
     ordered_lines = ordenar_categorias_definitivo(ordered_lines)
+    # Reaplicar el orden de familias al final de todas las reconciliaciones.
+    # Las inserciones tardías (por ejemplo, canales deportivos regionales) no
+    # pueden quedar intercaladas entre familias históricas; las novedades van
+    # al final sin alterar el orden relativo de los canales existentes.
+    ordered_lines = alimentador.agrupar_familias_por_categoria(
+        ordered_lines,
+        original_lines,
+    )
+    ordered_lines = _prioritize_infantiles(ordered_lines)
     ordered_lines = priorizar_history_documentales(ordered_lines)
     validar_orden_categorias(ordered_lines)
     validar_prioridad_history_documentales(ordered_lines)
