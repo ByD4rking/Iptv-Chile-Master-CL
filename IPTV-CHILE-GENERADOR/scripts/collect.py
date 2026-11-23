@@ -298,7 +298,6 @@ def main():
                 state["consecutive_failures"] += 1
                 state["last_failure"] = checked_at
                 if state["consecutive_failures"] >= SOURCE_QUARANTINE_AFTER:
-                    from datetime import timedelta
                     state["quarantine_until"] = (datetime.now(timezone.utc) + timedelta(hours=SOURCE_QUARANTINE_HOURS)).isoformat()
                     print(f"[QUARANTINE] {name}: {state['consecutive_failures']} fallos persistentes; pausa hasta {state['quarantine_until']}")
 
