@@ -23,6 +23,7 @@ concurrency:
   group: validar-iptv-${{ github.ref }}
   # Esperar a que termine la validación activa; no cancelarla por un push nuevo.
   cancel-in-progress: false
+  # PRUEBA CONTROLADA DE CONCURRENCIA: evento A
 
 jobs:
   validar:
