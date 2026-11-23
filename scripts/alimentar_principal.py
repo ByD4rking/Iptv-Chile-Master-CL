@@ -117,7 +117,7 @@ def normalizar_nombre_canal(value):
     )
     if not re.match(r"^cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)$", value, re.I):
         value = re.sub(r"\s*\(\s*opc\.?\s*\d+\s*\)\s*$", "", value, flags=re.I)
-    value = re.sub(r"\s*\|\s*(?:ar|bo|br|cl|co|cr|do|ec|es|mx|pe|py|ve|chile)\s*$", "", value, flags=re.I)
+    value = re.sub(r"\s*\|\s*(?:cl|co|do|chile)\s*$", "", value, flags=re.I)
     value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value, flags=re.I)
     value = re.sub(
         r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es))$",
