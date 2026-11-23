@@ -19,7 +19,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: pluto-maintenance
+  # Comparte la misma cola que la publicación principal para serializar escritores de main.
+  group: iptv-maintenance
   cancel-in-progress: false
 
 
@@ -33,6 +34,8 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
+          # Si la ejecución quedó en espera, usar el main actual y no el SHA antiguo del evento.
+          ref: main
 
       - name: Configurar Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
