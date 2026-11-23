@@ -25,6 +25,7 @@ permissions:
 
 concurrency:
   group: iptv-maintenance
+  queue: max
   # No cancelar una publicación activa: las ejecuciones deben serializarse
   # para evitar que una actualización interrumpa otra mientras prepara la M3U.
   cancel-in-progress: false
