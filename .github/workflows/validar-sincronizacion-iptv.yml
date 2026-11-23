@@ -21,7 +21,8 @@ permissions:
 
 concurrency:
   group: validar-iptv-${{ github.ref }}
-  cancel-in-progress: true
+  # Esperar a que termine la validación activa; no cancelarla por un push nuevo.
+  cancel-in-progress: false
 
 jobs:
   validar:
