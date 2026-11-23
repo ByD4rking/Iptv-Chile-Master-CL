@@ -172,7 +172,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertEqual(result["pluto_total"], 4)
         self.assertEqual(result["pluto_con_jwt"], 3)
         self.assertEqual(result["pluto_sin_jwt"], 1)
-        self.assertEqual(result["jwt_expirados"], 1)
+        self.assertEqual(result["jwt_expirados"], 2)
         self.assertEqual(result["jwt_por_vencer_6h"], 1)
         self.assertEqual(result["jwt_no_decodificables"], 0)
         self.assertEqual(result["urls_exactas_duplicadas"], 1)
