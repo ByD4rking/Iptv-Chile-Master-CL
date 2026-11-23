@@ -350,6 +350,15 @@ def audit(scope: str) -> dict:
         f"GOD_solo_lectura={report['readonly_changed_stream_urls']}) "
         f"URLs_fuente_cambiadas={report['total_source_url_changes']}"
     )
+    for item in changes:
+        changed_urls = int(item.get("changed_stream_urls", 0))
+        if changed_urls:
+            scope_label = "GOD-solo-lectura" if item.get("readonly", False) else "publicable"
+            print(
+                f"[AUDIT][detalle] {scope_label} {item['source']}: "
+                f"{changed_urls} URLs; altas={item.get('added_channels', 0)}; "
+                f"bajas={item.get('removed_channels', 0)}"
+            )
     print(f"[AUDIT] Informe: {report_path.relative_to(ROOT)}")
     print(f"[AUDIT] Estado: {state_path.relative_to(ROOT)}")
     return report
