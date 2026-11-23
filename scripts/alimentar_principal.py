@@ -1250,10 +1250,20 @@ def cargar_catalogo_pluto_propio(session):
                 if url_id and url_id not in ids:
                     ids.append(url_id)
 
+                # El parámetro country del JWT indica el mercado de entrega,
+                # no necesariamente el nombre de la playlist regional. LATAM
+                # publica señales con country=MX y country=CL; registrar esos
+                # alias permite reconocer huérfanos expirados solo cuando el
+                # catálogo que cubre ese mercado se descargó completo.
+                regiones_cubiertas = {region}
+                country_match = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
+                if country_match:
+                    regiones_cubiertas.add(country_match.group(1).lower())
                 for cid in ids:
                     # LATAM aparece primero y gana en el catálogo global.
                     por_id.setdefault(cid, canal)
-                    por_region[region].setdefault(cid, canal)
+                    for region_alias in regiones_cubiertas:
+                        por_region[region_alias].setdefault(cid, canal)
                 if nombre:
                     por_nombre.setdefault(nombre, canal)
         except Exception as e:
