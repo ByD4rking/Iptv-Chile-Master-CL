@@ -24,9 +24,10 @@ permissions:
   contents: write
 
 concurrency:
+  # Principal y Pluto son escritores de main: comparten una única cola.
   group: iptv-maintenance
-  # No cancelar una publicación activa: las ejecuciones deben serializarse
-  # para evitar que una actualización interrumpa otra mientras prepara la M3U.
+  # Mantener todos los ciclos pendientes en orden, sin cancelar el activo.
+  queue: max
   cancel-in-progress: false
 
 jobs:
@@ -43,6 +44,8 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
+          # workflow_run puede traer un SHA anterior; reconstruir sobre main al iniciar.
+          ref: main
 
       - name: Configurar Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0

@@ -8,6 +8,8 @@ on:
       - "scripts/**"
       - "config/**"
       - ".github/workflows/**"
+      - "pluto/src/**"
+      - "pluto/requirements.txt"
   pull_request:
     branches:
       - main
@@ -40,6 +42,14 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install requests
           if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+          python -m pip install -r pluto/requirements.txt
+      - name: Probar serialización de publicación principal y Pluto
+        run: python -m unittest scripts.test_workflow_publication -v
+      - name: Validar generador Pluto y renovación obligatoria de JWT
+        run: |
+          set -e
+          python pluto/src/selftest.py
+          python -m unittest discover -s pluto/src -p 'test_*.py' -v
       - name: Validar sintaxis
         run: |
           python -m py_compile scripts/auditar_fuentes.py scripts/test_auditar_fuentes.py scripts/sincronizar_complementos.py scripts/ejecutar_actualizacion_principal.py

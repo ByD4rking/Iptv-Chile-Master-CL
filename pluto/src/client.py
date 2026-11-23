@@ -46,9 +46,6 @@ USER_AGENT = (
 
 REQUEST_TIMEOUT = (10, 45)
 MAX_RETRIES = 3
-# Los JWT de Pluto duran aproximadamente 24 horas. Renovar con 12 horas
-# de margen evita reutilizar tokens en la segunda mitad de su vigencia.
-TOKEN_REFRESH_MARGIN = 12 * 60 * 60
 
 
 class PlutoClient:
@@ -142,6 +139,13 @@ class PlutoClient:
         Obtiene una nueva sesión de Pluto.
         """
 
+        # Si Pluto falla al emitir el JWT nuevo, no dejar disponible en memoria
+        # ninguna sesión anterior para una publicación accidental.
+        self.session_token = None
+        self.token_expiry = 0
+        self.stitcher_url = None
+        self.stitcher_params = ""
+
         params = {
             "appName": "web",
             "appVersion": APP_VERSION,
@@ -197,12 +201,15 @@ class PlutoClient:
                 "Pluto no devolvió servidor stitcher."
             )
 
+        expiry = self._token_expiry(token)
+        if expiry <= int(time.time()):
+            raise RuntimeError(
+                "Pluto devolvió un JWT sin exp verificable o ya vencido; "
+                "se rechaza la sesión y no se publicarán URLs con ese token."
+            )
+
         self.session_token = token
-
-        self.token_expiry = self._token_expiry(
-            token
-        )
-
+        self.token_expiry = expiry
         self.stitcher_url = stitcher
 
         self.stitcher_params = data.get(
@@ -212,17 +219,21 @@ class PlutoClient:
 
         return data
 
-    def ensure_session(self) -> None:
+    def ensure_session(self, *, force: bool = False) -> None:
         """
-        Garantiza que exista una sesión válida.
-        Renueva el token si está ausente o próximo a expirar.
+        Garantiza una sesión válida.
+
+        force=True solicita un JWT nuevo a Pluto aunque el token anterior
+        todavía sea válido. Los generadores regionales lo usan al iniciar
+        cada ejecución; después se reutiliza solo dentro de esa misma
+        ejecución para todos los canales de la región.
         """
 
         if (
-            self.session_token
+            not force
+            and self.session_token
             and self.stitcher_url
-            and self.token_expiry
-            and time.time() < self.token_expiry - TOKEN_REFRESH_MARGIN
+            and self.token_expiry > int(time.time())
         ):
             return
 

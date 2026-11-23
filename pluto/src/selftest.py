@@ -98,8 +98,12 @@ def main() -> None:
 
     client_path = ROOT / "client.py"
     client = client_path.read_text(encoding="utf-8-sig")
-    if "TOKEN_REFRESH_MARGIN = 12 * 60 * 60" not in client:
-        fail("client.py: falta margen JWT de 12 horas")
+    if "TOKEN_REFRESH_MARGIN = " in client:
+        fail("client.py: no debe depender de un margen horario para renovar JWT")
+    if "def ensure_session(self, *, force: bool = False)" not in client:
+        fail("client.py: falta renovación forzada de sesión")
+    if "expiry <= int(time.time())" not in client:
+        fail("client.py: debe rechazar JWT sin exp verificable o vencidos")
     if "LEGACY_CHANNELS_URL" not in client or "_get_us_legacy_catalog" not in client or "_get_us_legacy_channels" not in client:
         fail("client.py: faltan fallbacks US de catálogo")
     if "if not channels and self.region.code == \"us\"" not in client:
@@ -117,11 +121,14 @@ def main() -> None:
     generator_path = ROOT / "generate_multiregion.py"
     generator = generator_path.read_text(encoding="utf-8-sig")
     for fragment in (
+        "client.ensure_session(force=True)",
         "MIN_PREVIOUS_RATIO = 0.50",
         "REQUIRE_NONEMPTY_PREVIOUS = True",
         "def preserve_previous_channels(",
         "def refresh_preserved_streams(",
         "def build_latam(",
+        "if count <= 0 or not updated",
+        "no se confirmó catálogo y JWT nuevos",
         "if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):",
         'HEALTH_REGIONS = ("ar", "br", "cl", "es", "mx", "us", "latam")',
         "for code in HEALTH_REGIONS:",
@@ -182,7 +189,7 @@ def main() -> None:
     print("SELFTEST OK: compileall correcto.")
     print("SELFTEST OK: servidor Pluto conserva proxy, renovación JWT y acceso LAN.")
     print("SELFTEST OK: health.py verifica HLS real, score 0-100, backoff y cooldown.")
-    print("SELFTEST OK: client.py renueva JWT con margen anticipado.")
+    print("SELFTEST OK: cada región solicita JWT nuevo por ejecución y rechaza tokens sin exp válido.")
 
 
 if __name__ == "__main__":
