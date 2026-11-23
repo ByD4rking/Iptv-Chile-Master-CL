@@ -255,10 +255,6 @@ def main():
         "correspondencia; "
         f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas."
     )
-    # La renovación puede reincorporar bloques de Anime; ordenar después de ella
-    # para que ninguna reconciliación posterior deshaga las franquicias/sagas.
-    ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
-
     # Blindajes terminales: todos los logos existentes se congelan por identidad;
     # el orden global de carpetas se aplica al final para que ninguna
     # sincronización lo deshaga.
@@ -327,6 +323,10 @@ def main():
     # completo, sin tocar logos, nombres ni URLs únicas.
     ordered_lines, urls_duplicadas_eliminadas = alimentador.deduplicar_urls_exactas(ordered_lines)
     print(f"[ORQUESTADOR] URLs exactas duplicadas eliminadas: {urls_duplicadas_eliminadas}")
+
+    # Orden terminal: las restauraciones de logos/categorías y el deduplicado
+    # deben ocurrir antes; nada puede desordenar Anime después de esta barrera.
+    ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
     _trace_pitufos_mx("antes de escribir", ordered_lines)
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
