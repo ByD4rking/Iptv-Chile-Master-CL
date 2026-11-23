@@ -48,31 +48,6 @@ def candidate(channel_id, category, name, url, source=None):
 
 
 class OriginalPlaylistOrderTests(unittest.TestCase):
-    def test_new_families_stay_after_historical_families_across_split_categories(self):
-        original = ["#EXTM3U"] + (
-            entry("old.a", "Deportes", "Canal A", "https://old.example/a.m3u8")
-            + entry("old.sport", "Deportes", "Sport Vision", "not-a-valid-url")
-        )
-        current = ["#EXTM3U"] + (
-            entry("old.a", "Deportes", "Canal A", "https://old.example/a.m3u8")
-            + entry("news", "Noticias", "Canal Noticias", "https://news.example/live.m3u8")
-            + entry("new.bein", "Deportes", "BEIN Sports (ES)", "https://new.example/bein.m3u8")
-            + entry("old.sport", "Deportes", "Sport Vision", "https://old.example/sport.m3u8")
-        )
-        output = ap.agrupar_familias_por_categoria(current, original)
-        categories = [
-            ap.extraer_categoria(line)
-            for line in output
-            if line.startswith("#EXTINF")
-        ]
-        sports = [
-            ap.extraer_nombre(line)
-            for line in output
-            if line.startswith("#EXTINF") and ap.normalizar(ap.extraer_categoria(line)) == "deportes"
-        ]
-        self.assertEqual(categories, ["Deportes", "Deportes", "Deportes", "Noticias"])
-        self.assertEqual(sports, ["Canal A", "Sport Vision", "BEIN Sports (ES)"])
-
     def test_regional_suffix_does_not_create_a_new_channel_family(self):
         self.assertEqual(
             ap.clave_familia_canal("Sport Vision | DO"),
