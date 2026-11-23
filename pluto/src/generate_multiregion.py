@@ -886,11 +886,17 @@ def main() -> None:
                 print(f"[{code.upper()}] ERROR: {exc}. No existe una lista previa segura.")
                 results[code] = (0, False)
 
-    failed_regions = [code for code, (count, updated) in results.items() if count <= 0]
+    # No declarar éxito ni construir/publicar LATAM si alguna región conservó
+    # una M3U anterior: eso significaría que no se confirmó la renovación de
+    # sus URLs/JWT en esta ejecución. El workflow completo falla y no hace push.
+    failed_regions = [
+        code for code, (count, updated) in results.items()
+        if count <= 0 or not updated
+    ]
     if failed_regions:
         raise RuntimeError(
-            "No se publican agregados: regiones sin catálogo válido: "
-            + ", ".join(failed_regions)
+            "No se publican agregados: no se confirmó catálogo y JWT nuevos "
+            "para todas las regiones: " + ", ".join(failed_regions)
         )
 
     build_latam(fresh_regions)
