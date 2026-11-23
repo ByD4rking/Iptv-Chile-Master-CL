@@ -907,6 +907,73 @@ def deduplicar_pluto_existente(lineas):
 
     return salida, eliminados
 
+def auditar_urls_pluto(lineas, ahora=None):
+    """Cuenta el inventario Pluto y su estado JWT sin exponer tokens."""
+    from collections import Counter
+
+    ahora = time.time() if ahora is None else ahora
+    urls = []
+    total_pluto = con_jwt = sin_jwt = expirados = renovar = invalidos = 0
+    por_region = defaultdict(int)
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j >= len(lineas):
+            i = j
+            continue
+        url = lineas[j].strip()
+        if not url_es_valida(url):
+            i = j + 1
+            continue
+        urls.append(url)
+        if es_url_pluto(url):
+            total_pluto += 1
+            country = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
+            por_region[(country.group(1).upper() if country else "SIN_COUNTRY")] += 1
+            jwt = re.search(r"(?:[?&])jwt=([^&]+)", url, re.I)
+            if not jwt:
+                sin_jwt += 1
+            else:
+                con_jwt += 1
+                token_parts = jwt.group(1).split(".")
+                try:
+                    if len(token_parts) != 3:
+                        raise ValueError("JWT incompleto")
+                    payload = token_parts[1]
+                    payload += "=" * ((4 - len(payload) % 4) % 4)
+                    data = json.loads(base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8"))
+                    exp = data.get("exp")
+                    if isinstance(exp, str) and exp.isdigit():
+                        exp = int(exp)
+                    if not isinstance(exp, (int, float)):
+                        raise ValueError("JWT sin exp")
+                    if exp <= ahora:
+                        expirados += 1
+                    elif exp <= ahora + 6 * 60 * 60:
+                        renovar += 1
+                except Exception:
+                    invalidos += 1
+        i = j + 1
+
+    duplicados = sum(count - 1 for count in Counter(urls).values() if count > 1)
+    return {
+        "pluto_total": total_pluto,
+        "pluto_con_jwt": con_jwt,
+        "pluto_sin_jwt": sin_jwt,
+        "jwt_expirados": expirados,
+        "jwt_por_vencer_6h": renovar,
+        "jwt_no_decodificables": invalidos,
+        "urls_exactas_duplicadas": duplicados,
+        "pluto_por_country": dict(sorted(por_region.items())),
+    }
+
+
 def deduplicar_urls_exactas(lineas):
     """Elimina bloques repetidos por URL exacta, conservando la primera aparición.
 
