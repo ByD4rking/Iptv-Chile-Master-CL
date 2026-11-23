@@ -26,7 +26,7 @@ concurrency:
 jobs:
   validar:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
     steps:
       - name: Descargar rama
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -53,3 +53,5 @@ jobs:
         run: python -m unittest scripts.test_pluto_identity_validation -v
       - name: Probar orden History en Documentales y Cultura
         run: python -m unittest scripts.test_history_documentales -v
+      - name: Ejecutar reconciliación real y auditar la playlist resultante
+        run: python scripts/selftest_sincronizacion_real.py
