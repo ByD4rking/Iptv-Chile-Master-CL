@@ -48,6 +48,12 @@ def candidate(channel_id, category, name, url, source=None):
 
 
 class OriginalPlaylistOrderTests(unittest.TestCase):
+    def test_dominican_region_suffix_does_not_create_new_channel_family(self):
+        self.assertEqual(
+            ap.clave_familia_canal("Sport Vision | DO"),
+            ap.clave_familia_canal("Sport Vision"),
+        )
+
     def test_colombia_suffix_preserves_caracol_historical_position(self):
         original = ["#EXTM3U"] + (
             entry("", "Colombia", "Caracol | CO", "https://old.example/caracol.m3u8")
