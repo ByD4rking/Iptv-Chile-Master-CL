@@ -2995,8 +2995,7 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 print(
                     "[FAMILIAS][DEBUG] Deportes: "
                     f"historicas={historicas_deportes[-5:]!r}; "
-                    f"actuales={orden_familias_actual[-5:]!r}; "
-                    f"resultado_previo={orden_familias[-5:] if 'orden_familias' in locals() else []!r}"
+                    f"actuales={orden_familias_actual[-5:]!r}"
                 )
 
         if categoria in categorias_orden_intencional:
