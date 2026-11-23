@@ -14,6 +14,8 @@ class WorkflowPublicationTests(unittest.TestCase):
     def test_updater_and_pluto_share_one_publication_group(self):
         self.assertIn("  group: iptv-maintenance", self.updater)
         self.assertIn("  group: iptv-maintenance", self.pluto)
+        self.assertIn("  queue: max", self.updater)
+        self.assertIn("  queue: max", self.pluto)
 
     def test_updater_checks_out_current_main_not_workflow_run_sha(self):
         self.assertIn("          ref: main", self.updater)
