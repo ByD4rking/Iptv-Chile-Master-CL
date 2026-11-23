@@ -127,6 +127,8 @@ def main() -> None:
         "def preserve_previous_channels(",
         "def refresh_preserved_streams(",
         "def build_latam(",
+        "if count <= 0 or not updated",
+        "no se confirmó catálogo y JWT nuevos",
         "if old_count and new_count < max(1, int(old_count * MIN_PREVIOUS_RATIO)):",
         'HEALTH_REGIONS = ("ar", "br", "cl", "es", "mx", "us", "latam")',
         "for code in HEALTH_REGIONS:",
