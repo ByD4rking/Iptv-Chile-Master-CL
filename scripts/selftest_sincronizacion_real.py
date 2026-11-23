@@ -470,28 +470,30 @@ def main(args: argparse.Namespace) -> None:
     before_families_by_category = defaultdict(list)
     after_families_by_category = defaultdict(list)
     for item in before_kept:
-        # Las alternativas se auditan por identidad, cantidad y contigüidad;
-        # el orden histórico se compara solo entre canales principales.
-        if item["is_option"]:
-            continue
         category = norm(item["category"])
-        key = identity_key(item, name_to_ids)
-        if key not in before_by_category[category]:
-            before_by_category[category].append(key)
+        # La familia histórica incluye también alternativas: si una familia
+        # ya existía como OPCIÓN, su nueva URL base no es una familia nueva.
         family = ap.clave_familia_canal(item["display_raw"])
         if family and family not in before_families_by_category[category]:
             before_families_by_category[category].append(family)
-    for item in after_nonpluto:
-        category = norm(item["category"])
+        # Las alternativas se auditan por identidad, cantidad y contigüidad;
+        # el orden nominal de canales principales se compara por separado.
+        if item["is_option"]:
+            continue
         key = identity_key(item, name_to_ids)
-        # Las URLs alternativas del mismo tvg-id forman un solo canal lógico
-        # para comparar orden; no deben contarse como canales nuevos.
-        if key not in after_by_category[category]:
-            after_by_category[category].append(key)
+        if key not in before_by_category[category]:
+            before_by_category[category].append(key)
+    for item in after_nonpluto_all:
+        category = norm(item["category"])
         if not item["is_option"]:
-            family = ap.clave_familia_canal(item["display_raw"])
-            if family and family not in after_families_by_category[category]:
-                after_families_by_category[category].append(family)
+            key = identity_key(item, name_to_ids)
+            # Las URLs alternativas del mismo tvg-id forman un solo canal lógico
+            # para comparar orden; no deben contarse como canales nuevos.
+            if key not in after_by_category[category]:
+                after_by_category[category].append(key)
+        family = ap.clave_familia_canal(item["display_raw"])
+        if family and family not in after_families_by_category[category]:
+            after_families_by_category[category].append(family)
 
     jwt_pluto_vencidos = [
         item for item in after_playable
