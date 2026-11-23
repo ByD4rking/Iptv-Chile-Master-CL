@@ -3011,6 +3011,14 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 if familia not in conjunto_historico
             ]
 
+        if categoria == normalizar("Deportes") and any("sport vision" in f or "bein sports" in f for f in orden_familias_actual):
+            print(
+                "[FAMILIAS][ORDEN FINAL] Deportes: "
+                f"historicas={familias_originales.get(categoria, [])!r}; "
+                f"actuales={orden_familias_actual!r}; "
+                f"ordenadas={orden_familias!r}"
+            )
+
         identidades = identidades_originales.get(categoria, set())
         for familia in orden_familias:
             grupo = familias[familia]
