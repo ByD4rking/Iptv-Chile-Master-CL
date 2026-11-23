@@ -23,7 +23,7 @@ concurrency:
   group: validar-iptv-${{ github.ref }}
   # Esperar a que termine la validación activa; no cancelarla por un push nuevo.
   cancel-in-progress: false
-  
+
 jobs:
   validar:
     runs-on: ubuntu-latest
