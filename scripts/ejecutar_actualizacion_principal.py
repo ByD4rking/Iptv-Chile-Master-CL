@@ -340,11 +340,13 @@ def main():
     # cubre alternativas reincorporadas por las reconciliaciones terminales.
     ordered_lines, urls_duplicadas_eliminadas = alimentador.deduplicar_urls_exactas(ordered_lines)
     print(f"[ORQUESTADOR] URLs exactas duplicadas eliminadas: {urls_duplicadas_eliminadas}")
-    _, duplicados_restantes = alimentador.deduplicar_urls_exactas(ordered_lines)
-    if duplicados_restantes:
+    inventario_pluto_final = alimentador.auditar_urls_pluto(ordered_lines)
+    if inventario_pluto_final["urls_exactas_duplicadas"]:
         raise RuntimeError(
-            f"La principal conserva {duplicados_restantes} URLs exactas duplicadas tras la limpieza."
+            "La principal conserva "
+            f"{inventario_pluto_final['urls_exactas_duplicadas']} URLs exactas duplicadas tras la limpieza."
         )
+    print("[ORQUESTADOR] Inventario Pluto final validado:", inventario_pluto_final)
 
     _trace_pitufos_mx("antes de escribir", ordered_lines)
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")
