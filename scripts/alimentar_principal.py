@@ -1717,6 +1717,7 @@ def sincronizar_enlaces_existentes(lineas, canales_destinados):
         lineas,
         canales_destinados,
         normalizar=normalizar,
+        normalizar_nombre=normalizar_nombre_canal,
         extraer_nombre=extraer_nombre,
         extraer_categoria=extraer_categoria,
         reemplazar_categoria=reemplazar_categoria,
