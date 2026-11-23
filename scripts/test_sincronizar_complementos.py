@@ -51,7 +51,7 @@ class OriginalPlaylistOrderTests(unittest.TestCase):
     def test_new_families_stay_after_historical_families_across_split_categories(self):
         original = ["#EXTM3U"] + (
             entry("old.a", "Deportes", "Canal A", "https://old.example/a.m3u8")
-            + entry("old.sport", "Deportes", "Sport Vision", "https://old.example/sport.m3u8")
+            + entry("old.sport", "Deportes", "Sport Vision", "not-a-valid-url")
         )
         current = ["#EXTM3U"] + (
             entry("old.a", "Deportes", "Canal A", "https://old.example/a.m3u8")
