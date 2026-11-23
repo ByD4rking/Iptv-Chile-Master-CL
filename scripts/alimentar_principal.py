@@ -2989,6 +2989,16 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 orden_familias_actual.append(familia)
             familias[familia].append(bloque)
 
+        if categoria == normalizar("Deportes"):
+            historicas_deportes = familias_originales.get(categoria, [])
+            if any("sport vision" in familia for familia in historicas_deportes + orden_familias_actual):
+                print(
+                    "[FAMILIAS][DEBUG] Deportes: "
+                    f"historicas={historicas_deportes[-5:]!r}; "
+                    f"actuales={orden_familias_actual[-5:]!r}; "
+                    f"resultado_previo={orden_familias[-5:] if 'orden_familias' in locals() else []!r}"
+                )
+
         if categoria in categorias_orden_intencional:
             orden_familias = orden_familias_actual
         else:
