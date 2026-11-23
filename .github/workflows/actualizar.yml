@@ -8,8 +8,9 @@ on:
       - "scripts/**"
       - "config/**"
       - ".github/workflows/actualizar.yml"
-  # Este pipeline se ejecuta después de cada actualización horaria exitosa de Pluto.
-  # En una sola pasada reconcilia todas las fuentes complementarias y la principal.
+  # Se ejecuta al terminar cada ciclo horario de Pluto, incluso si falla.
+  # Así se siguen reconciliando fuentes externas; la barrera JWT impide publicar
+  # si el último catálogo Pluto disponible ya no permite una renovación segura.
   workflow_run:
     workflows:
       - "Pluto TV - Actualizar listas regionales"
@@ -33,8 +34,7 @@ jobs:
     # Este workflow publica en main; no ejecutar desde ramas de trabajo.
     if: >-
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'workflow_run' || github.actor != 'github-actions[bot]') &&
-      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+      (github.event_name == 'workflow_run' || github.actor != 'github-actions[bot]')
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -48,6 +48,17 @@ jobs:
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
         with:
           python-version: "3.12"
+
+      - name: Diagnosticar resultado del ciclo Pluto
+        if: github.event_name == 'workflow_run'
+        env:
+          PLUTO_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          PLUTO_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          echo "Workflow Pluto anterior: run $PLUTO_RUN_ID; resultado=$PLUTO_CONCLUSION"
+          if [ "$PLUTO_CONCLUSION" != "success" ]; then
+            echo "::warning::Pluto no terminó correctamente. Se intentará sincronizar el resto de fuentes con el último catálogo disponible; la barrera JWT bloqueará una publicación insegura."
+          fi
 
       - name: Auditar cambios de canales y URLs de Principal y GOD (solo lectura)
         run: python scripts/auditar_fuentes.py --scope principal
