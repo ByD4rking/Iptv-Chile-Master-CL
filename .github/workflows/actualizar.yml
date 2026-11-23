@@ -25,9 +25,9 @@ permissions:
 
 concurrency:
   group: iptv-maintenance
-  # Un run nuevo hace obsoleto al anterior: evita consumir el runner durante
-  # decenas de minutos con una versión anterior del Health Score.
-  cancel-in-progress: true
+  # No cancelar una publicación activa: las ejecuciones deben serializarse
+  # para evitar que una actualización interrumpa otra mientras prepara la M3U.
+  cancel-in-progress: false
 
 jobs:
   actualizar:
