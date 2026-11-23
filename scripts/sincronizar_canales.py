@@ -14,6 +14,7 @@ def sincronizar_enlaces_existentes(
     extraer_categoria: Callable[[str], str],
     reemplazar_categoria: Callable[[str, str], str],
     url_es_valida: Callable[[str], bool],
+    normalizar_nombre: Callable[[str], str] | None = None,
 ) -> tuple[list[str], dict[str, int]]:
     """Actualiza bloques existentes por ID estable o nombre inequívoco.
 
@@ -28,6 +29,7 @@ def sincronizar_enlaces_existentes(
     }
     if not canales_destinados:
         return lineas, stats
+    normalizar_nombre = normalizar_nombre or normalizar
 
     def source_id(canal: dict) -> str:
         extinf = str(canal.get("extinf") or "")
@@ -35,7 +37,7 @@ def sincronizar_enlaces_existentes(
         return normalizar(match.group(1)) if match and match.group(1).strip() else ""
 
     def source_name(canal: dict) -> str:
-        return normalizar(canal.get("nombre") or canal.get("tvg_name") or "")
+        return normalizar_nombre(canal.get("nombre") or canal.get("tvg_name") or "")
 
     def source_display_name(canal: dict) -> str:
         return str(canal.get("nombre") or canal.get("tvg_name") or "").strip()
@@ -75,7 +77,7 @@ def sincronizar_enlaces_existentes(
         match = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         cid = normalizar(match.group(1)) if match and match.group(1).strip() else ""
         category = extraer_categoria(extinf)
-        name = normalizar(extraer_nombre(extinf))
+        name = normalizar_nombre(extraer_nombre(extinf))
         url = lineas[j].strip()
         block = {
             "extinf_index": i,

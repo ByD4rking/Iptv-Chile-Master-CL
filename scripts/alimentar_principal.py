@@ -117,7 +117,7 @@ def normalizar_nombre_canal(value):
     )
     if not re.match(r"^cartoonito\s+hd\s*\(\s*opc\.?\s*\d+\s*\)$", value, re.I):
         value = re.sub(r"\s*\(\s*opc\.?\s*\d+\s*\)\s*$", "", value, flags=re.I)
-    value = re.sub(r"\s*\|\s*(?:cl|co|chile)\s*$", "", value, flags=re.I)
+    value = re.sub(r"\s*\|\s*(?:cl|co|do|chile)\s*$", "", value, flags=re.I)
     value = re.sub(r"\s*(?:\[\s*v2\s*\]|\(\s*v2\s*\)|v2)\s*$", " 2", value, flags=re.I)
     value = re.sub(
         r"\s+(?:magna|magma|pluto\s*(?:latam|mx|es))$",
@@ -907,6 +907,77 @@ def deduplicar_pluto_existente(lineas):
 
     return salida, eliminados
 
+def auditar_urls_pluto(lineas, ahora=None):
+    """Cuenta el inventario Pluto y su estado JWT sin exponer tokens."""
+    from collections import Counter
+
+    ahora = time.time() if ahora is None else ahora
+    urls = []
+    total_pluto = con_jwt = sin_jwt = expirados = renovar = invalidos = 0
+    por_region = defaultdict(int)
+    i = 0
+    while i < len(lineas):
+        if not lineas[i].startswith("#EXTINF"):
+            i += 1
+            continue
+        extinf = lineas[i]
+        j = i + 1
+        while j < len(lineas) and lineas[j].startswith("#") and not lineas[j].startswith("#EXTINF"):
+            j += 1
+        if j >= len(lineas):
+            i = j
+            continue
+        # Si falta la URL de este bloque, no saltarse el siguiente #EXTINF.
+        if lineas[j].startswith("#EXTINF"):
+            i = j
+            continue
+        url = lineas[j].strip()
+        if not url_es_valida(url):
+            i = j + 1
+            continue
+        urls.append(url)
+        if es_url_pluto(url):
+            total_pluto += 1
+            country = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
+            por_region[(country.group(1).upper() if country else "SIN_COUNTRY")] += 1
+            jwt = re.search(r"(?:[?&])jwt=([^&]+)", url, re.I)
+            if not jwt:
+                sin_jwt += 1
+            else:
+                con_jwt += 1
+                token_parts = jwt.group(1).split(".")
+                try:
+                    if len(token_parts) != 3:
+                        raise ValueError("JWT incompleto")
+                    payload = token_parts[1]
+                    payload += "=" * ((4 - len(payload) % 4) % 4)
+                    data = json.loads(base64.urlsafe_b64decode(payload.encode("ascii")).decode("utf-8"))
+                    exp = data.get("exp")
+                    if isinstance(exp, str) and exp.isdigit():
+                        exp = int(exp)
+                    if not isinstance(exp, (int, float)):
+                        raise ValueError("JWT sin exp")
+                    if exp <= ahora:
+                        expirados += 1
+                    elif exp <= ahora + 5 * 60 * 60:
+                        renovar += 1
+                except Exception:
+                    invalidos += 1
+        i = j + 1
+
+    duplicados = sum(count - 1 for count in Counter(urls).values() if count > 1)
+    return {
+        "pluto_total": total_pluto,
+        "pluto_con_jwt": con_jwt,
+        "pluto_sin_jwt": sin_jwt,
+        "jwt_expirados": expirados,
+        "jwt_por_vencer_5h": renovar,
+        "jwt_no_decodificables": invalidos,
+        "urls_exactas_duplicadas": duplicados,
+        "pluto_por_country": dict(sorted(por_region.items())),
+    }
+
+
 def deduplicar_urls_exactas(lineas):
     """Elimina bloques repetidos por URL exacta, conservando la primera aparición.
 
@@ -1179,10 +1250,20 @@ def cargar_catalogo_pluto_propio(session):
                 if url_id and url_id not in ids:
                     ids.append(url_id)
 
+                # El parámetro country del JWT indica el mercado de entrega,
+                # no necesariamente el nombre de la playlist regional. LATAM
+                # publica señales con country=MX y country=CL; registrar esos
+                # alias permite reconocer huérfanos expirados solo cuando el
+                # catálogo que cubre ese mercado se descargó completo.
+                regiones_cubiertas = {region}
+                country_match = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
+                if country_match:
+                    regiones_cubiertas.add(country_match.group(1).lower())
                 for cid in ids:
                     # LATAM aparece primero y gana en el catálogo global.
                     por_id.setdefault(cid, canal)
-                    por_region[region].setdefault(cid, canal)
+                    for region_alias in regiones_cubiertas:
+                        por_region[region_alias].setdefault(cid, canal)
                 if nombre:
                     por_nombre.setdefault(nombre, canal)
         except Exception as e:
@@ -1216,7 +1297,7 @@ def jwt_expirado_en_url(url, ahora=None):
     except Exception:
         return False
 
-def jwt_necesita_renovacion_en_url(url, margen_segundos=6 * 60 * 60, ahora=None):
+def jwt_necesita_renovacion_en_url(url, margen_segundos=5 * 60 * 60, ahora=None):
     """True si el JWT vence ahora o dentro del margen preventivo configurado."""
     m = re.search(r"(?:[?&])jwt=([^&]+)", url or "", re.I)
     if not m:
@@ -1296,11 +1377,10 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
             i = j
             continue
 
-        if url in propias and not jwt_necesita_renovacion_en_url(url):
-            salida.extend(bloque)
-            ya_propios += 1
-            i = j
-            continue
+        # No conservar un JWT propio solo porque aún no está próximo a vencer.
+        # Cada ejecución de Pluto obtiene un catálogo recién generado con una
+        # sesión nueva; reemplazar también las URLs propias fuerza la rotación
+        # preventiva y evita depender del siguiente ciclo para evitar cortes.
 
         m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         tvg_id = m_id.group(1).strip().lower() if m_id else ""
@@ -1717,6 +1797,7 @@ def sincronizar_enlaces_existentes(lineas, canales_destinados):
         lineas,
         canales_destinados,
         normalizar=normalizar,
+        normalizar_nombre=normalizar_nombre_canal,
         extraer_nombre=extraer_nombre,
         extraer_categoria=extraer_categoria,
         reemplazar_categoria=reemplazar_categoria,
@@ -2817,7 +2898,8 @@ def clave_familia_canal(nombre):
     texto = normalizar(nombre)
     texto = re.sub(r"\s*(?:\[|\()\s*(?:opc(?:ion)?|option)\.?\s*\d+\s*(?:\]|\))$", "", texto)
     texto = re.sub(r"\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
-    texto = re.sub(r"\s*\|\s*(?:cl|co|chile)$", "", texto)
+    # Las etiquetas regionales son metadatos del nombre, no una familia distinta.
+    texto = re.sub(r"\s*\|\s*(?:cl|co|do|chile)$", "", texto)
     if not texto:
         return ""
 

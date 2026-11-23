@@ -241,7 +241,9 @@ def main():
     ordered_lines = restaurar_categoria_bloqueada(
         ordered_lines, original_lines, "Anime"
     )
-
+    # Inventario previo: separa enlaces JWT, alternativas estables y expiraciones.
+    pluto_inventario_previo = alimentador.auditar_urls_pluto(ordered_lines)
+    print("[ORQUESTADOR] Inventario Pluto antes de renovar:", pluto_inventario_previo)
     # Última reconciliación de Pluto DESPUÉS de todas las restauraciones,
     # agrupaciones y sincronizaciones complementarias. Así ningún bloque
     # histórico (incluido Anime) puede reintroducir JWT antiguos.
@@ -254,9 +256,14 @@ def main():
         f"{pluto_renovacion_final['reemplazados']} URLs actualizadas; "
         f"{pluto_renovacion_final['conservados_sin_reemplazo']} conservadas sin "
         "correspondencia; "
-        f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas."
+        f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas; "
+        f"{pluto_renovacion_final['ya_propios']} ya propias vigentes; "
+        f"{pluto_renovacion_final['sin_jwt_conservados']} alternativas estables sin JWT; "
+        f"catálogos completos={'sí' if pluto_renovacion_final['catalogo_completo'] else 'no'}; "
+        f"errores de catálogo={pluto_renovacion_final['errores_catalogo']}."
     )
-
+    pluto_inventario_posterior = alimentador.auditar_urls_pluto(ordered_lines)
+    print("[ORQUESTADOR] Inventario Pluto después de renovar:", pluto_inventario_posterior)
     # Blindajes terminales: todos los logos existentes se congelan por identidad;
     # el orden global de carpetas se aplica al final para que ninguna
     # sincronización lo deshaga.
@@ -289,9 +296,10 @@ def main():
         if "jwt=" not in url.lower() or not alimentador.es_url_pluto(url):
             continue
         country_match = re.search(r"(?:[?&])country=([A-Za-z]{2})", url, re.I)
-        # Solo bloquear la publicación por regiones que este reconciliador
-        # puede renovar (LATAM/ES/MX). Regiones ajenas al catálogo se preservan.
-        if country_match and country_match.group(1).lower() not in {"mx", "es"}:
+        # Bloquear JWT vencidos o próximos a vencer en mercados cubiertos
+        # por los catálogos: LATAM (MX/CL), España y Brasil. Mercados ajenos
+        # al catálogo se preservan para no borrar canales históricos.
+        if country_match and country_match.group(1).lower() not in {"mx", "cl", "es", "br"}:
             continue
         if alimentador.jwt_necesita_renovacion_en_url(url):
             jwt_pendientes.append(url)
@@ -299,7 +307,7 @@ def main():
         raise RuntimeError(
             "La maestra no se publica: quedan "
             f"{len(jwt_pendientes)} URLs Pluto con JWT vencido o con menos de "
-            "6 horas de vigencia. Se conserva la lista anterior."
+            "5 horas de vigencia. Se conserva la lista anterior."
         )
 
     ids_pluto_orden = (
@@ -323,8 +331,23 @@ def main():
     # Última barrera: algunas fuentes heredadas repiten la misma URL bajo
     # distintos nombres (EnerGeek Radio/Retro). Conservamos el primer bloque
     # completo, sin tocar logos, nombres ni URLs únicas.
+    # La renovación terminal de Pluto puede reincorporar variantes después del
+    # agrupador inicial: reagrupar ahora garantiza una base y opciones contiguas.
+    ordered_lines = alimentador.agrupar_alternativas_por_identidad(ordered_lines)
+    # Orden terminal: nada puede desordenar Anime después de esta barrera.
+    ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
+
+    # La deduplicación debe ser la última transformación estructural: así también
+    # cubre alternativas reincorporadas por las reconciliaciones terminales.
     ordered_lines, urls_duplicadas_eliminadas = alimentador.deduplicar_urls_exactas(ordered_lines)
     print(f"[ORQUESTADOR] URLs exactas duplicadas eliminadas: {urls_duplicadas_eliminadas}")
+    inventario_pluto_final = alimentador.auditar_urls_pluto(ordered_lines)
+    if inventario_pluto_final["urls_exactas_duplicadas"]:
+        raise RuntimeError(
+            "La principal conserva "
+            f"{inventario_pluto_final['urls_exactas_duplicadas']} URLs exactas duplicadas tras la limpieza."
+        )
+    print("[ORQUESTADOR] Inventario Pluto final validado:", inventario_pluto_final)
 
     _trace_pitufos_mx("antes de escribir", ordered_lines)
     temporary = PRINCIPAL.with_name(PRINCIPAL.name + ".orden.tmp")

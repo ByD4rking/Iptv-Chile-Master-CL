@@ -48,6 +48,34 @@ def candidate(channel_id, category, name, url, source=None):
 
 
 class OriginalPlaylistOrderTests(unittest.TestCase):
+    def test_regional_suffix_does_not_create_a_new_channel_family(self):
+        self.assertEqual(
+            ap.clave_familia_canal("Sport Vision | DO"),
+            ap.clave_familia_canal("Sport Vision"),
+        )
+
+    def test_url_refresh_matches_unique_name_with_regional_suffix(self):
+        original = ["#EXTM3U"] + entry(
+            "", "Deportes", "Sport Vision", "https://old.example/sport.m3u8"
+        )
+        source = {
+            "extinf": '#EXTINF:-1 group-title="Deportes",Sport Vision | DO',
+            "nombre": "Sport Vision | DO",
+            "url": "https://new.example/sport.m3u8",
+        }
+        updated, stats = ap.sincronizar_enlaces_existentes(
+            original,
+            [(source, "Deportes")],
+        )
+        self.assertEqual(updated[-1], "https://new.example/sport.m3u8")
+        self.assertEqual(stats["urls_actualizadas"], 1)
+
+    def test_dominican_region_suffix_does_not_create_new_channel_family(self):
+        self.assertEqual(
+            ap.clave_familia_canal("Sport Vision | DO"),
+            ap.clave_familia_canal("Sport Vision"),
+        )
+
     def test_colombia_suffix_preserves_caracol_historical_position(self):
         original = ["#EXTM3U"] + (
             entry("", "Colombia", "Caracol | CO", "https://old.example/caracol.m3u8")
@@ -149,9 +177,44 @@ class ComplementSyncTests(unittest.TestCase):
             + entry("kids.two", "Infantiles", "Canal Kids", "https://keep.example/kids.m3u8")
         )
 
+    def test_identical_source_url_is_preserved_without_refresh(self):
+        url = "https://old.example/one.m3u8"
+        base = ["#EXTM3U"] + entry(
+            "sports.one", "Deportes", "Canal Uno", url
+        )
+        source = [
+            candidate("sports.one", "Deportes", "Canal Uno", url)
+        ]
+        output, stats = reconcile_lines(base, source)
+        self.assertEqual(output[-1], url)
+        self.assertEqual(stats["url_actualizadas"], 0)
+
     def test_changed_url_updates_existing_channel(self):
         source = [candidate("sports.one", "Deportes", "Canal Uno", "https://new.example/one.m3u8")]
         output, stats = reconcile_lines(self.base, source)
+        self.assertIn("https://new.example/one.m3u8", output)
+        self.assertNotIn("https://old.example/one.m3u8", output)
+        self.assertEqual(stats["url_actualizadas"], 1)
+
+    def test_stable_tvg_id_reconciles_source_name_change_without_duplicate(self):
+        base = ["#EXTM3U"] + entry(
+            "sports.one", "Deportes", "Nombre anterior", "https://old.example/one.m3u8"
+        )
+        source = [
+            candidate(
+                "sports.one",
+                "Deportes",
+                "Nombre actualizado",
+                "https://new.example/one.m3u8",
+            )
+        ]
+        output, stats = reconcile_lines(base, source)
+        matching = [
+            line for line in output
+            if line.startswith("#EXTINF") and 'tvg-id="sports.one"' in line
+        ]
+        self.assertEqual(len(matching), 1)
+        self.assertTrue(matching[0].endswith(",Nombre actualizado"))
         self.assertIn("https://new.example/one.m3u8", output)
         self.assertNotIn("https://old.example/one.m3u8", output)
         self.assertEqual(stats["url_actualizadas"], 1)

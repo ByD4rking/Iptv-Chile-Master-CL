@@ -477,7 +477,7 @@ def _is_resolution_name_correction(current_display: str, source_display: str) ->
     source_base = re.sub(r"\s+(?:HD|SD|FHD|UHD)$", "", source_display, flags=re.I).strip()
     return bool(current_base and ap.normalizar(current_base) == ap.normalizar(source_base))
 
-def _merge_extinf(current: str, source: str, destination: str, allow_resolution_name_update: bool = False) -> str:
+def _merge_extinf(current: str, source: str, destination: str, allow_resolution_name_update: bool = False, allow_source_name_update: bool = False) -> str:
     """Actualiza categoría/logos sin sobrescribir la identidad ya existente."""
     result = current
     existing_id = _valid_tvg_id(_attr(current, "tvg-id"))
@@ -495,6 +495,22 @@ def _merge_extinf(current: str, source: str, destination: str, allow_resolution_
     if allow_resolution_name_update and _is_resolution_name_correction(existing_display, source_display):
         result = _set_display_name(result, _clean_channel_display(source_display))
         result = _set_attr(result, "tvg-name", _clean_channel_display(source_name or source_display))
+    elif allow_source_name_update and source_display:
+        # Un tvg-id estable permite reconciliar un cambio real de nombre sin
+        # crear un segundo canal. Si la entrada ya tiene una etiqueta OPC,
+        # conservarla: algunas fuentes reutilizan el nombre de otra variante.
+        option_pattern = re.compile(
+            r"\s*(\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))$",
+            re.I,
+        )
+        existing_option = option_pattern.search(existing_display)
+        display_base = option_pattern.sub("", source_display).strip()
+        display = _clean_channel_display(display_base)
+        if existing_option:
+            display = f"{display} {existing_option.group(1)}".strip()
+        result = _set_display_name(result, display)
+        result = _set_attr(result, "tvg-name", _clean_channel_display(option_pattern.sub("", source_name or source_display)))
     else:
         if not existing_tvg_name and not existing_display and source_name:
             result = _set_attr(result, "tvg-name", _clean_channel_display(source_name))
@@ -1148,6 +1164,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                     selected.get("extinf", ""),
                     destination,
                     allow_resolution_name_update=(idx == primary_match and old_url == source_url),
+                    allow_source_name_update=(identity.startswith("id:") and idx == primary_match),
                 )
                 if idx == primary_match and old_url != source_url:
                     block["url"] = source_url

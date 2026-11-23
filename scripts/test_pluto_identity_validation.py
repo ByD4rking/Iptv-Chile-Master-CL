@@ -14,6 +14,8 @@ from alimentar_principal import (
     calcular_ids_pluto_faltantes,
     reemplazar_pluto_tercero_por_propio,
     jwt_necesita_renovacion_en_url,
+    auditar_urls_pluto,
+    cargar_catalogo_pluto_propio,
 )
 
 
@@ -57,6 +59,33 @@ class PlutoIdentityValidationTests(unittest.TestCase):
             calcular_ids_pluto_faltantes(required, aliases, final_aliases),
             {"id:epg.alias"},
         )
+
+    def test_existing_own_jwt_is_refreshed_on_every_pluto_update(self):
+        old_url = (
+            "https://service.pluto.tv/channel/0123456789abcdef01234567/"
+            "master.m3u8?country=MX&jwt=old-valid-token"
+        )
+        fresh_url = (
+            "https://service.pluto.tv/channel/0123456789abcdef01234567/"
+            "master.m3u8?country=MX&jwt=fresh-token"
+        )
+        extinf = '#EXTINF:-1 tvg-id="epg.alias" group-title="Infantiles",Canal'
+        catalog = (
+            {"epg.alias": {"url": fresh_url}, "0123456789abcdef01234567": {"url": fresh_url}},
+            {"canal": {"url": fresh_url}},
+            {"latam": {"epg.alias": {"url": fresh_url}}, "es": {}, "mx": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url", return_value=False):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], fresh_url)
+        self.assertEqual(stats["reemplazados"], 1)
+        self.assertEqual(stats["ya_propios"], 0)
 
     def test_expired_mx_tagged_url_prefers_latam_catalog_over_mx(self):
         old_url = (
@@ -134,13 +163,122 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertEqual(result[-1], external_url)
         self.assertEqual(stats["sin_jwt_conservados"], 1)
 
-    def test_jwt_with_less_than_six_hours_is_marked_for_early_refresh(self):
+    def test_jwt_with_less_than_five_hours_is_marked_for_early_refresh(self):
         payload = base64.urlsafe_b64encode(
             json.dumps({"exp": 1000}).encode("utf-8")
         ).decode("ascii").rstrip("=")
         url = f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/master.m3u8?jwt=header.{payload}.signature"
         self.assertTrue(jwt_necesita_renovacion_en_url(url, margen_segundos=600, ahora=500))
         self.assertFalse(jwt_necesita_renovacion_en_url(url, margen_segundos=100, ahora=500))
+
+
+    def test_pluto_inventory_reports_jwt_state_and_exact_duplicate_urls(self):
+        payload_expired = base64.urlsafe_b64encode(
+            json.dumps({"exp": 900}).encode("utf-8")
+        ).decode("ascii").rstrip("=")
+        payload_soon = base64.urlsafe_b64encode(
+            json.dumps({"exp": 1200}).encode("utf-8")
+        ).decode("ascii").rstrip("=")
+        expired = (
+            "https://service.pluto.tv/channel/0123456789abcdef01234567/master.m3u8"
+            f"?jwt=x.{payload_expired}.x&country=CL"
+        )
+        soon = (
+            "https://service.pluto.tv/channel/abcdef0123456789abcdef0123/master.m3u8"
+            f"?jwt=x.{payload_soon}.x&country=ES"
+        )
+        stable = "https://jmp2.uk/plu-999999999999999999999999.m3u8"
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-id="one",Canal vencido', expired,
+            '#EXTINF:-1 tvg-id="one-copy",Canal duplicado', expired,
+            '#EXTINF:-1 tvg-id="two",Canal por vencer', soon,
+            '#EXTINF:-1 tvg-id="three",Alternativa estable', stable,
+            '#EXTINF:-1 tvg-id="four",Canal externo', "https://example.com/live.m3u8",
+        ]
+        result = auditar_urls_pluto(lines, ahora=1000)
+        self.assertEqual(result["pluto_total"], 4)
+        self.assertEqual(result["pluto_con_jwt"], 3)
+        self.assertEqual(result["pluto_sin_jwt"], 1)
+        self.assertEqual(result["jwt_expirados"], 2)
+        self.assertEqual(result["jwt_por_vencer_5h"], 1)
+        self.assertEqual(result["jwt_no_decodificables"], 0)
+        self.assertEqual(result["urls_exactas_duplicadas"], 1)
+        self.assertEqual(result["pluto_por_country"], {"CL": 2, "ES": 1, "SIN_COUNTRY": 1})
+
+
+
+    def test_inventory_does_not_skip_channel_after_entry_without_url(self):
+        url = "https://jmp2.uk/plu-0123456789abcdef01234567.m3u8"
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-id="broken",Bloque sin URL',
+            '#EXTINF:-1 tvg-id="valid",Canal válido',
+            url,
+        ]
+        result = auditar_urls_pluto(lines, ahora=1000)
+        self.assertEqual(result["pluto_total"], 1)
+        self.assertEqual(result["pluto_sin_jwt"], 1)
+
+
+
+    def test_latam_catalog_registers_country_alias_for_chile(self):
+        source = "https://example.test/pluto_latam.m3u"
+        channel_id = "0123456789abcdef01234567"
+        url = (
+            "https://service.pluto.tv/channel/"
+            f"{channel_id}/master.m3u8?country=CL&jwt=token"
+        )
+        m3u = (
+            "#EXTM3U\n"
+            f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Infantiles",Canal CL\n'
+            f"{url}\n"
+        )
+
+        class Response:
+            def __init__(self, text):
+                self.text = text
+
+            def raise_for_status(self):
+                return None
+
+        class Session:
+            def get(self, requested, timeout=30):
+                return Response(m3u)
+
+        with (
+            patch("alimentar_principal.FUENTES_PLUTO_CATALOGO", [source]),
+            patch("alimentar_principal.PLUTO_CATALOGO_MINIMOS", {source: 1}),
+        ):
+            por_id, _, por_region, errors, complete = cargar_catalogo_pluto_propio(Session())
+
+        self.assertEqual(errors, 0)
+        self.assertTrue(complete)
+        self.assertIn(channel_id, por_id)
+        self.assertIn(channel_id, por_region["cl"])
+
+    def test_expired_chile_jwt_orphan_is_removed_only_with_complete_coverage(self):
+        old_url = (
+            "https://service.pluto.tv/channel/"
+            "abcdef0123456789abcdef0123/master.m3u8?country=CL&jwt=old"
+        )
+        extinf = '#EXTINF:-1 tvg-id="old.cl" group-title="Infantiles",Canal antiguo CL'
+        catalog = (
+            {}, {}, {"latam": {}, "cl": {"different.id": {"url": "https://example.test/new.m3u8"}}},
+            0, True,
+        )
+        with (
+            patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog),
+            patch("alimentar_principal.jwt_necesita_renovacion_en_url", return_value=True),
+            patch("alimentar_principal.jwt_expirado_en_url", return_value=True),
+        ):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertNotIn(old_url, result)
+        self.assertEqual(stats["expirados_eliminados"], 1)
+
 
 
 if __name__ == "__main__":

@@ -308,6 +308,8 @@ def audit(scope: str) -> dict:
         if name in previous_sources and name not in observed:
             observed[name] = previous_sources[name]
 
+    writable_changes = [item for item in changes if not item.get("readonly", False)]
+    readonly_changes = [item for item in changes if item.get("readonly", False)]
     timestamp = datetime.now(timezone.utc).isoformat()
     report = {
         "schema_version": 1,
@@ -322,6 +324,11 @@ def audit(scope: str) -> dict:
         "total_added_channels": sum(item.get("added_channels", 0) for item in changes),
         "total_removed_channels": sum(item.get("removed_channels", 0) for item in changes),
         "total_changed_stream_urls": sum(item.get("changed_stream_urls", 0) for item in changes),
+        # Separar fuentes publicables de GOD: se audita, pero nunca se transfiere a la principal.
+        "writable_changed_sources": sum(1 for item in writable_changes if item["status"] == "changed"),
+        "writable_changed_stream_urls": sum(item.get("changed_stream_urls", 0) for item in writable_changes),
+        "readonly_changed_sources": sum(1 for item in readonly_changes if item["status"] == "changed"),
+        "readonly_changed_stream_urls": sum(item.get("changed_stream_urls", 0) for item in readonly_changes),
         "total_source_url_changes": len(configured_url_changes),
         "configured_source_url_changes": configured_url_changes,
         "removed_sources": removed_sources,
@@ -339,8 +346,19 @@ def audit(scope: str) -> dict:
         f"canales_nuevos={report['total_added_channels']} "
         f"canales_eliminados={report['total_removed_channels']} "
         f"URLs_stream_cambiadas={report['total_changed_stream_urls']} "
+        f"(publicables={report['writable_changed_stream_urls']}, "
+        f"GOD_solo_lectura={report['readonly_changed_stream_urls']}) "
         f"URLs_fuente_cambiadas={report['total_source_url_changes']}"
     )
+    for item in changes:
+        changed_urls = int(item.get("changed_stream_urls", 0))
+        if changed_urls:
+            scope_label = "GOD-solo-lectura" if item.get("readonly", False) else "publicable"
+            print(
+                f"[AUDIT][detalle] {scope_label} {item['source']}: "
+                f"{changed_urls} URLs; altas={item.get('added_channels', 0)}; "
+                f"bajas={item.get('removed_channels', 0)}"
+            )
     print(f"[AUDIT] Informe: {report_path.relative_to(ROOT)}")
     print(f"[AUDIT] Estado: {state_path.relative_to(ROOT)}")
     return report

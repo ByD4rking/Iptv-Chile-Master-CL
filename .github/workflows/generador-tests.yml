@@ -15,7 +15,7 @@ permissions:
 
 concurrency:
   group: generator-tests-pr-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   unit-tests:
