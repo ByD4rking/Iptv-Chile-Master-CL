@@ -2819,7 +2819,7 @@ def clave_familia_canal(nombre):
     texto = re.sub(r"\s*(?:\[|\()\s*(?:opc(?:ion)?|option)\.?\s*\d+\s*(?:\]|\))$", "", texto)
     texto = re.sub(r"\s+(?:hd|sd|fhd|uhd|4k|1080p|720p|576p|geo)$", "", texto)
     # Las etiquetas regionales son metadatos del nombre, no una familia distinta.
-    texto = re.sub(r"\s*\|\s*(?:ar|bo|br|cl|co|cr|do|ec|es|mx|pe|py|ve|chile)$", "", texto)
+    texto = re.sub(r"\s*\|\s*(?:cl|co|do|chile)$", "", texto)
     if not texto:
         return ""
 
