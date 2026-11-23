@@ -203,24 +203,26 @@ class PlutoIdentityValidationTests(unittest.TestCase):
             f"{channel_id}/master.m3u8?country=CL&jwt=token"
         )
         m3u = (
-            "#EXTM3U\\n"
-            f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Infantiles",Canal CL\\n'
-            f"{url}\\n"
+            "#EXTM3U\n"
+            f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Infantiles",Canal CL\n'
+            f"{url}\n"
         )
 
         class Response:
-            text = m3u
+            def __init__(self, text):
+                self.text = text
 
             def raise_for_status(self):
                 return None
 
         class Session:
             def get(self, requested, timeout=30):
-                self.asserted = requested
-                return Response()
+                return Response(m3u)
 
-        with patch("alimentar_principal.FUENTES_PLUTO_CATALOGO", [source]), \\
-             patch("alimentar_principal.PLUTO_CATALOGO_MINIMOS", {source: 1}):
+        with (
+            patch("alimentar_principal.FUENTES_PLUTO_CATALOGO", [source]),
+            patch("alimentar_principal.PLUTO_CATALOGO_MINIMOS", {source: 1}),
+        ):
             por_id, _, por_region, errors, complete = cargar_catalogo_pluto_propio(Session())
 
         self.assertEqual(errors, 0)
@@ -238,16 +240,17 @@ class PlutoIdentityValidationTests(unittest.TestCase):
             {}, {}, {"latam": {}, "cl": {"different.id": {"url": "https://example.test/new.m3u8"}}},
             0, True,
         )
-        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \\
-             patch("alimentar_principal.jwt_necesita_renovacion_en_url", return_value=True), \\
-             patch("alimentar_principal.jwt_expirado_en_url", return_value=True):
+        with (
+            patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog),
+            patch("alimentar_principal.jwt_necesita_renovacion_en_url", return_value=True),
+            patch("alimentar_principal.jwt_expirado_en_url", return_value=True),
+        ):
             result, stats = reemplazar_pluto_tercero_por_propio(
                 ["#EXTM3U", extinf, old_url],
                 session=None,
             )
         self.assertNotIn(old_url, result)
         self.assertEqual(stats["expirados_eliminados"], 1)
-
 
 
 
