@@ -2879,7 +2879,7 @@ def clave_familia_canal(nombre):
 def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
     """Agrupa familias respetando su orden histórico e inserta novedades al final del grupo."""
 
-    def extraer_bloques(datos, incluir_urls_invalidas=False):
+    def extraer_bloques(datos):
         bloques = []
         pendientes = []
         i = 0
@@ -2897,10 +2897,7 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 inicio.append(datos[j])
                 j += 1
 
-            if j < len(datos) and (
-                url_es_valida(datos[j].strip())
-                or (incluir_urls_invalidas and bool(datos[j].strip()))
-            ):
+            if j < len(datos) and url_es_valida(datos[j].strip()):
                 url = datos[j].strip()
                 inicio.append(datos[j])
                 extinf = datos[i]
@@ -2943,9 +2940,7 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
         return bloques, pendientes
 
     bloques, pendientes = extraer_bloques(lineas)
-    # Los enlaces históricos inválidos también fijan el orden de la familia:
-    # si la fuente los repara, no deben tratarse como una familia nueva.
-    originales, _ = extraer_bloques(lineas_anteriores or [], incluir_urls_invalidas=True)
+    originales, _ = extraer_bloques(lineas_anteriores or [])
 
     familias_originales = defaultdict(list)
     identidades_originales = defaultdict(set)
@@ -2956,18 +2951,11 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
             familias_originales[categoria].append(familia)
         identidades_originales[categoria].add(bloque["identidad"])
 
-    # Consolidar cada categoría en su primera posición. Si una categoría
-    # aparece en varios segmentos, ordenar cada segmento por separado puede
-    # dejar una familia histórica detrás de una familia nueva (p. ej. Deportes).
     segmentos = []
-    segmentos_por_categoria = {}
     for bloque in bloques:
-        categoria = bloque["categoria"]
-        if categoria not in segmentos_por_categoria:
-            segmento = []
-            segmentos_por_categoria[categoria] = segmento
-            segmentos.append(segmento)
-        segmentos_por_categoria[categoria].append(bloque)
+        if not segmentos or segmentos[-1][0]["categoria"] != bloque["categoria"]:
+            segmentos.append([])
+        segmentos[-1].append(bloque)
 
     # Estas carpetas tienen un orden específico aplicado por otras reglas;
     # el agrupador debe respetarlo en vez de restaurar su orden histórico.
@@ -2989,15 +2977,6 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 orden_familias_actual.append(familia)
             familias[familia].append(bloque)
 
-        if categoria == normalizar("Deportes"):
-            historicas_deportes = familias_originales.get(categoria, [])
-            if any("sport vision" in familia for familia in historicas_deportes + orden_familias_actual):
-                print(
-                    "[FAMILIAS][DEBUG] Deportes: "
-                    f"historicas={historicas_deportes[-5:]!r}; "
-                    f"actuales={orden_familias_actual[-5:]!r}"
-                )
-
         if categoria in categorias_orden_intencional:
             orden_familias = orden_familias_actual
         else:
@@ -3010,14 +2989,6 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 familia for familia in orden_familias_actual
                 if familia not in conjunto_historico
             ]
-
-        if categoria == normalizar("Deportes") and any("sport vision" in f or "bein sports" in f for f in orden_familias_actual):
-            print(
-                "[FAMILIAS][ORDEN FINAL] Deportes: "
-                f"historicas={familias_originales.get(categoria, [])!r}; "
-                f"actuales={orden_familias_actual!r}; "
-                f"ordenadas={orden_familias!r}"
-            )
 
         identidades = identidades_originales.get(categoria, set())
         for familia in orden_familias:
