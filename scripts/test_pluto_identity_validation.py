@@ -14,6 +14,7 @@ from alimentar_principal import (
     calcular_ids_pluto_faltantes,
     reemplazar_pluto_tercero_por_propio,
     jwt_necesita_renovacion_en_url,
+    auditar_urls_pluto,
 )
 
 
@@ -141,6 +142,42 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         url = f"https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/master.m3u8?jwt=header.{payload}.signature"
         self.assertTrue(jwt_necesita_renovacion_en_url(url, margen_segundos=600, ahora=500))
         self.assertFalse(jwt_necesita_renovacion_en_url(url, margen_segundos=100, ahora=500))
+
+
+    def test_pluto_inventory_reports_jwt_state_and_exact_duplicate_urls(self):
+        payload_expired = base64.urlsafe_b64encode(
+            json.dumps({"exp": 900}).encode("utf-8")
+        ).decode("ascii").rstrip("=")
+        payload_soon = base64.urlsafe_b64encode(
+            json.dumps({"exp": 1200}).encode("utf-8")
+        ).decode("ascii").rstrip("=")
+        expired = (
+            "https://service.pluto.tv/channel/0123456789abcdef01234567/master.m3u8"
+            f"?jwt=x.{payload_expired}.x&country=CL"
+        )
+        soon = (
+            "https://service.pluto.tv/channel/abcdef0123456789abcdef0123/master.m3u8"
+            f"?jwt=x.{payload_soon}.x&country=ES"
+        )
+        stable = "https://jmp2.uk/plu-999999999999999999999999.m3u8"
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-id="one",Canal vencido', expired,
+            '#EXTINF:-1 tvg-id="one-copy",Canal duplicado', expired,
+            '#EXTINF:-1 tvg-id="two",Canal por vencer', soon,
+            '#EXTINF:-1 tvg-id="three",Alternativa estable', stable,
+            '#EXTINF:-1 tvg-id="four",Canal externo', "https://example.com/live.m3u8",
+        ]
+        result = auditar_urls_pluto(lines, ahora=1000)
+        self.assertEqual(result["pluto_total"], 4)
+        self.assertEqual(result["pluto_con_jwt"], 3)
+        self.assertEqual(result["pluto_sin_jwt"], 1)
+        self.assertEqual(result["jwt_expirados"], 1)
+        self.assertEqual(result["jwt_por_vencer_6h"], 1)
+        self.assertEqual(result["jwt_no_decodificables"], 0)
+        self.assertEqual(result["urls_exactas_duplicadas"], 1)
+        self.assertEqual(result["pluto_por_country"], {"CL": 2, "ES": 1, "SIN_COUNTRY": 1})
+
 
 
 if __name__ == "__main__":
