@@ -180,5 +180,19 @@ class PlutoIdentityValidationTests(unittest.TestCase):
 
 
 
+    def test_inventory_does_not_skip_channel_after_entry_without_url(self):
+        url = "https://jmp2.uk/plu-0123456789abcdef01234567.m3u8"
+        lines = [
+            "#EXTM3U",
+            '#EXTINF:-1 tvg-id="broken",Bloque sin URL',
+            '#EXTINF:-1 tvg-id="valid",Canal válido',
+            url,
+        ]
+        result = auditar_urls_pluto(lines, ahora=1000)
+        self.assertEqual(result["pluto_total"], 1)
+        self.assertEqual(result["pluto_sin_jwt"], 1)
+
+
+
 if __name__ == "__main__":
     unittest.main()
