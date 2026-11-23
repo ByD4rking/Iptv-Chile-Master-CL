@@ -77,7 +77,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
             0,
             True,
         )
-        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \\
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \
              patch("alimentar_principal.jwt_necesita_renovacion_en_url", return_value=False):
             result, stats = reemplazar_pluto_tercero_por_propio(
                 ["#EXTM3U", extinf, old_url],
@@ -163,7 +163,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertEqual(result[-1], external_url)
         self.assertEqual(stats["sin_jwt_conservados"], 1)
 
-    def test_jwt_with_less_than_six_hours_is_marked_for_early_refresh(self):
+    def test_jwt_with_less_than_five_hours_is_marked_for_early_refresh(self):
         payload = base64.urlsafe_b64encode(
             json.dumps({"exp": 1000}).encode("utf-8")
         ).decode("ascii").rstrip("=")
