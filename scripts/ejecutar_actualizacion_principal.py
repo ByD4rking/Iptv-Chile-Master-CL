@@ -324,8 +324,10 @@ def main():
     ordered_lines, urls_duplicadas_eliminadas = alimentador.deduplicar_urls_exactas(ordered_lines)
     print(f"[ORQUESTADOR] URLs exactas duplicadas eliminadas: {urls_duplicadas_eliminadas}")
 
-    # Orden terminal: las restauraciones de logos/categorías y el deduplicado
-    # deben ocurrir antes; nada puede desordenar Anime después de esta barrera.
+    # La renovación terminal de Pluto puede reincorporar variantes después del
+    # agrupador inicial: reagrupar ahora garantiza una base y opciones contiguas.
+    ordered_lines = alimentador.agrupar_alternativas_por_identidad(ordered_lines)
+    # Orden terminal: nada puede desordenar Anime después de esta barrera.
     ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
     _trace_pitufos_mx("antes de escribir", ordered_lines)
