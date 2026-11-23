@@ -241,10 +241,6 @@ def main():
     ordered_lines = restaurar_categoria_bloqueada(
         ordered_lines, original_lines, "Anime"
     )
-    # La restauración congela membresía, metadatos y URLs históricas; el orden
-    # sí debe respetar las franquicias/sagas solicitadas por el usuario.
-    ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
-
     # Última reconciliación de Pluto DESPUÉS de todas las restauraciones,
     # agrupaciones y sincronizaciones complementarias. Así ningún bloque
     # histórico (incluido Anime) puede reintroducir JWT antiguos.
@@ -259,6 +255,9 @@ def main():
         "correspondencia; "
         f"{pluto_renovacion_final['expirados_eliminados']} expiradas retiradas."
     )
+    # La renovación puede reincorporar bloques de Anime; ordenar después de ella
+    # para que ninguna reconciliación posterior deshaga las franquicias/sagas.
+    ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
     # Blindajes terminales: todos los logos existentes se congelan por identidad;
     # el orden global de carpetas se aplica al final para que ninguna
