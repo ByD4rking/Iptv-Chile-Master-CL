@@ -241,6 +241,9 @@ def main():
     ordered_lines = restaurar_categoria_bloqueada(
         ordered_lines, original_lines, "Anime"
     )
+    # La restauración congela membresía, metadatos y URLs históricas; el orden
+    # sí debe respetar las franquicias/sagas solicitadas por el usuario.
+    ordered_lines = alimentador.ordenar_anime_alfabeticamente(ordered_lines)
 
     # Última reconciliación de Pluto DESPUÉS de todas las restauraciones,
     # agrupaciones y sincronizaciones complementarias. Así ningún bloque
