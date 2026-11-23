@@ -927,6 +927,10 @@ def auditar_urls_pluto(lineas, ahora=None):
         if j >= len(lineas):
             i = j
             continue
+        # Si falta la URL de este bloque, no saltarse el siguiente #EXTINF.
+        if lineas[j].startswith("#EXTINF"):
+            i = j
+            continue
         url = lineas[j].strip()
         if not url_es_valida(url):
             i = j + 1
