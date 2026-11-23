@@ -959,7 +959,7 @@ def auditar_urls_pluto(lineas, ahora=None):
                         raise ValueError("JWT sin exp")
                     if exp <= ahora:
                         expirados += 1
-                    elif exp <= ahora + 6 * 60 * 60:
+                    elif exp <= ahora + 5 * 60 * 60:
                         renovar += 1
                 except Exception:
                     invalidos += 1
@@ -971,7 +971,7 @@ def auditar_urls_pluto(lineas, ahora=None):
         "pluto_con_jwt": con_jwt,
         "pluto_sin_jwt": sin_jwt,
         "jwt_expirados": expirados,
-        "jwt_por_vencer_6h": renovar,
+        "jwt_por_vencer_5h": renovar,
         "jwt_no_decodificables": invalidos,
         "urls_exactas_duplicadas": duplicados,
         "pluto_por_country": dict(sorted(por_region.items())),
@@ -1297,7 +1297,7 @@ def jwt_expirado_en_url(url, ahora=None):
     except Exception:
         return False
 
-def jwt_necesita_renovacion_en_url(url, margen_segundos=6 * 60 * 60, ahora=None):
+def jwt_necesita_renovacion_en_url(url, margen_segundos=5 * 60 * 60, ahora=None):
     """True si el JWT vence ahora o dentro del margen preventivo configurado."""
     m = re.search(r"(?:[?&])jwt=([^&]+)", url or "", re.I)
     if not m:
@@ -1377,11 +1377,10 @@ def reemplazar_pluto_tercero_por_propio(lineas, session):
             i = j
             continue
 
-        if url in propias and not jwt_necesita_renovacion_en_url(url):
-            salida.extend(bloque)
-            ya_propios += 1
-            i = j
-            continue
+        # No conservar un JWT propio solo porque aún no está próximo a vencer.
+        # Cada ejecución de Pluto obtiene un catálogo recién generado con una
+        # sesión nueva; reemplazar también las URLs propias fuerza la rotación
+        # preventiva y evita depender del siguiente ciclo para evitar cortes.
 
         m_id = re.search(r'tvg-id="([^"]+)"', extinf, re.I)
         tvg_id = m_id.group(1).strip().lower() if m_id else ""
