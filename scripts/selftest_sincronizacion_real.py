@@ -611,7 +611,11 @@ def main(args: argparse.Namespace) -> None:
                 f"Cambió el orden de familias dentro de {category} "
                 f"en índice {mismatch}: antes={expected_order[mismatch:mismatch + 8]!r}; "
                 f"después={after_families[mismatch:mismatch + 8]!r}; "
-                f"nuevas_al_final={nuevas_familias!r}"
+                f"nuevas_al_final={nuevas_familias!r}; "
+                f"familias_antes_finales={before_families[-5:]!r}; "
+                f"familias_despues_finales={after_families[-5:]!r}; "
+                f"sport_antes={[(x['display_raw'], x['category'], x['url']) for x in before_kept if 'sport vision' in x['display_raw'].lower()]!r}; "
+                f"sport_despues={[(x['display_raw'], x['category'], x['url']) for x in after_nonpluto if 'sport vision' in x['display_raw'].lower()]!r}"
             )
 
     # Todo logo existente en la versión anterior debe sobrevivir a la actualización.
