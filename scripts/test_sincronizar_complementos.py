@@ -48,6 +48,28 @@ def candidate(channel_id, category, name, url, source=None):
 
 
 class OriginalPlaylistOrderTests(unittest.TestCase):
+    def test_regional_suffix_does_not_create_a_new_channel_family(self):
+        self.assertEqual(
+            ap.clave_familia_canal("Sport Vision | DO"),
+            ap.clave_familia_canal("Sport Vision"),
+        )
+
+    def test_url_refresh_matches_unique_name_with_regional_suffix(self):
+        original = ["#EXTM3U"] + entry(
+            "", "Deportes", "Sport Vision", "https://old.example/sport.m3u8"
+        )
+        source = {
+            "extinf": '#EXTINF:-1 group-title="Deportes",Sport Vision | DO',
+            "nombre": "Sport Vision | DO",
+            "url": "https://new.example/sport.m3u8",
+        }
+        updated, stats = ap.sincronizar_enlaces_existentes(
+            original,
+            [(source, "Deportes")],
+        )
+        self.assertEqual(updated[-1], "https://new.example/sport.m3u8")
+        self.assertEqual(stats["urls_actualizadas"], 1)
+
     def test_dominican_region_suffix_does_not_create_new_channel_family(self):
         self.assertEqual(
             ap.clave_familia_canal("Sport Vision | DO"),
