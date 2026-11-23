@@ -477,7 +477,7 @@ def _is_resolution_name_correction(current_display: str, source_display: str) ->
     source_base = re.sub(r"\s+(?:HD|SD|FHD|UHD)$", "", source_display, flags=re.I).strip()
     return bool(current_base and ap.normalizar(current_base) == ap.normalizar(source_base))
 
-def _merge_extinf(current: str, source: str, destination: str, allow_resolution_name_update: bool = False) -> str:
+def _merge_extinf(current: str, source: str, destination: str, allow_resolution_name_update: bool = False, allow_source_name_update: bool = False) -> str:
     """Actualiza categoría/logos sin sobrescribir la identidad ya existente."""
     result = current
     existing_id = _valid_tvg_id(_attr(current, "tvg-id"))
@@ -493,6 +493,12 @@ def _merge_extinf(current: str, source: str, destination: str, allow_resolution_
     existing_display = ap.extraer_nombre(current)
     source_display = ap.extraer_nombre(source)
     if allow_resolution_name_update and _is_resolution_name_correction(existing_display, source_display):
+        result = _set_display_name(result, _clean_channel_display(source_display))
+        result = _set_attr(result, "tvg-name", _clean_channel_display(source_name or source_display))
+    elif allow_source_name_update and source_display:
+        # Un tvg-id estable permite reconciliar un cambio real de nombre sin
+        # crear un segundo canal. La actualización se limita al bloque base;
+        # las etiquetas de alternativas y los logos históricos se preservan.
         result = _set_display_name(result, _clean_channel_display(source_display))
         result = _set_attr(result, "tvg-name", _clean_channel_display(source_name or source_display))
     else:
@@ -1148,6 +1154,7 @@ def reconcile_lines(lines: list[str], candidates: list[dict], manifest: dict | N
                     selected.get("extinf", ""),
                     destination,
                     allow_resolution_name_update=(idx == primary_match and old_url == source_url),
+                    allow_source_name_update=(identity.startswith("id:") and idx == primary_match),
                 )
                 if idx == primary_match and old_url != source_url:
                     block["url"] = source_url
