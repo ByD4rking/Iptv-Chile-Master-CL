@@ -15,6 +15,7 @@ from alimentar_principal import (
     reemplazar_pluto_tercero_por_propio,
     jwt_necesita_renovacion_en_url,
     auditar_urls_pluto,
+    cargar_catalogo_pluto_propio,
 )
 
 
@@ -191,6 +192,62 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         result = auditar_urls_pluto(lines, ahora=1000)
         self.assertEqual(result["pluto_total"], 1)
         self.assertEqual(result["pluto_sin_jwt"], 1)
+
+
+
+    def test_latam_catalog_registers_country_alias_for_chile(self):
+        source = "https://example.test/pluto_latam.m3u"
+        channel_id = "0123456789abcdef01234567"
+        url = (
+            "https://service.pluto.tv/channel/"
+            f"{channel_id}/master.m3u8?country=CL&jwt=token"
+        )
+        m3u = (
+            "#EXTM3U\\n"
+            f'#EXTINF:-1 tvg-id="{channel_id}" group-title="Infantiles",Canal CL\\n'
+            f"{url}\\n"
+        )
+
+        class Response:
+            text = m3u
+
+            def raise_for_status(self):
+                return None
+
+        class Session:
+            def get(self, requested, timeout=30):
+                self.asserted = requested
+                return Response()
+
+        with patch("alimentar_principal.FUENTES_PLUTO_CATALOGO", [source]), \\
+             patch("alimentar_principal.PLUTO_CATALOGO_MINIMOS", {source: 1}):
+            por_id, _, por_region, errors, complete = cargar_catalogo_pluto_propio(Session())
+
+        self.assertEqual(errors, 0)
+        self.assertTrue(complete)
+        self.assertIn(channel_id, por_id)
+        self.assertIn(channel_id, por_region["cl"])
+
+    def test_expired_chile_jwt_orphan_is_removed_only_with_complete_coverage(self):
+        old_url = (
+            "https://service.pluto.tv/channel/"
+            "abcdef0123456789abcdef0123/master.m3u8?country=CL&jwt=old"
+        )
+        extinf = '#EXTINF:-1 tvg-id="old.cl" group-title="Infantiles",Canal antiguo CL'
+        catalog = (
+            {}, {}, {"latam": {}, "cl": {"different.id": {"url": "https://example.test/new.m3u8"}}},
+            0, True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \\
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url", return_value=True), \\
+             patch("alimentar_principal.jwt_expirado_en_url", return_value=True):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertNotIn(old_url, result)
+        self.assertEqual(stats["expirados_eliminados"], 1)
+
 
 
 
