@@ -500,8 +500,8 @@ def _merge_extinf(current: str, source: str, destination: str, allow_resolution_
         # crear un segundo canal. Si la entrada ya tiene una etiqueta OPC,
         # conservarla: algunas fuentes reutilizan el nombre de otra variante.
         option_pattern = re.compile(
-            r"\\s*(\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|"
-            r"\\(\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\))$",
+            r"\s*(\[\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\]|"
+            r"\(\s*(?:opc(?:i[oó]n)?\.?|option)\s*\d+\s*\))$",
             re.I,
         )
         existing_option = option_pattern.search(existing_display)
