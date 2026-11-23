@@ -177,6 +177,18 @@ class ComplementSyncTests(unittest.TestCase):
             + entry("kids.two", "Infantiles", "Canal Kids", "https://keep.example/kids.m3u8")
         )
 
+    def test_identical_source_url_is_preserved_without_refresh(self):
+        url = "https://old.example/one.m3u8"
+        base = ["#EXTM3U"] + entry(
+            "sports.one", "Deportes", "Canal Uno", url
+        )
+        source = [
+            candidate("sports.one", "Deportes", "Canal Uno", url)
+        ]
+        output, stats = reconcile_lines(base, source)
+        self.assertEqual(output[-1], url)
+        self.assertEqual(stats["url_actualizadas"], 0)
+
     def test_changed_url_updates_existing_channel(self):
         source = [candidate("sports.one", "Deportes", "Canal Uno", "https://new.example/one.m3u8")]
         output, stats = reconcile_lines(self.base, source)
