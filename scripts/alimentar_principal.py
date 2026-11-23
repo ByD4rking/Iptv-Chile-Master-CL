@@ -2951,11 +2951,18 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
             familias_originales[categoria].append(familia)
         identidades_originales[categoria].add(bloque["identidad"])
 
+    # Consolidar cada categoría en su primera posición. Si una categoría
+    # aparece en varios segmentos, ordenar cada segmento por separado puede
+    # dejar una familia histórica detrás de una familia nueva (p. ej. Deportes).
     segmentos = []
+    segmentos_por_categoria = {}
     for bloque in bloques:
-        if not segmentos or segmentos[-1][0]["categoria"] != bloque["categoria"]:
-            segmentos.append([])
-        segmentos[-1].append(bloque)
+        categoria = bloque["categoria"]
+        if categoria not in segmentos_por_categoria:
+            segmento = []
+            segmentos_por_categoria[categoria] = segmento
+            segmentos.append(segmento)
+        segmentos_por_categoria[categoria].append(bloque)
 
     # Estas carpetas tienen un orden específico aplicado por otras reglas;
     # el agrupador debe respetarlo en vez de restaurar su orden histórico.
