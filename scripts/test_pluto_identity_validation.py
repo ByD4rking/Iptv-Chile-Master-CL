@@ -60,6 +60,33 @@ class PlutoIdentityValidationTests(unittest.TestCase):
             {"id:epg.alias"},
         )
 
+    def test_existing_own_jwt_is_refreshed_on_every_pluto_update(self):
+        old_url = (
+            "https://service.pluto.tv/channel/0123456789abcdef01234567/"
+            "master.m3u8?country=MX&jwt=old-valid-token"
+        )
+        fresh_url = (
+            "https://service.pluto.tv/channel/0123456789abcdef01234567/"
+            "master.m3u8?country=MX&jwt=fresh-token"
+        )
+        extinf = '#EXTINF:-1 tvg-id="epg.alias" group-title="Infantiles",Canal'
+        catalog = (
+            {"epg.alias": {"url": fresh_url}, "0123456789abcdef01234567": {"url": fresh_url}},
+            {"canal": {"url": fresh_url}},
+            {"latam": {"epg.alias": {"url": fresh_url}}, "es": {}, "mx": {}},
+            0,
+            True,
+        )
+        with patch("alimentar_principal.cargar_catalogo_pluto_propio", return_value=catalog), \\
+             patch("alimentar_principal.jwt_necesita_renovacion_en_url", return_value=False):
+            result, stats = reemplazar_pluto_tercero_por_propio(
+                ["#EXTM3U", extinf, old_url],
+                session=None,
+            )
+        self.assertEqual(result[-1], fresh_url)
+        self.assertEqual(stats["reemplazados"], 1)
+        self.assertEqual(stats["ya_propios"], 0)
+
     def test_expired_mx_tagged_url_prefers_latam_catalog_over_mx(self):
         old_url = (
             "https://cfd-v4-service-channel-stitcher-use1-1.prd.pluto.tv/channel/0123456789abcdef01234567/"
@@ -174,7 +201,7 @@ class PlutoIdentityValidationTests(unittest.TestCase):
         self.assertEqual(result["pluto_con_jwt"], 3)
         self.assertEqual(result["pluto_sin_jwt"], 1)
         self.assertEqual(result["jwt_expirados"], 2)
-        self.assertEqual(result["jwt_por_vencer_6h"], 1)
+        self.assertEqual(result["jwt_por_vencer_5h"], 1)
         self.assertEqual(result["jwt_no_decodificables"], 0)
         self.assertEqual(result["urls_exactas_duplicadas"], 1)
         self.assertEqual(result["pluto_por_country"], {"CL": 2, "ES": 1, "SIN_COUNTRY": 1})
