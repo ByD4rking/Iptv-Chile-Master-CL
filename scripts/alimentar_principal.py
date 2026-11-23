@@ -2879,7 +2879,7 @@ def clave_familia_canal(nombre):
 def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
     """Agrupa familias respetando su orden histórico e inserta novedades al final del grupo."""
 
-    def extraer_bloques(datos):
+    def extraer_bloques(datos, incluir_urls_invalidas=False):
         bloques = []
         pendientes = []
         i = 0
@@ -2897,7 +2897,10 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
                 inicio.append(datos[j])
                 j += 1
 
-            if j < len(datos) and url_es_valida(datos[j].strip()):
+            if j < len(datos) and (
+                url_es_valida(datos[j].strip())
+                or (incluir_urls_invalidas and bool(datos[j].strip()))
+            ):
                 url = datos[j].strip()
                 inicio.append(datos[j])
                 extinf = datos[i]
@@ -2940,7 +2943,9 @@ def agrupar_familias_por_categoria(lineas, lineas_anteriores=None):
         return bloques, pendientes
 
     bloques, pendientes = extraer_bloques(lineas)
-    originales, _ = extraer_bloques(lineas_anteriores or [])
+    # Los enlaces históricos inválidos también fijan el orden de la familia:
+    # si la fuente los repara, no deben tratarse como una familia nueva.
+    originales, _ = extraer_bloques(lineas_anteriores or [], incluir_urls_invalidas=True)
 
     familias_originales = defaultdict(list)
     identidades_originales = defaultdict(set)
