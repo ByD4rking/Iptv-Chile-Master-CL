@@ -53,5 +53,7 @@ jobs:
         run: python -m unittest scripts.test_pluto_identity_validation -v
       - name: Probar orden History en Documentales y Cultura
         run: python -m unittest scripts.test_history_documentales -v
+      - name: Auditar fuentes publicables y GOD de solo lectura por separado
+        run: python scripts/auditar_fuentes.py --scope principal
       - name: Ejecutar reconciliación real y auditar la playlist resultante
         run: python scripts/selftest_sincronizacion_real.py
