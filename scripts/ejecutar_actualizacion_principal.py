@@ -307,7 +307,7 @@ def main():
         raise RuntimeError(
             "La maestra no se publica: quedan "
             f"{len(jwt_pendientes)} URLs Pluto con JWT vencido o con menos de "
-            "6 horas de vigencia. Se conserva la lista anterior."
+            "5 horas de vigencia. Se conserva la lista anterior."
         )
 
     ids_pluto_orden = (
