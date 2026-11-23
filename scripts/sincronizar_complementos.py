@@ -497,10 +497,20 @@ def _merge_extinf(current: str, source: str, destination: str, allow_resolution_
         result = _set_attr(result, "tvg-name", _clean_channel_display(source_name or source_display))
     elif allow_source_name_update and source_display:
         # Un tvg-id estable permite reconciliar un cambio real de nombre sin
-        # crear un segundo canal. La actualización se limita al bloque base;
-        # las etiquetas de alternativas y los logos históricos se preservan.
-        result = _set_display_name(result, _clean_channel_display(source_display))
-        result = _set_attr(result, "tvg-name", _clean_channel_display(source_name or source_display))
+        # crear un segundo canal. Si la entrada ya tiene una etiqueta OPC,
+        # conservarla: algunas fuentes reutilizan el nombre de otra variante.
+        option_pattern = re.compile(
+            r"\\s*(\\[\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\]|"
+            r"\\(\\s*(?:opc(?:i[oó]n)?\\.?|option)\\s*\\d+\\s*\\))$",
+            re.I,
+        )
+        existing_option = option_pattern.search(existing_display)
+        display_base = option_pattern.sub("", source_display).strip()
+        display = _clean_channel_display(display_base)
+        if existing_option:
+            display = f"{display} {existing_option.group(1)}".strip()
+        result = _set_display_name(result, display)
+        result = _set_attr(result, "tvg-name", _clean_channel_display(option_pattern.sub("", source_name or source_display)))
     else:
         if not existing_tvg_name and not existing_display and source_name:
             result = _set_attr(result, "tvg-name", _clean_channel_display(source_name))
