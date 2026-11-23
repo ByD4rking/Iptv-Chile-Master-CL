@@ -139,6 +139,13 @@ class PlutoClient:
         Obtiene una nueva sesión de Pluto.
         """
 
+        # Si Pluto falla al emitir el JWT nuevo, no dejar disponible en memoria
+        # ninguna sesión anterior para una publicación accidental.
+        self.session_token = None
+        self.token_expiry = 0
+        self.stitcher_url = None
+        self.stitcher_params = ""
+
         params = {
             "appName": "web",
             "appVersion": APP_VERSION,
