@@ -8,9 +8,8 @@ on:
       - "scripts/**"
       - "config/**"
       - ".github/workflows/actualizar.yml"
-  schedule:
-    - cron: "0 */6 * * *"
-  # La principal se actualiza después de que Pluto renueve los JWT regionales.
+  # Este pipeline se ejecuta después de cada actualización horaria exitosa de Pluto.
+  # En una sola pasada reconcilia todas las fuentes complementarias y la principal.
   workflow_run:
     workflows:
       - "Pluto TV - Actualizar listas regionales"
