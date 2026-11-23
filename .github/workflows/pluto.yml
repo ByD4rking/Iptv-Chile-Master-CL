@@ -21,6 +21,7 @@ permissions:
 concurrency:
   # Comparte la misma cola que la publicación principal para serializar escritores de main.
   group: iptv-maintenance
+  queue: max
   cancel-in-progress: false
 
 
