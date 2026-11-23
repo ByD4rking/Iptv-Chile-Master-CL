@@ -25,6 +25,7 @@ permissions:
 
 concurrency:
   group: iptv-maintenance
+  queue: max
   # No cancelar una publicación activa: las ejecuciones deben serializarse
   # para evitar que una actualización interrumpa otra mientras prepara la M3U.
   cancel-in-progress: false
@@ -43,6 +44,8 @@ jobs:
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
+          # workflow_run trae el SHA de Pluto que lo disparó; regenerar sobre el main vigente.
+          ref: main
 
       - name: Configurar Python
         uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
@@ -75,6 +78,9 @@ jobs:
           fi
 
           python -m pip install requests
+
+      - name: Verificar cola compartida de publicación
+        run: python -m unittest scripts.test_workflow_publication -v
 
       - name: Validar sintaxis de scripts
         run: |
