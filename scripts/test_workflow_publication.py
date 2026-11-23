@@ -1,6 +1,5 @@
 """Regresión: los escritores de playlists deben publicar en una cola común."""
 from pathlib import Path
-import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,9 +12,8 @@ class WorkflowPublicationTests(unittest.TestCase):
         cls.pluto = (ROOT / ".github/workflows/pluto.yml").read_text(encoding="utf-8-sig")
 
     def test_updater_and_pluto_share_one_publication_group(self):
-        pattern = r"(?m)^  group: iptv-maintenance\\s*$"
-        self.assertRegex(self.updater, pattern)
-        self.assertRegex(self.pluto, pattern)
+        self.assertIn("  group: iptv-maintenance", self.updater)
+        self.assertIn("  group: iptv-maintenance", self.pluto)
 
     def test_updater_checks_out_current_main_not_workflow_run_sha(self):
         self.assertIn("          ref: main", self.updater)
