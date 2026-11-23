@@ -1,0 +1,59 @@
+name: Validar rama IPTV segura
+
+on:
+  push:
+    branches:
+      - fix/sincronizacion-incremental-segura
+    paths:
+      - "scripts/**"
+      - "config/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validar-iptv-segura
+  cancel-in-progress: false
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Descargar rama de trabajo
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          ref: fix/sincronizacion-incremental-segura
+
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias de pruebas
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt
+          fi
+          python -m pip install requests
+
+      - name: Validar sintaxis
+        run: |
+          python -m py_compile \
+            scripts/auditar_fuentes.py \
+            scripts/alimentar_principal.py \
+            scripts/sincronizar_complementos.py \
+            scripts/ejecutar_actualizacion_principal.py \
+            scripts/selftest_sincronizacion_real.py
+
+      - name: Pruebas de sincronización y resiliencia
+        run: |
+          python -m unittest discover -s scripts -p 'test_sincronizar_complementos.py' -v
+          python -m unittest scripts.test_auditar_fuentes -v
+          python -m unittest scripts.test_m3ucl_resilience -v
+          python -m unittest scripts.test_pluto_identity_validation -v
+          python -m unittest scripts.test_tvn_logos -v
+          python -m unittest scripts.test_history_documentales -v
