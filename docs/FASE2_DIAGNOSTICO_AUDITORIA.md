@@ -5,6 +5,7 @@
 ## Alcance de esta entrega
 
 - Comparar los atributos `tvg-logo` y `logo` entre dos snapshots M3U.
+- Bloquear en CI el reemplazo o eliminación de logos que ya estaban definidos; permitir completar logos vacíos.
 - Detectar altas y bajas por identidad de canal, sin editar ninguna lista.
 - Clasificar errores de fuentes separando restricciones de acceso, fallos transitorios, respuestas inválidas y candidatos a caída permanente.
 - Exigir al menos dos observaciones independientes (ejecuciones distintas) para confirmar un HTTP 404/410; los reintentos dentro de una misma ejecución no cuentan.
