@@ -87,6 +87,13 @@ class M3UStructureTests(unittest.TestCase):
             validate_m3u_bytes(data, source="https://cdn.example/list.m3u?jwt=super-secret")
         self.assertNotIn("super-secret", str(ctx.exception))
         self.assertIn("cdn.example", str(ctx.exception))
+    def test_rechaza_extinf_con_duracion_no_numerica(self):
+        with self.assertRaisesRegex(ValueError, "duración #EXTINF inválida"):
+            validate_m3u_bytes(b"#EXTM3U\n#EXTINF:abc,Canal\nhttps://x.test/live\n")
+
+    def test_rechaza_etiqueta_extinf_mal_formada(self):
+        with self.assertRaisesRegex(ValueError, "etiqueta #EXTINF mal formada"):
+            validate_m3u_bytes(b"#EXTM3U\n#EXTINFmal,Canal\nhttps://x.test/live\n")
     def test_rechaza_lista_sin_canales(self):
         with self.assertRaisesRegex(ValueError, "no contiene pares"):
             validate_m3u_bytes(b"#EXTM3U\n#EXTVLCOPT:http-reconnect=true\n")
