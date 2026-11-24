@@ -17,10 +17,13 @@ import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.error import HTTPError, URLError
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+from m3u_structure import validate_m3u_bytes
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
-
-from m3u_structure import validate_m3u_bytes
 
 ROOT = Path(__file__).resolve().parents[1]
 STATE_DIR = ROOT / "reportes" / "fuentes"
