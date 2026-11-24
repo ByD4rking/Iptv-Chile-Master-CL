@@ -55,29 +55,33 @@ def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     header = lines[0].upper() if lines else ""
     if not (header == "#EXTM3U" or header.startswith("#EXTM3U ")):
-        raise ValueError(f"{source}: falta cabecera #EXTM3U al inicio")
+        raise ValueError(f"{source_label}: falta cabecera #EXTM3U al inicio")
 
     entries = 0
     pending_extinf = False
     for line in lines[1:]:
         if line.upper().startswith("#EXTINF:"):
             if pending_extinf:
-                raise ValueError(f"{source}: entrada #EXTINF sin URI antes de la siguiente entrada")
+                raise ValueError(f"{source_label}: entrada #EXTINF sin URI antes de la siguiente entrada")
             if "," not in line or not line.rsplit(",", 1)[-1].strip():
-                raise ValueError(f"{source}: línea #EXTINF mal formada o sin nombre")
+                raise ValueError(f"{source_label}: línea #EXTINF mal formada o sin nombre")
             pending_extinf = True
             continue
         if line.startswith("#"):
             continue
         if not pending_extinf:
-            raise ValueError(f"{source}: contenido suelto no asociado a #EXTINF: {line[:120]}")
+            raise ValueError(f"{source_label}: contenido suelto no asociado a #EXTINF: {line[:120]}")
         uri = re.match(r"^([a-z][a-z0-9+.-]*)://([^\s]+)$", line, re.I)
-        if not uri or uri.group(1).casefold() not in ALLOWED_STREAM_SCHEMES:
-            raise ValueError(f"{source}: URI de canal inválida: {line[:120]}")
-        entries += 1
+        try:
+            parsed_uri = urlsplit(line)
+            valid_authority = bool(parsed_uri.hostname)
+        except ValueError:
+            valid_authority = False
+        if not uri or uri.group(1).casefold() not in ALLOWED_STREAM_SCHEMES or not valid_authority:
+            raise ValueError(f"{source_label}: URI de canal inválida")
         pending_extinf = False
     if pending_extinf:
-        raise ValueError(f"{source}: última entrada #EXTINF no tiene URI")
+        raise ValueError(f"{source_label}: última entrada #EXTINF no tiene URI")
     if entries == 0:
-        raise ValueError(f"{source}: no contiene pares #EXTINF/URI válidos")
+        raise ValueError(f"{source_label}: no contiene pares #EXTINF/URI válidos")
     return entries
