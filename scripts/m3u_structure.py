@@ -60,11 +60,17 @@ def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
     entries = 0
     pending_extinf = False
     for line in lines[1:]:
+        if line.upper().startswith("#EXTINF") and not line.upper().startswith("#EXTINF:"):
+            raise ValueError(f"{source_label}: etiqueta #EXTINF mal formada")
         if line.upper().startswith("#EXTINF:"):
             if pending_extinf:
                 raise ValueError(f"{source_label}: entrada #EXTINF sin URI antes de la siguiente entrada")
             if "," not in line or not line.rsplit(",", 1)[-1].strip():
                 raise ValueError(f"{source_label}: línea #EXTINF mal formada o sin nombre")
+            duration_field = line.split(",", 1)[0][len("#EXTINF:"):].strip()
+            duration = duration_field.split(maxsplit=1)[0] if duration_field else ""
+            if not re.fullmatch(r"-?\\d+(?:\\.\\d+)?", duration):
+                raise ValueError(f"{source_label}: duración #EXTINF inválida")
             pending_extinf = True
             continue
         if line.startswith("#"):
