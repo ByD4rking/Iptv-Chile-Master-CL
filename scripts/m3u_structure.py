@@ -13,12 +13,12 @@ def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
     if not data or not data.strip():
         raise ValueError(f"{source}: respuesta vacía")
     text = data.decode("utf-8-sig", errors="replace")
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
-    if not lines or not lines[0].upper().startswith("#EXTM3U"):
-        raise ValueError(f"{source}: falta cabecera #EXTM3U al inicio")
     lowered = text[:4096].casefold()
     if "<!doctype html" in lowered or "<html" in lowered or "<body" in lowered:
         raise ValueError(f"{source}: el servidor devolvió HTML, no una playlist M3U")
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if not lines or not lines[0].upper().startswith("#EXTM3U"):
+        raise ValueError(f"{source}: falta cabecera #EXTM3U al inicio")
 
     entries = 0
     pending_extinf = False
