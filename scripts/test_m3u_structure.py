@@ -1,0 +1,45 @@
+"""Pruebas de validación estructural M3U: aceptar listas reales y rechazar HTML/truncadas."""
+import unittest
+
+from scripts.m3u_structure import validate_m3u_bytes
+
+
+class M3UStructureTests(unittest.TestCase):
+    def test_acepta_playlist_con_directivas_entre_extinf_y_uri(self):
+        data = (
+            b"#EXTM3U\n"
+            b'#EXTINF:-1 tvg-id="uno",Canal Uno\n'
+            b"#EXTVLCOPT:http-reconnect=true\n"
+            b"https://stream.example/uno.m3u8\n"
+            b'#EXTINF:-1,Canal Dos\n'
+            b"https://stream.example/dos.m3u8\n"
+        )
+        self.assertEqual(validate_m3u_bytes(data), 2)
+
+    def test_rechaza_respuesta_vacia(self):
+        with self.assertRaisesRegex(ValueError, "vacía"):
+            validate_m3u_bytes(b"")
+
+    def test_rechaza_html_aunque_tenga_contenido(self):
+        with self.assertRaisesRegex(ValueError, "HTML"):
+            validate_m3u_bytes(b"<!doctype html><html><body>403</body></html>")
+
+    def test_rechaza_cabecera_ausente_o_no_inicial(self):
+        with self.assertRaisesRegex(ValueError, "cabecera"):
+            validate_m3u_bytes(b"<html>error</html>\n#EXTM3U\n")
+    
+    def test_rechaza_extinf_sin_uri(self):
+        with self.assertRaisesRegex(ValueError, "sin URI"):
+            validate_m3u_bytes(b"#EXTM3U\n#EXTINF:-1,Canal\n#EXTINF:-1,Otro\nhttps://x.test/live.m3u8\n")
+
+    def test_rechaza_uri_no_http(self):
+        with self.assertRaisesRegex(ValueError, "URI de canal inválida"):
+            validate_m3u_bytes(b"#EXTM3U\n#EXTINF:-1,Canal\nrtmp://stream.example/live\n")
+
+    def test_rechaza_lista_sin_canales(self):
+        with self.assertRaisesRegex(ValueError, "no contiene pares"):
+            validate_m3u_bytes(b"#EXTM3U\n#EXTVLCOPT:http-reconnect=true\n")
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
