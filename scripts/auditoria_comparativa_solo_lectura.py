@@ -99,17 +99,35 @@ def compare_playlists(before: dict[str, dict], after: dict[str, dict]) -> dict:
     }
 
 
-def classify_error(detail: str, observations: int = 1) -> str:
+def extract_http_status(detail: str) -> int | None:
+    """Extrae solo códigos HTTP explícitos, evitando números arbitrarios de URLs."""
+    message = (detail or "").strip()
+    patterns = (
+        r"\\bHTTP(?:\\s+ERROR)?\\s*[:#]?\\s*([1-5]\\d{2})\\b",
+        r"\\bstatus(?:\\s+code)?\\s*[:=]?\\s*([1-5]\\d{2})\\b",
+        r"^([1-5]\\d{2})\\b",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, message, re.I)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def classify_error(
+    detail: str,
+    observations: int = 1,
+    independent_observations: int = 1,
+) -> str:
     message = (detail or "").casefold()
-    status_match = re.search(r"\b(?:http\s*)?(\d{3})\b", message)
-    status = int(status_match.group(1)) if status_match else None
+    status = extract_http_status(detail)
     if status in {401, 403} or "forbidden" in message or "unauthorized" in message:
         return "restriccion_acceso"
     if status in {404, 410}:
-        return "permanente_confirmado" if observations >= 2 else "permanente_candidato"
-    if status is not None and 500 <= status <= 599:
+        return "permanente_confirmado" if independent_observations >= 2 else "permanente_candidato"
+    if status == 429 or (status is not None and 500 <= status <= 599):
         return "transitorio"
-    if re.search(r"timeout|timed out|ssl|tls|connection reset|temporar|dns|name resolution|\b429\b", message):
+    if re.search(r"timeout|timed out|ssl|tls|connection reset|temporar|dns|name resolution", message):
         return "transitorio"
     if any(token in message for token in ("#extm3u", "html", "content-type", "formato", "respuesta vacía", "respuesta vacia")):
         return "respuesta_invalida"
@@ -143,10 +161,23 @@ def classify_source_report(report: dict) -> list[dict]:
             observations = max(1, int(observations))
         except (TypeError, ValueError):
             observations = 1
+
+        # Reintentos de una misma ejecución no cuentan como evidencia independiente.
+        independent = item.get("independent_observations")
+        run_ids = item.get("observation_run_ids", [])
+        if isinstance(run_ids, list):
+            independent_count = len({str(value) for value in run_ids if value is not None})
+        else:
+            try:
+                independent_count = max(1, int(independent or 1))
+            except (TypeError, ValueError):
+                independent_count = 1
+
         rows.append({
             "source": str(item.get("source", "desconocida")),
-            "classification": classify_error(detail, observations),
+            "classification": classify_error(detail, observations, independent_count),
             "observations": observations,
+            "independent_observations": independent_count,
             "detail": redact_sensitive_values(detail),
         })
     return rows
