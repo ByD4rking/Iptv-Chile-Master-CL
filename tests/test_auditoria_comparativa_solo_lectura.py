@@ -60,9 +60,11 @@ class AuditoriaComparativaSoloLecturaTests(unittest.TestCase):
             self.assertEqual(before.read_bytes(), original)
 
     def test_un_404_aislado_no_se_confirma_hasta_repetirse(self):
-        self.assertEqual(classify_error("HTTP 404 Not Found", 1), "permanente_candidato")
-        self.assertEqual(classify_error("HTTP 404 Not Found", 2), "permanente_confirmado")
-        self.assertEqual(classify_error("HTTP 410 Gone", 3), "permanente_confirmado")
+        self.assertEqual(classify_error("HTTP 404 Not Found", 1, 1), "permanente_candidato")
+        self.assertEqual(classify_error("HTTP 404 Not Found", 5, 1), "permanente_candidato")
+        self.assertEqual(classify_error("HTTP 404 Not Found", 2, 2), "permanente_confirmado")
+        self.assertEqual(classify_error("HTTP 410 Gone", 3, 2), "permanente_confirmado")
+        self.assertEqual(classify_error("HTTP 404 https://host.test/path/403/item", 4, 2), "permanente_candidato")
 
     def test_restricciones_y_fallos_transitorios_no_son_permanentes(self):
         self.assertEqual(classify_error("HTTP 403 Forbidden"), "restriccion_acceso")
@@ -80,11 +82,14 @@ class AuditoriaComparativaSoloLecturaTests(unittest.TestCase):
             "errors": [
                 {"source": "A", "error": "HTTP 404 https://example.test/list.m3u?jwt=secret", "observations": 1},
                 {"source": "B", "error": "HTTP 404 Not Found", "observations": 3},
+                {"source": "C", "error": "HTTP 410 Gone", "observations": 4, "observation_run_ids": ["run-a", "run-a", "run-b"]},
             ]
         }
         rows = classify_source_report(report)
         self.assertEqual(rows[0]["classification"], "permanente_candidato")
-        self.assertEqual(rows[1]["classification"], "permanente_confirmado")
+        self.assertEqual(rows[1]["classification"], "permanente_candidato")
+        self.assertEqual(rows[2]["classification"], "permanente_confirmado")
+        self.assertEqual(rows[2]["independent_observations"], 2)
         self.assertNotIn("secret", rows[0]["detail"])
         self.assertIn("jwt=%2A%2A%2A", rows[0]["detail"])
 
