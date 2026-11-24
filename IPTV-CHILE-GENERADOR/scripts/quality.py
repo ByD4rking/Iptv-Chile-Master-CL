@@ -419,6 +419,42 @@ def validate_hls(url, initial_text, initial_content_type, max_depth=2):
     }
 
 
+def quarantined_result(channel, source, state):
+    """Representa un endpoint pausado sin contarlo como un nuevo fallo."""
+    return {
+        "channel_id": channel.get("id", ""),
+        "channel_name": channel.get("name", ""),
+        "url": str(source.get("url") or "").strip(),
+        "source": source.get("source", ""),
+        "source_priority": int(source.get("priority") or 0),
+        "width": None,
+        "height": None,
+        "resolution": None,
+        "bitrate": None,
+        "quality_score": 0,
+        "detected": False,
+        "playback_checked": False,
+        "playback_ok": False,
+        "playback_type": None,
+        "playback_error": "Endpoint en cuarentena por fallos persistentes.",
+        "stability_checked": False,
+        "stability_ok": False,
+        "stable_segments": 0,
+        "validated_url": None,
+        "variant_index": None,
+        "variant_count": None,
+        "error": None,
+        "quarantined": True,
+        "quarantine_until": state.get("quarantine_until"),
+        "failure_class": "quarantined",
+        "failure_confirmed": False,
+        "endpoint_consecutive_failures": int(state.get("consecutive_failures") or 0),
+        "endpoint_checks": int(state.get("checks") or 0),
+        "endpoint_successes": int(state.get("successes") or 0),
+        "endpoint_failures": int(state.get("failures") or 0),
+    }
+
+
 def inspect_url(item):
     channel = item["channel"]
     source = item["source"]
@@ -579,20 +615,8 @@ def main():
 
     results = []
     for channel, source, state in skipped_quarantine:
-        results.append({
-            "channel_id": channel.get("id", ""), "channel_name": channel.get("name", ""),
-            "url": str(source.get("url") or "").strip(), "source": source.get("source", ""),
-            "source_priority": int(source.get("priority") or 0), "width": None, "height": None,
-            "resolution": None, "bitrate": None, "quality_score": 0, "detected": False,
-            "playback_checked": False, "playback_ok": False, "playback_type": None,
-            "playback_error": "Endpoint en cuarentena por fallos persistentes.",
-            "stability_checked": False, "stability_ok": False, "stable_segments": 0,
-            "validated_url": None, "variant_index": None, "variant_count": None,
-            "error": None, "quarantined": True, "quarantine_until": state.get("quarantine_until"),
-            "endpoint_consecutive_failures": int(state.get("consecutive_failures") or 0),
-            "endpoint_checks": int(state.get("checks") or 0), "endpoint_successes": int(state.get("successes") or 0),
-            "endpoint_failures": int(state.get("failures") or 0),
-        })
+        results.append(quarantined_result(channel, source, state))
+
     with ThreadPoolExecutor(max_workers=WORKERS) as executor:
         futures = [executor.submit(inspect_url, item) for item in tasks]
         for completed, future in enumerate(as_completed(futures), 1):
