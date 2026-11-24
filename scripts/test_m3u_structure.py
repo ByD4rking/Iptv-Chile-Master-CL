@@ -34,17 +34,17 @@ class M3UStructureTests(unittest.TestCase):
 
     def test_acepta_esquemas_iptv_no_http(self):
         self.assertEqual(validate_m3u_bytes(
-            b"#EXTM3U\\n#EXTINF:-1,Canal RTSP\\nrtsp://stream.example/live\\n"
-            b"#EXTINF:-1,Canal RTMP\\nrtmp://stream.example/live\\n"
+            b"#EXTM3U\n#EXTINF:-1,Canal RTSP\nrtsp://stream.example/live\n"
+            b"#EXTINF:-1,Canal RTMP\nrtmp://stream.example/live\n"
         ), 2)
 
     def test_rechaza_uri_sin_esquema(self):
         with self.assertRaisesRegex(ValueError, "URI de canal inválida"):
-            validate_m3u_bytes(b"#EXTM3U\\n#EXTINF:-1,Canal\\nstream.example/live\\n")
+            validate_m3u_bytes(b"#EXTM3U\n#EXTINF:-1,Canal\nstream.example/live\n")
 
     def test_rechaza_cabecera_m3u_con_sufijo_invalido(self):
         with self.assertRaisesRegex(ValueError, "cabecera"):
-            validate_m3u_bytes(b"#EXTM3Ugarbage\\n#EXTINF:-1,Canal\\nhttps://x.test/live\\n")
+            validate_m3u_bytes(b"#EXTM3Ugarbage\n#EXTINF:-1,Canal\nhttps://x.test/live\n")
 
     def test_rechaza_lista_sin_canales(self):
         with self.assertRaisesRegex(ValueError, "no contiene pares"):
