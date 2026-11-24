@@ -58,7 +58,8 @@ def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
         if line.startswith("#"):
             continue
         if pending_extinf:
-            if not re.match(r"^[a-z][a-z0-9+.-]*://[^\s]+$", line, re.I):
+            uri = re.match(r"^([a-z][a-z0-9+.-]*)://([^\s]+)$", line, re.I)
+            if not uri or uri.group(1).casefold() not in ALLOWED_STREAM_SCHEMES:
                 raise ValueError(f"{source}: URI de canal inválida: {line[:120]}")
             entries += 1
             pending_extinf = False
