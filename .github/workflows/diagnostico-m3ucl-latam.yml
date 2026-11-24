@@ -1,0 +1,54 @@
+name: Diagnóstico M3UCL LATAM (solo lectura)
+
+on:
+  push:
+    branches:
+      - "diagnostico/m3ucl-latam"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Consultar páginas oficiales y endpoints M3U (sin modificar archivos)
+        run: |
+          python - <<'PY'
+          import re
+          import urllib.error
+          import urllib.request
+
+          headers = {
+              "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36",
+              "Accept": "text/html, text/plain, application/vnd.apple.mpegurl, application/x-mpegURL, */*",
+              "Referer": "https://m3u.cl/",
+          }
+          urls = [
+              "https://m3u.cl/lista-iptv-latam.php",
+              "https://mail.m3u.cl/lista-iptv-latam.php",
+              "https://cdn.m3u.cl/lista-iptv-latam.php",
+              "https://m3u.cl/lista/LATAM.m3u",
+              "https://mail.m3u.cl/lista/LATAM.m3u",
+              "https://cdn.m3u.cl/lista/LATAM.m3u",
+          ]
+          for url in urls:
+              req = urllib.request.Request(url, headers=headers)
+              try:
+                  with urllib.request.urlopen(req, timeout=15) as response:
+                      data = response.read(4096)
+                      content_type = response.headers.get("Content-Type", "")
+                      final_url = response.geturl()
+                      print(f"URL={url} STATUS={response.status} FINAL={final_url} TYPE={content_type} BYTES_FIRST={data[:100]!r} M3U={data.lstrip(bytes.fromhex('efbbbf') + b' \\r\\n').startswith(b'#EXTM3U')}")
+                      if "lista-iptv-latam.php" in url:
+                          html = data.decode("utf-8", "replace")
+                          for match in re.findall(r'<input[^>]+>', html, re.I):
+                              if "url" in match.lower() or "m3u" in match.lower():
+                                  print("INPUT=" + match[:500])
+              except urllib.error.HTTPError as exc:
+                  body = exc.read(160)
+                  print(f"URL={url} HTTP_ERROR={exc.code} BODY={body!r}")
+              except Exception as exc:
+                  print(f"URL={url} ERROR={type(exc).__name__}:{exc}")
+          PY
