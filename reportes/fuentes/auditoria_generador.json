@@ -1,69 +1,109 @@
 {
   "schema_version": 1,
   "scope": "generador",
-  "checked_at": "2026-11-24T22:39:16.578938+00:00",
+  "checked_at": "2026-11-24T23:49:07.262730+00:00",
   "sources_configured": 31,
   "sources_unique_urls": 31,
-  "sources_checked": 31,
-  "sources_failed": 0,
-  "changed_sources": 1,
+  "sources_checked": 18,
+  "sources_failed": 13,
+  "changed_sources": 0,
   "new_sources": 0,
   "total_added_channels": 0,
   "total_removed_channels": 0,
-  "total_changed_stream_urls": 5,
-  "writable_changed_sources": 1,
-  "writable_changed_stream_urls": 5,
+  "total_changed_stream_urls": 0,
+  "writable_changed_sources": 0,
+  "writable_changed_stream_urls": 0,
   "readonly_changed_sources": 0,
   "readonly_changed_stream_urls": 0,
   "total_source_url_changes": 0,
   "configured_source_url_changes": [],
   "removed_sources": [],
-  "errors": [],
+  "errors": [
+    {
+      "source": "GENERADOR/M3UCL-MX",
+      "url": "https://m3u.cl/lista/MX.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-CO",
+      "url": "https://m3u.cl/lista/CO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://liveingesta118.cdnmedia.tv/teleamigatvlive/smil:dvrlive.smil/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-EC",
+      "url": "https://m3u.cl/lista/EC.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://asomatv.duckdns.org/livestream/stream.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-DO",
+      "url": "https://m3u.cl/lista/DO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-PY",
+      "url": "https://m3u.cl/lista/PY.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://59ce1298bfb98.streamlock.net/uniradiotv/uniradiotv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-PE",
+      "url": "https://m3u.cl/lista/PE.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stv1.voxbr.com.br/emanuel7tv/emanuel7tv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-ES",
+      "url": "https://m3u.cl/lista/ES.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-CR",
+      "url": "https://m3u.cl/lista/CR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://srv.panelcast.net/humor247/humor247/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-CL",
+      "url": "https://m3u.cl/lista/CL.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://multistream.comunikados.cl/live/horebtv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-BR",
+      "url": "https://m3u.cl/lista/BR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-VE",
+      "url": "https://m3u.cl/lista/VE.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://lbgo.bozztv.com/ssh101/ssh101/contactv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-BO",
+      "url": "https://m3u.cl/lista/BO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://614013e273786.streamlock.net:443/XtoTv/XtoTv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GENERADOR/M3UCL-AR",
+      "url": "https://m3u.cl/lista/AR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    }
+  ],
   "changes": [
     {
       "source": "GENERADOR/DEARBULUT-CHILE",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://dearbulut.github.io/iptv/playlists/country/cl.m3u",
       "new_source_url": "https://dearbulut.github.io/iptv/playlists/country/cl.m3u",
       "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 5,
+      "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": true,
+      "content_hash_changed": false,
       "channel_order_changed": false,
       "samples": {
         "added": [],
         "removed": [],
         "renamed": [],
-        "stream_urls": [
-          {
-            "key": "EPATV.cl",
-            "before_fingerprint": "166542d134f04e73",
-            "after_fingerprint": "86c947085bf2ac5c"
-          },
-          {
-            "key": "ITVPatagonia.cl",
-            "before_fingerprint": "381a2834dc0c44b0",
-            "after_fingerprint": "23b5e659a9a6d941"
-          },
-          {
-            "key": "Mega2.cl",
-            "before_fingerprint": "cc11c1fdb3759d67",
-            "after_fingerprint": "64e3fdd060a27682"
-          },
-          {
-            "key": "RitoqueTV.cl",
-            "before_fingerprint": "489ac8d33231a431",
-            "after_fingerprint": "3fa9ef435cf7443d"
-          },
-          {
-            "key": "UATV.cl",
-            "before_fingerprint": "397fdce3c9e59e90",
-            "after_fingerprint": "5cdea783add4ac83"
-          }
-        ],
+        "stream_urls": [],
         "categories": []
       },
       "readonly": false
@@ -79,7 +119,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -101,7 +141,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -123,7 +163,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -145,7 +185,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -311,204 +351,6 @@
       "readonly": false
     },
     {
-      "source": "GENERADOR/M3UCL-AR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/AR.m3u",
-      "new_source_url": "https://m3u.cl/lista/AR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-BO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/BO.m3u",
-      "new_source_url": "https://m3u.cl/lista/BO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-BR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/BR.m3u",
-      "new_source_url": "https://m3u.cl/lista/BR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-CL",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CL.m3u",
-      "new_source_url": "https://m3u.cl/lista/CL.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-CO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CO.m3u",
-      "new_source_url": "https://m3u.cl/lista/CO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-CR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CR.m3u",
-      "new_source_url": "https://m3u.cl/lista/CR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-DO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/DO.m3u",
-      "new_source_url": "https://m3u.cl/lista/DO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-EC",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/EC.m3u",
-      "new_source_url": "https://m3u.cl/lista/EC.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-ES",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/ES.m3u",
-      "new_source_url": "https://m3u.cl/lista/ES.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
       "source": "GENERADOR/M3UCL-LATAM",
       "status": "unchanged",
       "source_url_changed": false,
@@ -541,73 +383,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-MX",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/MX.m3u",
-      "new_source_url": "https://m3u.cl/lista/MX.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-PE",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/PE.m3u",
-      "new_source_url": "https://m3u.cl/lista/PE.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-PY",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/PY.m3u",
-      "new_source_url": "https://m3u.cl/lista/PY.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -629,7 +405,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -651,7 +427,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -673,29 +449,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "GENERADOR/M3UCL-VE",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/VE.m3u",
-      "new_source_url": "https://m3u.cl/lista/VE.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
