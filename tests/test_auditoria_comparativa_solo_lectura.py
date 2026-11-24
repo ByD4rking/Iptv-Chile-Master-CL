@@ -7,11 +7,31 @@ from scripts.auditoria_comparativa_solo_lectura import (
     classify_error,
     classify_source_report,
     compare_playlists,
+    protected_logo_changes,
     parse_playlist,
 )
 
 
 class AuditoriaComparativaSoloLecturaTests(unittest.TestCase):
+    def test_protege_logos_existentes_pero_permite_completar_faltantes(self):
+        replaced = {
+            "logo_changes": [{
+                "identity": "tvg-id:canal",
+                "name_before": "Canal",
+                "logo_changes": {"tvg_logo": {"before": "https://a/logo.png", "after": ""}},
+            }]
+        }
+        missing_filled = {
+            "logo_changes": [{
+                "identity": "tvg-id:canal2",
+                "name_before": "Canal Dos",
+                "logo_changes": {"tvg_logo": {"before": "", "after": "https://b/logo.png"}},
+            }]
+        }
+        self.assertEqual(len(protected_logo_changes(replaced)), 1)
+        self.assertEqual(protected_logo_changes(missing_filled), [])
+
+
     def write(self, folder, name, content):
         path = Path(folder) / name
         path.write_text(content, encoding="utf-8")
