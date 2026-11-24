@@ -57,15 +57,13 @@ def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
             continue
         if line.startswith("#"):
             continue
-        if pending_extinf:
-            uri = re.match(r"^([a-z][a-z0-9+.-]*)://([^\s]+)$", line, re.I)
-            if not uri or uri.group(1).casefold() not in ALLOWED_STREAM_SCHEMES:
-                raise ValueError(f"{source}: URI de canal inválida: {line[:120]}")
-            entries += 1
-            pending_extinf = False
-
-    if pending_extinf:
-        raise ValueError(f"{source}: última entrada #EXTINF no tiene URI")
+        if not pending_extinf:
+            raise ValueError(f"{source}: contenido suelto no asociado a #EXTINF: {line[:120]}")
+        uri = re.match(r"^([a-z][a-z0-9+.-]*)://([^\\s]+)$", line, re.I)
+        if not uri or uri.group(1).casefold() not in ALLOWED_STREAM_SCHEMES:
+            raise ValueError(f"{source}: URI de canal inválida: {line[:120]}")
+        entries += 1
+        pending_extinf = False
     if entries == 0:
         raise ValueError(f"{source}: no contiene pares #EXTINF/URI válidos")
     return entries
