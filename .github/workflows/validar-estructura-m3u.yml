@@ -1,0 +1,33 @@
+name: Validar estructura de fuentes M3U
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/m3u_structure.py"
+      - "scripts/auditar_fuentes.py"
+      - "scripts/test_m3u_structure.py"
+      - "scripts/test_auditar_fuentes.py"
+      - ".github/workflows/validar-estructura-m3u.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
+        with:
+          python-version: "3.12"
+      - name: Validar sintaxis
+        run: python -m py_compile scripts/m3u_structure.py scripts/auditar_fuentes.py scripts/test_m3u_structure.py
+      - name: Pruebas de estructura M3U
+        run: python -m unittest discover -s scripts -p 'test_m3u_structure.py' -v
+      - name: Regresión de auditoría de fuentes
+        run: python -m unittest discover -s scripts -p 'test_auditar_fuentes.py' -v
