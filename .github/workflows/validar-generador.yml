@@ -48,5 +48,7 @@ jobs:
         run: python IPTV-CHILE-GENERADOR/tests/test_m3u_inventory.py
       - name: Regresión clasificador Teleon
         run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
+      - name: Regresión de publicación del Generador
+        run: python IPTV-CHILE-GENERADOR/tests/test_generate.py
       - name: Verificar integridad histórica de GOD
         run: python IPTV-CHILE-GENERADOR/scripts/guard.py

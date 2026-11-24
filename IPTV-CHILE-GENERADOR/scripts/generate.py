@@ -64,10 +64,10 @@ def main():
             "INCONSISTENCIA: quality.json no corresponde al channels.json actual."
         )
 
-    online = {
+    status_by_url = {
         clean(item.get("url")): item
         for item in status.get("results", [])
-        if item.get("online") and clean(item.get("url"))
+        if clean(item.get("url"))
     }
     quality_by_url = {
         clean(item.get("url")): item
@@ -92,7 +92,7 @@ def main():
         candidates = []
         for source in channel.get("sources", []):
             url = clean(source.get("url"))
-            if not url or url not in online or url in emitted:
+            if not url or url in emitted:
                 continue
 
             quality_item = quality_by_url.get(url)
@@ -106,7 +106,7 @@ def main():
             priority = int(source.get("priority") or 0)
             candidates.append(
                 (
-                    quality_key(quality_item, online[url], source),
+                    quality_key(quality_item, status_by_url.get(url, {}), source),
                     priority,
                     url,
                 )
