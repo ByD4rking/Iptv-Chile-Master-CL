@@ -24,7 +24,16 @@ class CollectTests(unittest.TestCase):
             "FUENTE_TEST": {
                 "quarantine_until": (now + timedelta(hours=2)).isoformat(),
                 "last_probe": (now - timedelta(hours=1)).isoformat(),
+                "url": source["url"],
+                "priority": source["priority"],
+                "checks": 0,
+                "successes": 0,
+                "failures": 0,
                 "consecutive_failures": 1,
+                "last_success": None,
+                "last_failure": None,
+                "last_error": None,
+                "last_entries": 0,
             }
         }
 
