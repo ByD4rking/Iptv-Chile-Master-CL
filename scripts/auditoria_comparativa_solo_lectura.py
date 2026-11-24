@@ -289,6 +289,7 @@ def main() -> int:
             "No autoriza reemplazar logos ni retirar canales.",
         ],
     }
+    report = redact_report_values(report)
     rendered = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
     if args.output:
         args.output.write_text(rendered, encoding="utf-8")
