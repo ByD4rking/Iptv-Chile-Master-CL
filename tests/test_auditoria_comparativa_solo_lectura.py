@@ -58,6 +58,18 @@ class AuditoriaComparativaSoloLecturaTests(unittest.TestCase):
             result = compare_playlists(parse_playlist(before), parse_playlist(after))
             self.assertEqual(set(result["logo_changes"][0]["logo_changes"]), {"logo"})
 
+    def test_detecta_logo_cambiado_si_cambia_tvg_id_pero_no_identidad_visible(self):
+        with tempfile.TemporaryDirectory() as folder:
+            before = self.write(folder, "before.m3u",
+                '#EXTM3U\\n#EXTINF:-1 tvg-id="old.id" tvg-name="Canal Uno" group-title="Chile" tvg-logo="https://a/logo.png",Canal Uno\\nhttps://stream/a\\n')
+            after = self.write(folder, "after.m3u",
+                '#EXTM3U\\n#EXTINF:-1 tvg-id="new.id" tvg-name="Canal Uno" group-title="Chile" tvg-logo="https://b/logo.png",Canal Uno\\nhttps://stream/a\\n')
+            result = compare_playlists(parse_playlist(before), parse_playlist(after))
+            self.assertEqual(result["matched"], 1)
+            self.assertEqual(result["added"], 0)
+            self.assertEqual(result["removed"], 0)
+            self.assertEqual(result["logo_changed_channels"], 1)
+
     def test_playlist_identica_no_reporta_cambios(self):
         with tempfile.TemporaryDirectory() as folder:
             path = self.write(folder, "same.m3u",
