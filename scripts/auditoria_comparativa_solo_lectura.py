@@ -117,17 +117,21 @@ def classify_error(detail: str, observations: int = 1) -> str:
 
 
 def redact_sensitive_values(value: str) -> str:
-    try:
-        parts = urlsplit(value)
-        if not parts.scheme or not parts.netloc or not parts.query:
-            return value
-        query = [
-            (key, "***" if key.casefold() in SENSITIVE_QUERY_KEYS else val)
-            for key, val in parse_qsl(parts.query, keep_blank_values=True)
-        ]
-        return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
-    except ValueError:
-        return value
+    url_pattern = re.compile(r"https?://[^\\s\\\"'<>]+", re.I)
+
+    def redact_url(match: re.Match[str]) -> str:
+        raw_url = match.group(0)
+        try:
+            parts = urlsplit(raw_url)
+            query = [
+                (key, "***" if key.casefold() in SENSITIVE_QUERY_KEYS else val)
+                for key, val in parse_qsl(parts.query, keep_blank_values=True)
+            ]
+            return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(query), parts.fragment))
+        except ValueError:
+            return "[URL omitida por formato inválido]"
+
+    return url_pattern.sub(redact_url, value)
 
 
 def classify_source_report(report: dict) -> list[dict]:
