@@ -1,0 +1,47 @@
+name: Proteger listas críticas y logos existentes
+
+on:
+  pull_request:
+    paths:
+      - "IPTV-CHILE-MAESTRA_CORREGIDO.m3u"
+      - "IPTV-CHILE-MAESTRA_GOD.m3u"
+      - "IPTV-CHILE-GENERADOR/**"
+      - ".github/workflows/generador.yml"
+      - ".github/workflows/generador-tests.yml"
+      - ".github/workflows/validar-generador.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  proteger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+    steps:
+      - name: Checkout completo
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0
+      - name: Bloquear cambios en listas y generador protegidos
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          if grep -Eq '^(IPTV-CHILE-MAESTRA_GOD\.m3u|IPTV-CHILE-GENERADOR/|\.github/workflows/(generador|generador-tests|validar-generador)\.yml$)' <<< "$changed"; then
+            echo "::error::El PR modifica archivos protegidos: GOD, Generador o workflows asociados."
+            grep -E '^(IPTV-CHILE-MAESTRA_GOD\.m3u|IPTV-CHILE-GENERADOR/|\.github/workflows/(generador|generador-tests|validar-generador)\.yml$)' <<< "$changed"
+            exit 1
+          fi
+      - name: Comparar y proteger logos funcionales
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show "$BASE_SHA:IPTV-CHILE-MAESTRA_CORREGIDO.m3u" > "$RUNNER_TEMP/playlist-before.m3u"
+          git show "$HEAD_SHA:IPTV-CHILE-MAESTRA_CORREGIDO.m3u" > "$RUNNER_TEMP/playlist-after.m3u"
+          python scripts/auditoria_comparativa_solo_lectura.py \
+            --before "$RUNNER_TEMP/playlist-before.m3u" \
+            --after "$RUNNER_TEMP/playlist-after.m3u" \
+            --fail-on-existing-logo-change
