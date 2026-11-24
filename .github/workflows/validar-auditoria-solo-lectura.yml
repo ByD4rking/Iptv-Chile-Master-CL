@@ -1,0 +1,30 @@
+name: Validar auditoría comparativa (solo lectura)
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/auditoria_comparativa_solo_lectura.py"
+      - "tests/test_auditoria_comparativa_solo_lectura.py"
+      - "docs/FASE2_DIAGNOSTICO_AUDITORIA.md"
+      - ".github/workflows/validar-auditoria-solo-lectura.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Configurar Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.0.0
+        with:
+          python-version: "3.12"
+      - name: Validar sintaxis
+        run: python -m py_compile scripts/auditoria_comparativa_solo_lectura.py tests/test_auditoria_comparativa_solo_lectura.py
+      - name: Ejecutar pruebas de solo lectura
+        run: python -m unittest discover -s tests -p 'test_auditoria_comparativa_solo_lectura.py' -v
