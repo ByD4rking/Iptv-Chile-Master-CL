@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from m3ucl_html_fallback import build_latam_m3u
+from m3ucl_html_fallback import build_latam_m3u\nimport alimentar_principal as ap\nimport auditar_fuentes as af\nfrom unittest.mock import patch
 
 
 def cell(channel_id, name, url, category="Peliculas y Series", logo="//cdn.m3u.cl/logo/test.png"):
