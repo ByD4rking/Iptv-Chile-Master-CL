@@ -4,6 +4,22 @@ from __future__ import annotations
 import re
 
 
+def normalize_m3u_bytes(data: bytes) -> bytes:
+    """Normaliza solo BOM, saltos de línea y espacios periféricos; no inventa datos."""
+    if not data:
+        return data
+    text = data.decode("utf-8-sig", errors="replace")
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    lines = [line.strip() for line in text.split("\n")]
+    while lines and not lines[0]:
+        lines.pop(0)
+    while lines and not lines[-1]:
+        lines.pop()
+    if not lines:
+        return b""
+    return ("\n".join(lines) + "\n").encode("utf-8")
+
+
 def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
     """Valida cabecera y pares EXTINF/URI; devuelve el número de canales válidos.
 
