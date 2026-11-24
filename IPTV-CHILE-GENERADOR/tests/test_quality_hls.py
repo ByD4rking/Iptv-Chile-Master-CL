@@ -1,4 +1,6 @@
+from io import BytesIO
 from pathlib import Path
+from urllib.error import HTTPError
 import sys
 import unittest
 from unittest.mock import patch
@@ -7,6 +9,74 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import quality
+
+
+
+class EndpointFailureClassificationTests(unittest.TestCase):
+    def test_http_404_and_410_are_confirmed_not_found_candidates(self):
+        channel = {"id": "test-channel", "name": "Canal de prueba"}
+        for code in (404, 410):
+            with self.subTest(code=code):
+                error = HTTPError(
+                    "https://example.test/live.m3u8",
+                    code,
+                    "not found",
+                    {},
+                    BytesIO(b""),
+                )
+                with patch.object(quality, "fetch", side_effect=error):
+                    result = quality.inspect_url({
+                        "channel": channel,
+                        "source": {
+                            "url": "https://example.test/live.m3u8",
+                            "source": "TEST",
+                            "priority": 1,
+                        },
+                    })
+                self.assertEqual(result["failure_class"], "not_found_candidate")
+                self.assertTrue(result["failure_confirmed"])
+                self.assertFalse(result["playback_checked"])
+
+    def test_http_403_remains_transient(self):
+        error = HTTPError(
+            "https://example.test/live.m3u8",
+            403,
+            "forbidden",
+            {},
+            BytesIO(b""),
+        )
+        with patch.object(quality, "fetch", side_effect=error):
+            result = quality.inspect_url({
+                "channel": {"id": "test-channel", "name": "Canal de prueba"},
+                "source": {
+                    "url": "https://example.test/live.m3u8",
+                    "source": "TEST",
+                    "priority": 1,
+                },
+            })
+        self.assertEqual(result["failure_class"], "transient")
+        self.assertFalse(result["failure_confirmed"])
+
+
+class QuarantineReportingTests(unittest.TestCase):
+    def test_quarantined_endpoint_is_reported_without_counting_a_new_failure(self):
+        result = quality.quarantined_result(
+            {"id": "channel-1", "name": "Canal pausado"},
+            {"url": "https://example.test/live.m3u8", "source": "TEST", "priority": 10},
+            {
+                "quarantine_until": "2026-11-25T00:00:00+00:00",
+                "checks": 12,
+                "successes": 2,
+                "failures": 10,
+                "consecutive_failures": 10,
+            },
+        )
+        self.assertEqual(result["failure_class"], "quarantined")
+        self.assertFalse(result["failure_confirmed"])
+        self.assertTrue(result["quarantined"])
+        self.assertFalse(result["playback_checked"])
+        self.assertEqual(result["endpoint_checks"], 12)
+        self.assertEqual(result["endpoint_failures"], 10)
 
 
 class HlsVodValidationTests(unittest.TestCase):
