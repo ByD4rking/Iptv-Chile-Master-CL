@@ -152,6 +152,25 @@ def redact_sensitive_values(value: str) -> str:
     return url_pattern.sub(redact_url, value)
 
 
+
+def protected_logo_changes(comparison: dict) -> list[dict]:
+    """Devuelve cambios que reemplazan o eliminan un logo previamente existente."""
+    protected = []
+    for channel in comparison.get("logo_changes", []):
+        for field, values in channel.get("logo_changes", {}).items():
+            before = str(values.get("before", "")).strip()
+            after = str(values.get("after", "")).strip()
+            if before and before != after:
+                protected.append({
+                    "identity": channel.get("identity", ""),
+                    "name": channel.get("name_before", ""),
+                    "field": field,
+                    "before": before,
+                    "after": after,
+                })
+    return protected
+
+
 def classify_source_report(report: dict) -> list[dict]:
     rows = []
     for item in report.get("errors", []):
@@ -189,6 +208,11 @@ def main() -> int:
     parser.add_argument("--after", type=Path, required=True, help="Playlist posterior")
     parser.add_argument("--source-report", type=Path, help="JSON opcional de auditoría de fuentes")
     parser.add_argument("--output", type=Path, help="Ruta opcional del informe JSON")
+    parser.add_argument(
+        "--fail-on-existing-logo-change",
+        action="store_true",
+        help="Devuelve código 2 si un logo no vacío fue reemplazado o eliminado",
+    )
     args = parser.parse_args()
 
     try:
@@ -200,9 +224,11 @@ def main() -> int:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         parser.error(str(exc))
 
+    existing_logo_changes = protected_logo_changes(comparison)
     report = {
         "mode": "read_only",
         "playlist_comparison": comparison,
+        "existing_logo_changes": existing_logo_changes,
         "source_errors": source_errors,
         "policy": [
             "No modifica playlists ni archivos de configuración.",
@@ -216,6 +242,8 @@ def main() -> int:
         args.output.write_text(rendered, encoding="utf-8")
     else:
         sys.stdout.write(rendered)
+    if args.fail_on_existing_logo_change and existing_logo_changes:
+        return 2
     return 0
 
 
