@@ -22,6 +22,7 @@ BACKOFF = (1.0, 2.0, 4.0)
 WORKERS = 4
 QUARANTINE_AFTER = 6
 QUARANTINE_HOURS = 24
+RECOVERY_PROBE_HOURS = 6
 RETRYABLE_HTTP = {408, 425, 429, 500, 502, 503, 504}
 
 
@@ -289,6 +290,22 @@ def is_quarantined(state, now):
     except ValueError:
         return False
 
+def recovery_probe_due(state, now):
+    """Limita los sondeos de recuperación de fuentes bloqueadas a una ventana de 6 h."""
+    last_probe = str(
+        state.get("last_probe")
+        or state.get("last_failure")
+        or state.get("last_success")
+        or ""
+    ).strip()
+    if not last_probe:
+        return True
+    try:
+        previous = datetime.fromisoformat(last_probe.replace("Z", "+00:00"))
+    except ValueError:
+        return True
+    return (now - previous) >= timedelta(hours=RECOVERY_PROBE_HOURS)
+
 
 def inspect_source(source, max_pages):
     name = str(source.get("name") or "TELEON").strip()
@@ -310,11 +327,6 @@ def main():
 
     health = load(HEALTH_FILE, {})
     now = datetime.now(timezone.utc)
-    all_quarantined = bool(sources) and all(
-        is_quarantined(source_health_state(health, source), now)
-        for source in sources[:max_sources]
-    )
-
     result = {
         "schema_version": 3,
         "generated_at": now.isoformat(),
@@ -334,9 +346,9 @@ def main():
     for source in sources[:max_sources]:
         name = str(source.get("name") or "TELEON").strip()
         state = source_health_state(health, source)
-        if is_quarantined(state, now) and not all_quarantined:
+        if is_quarantined(state, now) and not recovery_probe_due(state, now):
             state["last_skip"] = now.isoformat()
-            state["last_skip_reason"] = "cuarentena_por_fallos_persistentes"
+            state["last_skip_reason"] = "esperando_sondeo_de_recuperacion_6h"
             result["sources"].append({
                 "name": name,
                 "url": state["url"],
@@ -345,6 +357,7 @@ def main():
             })
             continue
 
+        state["last_probe"] = now.isoformat()
         state["checks"] = int(state.get("checks") or 0) + 1
         try:
             source_name, source_url, pages, first_html = inspect_source(
