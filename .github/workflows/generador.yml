@@ -142,7 +142,7 @@ jobs:
                 echo "REGRESION: el generador intentó modificar código, pruebas o configuración protegida: $file"
                 exit 1
                 ;;
-              IPTV-CHILE-GENERADOR/data/*|IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md|reportes/fuentes/auditoria_generador.json|reportes/fuentes/estado_generador.json) ;;
+              IPTV-CHILE-GENERADOR/data/*|IPTV-CHILE-GENERADOR/IPTV-CHILE-GENERADOR.m3u|IPTV-CHILE-MAESTRA_GOD.m3u|reportes/generador/REPORTE.md|reportes/god/REPORTE.md|reportes/fuentes/*) ;;
               "") ;;
               *) echo "REGRESION: archivo fuera del ámbito del generador: $file"; exit 1 ;;
             esac
@@ -155,6 +155,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # La auditoría permite reportes generados bajo reportes/fuentes/, pero el staging
+          # sigue limitado a estos dos artefactos concretos; ningún otro archivo de esa carpeta se publica.
           git add IPTV-CHILE-GENERADOR reportes/generador/REPORTE.md reportes/god/REPORTE.md reportes/fuentes/auditoria_generador.json reportes/fuentes/estado_generador.json
 
           if git diff --cached --quiet; then
