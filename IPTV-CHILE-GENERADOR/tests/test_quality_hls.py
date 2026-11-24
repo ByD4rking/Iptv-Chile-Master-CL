@@ -58,6 +58,27 @@ class EndpointFailureClassificationTests(unittest.TestCase):
         self.assertFalse(result["failure_confirmed"])
 
 
+class QuarantineReportingTests(unittest.TestCase):
+    def test_quarantined_endpoint_is_reported_without_counting_a_new_failure(self):
+        result = quality.quarantined_result(
+            {"id": "channel-1", "name": "Canal pausado"},
+            {"url": "https://example.test/live.m3u8", "source": "TEST", "priority": 10},
+            {
+                "quarantine_until": "2026-11-25T00:00:00+00:00",
+                "checks": 12,
+                "successes": 2,
+                "failures": 10,
+                "consecutive_failures": 10,
+            },
+        )
+        self.assertEqual(result["failure_class"], "quarantined")
+        self.assertFalse(result["failure_confirmed"])
+        self.assertTrue(result["quarantined"])
+        self.assertFalse(result["playback_checked"])
+        self.assertEqual(result["endpoint_checks"], 12)
+        self.assertEqual(result["endpoint_failures"], 10)
+
+
 class HlsVodValidationTests(unittest.TestCase):
     def setUp(self):
         # MPEG-TS con bytes de sincronización en los límites de paquete.
