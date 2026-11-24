@@ -21,7 +21,7 @@ from urllib.error import HTTPError, URLError
 SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
-from m3u_structure import validate_m3u_bytes
+from m3u_structure import normalize_m3u_bytes, validate_m3u_bytes
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
@@ -102,6 +102,7 @@ def fetch_url(url: str) -> bytes:
                 data = response.read(MAX_BYTES + 1)
             if len(data) > MAX_BYTES:
                 raise ValueError(f"fuente supera límite de {MAX_BYTES} bytes")
+            data = normalize_m3u_bytes(data)
             validate_m3u_bytes(data, source=url)
             return data
         except Exception as exc:
@@ -180,6 +181,7 @@ def local_pluto_sources() -> list[dict]:
 
 
 def snapshot_entry(raw: bytes, label: str, url: str) -> dict:
+    raw = normalize_m3u_bytes(raw)
     validate_m3u_bytes(raw, source=url or label)
     text = raw.decode("utf-8-sig", errors="replace")
     parsed = parse_m3u(text)
