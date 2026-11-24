@@ -62,7 +62,22 @@ class M3UStructureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "cabecera"):
             validate_m3u_bytes(b"#EXTM3Ugarbage\n#EXTINF:-1,Canal\nhttps://x.test/live\n")
 
-    def test_rechaza_ruido_antes_del_primer_canal(self):\n        data = b"#EXTM3U\\nrespuesta 403 del servidor\\n#EXTINF:-1,Canal\\nhttps://x.test/live\\n"\n        with self.assertRaisesRegex(ValueError, "contenido suelto"):\n            validate_m3u_bytes(data)\n\n    def test_rechaza_ruido_entre_canales(self):\n        data = (b"#EXTM3U\\n#EXTINF:-1,Canal Uno\\nhttps://x.test/uno\\n"\n                b"texto inesperado\\n#EXTINF:-1,Canal Dos\\nhttps://x.test/dos\\n")\n        with self.assertRaisesRegex(ValueError, "contenido suelto"):\n            validate_m3u_bytes(data)\n\n    def test_rechaza_uri_suelta_sin_extinf(self):\n        with self.assertRaisesRegex(ValueError, "contenido suelto"):\n            validate_m3u_bytes(b"#EXTM3U\\nhttps://x.test/orphan\\n#EXTINF:-1,Canal\\nhttps://x.test/live\\n")\n\n    def test_rechaza_lista_sin_canales(self):
+    def test_rechaza_ruido_antes_del_primer_canal(self):
+        data = b"#EXTM3U\nrespuesta 403 del servidor\n#EXTINF:-1,Canal\nhttps://x.test/live\n"
+        with self.assertRaisesRegex(ValueError, "contenido suelto"):
+            validate_m3u_bytes(data)
+
+    def test_rechaza_ruido_entre_canales(self):
+        data = (b"#EXTM3U\n#EXTINF:-1,Canal Uno\nhttps://x.test/uno\n"
+                b"texto inesperado\n#EXTINF:-1,Canal Dos\nhttps://x.test/dos\n")
+        with self.assertRaisesRegex(ValueError, "contenido suelto"):
+            validate_m3u_bytes(data)
+
+    def test_rechaza_uri_suelta_sin_extinf(self):
+        with self.assertRaisesRegex(ValueError, "contenido suelto"):
+            validate_m3u_bytes(b"#EXTM3U\nhttps://x.test/orphan\n#EXTINF:-1,Canal\nhttps://x.test/live\n")
+
+    def test_rechaza_lista_sin_canales(self):
         with self.assertRaisesRegex(ValueError, "no contiene pares"):
             validate_m3u_bytes(b"#EXTM3U\n#EXTVLCOPT:http-reconnect=true\n")
 
