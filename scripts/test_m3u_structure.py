@@ -50,6 +50,10 @@ class M3UStructureTests(unittest.TestCase):
             b"#EXTINF:-1,Canal RTMP\nrtmp://stream.example/live\n"
         ), 2)
 
+    def test_rechaza_esquema_no_admitido(self):
+        with self.assertRaisesRegex(ValueError, "URI de canal inválida"):
+            validate_m3u_bytes(b"#EXTM3U\n#EXTINF:-1,Canal\njavascript://alert\n")
+
     def test_rechaza_uri_sin_esquema(self):
         with self.assertRaisesRegex(ValueError, "URI de canal inválida"):
             validate_m3u_bytes(b"#EXTM3U\n#EXTINF:-1,Canal\nstream.example/live\n")
