@@ -17,7 +17,8 @@ def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
     if "<!doctype html" in lowered or "<html" in lowered or "<body" in lowered:
         raise ValueError(f"{source}: el servidor devolvió HTML, no una playlist M3U")
     lines = [line.strip() for line in text.splitlines() if line.strip()]
-    if not lines or not lines[0].upper().startswith("#EXTM3U"):
+    header = lines[0].upper() if lines else ""
+    if not (header == "#EXTM3U" or header.startswith("#EXTM3U ")):
         raise ValueError(f"{source}: falta cabecera #EXTM3U al inicio")
 
     entries = 0
