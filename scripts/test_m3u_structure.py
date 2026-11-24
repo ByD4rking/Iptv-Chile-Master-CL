@@ -1,10 +1,18 @@
 """Pruebas de validación estructural M3U: aceptar listas reales y rechazar HTML/truncadas."""
 import unittest
 
-from scripts.m3u_structure import validate_m3u_bytes
+from scripts.m3u_structure import normalize_m3u_bytes, validate_m3u_bytes
 
 
 class M3UStructureTests(unittest.TestCase):
+    def test_normaliza_bom_crlf_y_espacios_sin_cambiar_canales(self):
+        raw = b"\xef\xbb\xbf  \r\n#EXTM3U  \r\n#EXTINF:-1, Canal Uno  \r\nhttps://stream.example/uno.m3u8  \r\n"
+        normalized = normalize_m3u_bytes(raw)
+        self.assertTrue(normalized.startswith(b"#EXTM3U\n"))
+        self.assertEqual(validate_m3u_bytes(normalized), 1)
+        self.assertIn(b"https://stream.example/uno.m3u8\n", normalized)
+        self.assertNotIn(b"\r", normalized)
+
     def test_acepta_playlist_con_directivas_entre_extinf_y_uri(self):
         data = (
             b"#EXTM3U\n"
