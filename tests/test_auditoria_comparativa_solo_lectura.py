@@ -64,7 +64,8 @@ class AuditoriaComparativaSoloLecturaTests(unittest.TestCase):
         self.assertEqual(classify_error("HTTP 404 Not Found", 5, 1), "permanente_candidato")
         self.assertEqual(classify_error("HTTP 404 Not Found", 2, 2), "permanente_confirmado")
         self.assertEqual(classify_error("HTTP 410 Gone", 3, 2), "permanente_confirmado")
-        self.assertEqual(classify_error("HTTP 404 https://host.test/path/403/item", 4, 2), "permanente_candidato")
+        self.assertEqual(classify_error("HTTP 404 https://host.test/path/403/item", 4, 2), "permanente_confirmado")
+        self.assertEqual(classify_error("fuente https://host.test/path/404/item falló", 4, 2), "sin_verificar")
 
     def test_restricciones_y_fallos_transitorios_no_son_permanentes(self):
         self.assertEqual(classify_error("HTTP 403 Forbidden"), "restriccion_acceso")
