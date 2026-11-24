@@ -67,9 +67,38 @@ def parse_playlist(path: Path) -> dict[str, dict]:
 
 def compare_playlists(before: dict[str, dict], after: dict[str, dict]) -> dict:
     old_keys, new_keys = set(before), set(after)
+    exact = old_keys & new_keys
+    pairs = [(key, before[key], after[key]) for key in sorted(exact)]
+    matched_old, matched_new = set(exact), set(exact)
+
+    # Fallback conservador: si cambió tvg-id, empareja solo por nombre+categoría
+    # cuando la clave es única en ambos snapshots. Nunca adivina entre duplicados.
+    def fallback_key(record: dict) -> str:
+        name = normalize(record.get("tvg_name") or record.get("name", ""))
+        group = normalize(record.get("group", ""))
+        return name + "|" + group if name else ""
+
+    old_fallback: defaultdict[str, list[str]] = defaultdict(list)
+    new_fallback: defaultdict[str, list[str]] = defaultdict(list)
+    for key in old_keys - matched_old:
+        fallback = fallback_key(before[key])
+        if fallback:
+            old_fallback[fallback].append(key)
+    for key in new_keys - matched_new:
+        fallback = fallback_key(after[key])
+        if fallback:
+            new_fallback[fallback].append(key)
+
+    for fallback in sorted(set(old_fallback) & set(new_fallback)):
+        old_matches, new_matches = old_fallback[fallback], new_fallback[fallback]
+        if len(old_matches) == 1 and len(new_matches) == 1:
+            old_key, new_key = old_matches[0], new_matches[0]
+            pairs.append((old_key, before[old_key], after[new_key]))
+            matched_old.add(old_key)
+            matched_new.add(new_key)
+
     changed = []
-    for key in sorted(old_keys & new_keys):
-        old, new = before[key], after[key]
+    for identity, old, new in pairs:
         logo_changes = {}
         for field in ("tvg_logo", "logo"):
             old_value, new_value = old.get(field, ""), new.get(field, "")
@@ -77,19 +106,20 @@ def compare_playlists(before: dict[str, dict], after: dict[str, dict]) -> dict:
                 logo_changes[field] = {"before": old_value, "after": new_value}
         if logo_changes:
             changed.append({
-                "identity": key,
+                "identity": identity,
                 "name_before": old.get("name", ""),
                 "name_after": new.get("name", ""),
                 "group_before": old.get("group", ""),
                 "group_after": new.get("group", ""),
                 "logo_changes": logo_changes,
             })
-    added = sorted(new_keys - old_keys)
-    removed = sorted(old_keys - new_keys)
+
+    added = sorted(new_keys - matched_new)
+    removed = sorted(old_keys - matched_old)
     return {
         "channels_before": len(before),
         "channels_after": len(after),
-        "matched": len(old_keys & new_keys),
+        "matched": len(pairs),
         "added": len(added),
         "removed": len(removed),
         "logo_changed_channels": len(changed),
