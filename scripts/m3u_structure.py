@@ -79,6 +79,7 @@ def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
             valid_authority = False
         if not uri or uri.group(1).casefold() not in ALLOWED_STREAM_SCHEMES or not valid_authority:
             raise ValueError(f"{source_label}: URI de canal inválida")
+        entries += 1
         pending_extinf = False
     if pending_extinf:
         raise ValueError(f"{source_label}: última entrada #EXTINF no tiene URI")
