@@ -56,6 +56,8 @@ jobs:
           python -m py_compile scripts/alimentar_principal.py scripts/blindajes_principal.py scripts/test_history_documentales.py scripts/test_m3ucl_resilience.py scripts/m3ucl_html_fallback.py scripts/test_m3ucl_html_fallback.py
       - name: Probar reintentos seguros M3U.CL
         run: python -m unittest scripts.test_m3ucl_resilience -v
+      - name: Probar fallback oficial de M3U.CL LATAM
+        run: python -m unittest scripts.test_m3ucl_html_fallback -v
       - name: Probar auditoría histórica de fuentes
         run: python -m unittest scripts.test_auditar_fuentes -v
       - name: Probar sincronización complementaria
