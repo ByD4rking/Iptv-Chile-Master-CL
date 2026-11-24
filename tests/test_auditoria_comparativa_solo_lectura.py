@@ -126,6 +126,15 @@ class AuditoriaComparativaSoloLecturaTests(unittest.TestCase):
         self.assertNotIn("secret", rows[0]["detail"])
         self.assertIn("jwt=%2A%2A%2A", rows[0]["detail"])
 
+    def test_redacta_tokens_en_source_y_detail(self):
+        report = {"errors": [{"source": "https://cdn.example/list.m3u?token=source-secret&region=cl", "error": "HTTP 403 https://cdn.example/live?sig=detail-secret"}]}
+        row = classify_source_report(report)[0]
+        self.assertNotIn("source-secret", row["source"])
+        self.assertNotIn("detail-secret", row["detail"])
+        self.assertIn("token=%2A%2A%2A", row["source"])
+        self.assertIn("region=cl", row["source"])
+        self.assertIn("sig=%2A%2A%2A", row["detail"])
+
 
 if __name__ == "__main__":
     unittest.main()
