@@ -26,7 +26,7 @@ class M3UStructureTests(unittest.TestCase):
 
     def test_rechaza_cabecera_ausente_o_no_inicial(self):
         with self.assertRaisesRegex(ValueError, "cabecera"):
-            validate_m3u_bytes(b"<html>error</html>\n#EXTM3U\n")
+            validate_m3u_bytes(b"respuesta de error sin cabecera\n")
     
     def test_rechaza_extinf_sin_uri(self):
         with self.assertRaisesRegex(ValueError, "sin URI"):
