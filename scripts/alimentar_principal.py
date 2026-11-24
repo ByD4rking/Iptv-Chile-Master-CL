@@ -1778,6 +1778,27 @@ def obtener_respuesta_fuente(session, url, timeout=30):
             return respuesta
         except Exception as exc:
             ultimo_error = exc
+
+    # M3U.CL publica la lista LATAM en su página, pero el archivo estático
+    # puede faltar en su servidor. En ese caso se reconstruye desde los datos
+    # públicos de esa misma página; nunca se sustituye por otra fuente.
+    if urlparse(url).path.lower() == "/lista/latam.m3u":
+        try:
+            from m3ucl_html_fallback import LATAM_PAGE, build_latam_m3u
+
+            pagina = session.get(LATAM_PAGE, timeout=timeout, headers=variantes[1])
+            pagina.raise_for_status()
+            contenido = build_latam_m3u(pagina.text)
+            respuesta = requests.Response()
+            respuesta.status_code = 200
+            respuesta.url = getattr(pagina, "url", LATAM_PAGE)
+            respuesta.encoding = "utf-8"
+            respuesta._content = contenido
+            return respuesta
+        except Exception as fallback_error:
+            ultimo_error = RuntimeError(
+                f"endpoint M3U y fallback HTML oficial fallaron: {fallback_error}"
+            )
     raise RuntimeError(f"M3U.CL no entregó una playlist válida tras {len(variantes)} variantes HTTP: {ultimo_error}")
 
 

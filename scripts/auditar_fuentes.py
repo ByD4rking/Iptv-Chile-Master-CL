@@ -104,6 +104,30 @@ def fetch_url(url: str) -> bytes:
             last_error = exc
             if attempt + 1 < len(attempts):
                 time.sleep(1.5 * (2 ** min(attempt, 3)))
+    # El proveedor publica LATAM en su página HTML, pero el archivo
+    # estático /lista/LATAM.m3u está ausente. Usar solo esa página oficial
+    # como fallback, reconstruyendo el mismo formato M3U para el diff.
+    if host == "m3u.cl" and parsed.path.lower() == "/lista/latam.m3u":
+        try:
+            from m3ucl_html_fallback import LATAM_PAGE, build_latam_m3u
+
+            page_request = Request(
+                LATAM_PAGE,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0 Safari/537.36",
+                    "Accept": "text/html, */*",
+                    "Referer": "https://m3u.cl/",
+                },
+            )
+            with urlopen(page_request, timeout=TIMEOUT) as response:
+                page_data = response.read(MAX_BYTES + 1)
+            if len(page_data) > MAX_BYTES:
+                raise ValueError(f"página LATAM supera límite de {MAX_BYTES} bytes")
+            return build_latam_m3u(page_data.decode("utf-8-sig", errors="replace"))
+        except Exception as fallback_error:
+            last_error = RuntimeError(
+                f"endpoint M3U y fallback HTML oficial fallaron: {fallback_error}"
+            )
     raise RuntimeError(f"{type(last_error).__name__}: {last_error}")
 
 
