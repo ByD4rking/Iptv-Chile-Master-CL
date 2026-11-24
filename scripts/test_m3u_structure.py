@@ -13,6 +13,10 @@ class M3UStructureTests(unittest.TestCase):
         self.assertIn(b"https://stream.example/uno.m3u8\n", normalized)
         self.assertNotIn(b"\r", normalized)
 
+    def test_rechaza_bytes_utf8_corruptos(self):
+        with self.assertRaisesRegex(ValueError, "UTF-8 válido"):
+            normalize_m3u_bytes(b"#EXTM3U\\n#EXTINF:-1,Canal\\nhttps://x.test/\\xff\\n")
+
     def test_acepta_playlist_con_directivas_entre_extinf_y_uri(self):
         data = (
             b"#EXTM3U\n"
