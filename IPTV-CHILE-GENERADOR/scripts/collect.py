@@ -215,19 +215,6 @@ def main():
     from datetime import datetime, timezone
     checked_at = datetime.now(timezone.utc).isoformat()
 
-    now_utc = datetime.now(timezone.utc)
-    quarantined_source_count = 0
-    for source in sources:
-        source_name = str(source.get("name") or "FUENTE").strip()
-        until = str(health.get(source_name, {}).get("quarantine_until") or "").strip()
-        if not until:
-            continue
-        try:
-            if datetime.fromisoformat(until.replace("Z", "+00:00")) > now_utc:
-                quarantined_source_count += 1
-        except ValueError:
-            pass
-    force_source_probe = quarantined_source_count == len(sources)
     for source in sources:
         name = str(source.get("name") or "FUENTE").strip()
         source_url = str(source.get("url") or "").strip()
@@ -265,7 +252,7 @@ def main():
                     probe_due = (datetime.now(timezone.utc) - previous_probe) >= timedelta(hours=6)
                 except ValueError:
                     probe_due = True
-        if quarantined and not force_source_probe and not probe_due:
+        if quarantined and not probe_due:
             state["last_skip"] = checked_at
             state["last_skip_reason"] = "esperando_sondeo_de_recuperacion"
             print(f"[QUARANTINE] {name}: próximo sondeo de recuperación en ventana de 6 h.")
