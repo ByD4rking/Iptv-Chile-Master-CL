@@ -37,15 +37,17 @@ jobs:
               req = urllib.request.Request(url, headers=headers)
               try:
                   with urllib.request.urlopen(req, timeout=15) as response:
-                      data = response.read(4096)
+                      data = response.read(2_000_000 if "lista-iptv-latam.php" in url else 4096)
                       content_type = response.headers.get("Content-Type", "")
                       final_url = response.geturl()
                       print(f"URL={url} STATUS={response.status} FINAL={final_url} TYPE={content_type} BYTES_FIRST={data[:100]!r} M3U={data.lstrip(bytes.fromhex('efbbbf') + b' \\r\\n').startswith(b'#EXTM3U')}")
                       if "lista-iptv-latam.php" in url:
                           html = data.decode("utf-8", "replace")
                           for match in re.findall(r'<input[^>]+>', html, re.I):
-                              if "url" in match.lower() or "m3u" in match.lower():
-                                  print("INPUT=" + match[:500])
+                              print("INPUT=" + match[:1000])
+                          for line in html.splitlines():
+                              if ".m3u" in line.lower() or "url lista" in line.lower():
+                                  print("HTML_REF=" + line[:1000])
               except urllib.error.HTTPError as exc:
                   body = exc.read(160)
                   print(f"URL={url} HTTP_ERROR={exc.code} BODY={body!r}")
