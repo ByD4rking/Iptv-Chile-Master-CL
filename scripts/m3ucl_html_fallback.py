@@ -13,7 +13,7 @@ LATAM_PAGE = "https://m3u.cl/lista-iptv-latam.php"
 class _ChannelParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.channels: dict[str, dict[str, str]] = {}
+        self.channels: dict[tuple[str, str], dict[str, str]] = {}
 
     def handle_starttag(self, tag: str, attrs) -> None:
         if tag.lower() != "td":
@@ -38,7 +38,7 @@ class _ChannelParser(HTMLParser):
         if logo:
             logo = urljoin("https://m3u.cl/", logo)
         category = item.get("nombre_categoria", "").strip() or "Sin categoría"
-        self.channels.setdefault(channel_id, {
+        self.channels.setdefault((channel_id, decoded), {
             "name": name,
             "url": decoded,
             "logo": logo,
@@ -55,7 +55,7 @@ def build_latam_m3u(html: str) -> bytes:
         raise ValueError("La página oficial M3U.CL LATAM no contiene canales utilizables")
 
     lines = ["#EXTM3U"]
-    for channel_id, channel in parser.channels.items():
+    for (channel_id, _stream_url), channel in parser.channels.items():
         attrs = [
             f'tvg-id="m3ucl-latam-{escape(channel_id, quote=True)}"',
             f'tvg-name="{escape(channel["name"], quote=True)}"',
