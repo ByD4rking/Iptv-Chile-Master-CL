@@ -21,8 +21,8 @@ class WorkflowPublicationTests(unittest.TestCase):
         for workflow in (self.updater, self.pluto):
             self.assertIn("          ref: main", workflow)
 
-    def test_pluto_hourly_schedule_is_preserved(self):
-        self.assertIn('    - cron: "0 * * * *"', self.pluto)
+    def test_pluto_runs_hourly_away_from_the_top_of_the_hour(self):
+        self.assertIn('    - cron: "17 * * * *"', self.pluto)
 
 
 if __name__ == "__main__":

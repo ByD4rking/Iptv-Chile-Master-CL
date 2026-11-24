@@ -12,7 +12,8 @@ on:
       - "scripts/auditar_fuentes.py"
       - "scripts/test_auditar_fuentes.py"
   schedule:
-    - cron: "0 * * * *"
+    # Minuto 17: evita la congestión habitual de los disparos al inicio de cada hora.
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
