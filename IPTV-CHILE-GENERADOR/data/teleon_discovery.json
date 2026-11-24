@@ -1,108 +1,221 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-11-24T17:41:08.368142+00:00",
+  "generated_at": "2026-11-24T22:39:18.600044+00:00",
   "mode": "discovery_only",
   "published_automatically": false,
   "stream_extraction": "public_html_and_embedded_player_explicit_only",
   "classification": "teleon_classifier_v1",
-  "errors": [],
+  "errors": [
+    {
+      "source": "TELEON-MEXICO",
+      "url": "https://teleon.tv/mx/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-REPUBLICA-DOMINICANA",
+      "url": "https://teleon.tv/do/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-GUATEMALA",
+      "url": "https://teleon.tv/gt/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-HONDURAS",
+      "url": "https://teleon.tv/hn/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-EL-SALVADOR",
+      "url": "https://teleon.tv/sv/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-PANAMA",
+      "url": "https://teleon.tv/pa/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-COLOMBIA",
+      "url": "https://teleon.tv/co/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-ECUADOR",
+      "url": "https://teleon.tv/ec/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-CHILE",
+      "url": "https://teleon.tv/cl/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-ARGENTINA",
+      "url": "https://teleon.tv/ar/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-URUGUAY",
+      "url": "https://teleon.tv/uy/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-CHILDREN",
+      "url": "https://teleon.tv/tv-by-genre/children/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-LIFESTYLE",
+      "url": "https://teleon.tv/tv-by-genre/lifestyle/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-EDUCATIONAL",
+      "url": "https://teleon.tv/tv-by-genre/educational/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-GAMING",
+      "url": "https://teleon.tv/gt/tv-by-genre/gaming/",
+      "error": "HTTP_403_FORBIDDEN"
+    },
+    {
+      "source": "TELEON-SPAIN",
+      "url": "https://teleon.tv/es/tv-guide/",
+      "error": "HTTP_403_FORBIDDEN"
+    }
+  ],
   "profiles": {},
   "sources": [
     {
       "name": "TELEON-MEXICO",
       "url": "https://teleon.tv/mx/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-REPUBLICA-DOMINICANA",
       "url": "https://teleon.tv/do/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-GUATEMALA",
       "url": "https://teleon.tv/gt/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-HONDURAS",
       "url": "https://teleon.tv/hn/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-EL-SALVADOR",
       "url": "https://teleon.tv/sv/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-PANAMA",
       "url": "https://teleon.tv/pa/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-COLOMBIA",
       "url": "https://teleon.tv/co/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-ECUADOR",
       "url": "https://teleon.tv/ec/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-CHILE",
       "url": "https://teleon.tv/cl/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-ARGENTINA",
       "url": "https://teleon.tv/ar/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-URUGUAY",
       "url": "https://teleon.tv/uy/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-CHILDREN",
       "url": "https://teleon.tv/tv-by-genre/children/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-LIFESTYLE",
       "url": "https://teleon.tv/tv-by-genre/lifestyle/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-EDUCATIONAL",
       "url": "https://teleon.tv/tv-by-genre/educational/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-GAMING",
       "url": "https://teleon.tv/gt/tv-by-genre/gaming/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     },
     {
       "name": "TELEON-SPAIN",
       "url": "https://teleon.tv/es/tv-guide/",
-      "status": "quarantined",
-      "quarantine_until": "2026-11-25T14:46:49.480449+00:00"
+      "status": "error",
+      "error": "HTTP_403_FORBIDDEN",
+      "consecutive_failures": 126,
+      "quarantine_until": "2026-11-25T22:39:18.600044+00:00"
     }
   ],
   "metrics": {
@@ -112,7 +225,7 @@
     "spanish_verified_stream_candidates": 0,
     "non_spanish_stream_candidates": 0,
     "embedded_player_pages": 0,
-    "errors": 0,
+    "errors": 16,
     "sources_ok": 0,
     "sources_quarantined": 16
   }
