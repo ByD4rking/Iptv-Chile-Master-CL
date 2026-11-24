@@ -36,6 +36,8 @@ jobs:
         run: python IPTV-CHILE-GENERADOR/tests/test_collect.py
       - name: HLS VOD and LIVE regression tests
         run: python IPTV-CHILE-GENERADOR/tests/test_quality_hls.py
+      - name: Generator publication regression tests
+        run: python IPTV-CHILE-GENERADOR/tests/test_generate.py
       - name: Teleon classifier tests
         run: python IPTV-CHILE-GENERADOR/tests/test_teleon_classifier.py
       - name: Generator workflow protection tests
