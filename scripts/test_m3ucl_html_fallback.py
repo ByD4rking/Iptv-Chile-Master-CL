@@ -64,6 +64,74 @@ class M3UCLHtmlFallbackTests(unittest.TestCase):
         self.assertIn('tvg-name="Canal &quot;Uno&quot;"', result)
         self.assertIn('group-title="Musica &amp; TV"', result)
 
+    def test_preserves_distinct_stream_options_for_same_provider_channel(self):
+        html = "<table>" + cell(
+            "123", "Canal", "https://stream.example/primary.m3u8"
+        ) + cell(
+            "123", "Canal", "https://stream.example/alternate.m3u8"
+        ) + "</table>"
+
+        result = build_latam_m3u(html).decode("utf-8")
+
+        self.assertEqual(result.count("#EXTINF:"), 2)
+        self.assertIn("https://stream.example/primary.m3u8", result)
+        self.assertIn("https://stream.example/alternate.m3u8", result)
+
+    def test_principal_uses_official_page_when_static_latam_file_is_missing(self):
+        page = "<table>" + cell(
+            "321", "Canal de prueba", "https://stream.example/latam.m3u8"
+        ) + "</table>"
+
+        class Response:
+            status_code = 200
+            def __init__(self, text):
+                self.text = text
+                self.url = "https://m3u.cl/lista-iptv-latam.php"
+            def raise_for_status(self):
+                return None
+
+        class Session:
+            def __init__(self):
+                self.responses = [Response("Warning: missing file")] * 3 + [Response(page)]
+                self.calls = []
+            def get(self, url, timeout=30, headers=None):
+                self.calls.append(url)
+                return self.responses.pop(0)
+
+        session = Session()
+        response = ap.obtener_respuesta_fuente(session, "https://m3u.cl/lista/LATAM.m3u")
+
+        self.assertTrue(response.text.startswith("#EXTM3U"))
+        self.assertIn("https://stream.example/latam.m3u8", response.text)
+        self.assertEqual(session.calls[-1], "https://m3u.cl/lista-iptv-latam.php")
+
+    def test_source_audit_uses_official_page_fallback(self):
+        page = ("<table>" + cell(
+            "654", "Canal auditoria", "https://stream.example/audit.m3u8"
+        ) + "</table>").encode("utf-8")
+
+        class HttpResponse:
+            def __init__(self, data):
+                self.data = data
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def read(self, size=-1):
+                return self.data[:size]
+
+        responses = [
+            HttpResponse(b"Warning: missing file"),
+            HttpResponse(b"Warning: missing file"),
+            HttpResponse(b"Warning: missing file"),
+            HttpResponse(page),
+        ]
+        with patch.object(af, "urlopen", side_effect=responses), patch.object(af.time, "sleep"):
+            result = af.fetch_url("https://m3u.cl/lista/LATAM.m3u")
+
+        self.assertTrue(result.startswith(b"#EXTM3U"))
+        self.assertIn(b"https://stream.example/audit.m3u8", result)
+
 
 if __name__ == "__main__":
     unittest.main()
