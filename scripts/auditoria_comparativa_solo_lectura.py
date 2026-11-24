@@ -103,9 +103,9 @@ def extract_http_status(detail: str) -> int | None:
     """Extrae solo códigos HTTP explícitos, evitando números arbitrarios de URLs."""
     message = (detail or "").strip()
     patterns = (
-        r"\\bHTTP(?:\\s+ERROR)?\\s*[:#]?\\s*([1-5]\\d{2})\\b",
-        r"\\bstatus(?:\\s+code)?\\s*[:=]?\\s*([1-5]\\d{2})\\b",
-        r"^([1-5]\\d{2})\\b",
+        r"\bHTTP(?:\s+ERROR)?\s*[:#]?\s*([1-5]\d{2})\b",
+        r"\bstatus(?:\s+code)?\s*[:=]?\s*([1-5]\d{2})\b",
+        r"^([1-5]\d{2})\b",
     )
     for pattern in patterns:
         match = re.search(pattern, message, re.I)
