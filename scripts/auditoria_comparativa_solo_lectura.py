@@ -193,6 +193,17 @@ def redact_report_values(value):
     return value
 
 
+def redact_report_values(value):
+    """Redacta URLs sensibles en todos los campos textuales del informe."""
+    if isinstance(value, str):
+        return redact_sensitive_values(value)
+    if isinstance(value, list):
+        return [redact_report_values(item) for item in value]
+    if isinstance(value, dict):
+        return {key: redact_report_values(item) for key, item in value.items()}
+    return value
+
+
 
 def protected_logo_changes(comparison: dict) -> list[dict]:
     """Devuelve cambios que reemplazan o eliminan un logo previamente existente."""
