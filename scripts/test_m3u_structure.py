@@ -77,6 +77,16 @@ class M3UStructureTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "contenido suelto"):
             validate_m3u_bytes(b"#EXTM3U\nhttps://x.test/orphan\n#EXTINF:-1,Canal\nhttps://x.test/live\n")
 
+    def test_rechaza_uri_http_sin_host(self):
+        with self.assertRaisesRegex(ValueError, "URI de canal inválida"):
+            validate_m3u_bytes(b"#EXTM3U\n#EXTINF:-1,Canal\nhttps:///sin-host\n")
+
+    def test_no_expone_tokens_en_mensajes_de_error(self):
+        data = b"#EXTM3U\n#EXTINF:-1,Canal\ntexto-no-es-uri\n"
+        with self.assertRaises(ValueError) as ctx:
+            validate_m3u_bytes(data, source="https://cdn.example/list.m3u?jwt=super-secret")
+        self.assertNotIn("super-secret", str(ctx.exception))
+        self.assertIn("cdn.example", str(ctx.exception))
     def test_rechaza_lista_sin_canales(self):
         with self.assertRaisesRegex(ValueError, "no contiene pares"):
             validate_m3u_bytes(b"#EXTM3U\n#EXTVLCOPT:http-reconnect=true\n")
