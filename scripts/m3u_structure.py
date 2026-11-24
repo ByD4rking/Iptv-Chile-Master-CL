@@ -3,6 +3,11 @@ from __future__ import annotations
 
 import re
 
+ALLOWED_STREAM_SCHEMES = {
+    "http", "https", "rtsp", "rtmp", "rtp", "udp", "mms", "mmsh", "mmst",
+    "ftp", "acestream", "sop", "pvr", "plugin",
+}
+
 
 def normalize_m3u_bytes(data: bytes) -> bytes:
     """Normaliza solo BOM, saltos de línea y espacios periféricos; no inventa datos."""
