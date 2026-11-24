@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from urllib.parse import urlsplit
 
 ALLOWED_STREAM_SCHEMES = {
     "http", "https", "rtsp", "rtmp", "rtp", "udp", "mms", "mmsh", "mmst",
@@ -28,18 +29,29 @@ def normalize_m3u_bytes(data: bytes) -> bytes:
     return ("\n".join(lines) + "\n").encode("utf-8")
 
 
+def _safe_source_label(source: str) -> str:
+    """Evita incluir credenciales o query strings en mensajes de error."""
+    try:
+        parsed = urlsplit(str(source))
+        if parsed.scheme and parsed.netloc:
+            return f"{parsed.scheme}://{parsed.hostname or 'host remoto'}"
+    except ValueError:
+        pass
+    return str(source).rsplit("/", 1)[-1][:80] or "fuente"
+
 def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
     """Valida cabecera y pares EXTINF/URI; devuelve el número de canales válidos.
 
     No intenta reparar HTML, respuestas parciales ni URLs. Ante ambigüedad falla
     de forma cerrada para impedir que una fuente inválida alimente una playlist.
     """
+    source_label = _safe_source_label(source)
     if not data or not data.strip():
-        raise ValueError(f"{source}: respuesta vacía")
+        raise ValueError(f"{source_label}: respuesta vacía")
     text = data.decode("utf-8-sig", errors="replace")
     lowered = text[:4096].casefold()
     if "<!doctype html" in lowered or "<html" in lowered or "<body" in lowered:
-        raise ValueError(f"{source}: el servidor devolvió HTML, no una playlist M3U")
+        raise ValueError(f"{source_label}: el servidor devolvió HTML, no una playlist M3U")
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     header = lines[0].upper() if lines else ""
     if not (header == "#EXTM3U" or header.startswith("#EXTM3U ")):
