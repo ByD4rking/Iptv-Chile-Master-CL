@@ -15,7 +15,7 @@ from collections import defaultdict
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
 
-SENSITIVE_QUERY_KEYS = {"jwt", "token", "access_token", "auth", "authorization", "signature", "sig", "key"}
+SENSITIVE_QUERY_KEYS = {"jwt", "token", "access_token", "auth", "authorization", "signature", "sig", "key", "api_key", "apikey", "password", "passwd", "secret", "session", "hdnea", "auth_key", "x-amz-signature", "x-amz-security-token"}
 
 
 def normalize(value: str) -> str:
