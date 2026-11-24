@@ -117,7 +117,7 @@ def classify_error(detail: str, observations: int = 1) -> str:
 
 
 def redact_sensitive_values(value: str) -> str:
-    url_pattern = re.compile(r"https?://[^\\s\\\"'<>]+", re.I)
+    url_pattern = re.compile(r"https?://[^\s\"'<>]+", re.I)
 
     def redact_url(match: re.Match[str]) -> str:
         raw_url = match.group(0)
