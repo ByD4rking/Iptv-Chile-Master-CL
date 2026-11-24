@@ -20,6 +20,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
+from m3u_structure import validate_m3u_bytes
+
 ROOT = Path(__file__).resolve().parents[1]
 STATE_DIR = ROOT / "reportes" / "fuentes"
 MAX_BYTES = 32 * 1024 * 1024
@@ -97,8 +99,7 @@ def fetch_url(url: str) -> bytes:
                 data = response.read(MAX_BYTES + 1)
             if len(data) > MAX_BYTES:
                 raise ValueError(f"fuente supera límite de {MAX_BYTES} bytes")
-            if not data.lstrip(b"\xef\xbb\xbf \r\n").startswith(b"#EXTM3U"):
-                raise ValueError("respuesta no contiene cabecera #EXTM3U")
+            validate_m3u_bytes(data, source=url)
             return data
         except Exception as exc:
             last_error = exc
@@ -176,6 +177,7 @@ def local_pluto_sources() -> list[dict]:
 
 
 def snapshot_entry(raw: bytes, label: str, url: str) -> dict:
+    validate_m3u_bytes(raw, source=url or label)
     text = raw.decode("utf-8-sig", errors="replace")
     parsed = parse_m3u(text)
     if not parsed:
