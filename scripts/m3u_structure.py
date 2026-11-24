@@ -69,7 +69,7 @@ def validate_m3u_bytes(data: bytes, source: str = "fuente") -> int:
                 raise ValueError(f"{source_label}: línea #EXTINF mal formada o sin nombre")
             duration_field = line.split(",", 1)[0][len("#EXTINF:"):].strip()
             duration = duration_field.split(maxsplit=1)[0] if duration_field else ""
-            if not re.fullmatch(r"-?\\d+(?:\\.\\d+)?", duration):
+            if not re.fullmatch(r"-?\d+(?:\.\d+)?", duration):
                 raise ValueError(f"{source_label}: duración #EXTINF inválida")
             pending_extinf = True
             continue
