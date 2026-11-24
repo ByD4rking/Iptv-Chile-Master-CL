@@ -245,7 +245,7 @@ def classify_source_report(report: dict) -> list[dict]:
                 independent_count = 1
 
         rows.append({
-            "source": str(item.get("source", "desconocida")),
+            "source": redact_sensitive_values(str(item.get("source", "desconocida"))),
             "classification": classify_error(detail, observations, independent_count),
             "observations": observations,
             "independent_observations": independent_count,
