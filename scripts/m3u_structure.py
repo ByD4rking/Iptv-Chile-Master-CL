@@ -8,7 +8,10 @@ def normalize_m3u_bytes(data: bytes) -> bytes:
     """Normaliza solo BOM, saltos de línea y espacios periféricos; no inventa datos."""
     if not data:
         return data
-    text = data.decode("utf-8-sig", errors="replace")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError as exc:
+        raise ValueError("la fuente no contiene UTF-8 válido") from exc
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     lines = [line.strip() for line in text.split("\n")]
     while lines and not lines[0]:
