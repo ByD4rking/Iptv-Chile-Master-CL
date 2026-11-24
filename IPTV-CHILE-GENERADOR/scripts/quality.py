@@ -500,7 +500,7 @@ def inspect_url(item):
         result["failure_class"] = "healthy"
     elif is_transient_failure(failure_text):
         result["failure_class"] = "transient"
-    elif re.search(r"http(?: error)?\\s+(?:404|410)\\b", failure_text, re.I):
+    elif re.search(r"http(?: error)?\s+(?:404|410)\b", failure_text, re.I):
         # 404/410 requieren repetición entre ejecuciones; nunca eliminan el canal.
         result["failure_class"] = "not_found_candidate"
         result["failure_confirmed"] = True
