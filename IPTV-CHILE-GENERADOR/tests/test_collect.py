@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 import unittest
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from unittest.mock import patch
 from urllib.error import HTTPError
@@ -16,6 +17,40 @@ import collect
 
 
 class CollectTests(unittest.TestCase):
+    def test_quarantined_source_probe_uses_global_timedelta(self):
+        now = datetime.now(timezone.utc)
+        source = {"name": "FUENTE_TEST", "url": "https://example.test/list.m3u", "priority": 1}
+        health = {
+            "FUENTE_TEST": {
+                "quarantine_until": (now + timedelta(hours=2)).isoformat(),
+                "last_probe": (now - timedelta(hours=1)).isoformat(),
+                "url": source["url"],
+                "priority": source["priority"],
+                "checks": 0,
+                "successes": 0,
+                "failures": 0,
+                "consecutive_failures": 1,
+                "last_success": None,
+                "last_failure": None,
+                "last_error": None,
+                "last_entries": 0,
+            }
+        }
+
+        def load_fixture(path, default):
+            if path == collect.CONFIG:
+                return {"sources": [source]}
+            if path == collect.SOURCE_HEALTH_FILE:
+                return health
+            return default
+
+        with patch.object(collect, "load_json", side_effect=load_fixture):
+            with patch.object(collect, "read_source", side_effect=RuntimeError("fallo de prueba")) as read:
+                with self.assertRaisesRegex(SystemExit, "Ninguna fuente independiente"):
+                    collect.main()
+
+        read.assert_called_once_with(source)
+
     def test_non_retryable_http_error_is_reported_without_nameerror(self):
         error = HTTPError("https://example.test/list.m3u", 404, "Not Found", {}, None)
         with patch.object(collect, "urlopen", side_effect=error) as mocked:
