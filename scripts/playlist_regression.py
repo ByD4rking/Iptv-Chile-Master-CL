@@ -19,11 +19,26 @@ def evaluate_regressions(
     max_category_changes: int = 0,
     max_logo_replacements: int = 0,
     fail_on_stream_change: bool = False,
+    allowed_category_changes: set[tuple[str, str, str]] | None = None,
 ) -> dict:
     comparison = compare_snapshots(before, after)
-    category_changes = sum(
-        "group" in row["changed_fields"] for row in comparison["changes"]
-    )
+    allowed_category_changes = allowed_category_changes or set()
+    category_change_rows = [
+        row for row in comparison["changes"] if "group" in row["changed_fields"]
+    ]
+    category_changes = len(category_change_rows)
+    approved_category_changes = [
+        row for row in category_change_rows
+        if any(
+            channel in {row["before_name"], row["after_name"]}
+            and old_group == row["before_group"]
+            and new_group == row["after_group"]
+            for channel, old_group, new_group in allowed_category_changes
+        )
+    ]
+    unapproved_category_changes = [
+        row for row in category_change_rows if row not in approved_category_changes
+    ]
     logo_replacements = sum(
         (
             bool(row["before_tvg_logo"]) and row["before_tvg_logo"] != row["after_tvg_logo"]
@@ -58,10 +73,10 @@ def evaluate_regressions(
             "actual": comparison["removed"],
             "allowed": max_removed,
         })
-    if category_changes > max_category_changes:
+    if len(unapproved_category_changes) > max_category_changes:
         violations.append({
             "rule": "category_changes",
-            "actual": category_changes,
+            "actual": len(unapproved_category_changes),
             "allowed": max_category_changes,
         })
     if logo_replacements > max_logo_replacements:
@@ -85,6 +100,14 @@ def evaluate_regressions(
         "removed": comparison["removed"],
         "matched": comparison["matched"],
         "category_changes": category_changes,
+        "approved_category_changes": [
+            {key: row[key] for key in ("before_name", "after_name", "before_group", "after_group")}
+            for row in approved_category_changes
+        ],
+        "unapproved_category_changes": [
+            {key: row[key] for key in ("before_name", "after_name", "before_group", "after_group")}
+            for row in unapproved_category_changes
+        ],
         "logo_replacements": logo_replacements,
         "stream_changes": stream_changes,
         "duplicate_stream_fingerprints": duplicate_streams,
@@ -134,7 +157,18 @@ def main() -> int:
     parser.add_argument("--max-category-changes", type=int, default=0)
     parser.add_argument("--max-logo-replacements", type=int, default=0)
     parser.add_argument("--fail-on-stream-change", action="store_true")
+    parser.add_argument(
+        "--allow-category-change", action="append", default=[],
+        metavar="CHANNEL|FROM|TO",
+        help="Permite un cambio de categoría revisado; se puede repetir.",
+    )
     args = parser.parse_args()
+    allowed_category_changes = set()
+    for item in args.allow_category_change:
+        parts = item.split("|", 2)
+        if len(parts) != 3 or not all(part.strip() for part in parts):
+            parser.error("--allow-category-change debe usar CHANNEL|FROM|TO")
+        allowed_category_changes.add(tuple(part.strip() for part in parts))
     if min(args.max_removed, args.max_category_changes, args.max_logo_replacements) < 0:
         parser.error("los límites no pueden ser negativos")
     report = audit_files(
@@ -144,6 +178,7 @@ def main() -> int:
         max_category_changes=args.max_category_changes,
         max_logo_replacements=args.max_logo_replacements,
         fail_on_stream_change=args.fail_on_stream_change,
+        allowed_category_changes=allowed_category_changes,
     )
     rendered = json.dumps(report, ensure_ascii=False, indent=2)
     if args.output:
