@@ -50,6 +50,7 @@ def evaluate_regressions(
     stream_changes = comparison["stream_changes"]
     host_transitions: Counter[tuple[str, str]] = Counter()
     same_host_path_changes = 0
+    query_only_changes = 0
     unknown_host_changes = 0
     for row in comparison["changes"]:
         if not row["stream_changed"]:
@@ -59,7 +60,10 @@ def evaluate_regressions(
         if not before_host or not after_host:
             unknown_host_changes += 1
         elif before_host == after_host:
-            same_host_path_changes += 1
+            if row.get("before_stream_path_fingerprint") == row.get("after_stream_path_fingerprint"):
+                query_only_changes += 1
+            else:
+                same_host_path_changes += 1
         else:
             host_transitions[(before_host, after_host)] += 1
 
@@ -125,6 +129,7 @@ def evaluate_regressions(
         "logo_replacements": logo_replacements,
         "stream_changes": stream_changes,
         "same_host_path_changes": same_host_path_changes,
+        "query_only_changes": query_only_changes,
         "unknown_host_changes": unknown_host_changes,
         "stream_host_transitions": [
             {"before_host": before, "after_host": after, "count": count}
