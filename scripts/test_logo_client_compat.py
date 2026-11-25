@@ -51,10 +51,10 @@ class LogoClientCompatibilityTests(unittest.TestCase):
         channel_id = "5ff4b9ccf938f8000779eb99"
         other_id = "680ba8992472a7200a183eb5"
         records = parse_playlist_text(
-            f'#EXTM3U\\n#EXTINF:-1 tvg-id="{channel_id}" '
+            f'#EXTM3U\n#EXTINF:-1 tvg-id="{channel_id}" '
             f'tvg-logo="https://images.pluto.tv/channels/{channel_id}/logo.png" '
-            f'logo="https://images.pluto.tv/channels/{other_id}/logo.png",Uno\\n'
-            'https://stream.example/live\\n'
+            f'logo="https://images.pluto.tv/channels/{other_id}/logo.png",Uno\n'
+            'https://stream.example/live\n'
         )
         result = audit_logo_compatibility(records)
         conflict = result["field_conflicts"][0]
