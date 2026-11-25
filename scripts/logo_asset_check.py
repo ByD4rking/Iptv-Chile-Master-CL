@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
 import socket
 import urllib.error
@@ -16,8 +17,8 @@ from scripts.channel_identity import parse_playlist_text, safe_url_fingerprint
 MAX_BYTES = 3 * 1024 * 1024
 TIMEOUT = 12
 SIGNATURES = {
-    "png": lambda b: b.startswith(b"\\x89PNG\\r\\n\\x1a\\n"),
-    "jpeg": lambda b: b.startswith(b"\\xff\\xd8\\xff"),
+    "png": lambda b: b.startswith(b"\x89PNG\r\n\x1a\n"),
+    "jpeg": lambda b: b.startswith(b"\xff\xd8\xff"),
     "gif": lambda b: b.startswith((b"GIF87a", b"GIF89a")),
     "webp": lambda b: len(b) >= 12 and b[:4] == b"RIFF" and b[8:12] == b"WEBP",
 }
@@ -43,8 +44,7 @@ def _is_public_host(host: str) -> bool:
     try:
         addresses = socket.getaddrinfo(host, None, type=socket.SOCK_STREAM)
         return bool(addresses) and all(
-            not (ip := __import__("ipaddress").ip_address(item[4][0])).is_private
-            and not ip.is_loopback and not ip.is_link_local and not ip.is_reserved
+            (ip := ipaddress.ip_address(item[4][0])).is_global
             for item in addresses
         )
     except (OSError, ValueError):
@@ -98,8 +98,8 @@ def collect_candidate_urls(playlist: list[dict], sources: list[tuple[str, list[d
     for target in playlist:
         if target.get("tvg_logo") or target.get("logo"):
             continue
-        found: dict[str, str] = {}
-        ambiguous = False
+        target_urls: dict[str, str] = {}
+        target_ambiguous = False
         for _source_name, records in sources:
             aliases: dict[str, list[int]] = defaultdict(list)
             fallback: dict[str, list[int]] = defaultdict(list)
@@ -109,26 +109,31 @@ def collect_candidate_urls(playlist: list[dict], sources: list[tuple[str, list[d
                 if row.get("fallback"):
                     fallback[row["fallback"]].append(i)
             matches = set()
+            alias_ambiguous = False
             for alias in target.get("aliases", []):
                 if len(current_aliases[alias]) != 1:
                     continue
                 hits = aliases.get(alias, [])
                 if len(hits) > 1:
-                    ambiguous = True
+                    alias_ambiguous = True
                 elif len(hits) == 1:
                     matches.add(hits[0])
-            if not matches and target.get("fallback") and len(current_fallback[target["fallback"]]) == 1:
-                hits = fallback.get(target["fallback"], [])
-                if len(hits) > 1:
-                    ambiguous = True
-                elif len(hits) == 1:
-                    matches.add(hits[0])
+            if alias_ambiguous:
+                target_ambiguous = True
+                continue
+            if not matches and not target.get("aliases") and target.get("fallback"):
+                if len(current_fallback[target["fallback"]]) == 1:
+                    hits = fallback.get(target["fallback"], [])
+                    if len(hits) > 1:
+                        target_ambiguous = True
+                    elif len(hits) == 1:
+                        matches.add(hits[0])
             for i in matches:
                 url = _logo_url(records[i])
                 if url:
-                    urls[safe_url_fingerprint(url)] = url
-        if ambiguous:
-            continue
+                    target_urls[safe_url_fingerprint(url)] = url
+        if not target_ambiguous:
+            urls.update(target_urls)
     return urls
 
 
@@ -145,10 +150,11 @@ def audit(playlist_path: Path, manifest_path: Path) -> dict:
     counts: dict[str, int] = defaultdict(int)
     for item in results:
         counts[item["status"]] += 1
+    valid = sum(n for status, n in counts.items() if status.startswith("valid_"))
     return {
         "candidate_assets_checked": len(results),
-        "valid_assets": sum(n for status, n in counts.items() if status.startswith("valid_")),
-        "failed_assets": len(results) - sum(n for status, n in counts.items() if status.startswith("valid_")),
+        "valid_assets": valid,
+        "failed_assets": len(results) - valid,
         "status_counts": dict(sorted(counts.items())),
         "results": results,
         "policy": "Solo lectura; no registra URLs, no aplica logos y no reemplaza referencias existentes.",
@@ -164,7 +170,7 @@ def main() -> int:
     report = audit(args.playlist, args.candidate_manifest)
     rendered = json.dumps(report, ensure_ascii=False, indent=2)
     if args.output:
-        args.output.write_text(rendered + "\\n", encoding="utf-8")
+        args.output.write_text(rendered + "\n", encoding="utf-8")
     else:
         print(rendered)
     return 0
