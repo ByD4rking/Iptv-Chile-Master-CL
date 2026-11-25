@@ -32,7 +32,9 @@ def _fetch(url: str, limit: int) -> tuple[int, str, str, bytes]:
         body = response.read(limit + 1)
         final_url = response.geturl()
     if len(body) > limit:
-        raise ValueError("response_too_large")
+        if body.lstrip().startswith(b"#EXTM3U") or "mpegurl" in content_type:
+            raise ValueError("manifest_too_large")
+        body = body[:SEGMENT_SAMPLE]
     if status < 200 or status >= 300:
         raise ValueError("http_" + str(status))
     return status, content_type, final_url, body
@@ -83,7 +85,7 @@ def probe_stream(url: str) -> dict:
     except Exception as exc:
         reason = str(exc)
         if reason.startswith("http_") or reason in {
-            "blocked_non_public_host", "response_too_large"
+            "blocked_non_public_host", "manifest_too_large"
         }:
             status = reason
         else:
