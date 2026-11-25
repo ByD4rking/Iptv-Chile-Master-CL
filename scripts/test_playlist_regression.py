@@ -115,10 +115,10 @@ class PlaylistRegressionTests(unittest.TestCase):
 
     def test_reports_host_migration_without_exposing_stream_urls(self):
         before = records(
-            '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://old.example/live.m3u8?jwt=secret\\n'
+            '#EXTM3U\n#EXTINF:-1 tvg-id="one",Uno\nhttps://old.example/live.m3u8?jwt=secret\n'
         )
         after = records(
-            '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://new.example/live.m3u8?jwt=other\\n'
+            '#EXTM3U\n#EXTINF:-1 tvg-id="one",Uno\nhttps://new.example/live.m3u8?jwt=other\n'
         )
         result = evaluate_regressions(before, after)
         self.assertEqual(result["stream_changes"], 1)
