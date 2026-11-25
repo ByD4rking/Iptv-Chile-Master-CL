@@ -11,69 +11,78 @@ Comparación del snapshot anterior de `main` con la playlist actual:
 
 - Canales antes/después: **4.516 / 4.516**.
 - Coincidencias: **4.516**.
-- Altas/bajas detectadas: **0 / 0**.
-- Ambigüedades restantes: **0**.
-- Cambios de categoría: **1**, señalado como violación pendiente de clasificación.
-- Cambios de stream: **477**; se informan, no se sustituyen.
+- Altas/bajas: **0 / 0**.
+- Ambigüedades: **0**.
+- Cambios de categoría: **1**, aprobado mediante excepción exacta y documentada.
+- Cambios de stream informados: **477**; no se sustituyó ninguna URL.
 - Logos reemplazados entre snapshots: **0**.
-- Huellas de stream duplicadas: **1**. La misma URL aparece en `Señal Perú TV (404p) [Not 24/7]` y `Señal Perú TV HD [No 24/7] (Lima)`; no se elimina ninguna entrada.
+- Huellas de stream duplicadas: **1**.
 
-El cambio de categoría detectado es `PTV OnLine`, de `Entretenimiento / Cine / Series` a `Bolivia`. La ubicación en Bolivia parece coherente con el nombre y la organización regional, pero se conserva como hallazgo hasta que quede clasificado explícitamente. El detector no revierte movimientos automáticamente.
+El cambio de categoría corresponde a **PTV OnLine**, de `Entretenimiento / Cine / Series`
+a `Bolivia`. Se comprobó la fuente IPTVSV de JMigue85 y el canal aparece allí con
+`group-title="Bolivia"`; por eso se incorporó una excepción exacta al detector.
+El resultado de regresiones quedó **aprobado, sin violaciones**.
 
-La primera ejecución produjo miles de falsas altas/bajas por tratar `channelId="-1"` como identidad y por no distinguir variantes con identificadores compartidos. Se corrigió: se descartan IDs placeholder, se distinguen opciones explícitas, se usan streams idénticos para desambiguar cuando corresponde y se conservan como ambiguos los casos sin evidencia suficiente. La prueba real terminó con 4.516/4.516 coincidencias y cero altas, bajas o ambigüedades.
+La huella duplicada corresponde a la misma URL usada por `Señal Perú TV (404p)
+[Not 24/7]` y `Señal Perú TV HD [No 24/7] (Lima)`. Se conserva como hallazgo:
+no se elimina ninguno de los dos canales sin evidencia adicional.
 
-## Compatibilidad de logos
+La identidad fue corregida para descartar IDs placeholder como `channelId="-1"`,
+distinguir variantes explícitas y usar evidencia de stream cuando procede. Resultado:
+4.516/4.516 coincidencias sin altas, bajas ni ambigüedades.
+
+## Compatibilidad y recuperación de logos
 
 Auditoría estática de las 4.516 entradas:
 
 - Referencias de logo únicas: **2.997**.
 - Referencias inválidas: **0**.
-- Canales sin `tvg-logo` y sin `logo`: **76**.
+- Canales sin `tvg-logo` ni `logo`: **76**.
 - Referencias que requieren revisión por formato/transporte: **141**.
-- Conflictos entre `tvg-logo` y `logo`: **17**.
-  - **12** tienen evidencia de que `tvg-logo` coincide con `tvg-id` y `logo` apunta a otro ID Pluto.
-  - **5** requieren revisión manual.
+- Conflictos entre `tvg-logo` y `logo`: **17** (12 con evidencia de ID Pluto y 5 manuales).
 
-El informe solo recomienda revisar. No descarga imágenes, no reemplaza campos y no certifica el renderizado. La prueba visual en Televizo y SS IPTV sigue pendiente; no se debe marcar compatibilidad real hasta probar ambos reproductores.
+Recuperación de logos:
 
-## Recuperación de fuentes
+- Propuestas: **52** (37 identidad fuerte y 15 fallback único).
+- Recursos únicos comprobados: **47**.
+- Descargas y firmas válidas: **47/47** (42 PNG y 5 JPEG).
+- Canales sin propuesta: **24**.
+- Propuestas ambiguas: **0**.
 
-Se inspeccionaron **26 fuentes configuradas**. **12** superaron la validación estructural estricta; las demás se omitieron y no se usaron como candidatas.
+Ningún logo se aplicó ni se reemplazó. La descarga y la firma válida no prueban
+renderizado en Televizo o SS IPTV; esa validación visual sigue pendiente.
 
-Con la playlist principal, el historial de salud y las fuentes M3U válidas:
+## Recuperación y prueba de fuentes
 
-- Canales que requieren recuperación según el historial: **1.033**.
-- Canales de las fuentes candidatas: **5.848**.
-- Canales con una propuesta no ambigua: **4**.
-- Candidatos ambiguos descartados: **244**.
+Se inspeccionaron **26 fuentes configuradas**; **12** superaron la validación
+estructural M3U. El historial marcaba **1.033** canales para revisión y las fuentes
+candidatas aportaron **5.848** registros. Se generaron cuatro propuestas no ambiguas;
+244 coincidencias ambiguas fueron descartadas.
 
-Propuestas encontradas:
+| Canal | Fuente | Identidad | Prueba de muestra |
+|---|---|---|---|
+| Los Simpson Latino | JMIGUE-IPTVSV | Fallback único | <badge color="success">Correcta</badge> |
+| RPP TV (Perú - Nacional) | JMIGUE-IPTVSV | Fallback único | <badge color="success">Correcta</badge> |
+| Comercio TV | CERESLABX-US-TV | Fuerte | <badge color="success">Correcta</badge> |
+| KCHTV SD (Guayas) [Opc.2] | JMIGUE-IPTVSV | Fallback único | <badge color="success">Correcta</badge> |
 
-| Canal | Fuente | Coincidencia |
-|---|---|---|
-| Los Simpson Latino | JMIGUE-IPTVSV | Nombre y categoría únicos |
-| RPP TV (Perú - Nacional) | JMIGUE-IPTVSV | Nombre y categoría únicos |
-| Comercio TV | SPECIAL-fear_factor | Identidad fuerte |
-| KCHTV SD (Guayas) [Opc.2] | JMIGUE-IPTVSV | Nombre y categoría únicos |
+La etiqueta anterior `SPECIAL-fear_factor` se corrigió a `CERESLABX-US-TV`.
+La playlist fuente contiene tanto Comercio TV como Fear Factor; el nombre anterior
+era engañoso porque la URL apunta a una playlist general de EE. UU.
 
-Son propuestas, no fuentes verificadas. No se ha confirmado reproducción HLS de estos candidatos y no se reemplazó ninguna URL. Cada candidato debe superar una prueba real de reproducción antes de cualquier sustitución.
-
-## Recuperación de logos faltantes
-
-Cruce de los **76** canales sin logo con las 12 fuentes M3U válidas:
-
-- **52** propuestas de referencia de logo.
-- **37** con identidad fuerte (ID coincidente y único).
-- **15** por nombre/categoría únicos, de menor confianza.
-- **0** propuestas ambiguas.
-- **24** canales sin una referencia candidata.
-
-Las propuestas usan formatos raster admitidos por la auditoría (PNG/JPEG/WebP/GIF). Ninguna se aplicó a la playlist. Se mantienen como propuestas hasta verificar que la imagen se descarga y se muestra correctamente en Televizo y SS IPTV.
+Las cuatro alternativas superaron una prueba HTTP de manifiesto/muestra de segmento
+desde GitHub Actions. Esto confirma una muestra reproducible en ese entorno, no
+reproducción continua, estabilidad a largo plazo ni acceso desde todas las regiones.
+No se reemplazó ninguna URL en la playlist principal.
 
 ## Estado y límites
 
-- Los scripts y el workflow de FASE 3 pasaron sus pruebas automatizadas y la auditoría operativa terminó correctamente.
-- El informe operativo puede contener hallazgos que el detector clasifica como violaciones; que el workflow termine correctamente significa que la auditoría se ejecutó y guardó sus resultados, no que todas las reglas del snapshot estén limpias.
-- No se modificaron la playlist principal, `IPTV-CHILE-MAESTRA_GOD.m3u`, el Generador ni sus workflows.
+- Las pruebas automatizadas de identidad, regresiones, logos y recuperación pasaron
+  en la rama de FASE 3.
+- El workflow es de auditoría; no publica cambios en listas.
+- No se modificaron `IPTV-CHILE-MAESTRA_CORREGIDO.m3u`,
+  `IPTV-CHILE-MAESTRA_GOD.m3u`, `IPTV-CHILE-GENERADOR/**` ni sus workflows.
 - No se cambió ningún logo ni se sustituyó ninguna URL.
-- FASE 3 no está completa: falta verificar reproducción de candidatos y probar visualmente logos en Televizo y SS IPTV.
+- **FASE 3 aún no está completa:** falta probar visualmente los logos en Televizo y
+  SS IPTV. La prueba de fuentes es una muestra corta, no un test de reproducción
+  prolongada.
