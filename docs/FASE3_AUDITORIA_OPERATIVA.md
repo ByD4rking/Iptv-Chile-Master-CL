@@ -58,6 +58,18 @@ Propuestas encontradas:
 
 Son propuestas, no fuentes verificadas. No se ha confirmado reproducción HLS de estos candidatos y no se reemplazó ninguna URL. Cada candidato debe superar una prueba real de reproducción antes de cualquier sustitución.
 
+## Recuperación de logos faltantes
+
+Cruce de los **76** canales sin logo con las 12 fuentes M3U válidas:
+
+- **52** propuestas de referencia de logo.
+- **37** con identidad fuerte (ID coincidente y único).
+- **15** por nombre/categoría únicos, de menor confianza.
+- **0** propuestas ambiguas.
+- **24** canales sin una referencia candidata.
+
+Las propuestas usan formatos raster admitidos por la auditoría (PNG/JPEG/WebP/GIF). Ninguna se aplicó a la playlist. Se mantienen como propuestas hasta verificar que la imagen se descarga y se muestra correctamente en Televizo y SS IPTV.
+
 ## Estado y límites
 
 - Los scripts y el workflow de FASE 3 pasaron sus pruebas automatizadas y la auditoría operativa terminó correctamente.
