@@ -71,6 +71,28 @@ def url_provider_alias(url: str) -> str:
     return ""
 
 
+def _component_fingerprint(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
+
+
+def safe_url_components(url: str) -> tuple[str, str, str]:
+    """Return host, path fingerprint and non-auth query fingerprint only."""
+    try:
+        parsed = urlsplit(url.strip())
+        host = (parsed.hostname or "").casefold()
+        path = _component_fingerprint(
+            f"{parsed.scheme.casefold()}://{(parsed.netloc or '').casefold()}{parsed.path}"
+        )
+        query = [
+            (key, value) for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+            if key.casefold() not in SENSITIVE_QUERY_KEYS
+        ]
+        query_fingerprint = _component_fingerprint(urlencode(query))
+        return host, path, query_fingerprint
+    except ValueError:
+        return "", "", ""
+
+
 def safe_url_fingerprint(url: str) -> str:
     """Fingerprint sin credenciales ni parámetros de autenticación efímeros."""
     try:
@@ -151,10 +173,7 @@ def parse_playlist_text(text: str) -> list[dict]:
             )
         fallback = normalize(tvg_name) + "|" + normalize(group) + "|" + variant
         stable_id = aliases[0] if aliases else ("name-group:" + fallback if fallback != "|" else "")
-        try:
-            stream_host = urlsplit(stream).hostname or ""
-        except ValueError:
-            stream_host = ""
+        stream_host, stream_path_fingerprint, stream_query_fingerprint = safe_url_components(stream)
         records.append({
             "name": name,
             "tvg_name": tvg_name,
@@ -167,6 +186,8 @@ def parse_playlist_text(text: str) -> list[dict]:
             "option_variant": variant,
             "stream_fingerprint": safe_url_fingerprint(stream) if stream else "",
             "stream_host": stream_host,
+            "stream_path_fingerprint": stream_path_fingerprint,
+            "stream_query_fingerprint": stream_query_fingerprint,
             "aliases": aliases,
             "stable_id": stable_id,
             "fallback": fallback,
@@ -293,6 +314,10 @@ def compare_snapshots(before: list[dict], after: list[dict]) -> dict:
             "after_logo": new["logo"],
             "before_stream_host": old.get("stream_host", ""),
             "after_stream_host": new.get("stream_host", ""),
+            "before_stream_path_fingerprint": old.get("stream_path_fingerprint", ""),
+            "after_stream_path_fingerprint": new.get("stream_path_fingerprint", ""),
+            "before_stream_query_fingerprint": old.get("stream_query_fingerprint", ""),
+            "after_stream_query_fingerprint": new.get("stream_query_fingerprint", ""),
             "changed_fields": changed,
             "stream_changed": "stream" in changed,
         })
