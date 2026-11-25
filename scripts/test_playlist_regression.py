@@ -45,6 +45,29 @@ class PlaylistRegressionTests(unittest.TestCase):
         self.assertFalse(result["passed"])
         self.assertEqual(result["category_changes"], 1)
 
+    def test_allows_only_the_exactly_reviewed_category_change(self):
+        before = records(
+            '#EXTM3U\\n#EXTINF:-1 tvg-id="ptv" group-title="Entretenimiento / Cine / Series",PTV OnLine\\n'
+            'https://a.example/ptv\\n'
+        )
+        after = records(
+            '#EXTM3U\\n#EXTINF:-1 tvg-id="ptv" group-title="Bolivia",PTV OnLine\\n'
+            'https://a.example/ptv\\n'
+        )
+        allowed = {("PTV OnLine", "Entretenimiento / Cine / Series", "Bolivia")}
+        result = evaluate_regressions(before, after, allowed_category_changes=allowed)
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["category_changes"], 1)
+        self.assertEqual(len(result["approved_category_changes"]), 1)
+        self.assertEqual(result["unapproved_category_changes"], [])
+
+        rejected = evaluate_regressions(
+            before, after,
+            allowed_category_changes={("PTV OnLine", "Anime", "Bolivia")},
+        )
+        self.assertFalse(rejected["passed"])
+        self.assertEqual(len(rejected["unapproved_category_changes"]), 1)
+
     def test_blocks_replacement_of_existing_logo_but_allows_missing_logo_fill(self):
         before = records(
             '#EXTM3U\n#EXTINF:-1 tvg-id="one" tvg-logo="https://img.example/old.png",Uno\n'
