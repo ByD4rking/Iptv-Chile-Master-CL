@@ -151,6 +151,10 @@ def parse_playlist_text(text: str) -> list[dict]:
             )
         fallback = normalize(tvg_name) + "|" + normalize(group) + "|" + variant
         stable_id = aliases[0] if aliases else ("name-group:" + fallback if fallback != "|" else "")
+        try:
+            stream_host = urlsplit(stream).hostname or ""
+        except ValueError:
+            stream_host = ""
         records.append({
             "name": name,
             "tvg_name": tvg_name,
@@ -162,6 +166,7 @@ def parse_playlist_text(text: str) -> list[dict]:
             "provider_id": provider_id,
             "option_variant": variant,
             "stream_fingerprint": safe_url_fingerprint(stream) if stream else "",
+            "stream_host": stream_host,
             "aliases": aliases,
             "stable_id": stable_id,
             "fallback": fallback,
@@ -286,6 +291,8 @@ def compare_snapshots(before: list[dict], after: list[dict]) -> dict:
             "after_tvg_logo": new["tvg_logo"],
             "before_logo": old["logo"],
             "after_logo": new["logo"],
+            "before_stream_host": old.get("stream_host", ""),
+            "after_stream_host": new.get("stream_host", ""),
             "changed_fields": changed,
             "stream_changed": "stream" in changed,
         })
