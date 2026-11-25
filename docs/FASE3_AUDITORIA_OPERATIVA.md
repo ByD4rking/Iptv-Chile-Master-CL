@@ -61,10 +61,10 @@ candidatas aportaron **5.848** registros. Se generaron cuatro propuestas no ambi
 
 | Canal | Fuente | Identidad | Prueba de muestra |
 |---|---|---|---|
-| Los Simpson Latino | JMIGUE-IPTVSV | Fallback único | <badge color="success">Correcta</badge> |
-| RPP TV (Perú - Nacional) | JMIGUE-IPTVSV | Fallback único | <badge color="success">Correcta</badge> |
-| Comercio TV | CERESLABX-US-TV | Fuerte | <badge color="success">Correcta</badge> |
-| KCHTV SD (Guayas) [Opc.2] | JMIGUE-IPTVSV | Fallback único | <badge color="success">Correcta</badge> |
+| Los Simpson Latino | JMIGUE-IPTVSV | Fallback único | **Correcta** |
+| RPP TV (Perú - Nacional) | JMIGUE-IPTVSV | Fallback único | **Correcta** |
+| Comercio TV | CERESLABX-US-TV | Fuerte | **Correcta** |
+| KCHTV SD (Guayas) [Opc.2] | JMIGUE-IPTVSV | Fallback único | **Correcta** |
 
 La etiqueta anterior `SPECIAL-fear_factor` se corrigió a `CERESLABX-US-TV`.
 La playlist fuente contiene tanto Comercio TV como Fear Factor; el nombre anterior
