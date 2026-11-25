@@ -128,8 +128,20 @@ def parse_playlist_text(text: str) -> list[dict]:
         # Los IDs placeholder (p. ej. channelId="-1") no son identidad.
         # Las alternativas con un tvg-id compartido se distinguen por su sufijo
         # explícito [Opción N], sin confundirlas ni colapsarlas.
-        if variant:
-            aliases.extend(f"variant:{alias}:{variant}" for alias in tuple(aliases))
+        base_aliases = tuple(aliases)
+        if base_aliases:
+            # Cuando un proveedor reutiliza un ID para varias señales/opciones,
+            # añade alias secundarios que distinguen cada variante sin perder
+            # el ID principal. La huella de stream solo desambigua si la URL
+            # sigue siendo la misma; nunca fuerza una coincidencia por sí sola.
+            disambiguator = (
+                normalize(tvg_name) + "|" + normalize(group) + "|" + variant
+                if variant else normalize(name) + "|" + normalize(group)
+            )
+            for alias in base_aliases:
+                aliases.append(f"variant:{alias}:{disambiguator}")
+                if stream:
+                    aliases.append(f"stream:{alias}:{safe_url_fingerprint(stream)}")
         fallback = normalize(tvg_name) + "|" + normalize(group) + "|" + variant
         stable_id = aliases[0] if aliases else ("name-group:" + fallback if fallback != "|" else "")
         records.append({
