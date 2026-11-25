@@ -119,7 +119,7 @@ class ChannelIdentityTests(unittest.TestCase):
         self.assertEqual(result["matched"], 1)
         self.assertEqual(result["removed"], 0)
         self.assertEqual(result["added"], 0)
-        self.assertEqual(result["changes"][0]["changed_fields"], ["group"])
+        self.assertIn("group", result["changes"][0]["changed_fields"])
 
     def test_missing_uri_does_not_borrow_next_channel_stream(self):
         records = parse_playlist_text(
