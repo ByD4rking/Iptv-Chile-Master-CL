@@ -98,7 +98,7 @@ jobs:
             echo "El detector falló técnicamente con código $RESULT"
             exit "$RESULT"
           fi
-          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("AUDITORIA REAL:", json.dumps({k:r[k] for k in ("passed","before_count","after_count","added","removed","matched","category_changes","approved_category_changes","unapproved_category_changes","logo_replacements","stream_changes","duplicate_stream_fingerprints","ambiguous_matches","violations","added_channels","removed_channels","ambiguous_details","duplicate_stream_details","stream_change_samples")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-regresiones.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("AUDITORIA REAL:", json.dumps({k:r[k] for k in ("passed","before_count","after_count","added","removed","matched","category_changes","approved_category_changes","unapproved_category_changes","logo_replacements","stream_changes","same_host_path_changes","unknown_host_changes","stream_host_transitions","duplicate_stream_fingerprints","ambiguous_matches","violations","added_channels","removed_channels","ambiguous_details","duplicate_stream_details","stream_change_samples")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-regresiones.json"
           echo "exit_code=$RESULT" >> "$GITHUB_OUTPUT"
       - name: Auditar logos de la playlist real (solo lectura)
         run: |
