@@ -110,6 +110,23 @@ class PlaylistRegressionTests(unittest.TestCase):
         result = evaluate_regressions(before, after, fail_on_stream_change=True)
         self.assertFalse(result["passed"])
         self.assertEqual(result["stream_changes"], 1)
+        self.assertEqual(result["same_host_path_changes"], 1)
+        self.assertEqual(result["stream_host_transitions"], [])
+
+    def test_reports_host_migration_without_exposing_stream_urls(self):
+        before = records(
+            '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://old.example/live.m3u8?jwt=secret\\n'
+        )
+        after = records(
+            '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://new.example/live.m3u8?jwt=other\\n'
+        )
+        result = evaluate_regressions(before, after)
+        self.assertEqual(result["stream_changes"], 1)
+        self.assertEqual(result["stream_host_transitions"], [
+            {"before_host": "old.example", "after_host": "new.example", "count": 1}
+        ])
+        self.assertNotIn("secret", repr(result))
+        self.assertNotIn("jwt", repr(result))
 
     def test_audit_files_rejects_invalid_m3u(self):
         with tempfile.TemporaryDirectory() as tmp:
