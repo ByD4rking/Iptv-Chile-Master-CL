@@ -130,15 +130,18 @@ def parse_playlist_text(text: str) -> list[dict]:
         # Las alternativas con un tvg-id compartido se distinguen por su sufijo
         # explícito [Opción N], sin confundirlas ni colapsarlas.
         base_aliases = tuple(aliases)
-        if base_aliases and explicit_tvg_name:
-            # Solo se permite desambiguar IDs reutilizados si la fuente aporta
-            # tvg-name explícito. Sin ese metadato, los alias duplicados siguen
-            # siendo ambiguos y no se emparejan por intuición.
-            disambiguator = normalize(tvg_name) + "|" + normalize(group) + "|" + variant
-            for alias in base_aliases:
-                aliases.append(f"variant:{alias}:{disambiguator}")
-                if stream:
-                    aliases.append(f"stream:{alias}:{safe_url_fingerprint(stream)}")
+        if base_aliases:
+            if explicit_tvg_name:
+                # Solo se desambigua por metadatos de variante cuando tvg-name
+                # viene explícito desde la fuente.
+                disambiguator = normalize(tvg_name) + "|" + normalize(group) + "|" + variant
+                aliases.extend(f"variant:{alias}:{disambiguator}" for alias in base_aliases)
+            # Una URL de stream idéntica es evidencia fuerte para separar IDs
+            # reutilizados. Si la URL también está duplicada, el alias seguirá
+            # siendo ambiguo y no se emparejará.
+            if stream:
+                fingerprint = safe_url_fingerprint(stream)
+                aliases.extend(f"stream:{alias}:{fingerprint}" for alias in base_aliases)
         fallback = normalize(tvg_name) + "|" + normalize(group) + "|" + variant
         stable_id = aliases[0] if aliases else ("name-group:" + fallback if fallback != "|" else "")
         records.append({
