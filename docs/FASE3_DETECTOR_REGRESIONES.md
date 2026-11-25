@@ -8,8 +8,10 @@
 - Duplicados de fingerprint de stream y coincidencias ambiguas (informados).
 - Validez estructural M3U de ambos snapshots antes de comparar.
 
-La rotación de JWT y otros parámetros efímeros se excluye del fingerprint para
-evitar falsos positivos durante la renovación normal de Pluto TV.
+La rotación de JWT y los identificadores efímeros `sessionid`, `sid`, `deviceid`
+y `clientid` se excluyen del fingerprint. Los valores nunca se imprimen ni se
+guardan en el informe. Los parámetros semánticos como `country`, región e idioma
+siguen formando parte del fingerprint para no ocultar cambios de distribución.
 
 ## Excepción explícita de categoría
 Una transición revisada se permite solo con canal, categoría de origen y destino
