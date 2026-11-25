@@ -6,6 +6,7 @@ import argparse
 import concurrent.futures
 import json
 import time
+import urllib.error
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
 
@@ -77,6 +78,8 @@ def probe_stream(url: str) -> dict:
                 "sample_bytes": len(body),
             }
         return {"ok": False, "status": "playlist_nesting_limit"}
+    except urllib.error.HTTPError as exc:
+        return {"ok": False, "status": "http_" + str(exc.code)}
     except Exception as exc:
         reason = str(exc)
         if reason.startswith("http_") or reason in {
@@ -86,9 +89,6 @@ def probe_stream(url: str) -> dict:
         else:
             status = type(exc).__name__
         return {"ok": False, "status": status}
-    finally:
-        elapsed_ms = round((time.monotonic() - started) * 1000)
-    # The finally block cannot return; elapsed time is added below by wrapper.
 
 
 def _probe_with_latency(url: str) -> dict:
