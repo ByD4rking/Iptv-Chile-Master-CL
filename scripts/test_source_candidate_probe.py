@@ -29,7 +29,7 @@ class SourceCandidateProbeTests(unittest.TestCase):
             headers = {"Content-Type": "video/mp2t"}
             def __enter__(self): return self
             def __exit__(self, *args): return False
-            def read(self, size=-1): return b"\\x47" * size
+            def read(self, size=-1): return b"X" * size
             def geturl(self): return "https://cdn.example/live.ts"
         opener.return_value = Response()
         from scripts.source_candidate_probe import _fetch, SEGMENT_SAMPLE
