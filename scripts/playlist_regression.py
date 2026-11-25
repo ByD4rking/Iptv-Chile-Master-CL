@@ -89,6 +89,15 @@ def evaluate_regressions(
         "stream_changes": stream_changes,
         "duplicate_stream_fingerprints": duplicate_streams,
         "duplicate_stream_details": duplicate_stream_details,
+        "stream_change_samples": [
+            {
+                "before_name": row["before_name"],
+                "after_name": row["after_name"],
+                "before_group": row["before_group"],
+                "after_group": row["after_group"],
+            }
+            for row in comparison["changes"] if row["stream_changed"]
+        ][:40],
         "ambiguous_matches": len(comparison["ambiguous"]),
         "added_channels": comparison["added_channels"],
         "removed_channels": comparison["removed_channels"],
