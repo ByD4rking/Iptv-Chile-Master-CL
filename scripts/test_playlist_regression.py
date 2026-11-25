@@ -113,6 +113,18 @@ class PlaylistRegressionTests(unittest.TestCase):
         self.assertEqual(result["same_host_path_changes"], 1)
         self.assertEqual(result["stream_host_transitions"], [])
 
+    def test_separates_query_only_changes_from_path_changes(self):
+        before = records(
+            '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://a.example/live.m3u8?region=old\\n'
+        )
+        after = records(
+            '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://a.example/live.m3u8?region=new\\n'
+        )
+        result = evaluate_regressions(before, after)
+        self.assertEqual(result["stream_changes"], 1)
+        self.assertEqual(result["same_host_path_changes"], 0)
+        self.assertEqual(result["query_only_changes"], 1)
+
     def test_reports_host_migration_without_exposing_stream_urls(self):
         before = records(
             '#EXTM3U\n#EXTINF:-1 tvg-id="one",Uno\nhttps://old.example/live.m3u8?jwt=secret\n'
