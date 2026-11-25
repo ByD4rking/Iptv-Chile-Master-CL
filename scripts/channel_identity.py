@@ -142,6 +142,13 @@ def parse_playlist_text(text: str) -> list[dict]:
             if stream:
                 fingerprint = safe_url_fingerprint(stream)
                 aliases.extend(f"stream:{alias}:{fingerprint}" for alias in base_aliases)
+        elif explicit_tvg_name and stream:
+            # Canales hermanos con un tvg-name común (p. ej. TVG Eventos 1/2/3)
+            # se distinguen por el stream exacto, sin colapsarlos por nombre.
+            fingerprint = safe_url_fingerprint(stream)
+            aliases.append(
+                f"tvg-name-stream:{normalize(tvg_name)}:{normalize(group)}:{fingerprint}"
+            )
         fallback = normalize(tvg_name) + "|" + normalize(group) + "|" + variant
         stable_id = aliases[0] if aliases else ("name-group:" + fallback if fallback != "|" else "")
         records.append({
@@ -232,6 +239,29 @@ def compare_snapshots(before: list[dict], after: list[dict]) -> dict:
             pairs.append((old_index, new_index, "name-group:" + key, "fallback"))
             unmatched_old.discard(old_index)
             unmatched_new.discard(new_index)
+
+    # Detecta un cambio de categoría cuando el nombre es único en ambos lados.
+    # No se aplica si existen alias fuertes contradictorios ni si el nombre se
+    # repite: en esos casos se mantiene la ambigüedad conservadora.
+    old_names: dict[str, list[int]] = defaultdict(list)
+    new_names: dict[str, list[int]] = defaultdict(list)
+    for index in unmatched_old - blocked_old:
+        key = normalize(before[index]["tvg_name"])
+        if key:
+            old_names[key].append(index)
+    for index in unmatched_new - blocked_new:
+        key = normalize(after[index]["tvg_name"])
+        if key:
+            new_names[key].append(index)
+    for key in sorted(set(old_names) & set(new_names)):
+        if len(old_names[key]) != 1 or len(new_names[key]) != 1:
+            continue
+        old_index, new_index = old_names[key][0], new_names[key][0]
+        if normalize(before[old_index]["group"]) == normalize(after[new_index]["group"]):
+            continue
+        pairs.append((old_index, new_index, "name-only-category-change:" + key, "name-only"))
+        unmatched_old.discard(old_index)
+        unmatched_new.discard(new_index)
 
     changes = []
     for old_index, new_index, identity, confidence in pairs:
