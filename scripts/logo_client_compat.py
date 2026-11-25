@@ -10,11 +10,21 @@ import argparse
 import json
 from collections import defaultdict
 from pathlib import Path
+import re
 from urllib.parse import urlsplit
 
 from scripts.channel_identity import parse_playlist_text, safe_url_fingerprint
 
 KNOWN_FORMATS = {".png": "png", ".jpg": "jpeg", ".jpeg": "jpeg", ".gif": "gif", ".webp": "webp", ".svg": "svg"}
+
+
+def _pluto_channel_id(value: str) -> str:
+    try:
+        path = urlsplit(value).path
+    except ValueError:
+        return ""
+    match = re.search(r"/channels/([a-f0-9]{24})(?:/|$)", path, re.I)
+    return match.group(1).casefold() if match else ""
 
 
 def audit_logo_compatibility(records: list[dict]) -> dict:
@@ -29,11 +39,26 @@ def audit_logo_compatibility(records: list[dict]) -> dict:
             missing.append({"index": index, "name": record.get("name", "")})
             continue
         if tvg_logo and logo and tvg_logo != logo:
+            tvg_id = (record.get("tvg_id") or "").casefold()
+            tvg_logo_id = _pluto_channel_id(tvg_logo)
+            logo_id = _pluto_channel_id(logo)
+            if tvg_id and tvg_logo_id == tvg_id and logo_id != tvg_id:
+                identity_evidence = "tvg-logo coincide con tvg-id; logo usa otro ID Pluto"
+                recommendation = "revisar_logo_contra_tvg_logo_sin_reemplazo_automatico"
+            elif tvg_id and logo_id == tvg_id and tvg_logo_id != tvg_id:
+                identity_evidence = "logo coincide con tvg-id; tvg-logo usa otro ID Pluto"
+                recommendation = "revisar_tvg_logo_contra_logo_sin_reemplazo_automatico"
+            else:
+                identity_evidence = "sin evidencia suficiente de identidad"
+                recommendation = "revision_manual"
             conflicts.append({
                 "index": index,
                 "name": record.get("name", ""),
+                "tvg_id": tvg_id or None,
                 "tvg_logo_fingerprint": safe_url_fingerprint(tvg_logo),
                 "logo_fingerprint": safe_url_fingerprint(logo),
+                "identity_evidence": identity_evidence,
+                "recommendation": recommendation,
             })
         for field, value in (("tvg-logo", tvg_logo), ("logo", logo)):
             if not value:
@@ -90,6 +115,12 @@ def audit_logo_compatibility(records: list[dict]) -> dict:
         "invalid_references": sum(item["status"] == "invalid_reference" for item in rendered),
         "references_requiring_review": sum(bool(item["warnings"]) for item in rendered),
         "field_conflicts": conflicts,
+        "identity_supported_conflicts": sum(
+            item["recommendation"] != "revision_manual" for item in conflicts
+        ),
+        "manual_conflicts": sum(
+            item["recommendation"] == "revision_manual" for item in conflicts
+        ),
         "references": rendered,
         "client_validation": (
             "El análisis estático no certifica renderizado en Televizo ni SS IPTV. "
