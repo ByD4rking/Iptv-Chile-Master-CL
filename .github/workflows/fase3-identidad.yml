@@ -13,6 +13,8 @@ on:
       - "scripts/test_logo_client_compat.py"
       - "scripts/source_recovery.py"
       - "scripts/test_source_recovery.py"
+      - "scripts/source_candidate_probe.py"
+      - "scripts/test_source_candidate_probe.py"
       - "scripts/logo_recovery.py"
       - "scripts/test_logo_recovery.py"
       - "scripts/logo_asset_check.py"
@@ -66,7 +68,7 @@ jobs:
       - name: Probar propuestas de logos faltantes sin reemplazar existentes
         run: python -m unittest scripts.test_logo_recovery scripts.test_logo_asset_check -v
       - name: Verificar sintaxis
-        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/logo_recovery.py scripts/test_logo_recovery.py scripts/logo_asset_check.py scripts/test_logo_asset_check.py
+        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/source_candidate_probe.py scripts/test_source_candidate_probe.py scripts/logo_recovery.py scripts/test_logo_recovery.py scripts/logo_asset_check.py scripts/test_logo_asset_check.py scripts/source_candidate_probe.py scripts/test_source_candidate_probe.py
       - name: Revisar diff
         run: git diff --check
       - name: Auditar regresiones con el snapshot real anterior de main
@@ -177,6 +179,17 @@ jobs:
             --candidate PLUTO-MX=pluto/output/playlists/pluto_mx.m3u \
             --output "${RUNNER_TEMP}/fase3-recuperacion.json"
           python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("RECUPERACION REAL:", json.dumps({**{k:r[k] for k in ("current_channels","candidate_channels","channels_needing_recovery","channels_with_candidates","ambiguous_candidates_skipped")}, "candidates": [{"channel":x["channel"],"group":x["group"],"candidates":[{"source":c["source"],"name":c["name"],"group":c["group"],"confidence":c["confidence"]} for c in x["candidates"]]} for x in r["recommendations"] if x["candidates"]][:30]},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-recuperacion.json"
+      - name: Probar reproducción de fuentes alternativas (solo lectura)
+        run: |
+          python -m unittest scripts.test_source_candidate_probe -v
+          python -m scripts.source_candidate_probe \
+            --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            --health scripts/health/principal_health.json \
+            --candidate-manifest "${RUNNER_TEMP}/fase3-sources/manifest.json" \
+            --candidate PLUTO-LATAM=pluto/output/playlists/pluto_latam.m3u \
+            --candidate PLUTO-MX=pluto/output/playlists/pluto_mx.m3u \
+            --output "${RUNNER_TEMP}/fase3-prueba-fuentes.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("PRUEBA DE FUENTES:", json.dumps({k:r[k] for k in ("candidates_tested","unique_streams_tested","playable_candidates","failed_candidates","results")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-prueba-fuentes.json"
       - name: Proponer logos para canales sin referencia
         run: |
           python -m scripts.logo_recovery \
