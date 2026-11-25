@@ -46,6 +46,14 @@ class ChannelIdentityTests(unittest.TestCase):
         b = "https://cdn.example/live.m3u8?jwt=second&country=CL"
         self.assertEqual(safe_url_fingerprint(a), safe_url_fingerprint(b))
 
+    def test_device_and_session_identifiers_are_ephemeral(self):
+        before = "https://cdn.example/live.m3u8?sessionid=old&deviceid=device-a&clientid=client-a&sid=one&country=CL"
+        after = "https://cdn.example/live.m3u8?sessionid=new&deviceid=device-b&clientid=client-b&sid=two&country=CL"
+        self.assertEqual(safe_url_fingerprint(before), safe_url_fingerprint(after))
+
+        region_changed = "https://cdn.example/live.m3u8?sessionid=new&deviceid=device-b&clientid=client-b&sid=two&country=PE"
+        self.assertNotEqual(safe_url_fingerprint(after), safe_url_fingerprint(region_changed))
+
     def test_real_path_change_is_detected(self):
         before = parse_playlist_text(
             '#EXTM3U\n#EXTINF:-1 tvg-id="id1",Canal\nhttps://cdn.example/a.m3u8\n'
