@@ -87,13 +87,60 @@ jobs:
             --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
             --output "${RUNNER_TEMP}/fase3-logos.json"
           python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS REALES:", json.dumps({k:r[k] for k in ("channels","unique_logo_references","invalid_references","references_requiring_review","field_conflicts")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos.json"
-      - name: Proponer recuperación con historial y fuentes Pluto reales
+      - name: Descargar fuentes alternativas configuradas (solo lectura)
         run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+          from pathlib import Path
+          from scripts.m3u_structure import validate_m3u_bytes
+
+          root = Path(os.environ["RUNNER_TEMP"]) / "fase3-sources"
+          root.mkdir(parents=True, exist_ok=True)
+          config = json.loads(Path("config/playlist_sources.json").read_text(encoding="utf-8"))
+          special = config.get("principal", {}).get("special_sources", {})
+          targets = {
+              "IPTVSV": special.get("iptvsv"),
+              "MAGMA": special.get("magma"),
+              "PLUTO-MX-ALT": special.get("pluto_mx_alternatives"),
+          }
+          for name, url in targets.items():
+              if not url:
+                  print(f"{name}: omitida (no configurada)")
+                  continue
+              try:
+                  request = urllib.request.Request(
+                      url,
+                      headers={"User-Agent": "IPTV-Chile-FASE3-Audit/1.0", "Accept": "*/*"},
+                  )
+                  with urllib.request.urlopen(request, timeout=25) as response:
+                      data = response.read(25 * 1024 * 1024 + 1)
+                  if len(data) > 25 * 1024 * 1024:
+                      print(f"{name}: omitida (supera límite de 25 MiB)")
+                      continue
+                  count = validate_m3u_bytes(data, name)
+                  (root / f"{name}.m3u").write_bytes(data)
+                  print(f"{name}: válida ({count} canales)")
+              except Exception as exc:
+                  print(f"{name}: omitida ({type(exc).__name__})")
+          PY
+      - name: Proponer recuperación con historial y fuentes reales
+        run: |
+          CANDIDATES=(
+            --candidate PLUTO-LATAM=pluto/output/playlists/pluto_latam.m3u
+            --candidate PLUTO-MX=pluto/output/playlists/pluto_mx.m3u
+          )
+          for SOURCE in IPTVSV MAGMA PLUTO-MX-ALT; do
+            FILE="${RUNNER_TEMP}/fase3-sources/${SOURCE}.m3u"
+            if [ -s "$FILE" ]; then
+              CANDIDATES+=(--candidate "${SOURCE}=${FILE}")
+            fi
+          done
           python -m scripts.source_recovery \
             --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
             --health scripts/health/principal_health.json \
-            --candidate PLUTO-LATAM=pluto/output/playlists/pluto_latam.m3u \
-            --candidate PLUTO-MX=pluto/output/playlists/pluto_mx.m3u \
+            "${CANDIDATES[@]}" \
             --output "${RUNNER_TEMP}/fase3-recuperacion.json"
           python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("RECUPERACION REAL:", json.dumps({k:r[k] for k in ("current_channels","candidate_channels","channels_needing_recovery","channels_with_candidates","ambiguous_candidates_skipped")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-recuperacion.json"
       - name: Guardar informes operativos
