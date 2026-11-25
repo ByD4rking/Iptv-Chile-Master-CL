@@ -52,6 +52,7 @@ def evaluate_regressions(
     same_host_path_changes = 0
     query_only_changes = 0
     unknown_host_changes = 0
+    query_key_transitions: Counter[tuple[tuple[str, ...], tuple[str, ...]]] = Counter()
     for row in comparison["changes"]:
         if not row["stream_changed"]:
             continue
@@ -62,6 +63,9 @@ def evaluate_regressions(
         elif before_host == after_host:
             if row.get("before_stream_path_fingerprint") == row.get("after_stream_path_fingerprint"):
                 query_only_changes += 1
+                before_keys = tuple(row.get("before_stream_query_keys", []))
+                after_keys = tuple(row.get("after_stream_query_keys", []))
+                query_key_transitions[(before_keys, after_keys)] += 1
             else:
                 same_host_path_changes += 1
         else:
@@ -130,6 +134,10 @@ def evaluate_regressions(
         "stream_changes": stream_changes,
         "same_host_path_changes": same_host_path_changes,
         "query_only_changes": query_only_changes,
+        "query_key_transitions": [
+            {"before_keys": list(before), "after_keys": list(after), "count": count}
+            for (before, after), count in query_key_transitions.most_common()
+        ],
         "unknown_host_changes": unknown_host_changes,
         "stream_host_transitions": [
             {"before_host": before, "after_host": after, "count": count}
