@@ -158,6 +158,35 @@ class ChannelIdentityTests(unittest.TestCase):
         self.assertEqual(result["added"], 0)
         self.assertEqual(result["ambiguous"], [])
 
+    def test_explicit_shared_tvg_name_distinguishes_sibling_streams(self):
+        source = (
+            '#EXTM3U\n'
+            '#EXTINF:-1 tvg-name="TVG Eventos" group-title="España",TVG Eventos 1\n'
+            'https://events.example/1.m3u8\n'
+            '#EXTINF:-1 tvg-name="TVG Eventos" group-title="España",TVG Eventos 2\n'
+            'https://events.example/2.m3u8\n'
+            '#EXTINF:-1 tvg-name="TVG Eventos" group-title="España",TVG Eventos 3\n'
+            'https://events.example/3.m3u8\n'
+        )
+        result = compare_snapshots(parse_playlist_text(source), parse_playlist_text(source))
+        self.assertEqual(result["matched"], 3)
+        self.assertEqual(result["removed"], 0)
+        self.assertEqual(result["added"], 0)
+        self.assertEqual(result["ambiguous"], [])
+
+    def test_unique_name_with_category_change_is_matched_for_regression_detection(self):
+        before = parse_playlist_text(
+            '#EXTM3U\n#EXTINF:-1,PTV OnLine\nhttps://a.example/live\n'
+        )
+        after = parse_playlist_text(
+            '#EXTM3U\n#EXTINF:-1 group-title="Bolivia",PTV OnLine\nhttps://a.example/live\n'
+        )
+        result = compare_snapshots(before, after)
+        self.assertEqual(result["matched"], 1)
+        self.assertEqual(result["removed"], 0)
+        self.assertEqual(result["added"], 0)
+        self.assertEqual(result["changes"][0]["changed_fields"], ["group"])
+
     def test_placeholder_channel_ids_are_not_identity_aliases(self):
         records = parse_playlist_text(
             '#EXTM3U\n#EXTINF:-1 channelId="-1",Canal A\nhttps://a.example/live\n'
