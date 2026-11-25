@@ -67,11 +67,23 @@ class ChannelIdentityTests(unittest.TestCase):
         self.assertEqual(result["changes"][0]["confidence"], "fallback")
         self.assertEqual(result["stream_changes"], 1)
 
-    def test_duplicate_strong_aliases_are_not_guessed(self):
+    def test_duplicate_strong_aliases_are_disambiguated_by_unchanged_streams(self):
         source = (
             '#EXTM3U\n'
             '#EXTINF:-1 tvg-id="duplicate",Canal A\nhttps://a.example/live\n'
             '#EXTINF:-1 tvg-id="duplicate",Canal B\nhttps://b.example/live\n'
+        )
+        result = compare_snapshots(parse_playlist_text(source), parse_playlist_text(source))
+        self.assertEqual(result["matched"], 2)
+        self.assertEqual(len(result["ambiguous"]), 0)
+        self.assertEqual(result["removed"], 0)
+        self.assertEqual(result["added"], 0)
+
+    def test_duplicate_alias_and_duplicate_stream_remain_ambiguous(self):
+        source = (
+            '#EXTM3U\n'
+            '#EXTINF:-1 tvg-id="duplicate",Canal A\nhttps://a.example/live\n'
+            '#EXTINF:-1 tvg-id="duplicate",Canal B\nhttps://a.example/live\n'
         )
         result = compare_snapshots(parse_playlist_text(source), parse_playlist_text(source))
         self.assertEqual(result["matched"], 0)
