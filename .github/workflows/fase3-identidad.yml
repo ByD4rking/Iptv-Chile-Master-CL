@@ -1,0 +1,53 @@
+name: FASE 3 - Identidad permanente de canales
+
+on:
+  push:
+    branches:
+      - "phase3/**"
+    paths:
+      - "scripts/channel_identity.py"
+      - "scripts/test_channel_identity.py"
+      - "scripts/playlist_regression.py"
+      - "scripts/test_playlist_regression.py"
+      - "scripts/logo_client_compat.py"
+      - "scripts/test_logo_client_compat.py"
+      - "scripts/source_recovery.py"
+      - "scripts/test_source_recovery.py"
+      - ".github/workflows/fase3-identidad.yml"
+  pull_request:
+    paths:
+      - "scripts/channel_identity.py"
+      - "scripts/test_channel_identity.py"
+      - ".github/workflows/fase3-identidad.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fase3-identidad-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  identity-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probar identidad estable y comparación conservadora
+        run: python -m unittest scripts.test_channel_identity -v
+      - name: Probar detector de regresiones de playlist
+        run: python -m unittest scripts.test_playlist_regression -v
+      - name: Probar auditoría estática de compatibilidad de logos
+        run: python -m unittest scripts.test_logo_client_compat -v
+      - name: Probar propuestas conservadoras de recuperación de fuentes
+        run: python -m unittest scripts.test_source_recovery -v
+      - name: Verificar sintaxis
+        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py
+      - name: Revisar diff
+        run: git diff --check
