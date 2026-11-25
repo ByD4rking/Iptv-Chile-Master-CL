@@ -21,6 +21,11 @@ SENSITIVE_QUERY_KEYS = {
     "sig", "key", "api_key", "apikey", "password", "passwd", "secret",
     "session", "hdnea", "auth_key", "x-amz-signature", "x-amz-security-token",
 }
+PLACEHOLDER_IDS = {"", "-1", "0", "none", "null", "undefined", "unknown", "n/a", "na"}
+OPTION_SUFFIX = re.compile(
+    r"(?:\\[\\s*|\\(\\s*)?(?:opci[oó]n|option|opc)\\s*#?\\s*(\\d+)\\s*(?:\\]|\\))?\\s*$",
+    re.I,
+)
 
 
 def normalize(value: str) -> str:
@@ -37,6 +42,16 @@ def attribute(line: str, name: str) -> str:
     )
     return (match.group(1) if match and match.group(1) is not None else
             match.group(2) if match else "").strip()
+
+
+def _valid_identifier(value: str) -> str:
+    normalized = normalize(value)
+    return "" if normalized in PLACEHOLDER_IDS else normalized
+
+
+def _option_variant(name: str) -> str:
+    match = OPTION_SUFFIX.search(name or "")
+    return f"option-{match.group(1)}" if match else ""
 
 
 def url_provider_alias(url: str) -> str:
@@ -82,9 +97,10 @@ def parse_playlist_text(text: str) -> list[dict]:
             continue
         name = line.rsplit(",", 1)[-1].strip() if "," in line else ""
         tvg_name = attribute(line, "tvg-name") or name
-        tvg_id = normalize(attribute(line, "tvg-id"))
-        channel_id = normalize(attribute(line, "channel-id") or attribute(line, "channelId"))
-        provider_id = normalize(attribute(line, "provider-channel-id"))
+        tvg_id = _valid_identifier(attribute(line, "tvg-id"))
+        channel_id = _valid_identifier(attribute(line, "channel-id") or attribute(line, "channelId"))
+        provider_id = _valid_identifier(attribute(line, "provider-channel-id"))
+        variant = _option_variant(name)
         group = attribute(line, "group-title")
         tvg_logo = attribute(line, "tvg-logo")
         logo = attribute(line, "logo")
@@ -109,7 +125,12 @@ def parse_playlist_text(text: str) -> list[dict]:
         provider_alias = url_provider_alias(stream)
         if provider_alias:
             aliases.append(provider_alias)
-        fallback = normalize(tvg_name) + "|" + normalize(group)
+        # Los IDs placeholder (p. ej. channelId="-1") no son identidad.
+        # Las alternativas con un tvg-id compartido se distinguen por su sufijo
+        # explícito [Opción N], sin confundirlas ni colapsarlas.
+        if variant:
+            aliases.extend(f"variant:{alias}:{variant}" for alias in tuple(aliases))
+        fallback = normalize(tvg_name) + "|" + normalize(group) + "|" + variant
         stable_id = aliases[0] if aliases else ("name-group:" + fallback if fallback != "|" else "")
         records.append({
             "name": name,
@@ -120,6 +141,7 @@ def parse_playlist_text(text: str) -> list[dict]:
             "tvg_id": tvg_id,
             "channel_id": channel_id,
             "provider_id": provider_id,
+            "option_variant": variant,
             "stream_fingerprint": safe_url_fingerprint(stream) if stream else "",
             "aliases": aliases,
             "stable_id": stable_id,
