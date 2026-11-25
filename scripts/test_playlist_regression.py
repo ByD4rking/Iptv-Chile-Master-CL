@@ -47,12 +47,12 @@ class PlaylistRegressionTests(unittest.TestCase):
 
     def test_allows_only_the_exactly_reviewed_category_change(self):
         before = records(
-            '#EXTM3U\\n#EXTINF:-1 tvg-id="ptv" group-title="Entretenimiento / Cine / Series",PTV OnLine\\n'
-            'https://a.example/ptv\\n'
+            '#EXTM3U\n#EXTINF:-1 tvg-id="ptv" group-title="Entretenimiento / Cine / Series",PTV OnLine\n'
+            'https://a.example/ptv\n'
         )
         after = records(
-            '#EXTM3U\\n#EXTINF:-1 tvg-id="ptv" group-title="Bolivia",PTV OnLine\\n'
-            'https://a.example/ptv\\n'
+            '#EXTM3U\n#EXTINF:-1 tvg-id="ptv" group-title="Bolivia",PTV OnLine\n'
+            'https://a.example/ptv\n'
         )
         allowed = {("PTV OnLine", "Entretenimiento / Cine / Series", "Bolivia")}
         result = evaluate_regressions(before, after, allowed_category_changes=allowed)
