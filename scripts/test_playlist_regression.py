@@ -127,6 +127,7 @@ class PlaylistRegressionTests(unittest.TestCase):
         self.assertEqual(result["query_key_transitions"], [
             {"before_keys": ["region"], "after_keys": ["region"], "count": 1}
         ])
+        self.assertEqual(result["query_value_change_counts"], {"region": 1})
 
     def test_reports_host_migration_without_exposing_stream_urls(self):
         before = records(
