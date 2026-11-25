@@ -21,6 +21,21 @@ class SourceCandidateProbeTests(unittest.TestCase):
         self.assertTrue(result["ok"])
         self.assertEqual(result["status"], "segment_or_direct_media_sampled")
 
+    @patch("scripts.source_candidate_probe._safe_open")
+    @patch("scripts.source_candidate_probe._is_public_host", return_value=True)
+    def test_caps_direct_video_to_a_sample_instead_of_marking_it_too_large(self, _public, opener):
+        class Response:
+            status = 200
+            headers = {"Content-Type": "video/mp2t"}
+            def __enter__(self): return self
+            def __exit__(self, *args): return False
+            def read(self, size=-1): return b"\\x47" * size
+            def geturl(self): return "https://cdn.example/live.ts"
+        opener.return_value = Response()
+        from scripts.source_candidate_probe import _fetch, SEGMENT_SAMPLE
+        _, _, _, body = _fetch("https://cdn.example/live.ts", 256 * 1024)
+        self.assertEqual(len(body), SEGMENT_SAMPLE)
+
     @patch("scripts.source_candidate_probe._fetch")
     def test_rejects_html_error_page_with_http_200(self, fetch):
         fetch.return_value = (200, "text/html", "https://cdn.example/live.m3u8", b"<html>denied</html>")
