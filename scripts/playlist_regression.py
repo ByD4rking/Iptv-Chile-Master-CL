@@ -38,6 +38,18 @@ def evaluate_regressions(
         row["stream_fingerprint"] for row in after if row["stream_fingerprint"]
     ]
     duplicate_streams = sum(count - 1 for count in Counter(fingerprints).values() if count > 1)
+    duplicate_groups: dict[str, list[dict]] = {}
+    for row in after:
+        fingerprint = row["stream_fingerprint"]
+        if fingerprint:
+            duplicate_groups.setdefault(fingerprint, []).append({
+                "name": row["name"],
+                "group": row["group"],
+            })
+    duplicate_stream_details = [
+        {"fingerprint": fingerprint, "channels": rows}
+        for fingerprint, rows in duplicate_groups.items() if len(rows) > 1
+    ]
 
     violations = []
     if comparison["removed"] > max_removed:
@@ -76,6 +88,7 @@ def evaluate_regressions(
         "logo_replacements": logo_replacements,
         "stream_changes": stream_changes,
         "duplicate_stream_fingerprints": duplicate_streams,
+        "duplicate_stream_details": duplicate_stream_details,
         "ambiguous_matches": len(comparison["ambiguous"]),
         "added_channels": comparison["added_channels"],
         "removed_channels": comparison["removed_channels"],
