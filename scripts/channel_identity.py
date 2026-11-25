@@ -162,6 +162,7 @@ def parse_playlist_text(text: str) -> list[dict]:
             "provider_id": provider_id,
             "option_variant": variant,
             "stream_fingerprint": safe_url_fingerprint(stream) if stream else "",
+            "stream_url": stream,
             "aliases": aliases,
             "stable_id": stable_id,
             "fallback": fallback,
