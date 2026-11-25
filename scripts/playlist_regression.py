@@ -77,6 +77,9 @@ def evaluate_regressions(
         "stream_changes": stream_changes,
         "duplicate_stream_fingerprints": duplicate_streams,
         "ambiguous_matches": len(comparison["ambiguous"]),
+        "added_channels": comparison["added_channels"],
+        "removed_channels": comparison["removed_channels"],
+        "ambiguous_details": comparison["ambiguous"],
         "violations": violations,
         "details": comparison["changes"],
         "policy": (
