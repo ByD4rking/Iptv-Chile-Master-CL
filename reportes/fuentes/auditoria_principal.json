@@ -1,709 +1,226 @@
 {
   "schema_version": 1,
   "scope": "principal",
-  "checked_at": "2026-11-24T23:48:47.477610+00:00",
+  "checked_at": "2026-11-24T23:56:50.658632+00:00",
   "sources_configured": 64,
   "sources_unique_urls": 42,
-  "sources_checked": 64,
-  "sources_failed": 0,
-  "changed_sources": 3,
+  "sources_checked": 34,
+  "sources_failed": 30,
+  "changed_sources": 0,
   "new_sources": 0,
-  "total_added_channels": 149,
-  "total_removed_channels": 97,
-  "total_changed_stream_urls": 1462,
+  "total_added_channels": 0,
+  "total_removed_channels": 0,
+  "total_changed_stream_urls": 0,
   "writable_changed_sources": 0,
   "writable_changed_stream_urls": 0,
-  "readonly_changed_sources": 3,
-  "readonly_changed_stream_urls": 1462,
+  "readonly_changed_sources": 0,
+  "readonly_changed_stream_urls": 0,
   "total_source_url_changes": 0,
   "configured_source_url_changes": [],
   "removed_sources": [],
-  "errors": [],
+  "errors": [
+    {
+      "source": "PRINCIPAL/M3UCL-CO",
+      "url": "https://m3u.cl/lista/CO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://liveingesta118.cdnmedia.tv/teleamigatvlive/smil:dvrlive.smil/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-PE",
+      "url": "https://m3u.cl/lista/PE.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stv1.voxbr.com.br/emanuel7tv/emanuel7tv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-PY",
+      "url": "https://m3u.cl/lista/PY.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://59ce1298bfb98.streamlock.net/uniradiotv/uniradiotv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-ES",
+      "url": "https://m3u.cl/lista/ES.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-EC",
+      "url": "https://m3u.cl/lista/EC.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://asomatv.duckdns.org/livestream/stream.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-CR",
+      "url": "https://m3u.cl/lista/CR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://srv.panelcast.net/humor247/humor247/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-DO",
+      "url": "https://m3u.cl/lista/DO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-MX",
+      "url": "https://m3u.cl/lista/MX.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-VE",
+      "url": "https://m3u.cl/lista/VE.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://lbgo.bozztv.com/ssh101/ssh101/contactv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-BR",
+      "url": "https://m3u.cl/lista/BR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-CL",
+      "url": "https://m3u.cl/lista/CL.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://multistream.comunikados.cl/live/horebtv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-BO",
+      "url": "https://m3u.cl/lista/BO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://614013e273786.streamlock.net:443/XtoTv/XtoTv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "PRINCIPAL/M3UCL-AR",
+      "url": "https://m3u.cl/lista/AR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/IPTV-ORG-TOTAL",
+      "url": "https://iptv-org.github.io/iptv/index.m3u",
+      "error": "ValueError: https://iptv-org.github.io: URI de canal inválida"
+    },
+    {
+      "source": "GOD/FREE-TV",
+      "url": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
+      "error": "ValueError: https://raw.githubusercontent.com: URI de canal inválida"
+    },
+    {
+      "source": "GOD/M3UCL-VE",
+      "url": "https://m3u.cl/lista/VE.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://lbgo.bozztv.com/ssh101/ssh101/contactv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-PY",
+      "url": "https://m3u.cl/lista/PY.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://59ce1298bfb98.streamlock.net/uniradiotv/uniradiotv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-PE",
+      "url": "https://m3u.cl/lista/PE.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stv1.voxbr.com.br/emanuel7tv/emanuel7tv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-DO",
+      "url": "https://m3u.cl/lista/DO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/IPTV-ORG-COUNTRIES",
+      "url": "https://iptv-org.github.io/iptv/index.country.m3u",
+      "error": "ValueError: https://iptv-org.github.io: URI de canal inválida"
+    },
+    {
+      "source": "GOD/M3UCL-MX",
+      "url": "https://m3u.cl/lista/MX.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/IPTV-ORG-CATEGORIES",
+      "url": "https://iptv-org.github.io/iptv/index.category.m3u",
+      "error": "ValueError: https://iptv-org.github.io: URI de canal inválida"
+    },
+    {
+      "source": "GOD/M3UCL-ES",
+      "url": "https://m3u.cl/lista/ES.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-EC",
+      "url": "https://m3u.cl/lista/EC.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://asomatv.duckdns.org/livestream/stream.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-CR",
+      "url": "https://m3u.cl/lista/CR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://srv.panelcast.net/humor247/humor247/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-CO",
+      "url": "https://m3u.cl/lista/CO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://liveingesta118.cdnmedia.tv/teleamigatvlive/smil:dvrlive.smil/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-BR",
+      "url": "https://m3u.cl/lista/BR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-AR",
+      "url": "https://m3u.cl/lista/AR.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://stream.pridetvlatam.cl/iptv/channel/2.m3u8?mode=segmenter&PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-CL",
+      "url": "https://m3u.cl/lista/CL.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://multistream.comunikados.cl/live/horebtv/playlist.m3u8?PlaylistM3UCL"
+    },
+    {
+      "source": "GOD/M3UCL-BO",
+      "url": "https://m3u.cl/lista/BO.m3u",
+      "error": "ValueError: https://m3u.cl: contenido suelto no asociado a #EXTINF: https://614013e273786.streamlock.net:443/XtoTv/XtoTv/playlist.m3u8?PlaylistM3UCL"
+    }
+  ],
   "changes": [
     {
       "source": "GOD/DEARBULUT-BEST",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://dearbulut.github.io/iptv/playlists/best.m3u",
       "new_source_url": "https://dearbulut.github.io/iptv/playlists/best.m3u",
-      "added_channels": 47,
-      "removed_channels": 48,
+      "added_channels": 0,
+      "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 695,
-      "changed_categories": 1,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "AJNetNews.in",
-          "AnewZTV.az",
-          "BRIDGEDance.ru",
-          "BRIDGEJazz.ru",
-          "BRIDGERNB.ru",
-          "BRIDGERap.ru",
-          "BRIDGESoul.ru",
-          "BRIDGESymphony.ru",
-          "BRIDGEVostok.ru",
-          "BakuTV.az",
-          "BoricuaTV.pr",
-          "Canal11Machagai.ar",
-          "Canal11delaCosta.ar",
-          "Cine1.tr",
-          "DunyaTV.az",
-          "ELTV.az",
-          "FOX.mx",
-          "FajerTV1.ps",
-          "FuengirolaTV.es",
-          "IctimaiTV.az",
-          "KNMusicTV.az",
-          "KapazTV.az",
-          "LixdofTV.gh",
-          "M3UWorld4K.bd",
-          "MedeniyyetTV.az",
-          "MiniDisco.ru",
-          "NRTSport.iq",
-          "NVision.in",
-          "RealTV.az",
-          "SesTV.az"
-        ],
-        "removed": [
-          "22ScopeNews.in",
-          "ARBGunes.az",
-          "AagaazTimes.in",
-          "AamarBangla.in",
-          "AnmolTV.in",
-          "AsiaExpressNonStop.ro",
-          "BadaKhabar.in",
-          "Captain.in",
-          "Chefilacutite.ro",
-          "ColorsBangla.in",
-          "ColorsBanglaCinema.in",
-          "DAZN4.uk",
-          "DAZN5.uk",
-          "DeewanaHD.in",
-          "Dhamaal.in",
-          "E.pl",
-          "ESPNExtraLatinAmerica.us",
-          "FormulaAcademyAntenaPlay.ro",
-          "History2.pl",
-          "LifetimeMovies.us",
-          "MLBStrikeZone.us",
-          "MSG.us",
-          "MTV2.us",
-          "NationalGeographicWild.us",
-          "NaxatraNews.in",
-          "NickHDPlus.in",
-          "Nickelodeon.uk",
-          "Pradesh24Gujarati.in",
-          "RaaviTV.pk",
-          "RajPariwar.in"
-        ],
+        "added": [],
+        "removed": [],
         "renamed": [],
-        "stream_urls": [
-          {
-            "key": "24TV.tr",
-            "before_fingerprint": "97fbe73c66eede2e",
-            "after_fingerprint": "2eeed45e1ff9044f"
-          },
-          {
-            "key": "30AMusic.us",
-            "before_fingerprint": "72af9eee38966324",
-            "after_fingerprint": "41adbc3fd5b08b9f"
-          },
-          {
-            "key": "31Kanal.kz",
-            "before_fingerprint": "3885cf7aa1ab70c3",
-            "after_fingerprint": "b9b59930cc00f697"
-          },
-          {
-            "key": "360.ru",
-            "before_fingerprint": "acd2f0956cef3f31",
-            "after_fingerprint": "c0f0ea4cf8a5f237"
-          },
-          {
-            "key": "360News.ru",
-            "before_fingerprint": "144e5acc08c7235f",
-            "after_fingerprint": "af3b921148d3c925"
-          },
-          {
-            "key": "3CatExclusiu3.es",
-            "before_fingerprint": "0da56ebba5a6aff9",
-            "after_fingerprint": "d8dc6ea8f23c7246"
-          },
-          {
-            "key": "4TVNews.in",
-            "before_fingerprint": "138484fbb577d34b",
-            "after_fingerprint": "d239c4c1201524d8"
-          },
-          {
-            "key": "6WiseTv.us",
-            "before_fingerprint": "773a2c024361776d",
-            "after_fingerprint": "fc3b430cd3c515d4"
-          },
-          {
-            "key": "7SMusic.in",
-            "before_fingerprint": "2eff851afa302ef3",
-            "after_fingerprint": "6416cd97745b0799"
-          },
-          {
-            "key": "7thHeaven.se",
-            "before_fingerprint": "571c318b800461be",
-            "after_fingerprint": "dae27a21ee2227f6"
-          },
-          {
-            "key": "8XM.pk",
-            "before_fingerprint": "4211781f665aa83b",
-            "after_fingerprint": "9cb81166c2457d97"
-          },
-          {
-            "key": "9XJhakaas.in",
-            "before_fingerprint": "05a352acd74f89bf",
-            "after_fingerprint": "cb444b0ebd53ebec"
-          },
-          {
-            "key": "9XM.in",
-            "before_fingerprint": "d0fe652259faae36",
-            "after_fingerprint": "fbe1d5c4e7828b70"
-          },
-          {
-            "key": "9XTashan.in",
-            "before_fingerprint": "c48b50ee58b743e7",
-            "after_fingerprint": "fa8d126928335974"
-          },
-          {
-            "key": "ABC.us",
-            "before_fingerprint": "3c70232532adedde",
-            "after_fingerprint": "7e560e575c4ddb96"
-          },
-          {
-            "key": "ABCTV.au",
-            "before_fingerprint": "1ed4ec0e65c43d0a",
-            "after_fingerprint": "71deec4d3ee71b64"
-          },
-          {
-            "key": "ABPMajha.in",
-            "before_fingerprint": "74cffa32093a8c7d",
-            "after_fingerprint": "2acfc4e2fa07afb1"
-          },
-          {
-            "key": "ABPNews.in",
-            "before_fingerprint": "8d3bcc4a4538b201",
-            "after_fingerprint": "d097653bffc1eeaf"
-          },
-          {
-            "key": "AKCTV.us",
-            "before_fingerprint": "f681847702b48161",
-            "after_fingerprint": "cded2051f8a68bdd"
-          },
-          {
-            "key": "AMCenEspanol.us",
-            "before_fingerprint": "62976c17dbac5851",
-            "after_fingerprint": "57f9189797575408"
-          },
-          {
-            "key": "ART.ru",
-            "before_fingerprint": "fb1ae3239a58a5ce",
-            "after_fingerprint": "d8b65540c472f6f6"
-          },
-          {
-            "key": "ATV.tr",
-            "before_fingerprint": "90360eeb6b5d86ad",
-            "after_fingerprint": "0e03626d4695cafd"
-          },
-          {
-            "key": "AXNCEE.es",
-            "before_fingerprint": "6b223ce7fcffca6c",
-            "after_fingerprint": "c1199425c5dc0717"
-          },
-          {
-            "key": "Aastha.in",
-            "before_fingerprint": "1604f105f4b8afa2",
-            "after_fingerprint": "1e914c7f550c8c6d"
-          },
-          {
-            "key": "AasthaBhajan.in",
-            "before_fingerprint": "fabe9a7e39ef8db2",
-            "after_fingerprint": "370462d94a4b86ea"
-          },
-          {
-            "key": "AbejalesTV.ve",
-            "before_fingerprint": "31bf795469819dce",
-            "after_fingerprint": "0214b40a8f56f4ba"
-          },
-          {
-            "key": "AccuWeatherNOW.us",
-            "before_fingerprint": "87f475afd80e509a",
-            "after_fingerprint": "d912daa4232146f5"
-          },
-          {
-            "key": "AceTV.us",
-            "before_fingerprint": "21d5b003297ff0a7",
-            "after_fingerprint": "b20414866a982cd3"
-          },
-          {
-            "key": "AgapeTV.sv",
-            "before_fingerprint": "67ff94016b6c22c5",
-            "after_fingerprint": "10b24a0895a408f0"
-          },
-          {
-            "key": "AjyalTV.ps",
-            "before_fingerprint": "18a56e0c364cd280",
-            "after_fingerprint": "b0d4dd7600af5bf7"
-          }
-        ],
-        "categories": [
-          {
-            "key": "AmericaTeVe.pr",
-            "before_fingerprint": "c910d474dcd724bf",
-            "after_fingerprint": "f02dfb7da82a40b0"
-          }
-        ]
+        "stream_urls": [],
+        "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/DEARBULUT-ESPANOL",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
       "new_source_url": "https://dearbulut.github.io/iptv/playlists/language/spa.m3u",
-      "added_channels": 7,
-      "removed_channels": 8,
+      "added_channels": 0,
+      "removed_channels": 0,
       "renamed_channels": 0,
-      "changed_stream_urls": 124,
-      "changed_categories": 1,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
+      "changed_stream_urls": 0,
+      "changed_categories": 0,
+      "content_hash_changed": false,
+      "channel_order_changed": false,
       "samples": {
-        "added": [
-          "BoricuaTV.pr",
-          "Canal11Machagai.ar",
-          "Canal11delaCosta.ar",
-          "FOX.mx",
-          "FuengirolaTV.es",
-          "TV4LaVall.es",
-          "WIMNTV.pr"
-        ],
-        "removed": [
-          "ESPNExtraLatinAmerica.us",
-          "LifetimeMovies.us",
-          "MLBStrikeZone.us",
-          "MSG.us",
-          "MTV2.us",
-          "StarzCinema.us",
-          "TigoSports.cr",
-          "TigoSports.gt"
-        ],
+        "added": [],
+        "removed": [],
         "renamed": [],
-        "stream_urls": [
-          {
-            "key": "6WiseTv.us",
-            "before_fingerprint": "773a2c024361776d",
-            "after_fingerprint": "fc3b430cd3c515d4"
-          },
-          {
-            "key": "ABC.us",
-            "before_fingerprint": "3c70232532adedde",
-            "after_fingerprint": "7e560e575c4ddb96"
-          },
-          {
-            "key": "AMCenEspanol.us",
-            "before_fingerprint": "62976c17dbac5851",
-            "after_fingerprint": "57f9189797575408"
-          },
-          {
-            "key": "AbejalesTV.ve",
-            "before_fingerprint": "31bf795469819dce",
-            "after_fingerprint": "0214b40a8f56f4ba"
-          },
-          {
-            "key": "AgapeTV.sv",
-            "before_fingerprint": "67ff94016b6c22c5",
-            "after_fingerprint": "10b24a0895a408f0"
-          },
-          {
-            "key": "AngelTV.in",
-            "before_fingerprint": "86fc83df81038f28",
-            "after_fingerprint": "661ee5cf9fdfd26a"
-          },
-          {
-            "key": "BBCNews.uk",
-            "before_fingerprint": "da0e948d1de2a69e",
-            "after_fingerprint": "0f4f6193c4026d85"
-          },
-          {
-            "key": "BabyFirst.us",
-            "before_fingerprint": "b40a044a700aa540",
-            "after_fingerprint": "91a7270a752e65fc"
-          },
-          {
-            "key": "Buzzr.us",
-            "before_fingerprint": "7db0663510997319",
-            "after_fingerprint": "a39f708704e8128b"
-          },
-          {
-            "key": "CNCBugavision.co",
-            "before_fingerprint": "a2bc4cbb63066e44",
-            "after_fingerprint": "736160c0ffe28182"
-          },
-          {
-            "key": "CNNInternational.us",
-            "before_fingerprint": "8ddf9e0783e0572f",
-            "after_fingerprint": "18111b76512f1829"
-          },
-          {
-            "key": "CadenaTV.pe",
-            "before_fingerprint": "8a89120a9ed29e85",
-            "after_fingerprint": "cf9558aaeb58c2d8"
-          },
-          {
-            "key": "Canal12.sv",
-            "before_fingerprint": "809d059ac9a8ef77",
-            "after_fingerprint": "d0bdfb3566cc86fd"
-          },
-          {
-            "key": "Canal21Huancayo.pe",
-            "before_fingerprint": "e7c4dc3e34138c56",
-            "after_fingerprint": "eacba10a57ca8398"
-          },
-          {
-            "key": "Canal7Salta.ar",
-            "before_fingerprint": "072246f6e13a2044",
-            "after_fingerprint": "6aea95d42d7f6956"
-          },
-          {
-            "key": "Canal8TVPlus.co",
-            "before_fingerprint": "bb2f1a502cbde33c",
-            "after_fingerprint": "1d8c045bf288a249"
-          },
-          {
-            "key": "CanalCongreso.co",
-            "before_fingerprint": "d30399bf794372c1",
-            "after_fingerprint": "4afda4f918b86692"
-          },
-          {
-            "key": "CanalTRO.co",
-            "before_fingerprint": "2ec5449c389f34dc",
-            "after_fingerprint": "28220990a1164de1"
-          },
-          {
-            "key": "CaracolTV.co",
-            "before_fingerprint": "09d6e5a12f96a829",
-            "after_fingerprint": "22d1d434555175d6"
-          },
-          {
-            "key": "CineTerror.us",
-            "before_fingerprint": "162aa25e9220acd2",
-            "after_fingerprint": "2640332b2bd38a93"
-          },
-          {
-            "key": "ClaroMusicaTV.co",
-            "before_fingerprint": "9672f027c8f7fb73",
-            "after_fingerprint": "7d04f2d1d6543cde"
-          },
-          {
-            "key": "DSports2.us",
-            "before_fingerprint": "1d953d8864be389d",
-            "after_fingerprint": "c2d537bf8e7ea708"
-          },
-          {
-            "key": "DisneyChannelLatinAmerica.ar",
-            "before_fingerprint": "1ec3a99808104b68",
-            "after_fingerprint": "a573f988627813aa"
-          },
-          {
-            "key": "DisneyJunior.us",
-            "before_fingerprint": "e14d227be094918a",
-            "after_fingerprint": "3b78969b5a9b9acd"
-          },
-          {
-            "key": "EPATV.cl",
-            "before_fingerprint": "166542d134f04e73",
-            "after_fingerprint": "86c947085bf2ac5c"
-          },
-          {
-            "key": "ESPN2LatinAmerica.us",
-            "before_fingerprint": "f48fc1822be6b879",
-            "after_fingerprint": "b56102e208dbe88f"
-          },
-          {
-            "key": "ESPNLatinAmerica.us",
-            "before_fingerprint": "4f2ddff98441b49d",
-            "after_fingerprint": "f4d37acb3ffe9862"
-          },
-          {
-            "key": "ElGourmet.ar",
-            "before_fingerprint": "47ddfd22b9b0f16a",
-            "after_fingerprint": "3df10d7f6192314f"
-          },
-          {
-            "key": "Elencantadordeperros.us",
-            "before_fingerprint": "e69c407e2f7fd17c",
-            "after_fingerprint": "668069cba5398bcc"
-          },
-          {
-            "key": "Empenosalobestia.us",
-            "before_fingerprint": "d52f7bab0a8e4511",
-            "after_fingerprint": "9e9dc6a64304151b"
-          }
-        ],
-        "categories": [
-          {
-            "key": "AmericaTeVe.pr",
-            "before_fingerprint": "c910d474dcd724bf",
-            "after_fingerprint": "f02dfb7da82a40b0"
-          }
-        ]
+        "stream_urls": [],
+        "categories": []
       },
       "readonly": true
     },
     {
       "source": "GOD/DEARBULUT-ONLINE",
-      "status": "changed",
+      "status": "unchanged",
       "source_url_changed": false,
       "old_source_url": "https://dearbulut.github.io/iptv/playlists/online.m3u",
       "new_source_url": "https://dearbulut.github.io/iptv/playlists/online.m3u",
-      "added_channels": 95,
-      "removed_channels": 41,
-      "renamed_channels": 0,
-      "changed_stream_urls": 643,
-      "changed_categories": 1,
-      "content_hash_changed": true,
-      "channel_order_changed": true,
-      "samples": {
-        "added": [
-          "4DmasNoticiasTV.py",
-          "AJNetNews.in",
-          "AbejalesTV.ve",
-          "AmericanHeroesChannel.us",
-          "AnewZTV.az",
-          "AnimalPlanet.us",
-          "AuroraMediaFilms.gt",
-          "BBCRedButton12.uk",
-          "BBCRedButton17.uk",
-          "BBCRedButton9.uk",
-          "BRIDGEDance.ru",
-          "BRIDGEJazz.ru",
-          "BRIDGERNB.ru",
-          "BRIDGERap.ru",
-          "BRIDGESoul.ru",
-          "BRIDGESymphony.ru",
-          "BRIDGEVostok.ru",
-          "BakuTV.az",
-          "BalafonTV.cm",
-          "BigTenNetwork.us",
-          "BoricuaTV.pr",
-          "CMT.us",
-          "CNDFilmMiddleSchoolChannel.cn",
-          "CTN.kh",
-          "Canal11Machagai.ar",
-          "Canal11delaCosta.ar",
-          "Canal12VenadoTuerto.ar",
-          "Cine1.tr",
-          "CinemaxClassics.us",
-          "DerTV.uk"
-        ],
-        "removed": [
-          "AlImanTV.lb",
-          "AsiaExpressNonStop.ro",
-          "BBCParliament.uk",
-          "BBCRedButton2.uk",
-          "BalapanInternational.kz",
-          "BonceTV.cw",
-          "Canal5TVChepes.ar",
-          "CanalSete.br",
-          "CanalTRV.sv",
-          "Chefilacutite.ro",
-          "CibaenaTV.do",
-          "DHA.tr",
-          "DeporTV.ar",
-          "ESPNExtraLatinAmerica.us",
-          "ElyssaTV.tn",
-          "EsteponaTelevision.es",
-          "FormulaAcademyAntenaPlay.ro",
-          "HalaLondon.uk",
-          "JingmenComprehensiveNewsChannel.cn",
-          "JonmoBhumiTV.au",
-          "MakinaTV.do",
-          "News12Bronx.us",
-          "News12HudsonValley.us",
-          "News12Westchester.us",
-          "NopolaNews.fi",
-          "PadangTV.id",
-          "Pradesh24Gujarati.in",
-          "QuieroMusicaenmiIdioma.ar",
-          "RTNBDivertissement.bi",
-          "RTNBTV.bi"
-        ],
-        "renamed": [],
-        "stream_urls": [
-          {
-            "key": "24TV.tr",
-            "before_fingerprint": "97fbe73c66eede2e",
-            "after_fingerprint": "2eeed45e1ff9044f"
-          },
-          {
-            "key": "30AMusic.us",
-            "before_fingerprint": "72af9eee38966324",
-            "after_fingerprint": "41adbc3fd5b08b9f"
-          },
-          {
-            "key": "31Kanal.kz",
-            "before_fingerprint": "3885cf7aa1ab70c3",
-            "after_fingerprint": "b9b59930cc00f697"
-          },
-          {
-            "key": "360.ru",
-            "before_fingerprint": "acd2f0956cef3f31",
-            "after_fingerprint": "c0f0ea4cf8a5f237"
-          },
-          {
-            "key": "360News.ru",
-            "before_fingerprint": "144e5acc08c7235f",
-            "after_fingerprint": "af3b921148d3c925"
-          },
-          {
-            "key": "4TVNews.in",
-            "before_fingerprint": "138484fbb577d34b",
-            "after_fingerprint": "d239c4c1201524d8"
-          },
-          {
-            "key": "6WiseTv.us",
-            "before_fingerprint": "773a2c024361776d",
-            "after_fingerprint": "fc3b430cd3c515d4"
-          },
-          {
-            "key": "7SMusic.in",
-            "before_fingerprint": "2eff851afa302ef3",
-            "after_fingerprint": "6416cd97745b0799"
-          },
-          {
-            "key": "7thHeaven.se",
-            "before_fingerprint": "571c318b800461be",
-            "after_fingerprint": "dae27a21ee2227f6"
-          },
-          {
-            "key": "9XJhakaas.in",
-            "before_fingerprint": "05a352acd74f89bf",
-            "after_fingerprint": "cb444b0ebd53ebec"
-          },
-          {
-            "key": "9XM.in",
-            "before_fingerprint": "d0fe652259faae36",
-            "after_fingerprint": "fbe1d5c4e7828b70"
-          },
-          {
-            "key": "9XTashan.in",
-            "before_fingerprint": "c48b50ee58b743e7",
-            "after_fingerprint": "fa8d126928335974"
-          },
-          {
-            "key": "ABC.us",
-            "before_fingerprint": "3c70232532adedde",
-            "after_fingerprint": "7e560e575c4ddb96"
-          },
-          {
-            "key": "ABCTV.au",
-            "before_fingerprint": "1ed4ec0e65c43d0a",
-            "after_fingerprint": "71deec4d3ee71b64"
-          },
-          {
-            "key": "ABPMajha.in",
-            "before_fingerprint": "74cffa32093a8c7d",
-            "after_fingerprint": "2acfc4e2fa07afb1"
-          },
-          {
-            "key": "ABPNews.in",
-            "before_fingerprint": "8d3bcc4a4538b201",
-            "after_fingerprint": "d097653bffc1eeaf"
-          },
-          {
-            "key": "AKCTV.us",
-            "before_fingerprint": "f681847702b48161",
-            "after_fingerprint": "cded2051f8a68bdd"
-          },
-          {
-            "key": "AMCenEspanol.us",
-            "before_fingerprint": "62976c17dbac5851",
-            "after_fingerprint": "57f9189797575408"
-          },
-          {
-            "key": "ART.ru",
-            "before_fingerprint": "fb1ae3239a58a5ce",
-            "after_fingerprint": "d8b65540c472f6f6"
-          },
-          {
-            "key": "ATV.tr",
-            "before_fingerprint": "90360eeb6b5d86ad",
-            "after_fingerprint": "0e03626d4695cafd"
-          },
-          {
-            "key": "AXNCEE.es",
-            "before_fingerprint": "6b223ce7fcffca6c",
-            "after_fingerprint": "c1199425c5dc0717"
-          },
-          {
-            "key": "Aastha.in",
-            "before_fingerprint": "1604f105f4b8afa2",
-            "after_fingerprint": "1e914c7f550c8c6d"
-          },
-          {
-            "key": "AasthaBhajan.in",
-            "before_fingerprint": "fabe9a7e39ef8db2",
-            "after_fingerprint": "370462d94a4b86ea"
-          },
-          {
-            "key": "AccuWeatherNOW.us",
-            "before_fingerprint": "87f475afd80e509a",
-            "after_fingerprint": "d912daa4232146f5"
-          },
-          {
-            "key": "AceTV.us",
-            "before_fingerprint": "21d5b003297ff0a7",
-            "after_fingerprint": "b20414866a982cd3"
-          },
-          {
-            "key": "AgapeTV.sv",
-            "before_fingerprint": "67ff94016b6c22c5",
-            "after_fingerprint": "10b24a0895a408f0"
-          },
-          {
-            "key": "AjyalTV.ps",
-            "before_fingerprint": "18a56e0c364cd280",
-            "after_fingerprint": "b0d4dd7600af5bf7"
-          },
-          {
-            "key": "AlArabyTV.qa",
-            "before_fingerprint": "b6cb12f2f0551e0c",
-            "after_fingerprint": "e571d7b8729658cd"
-          },
-          {
-            "key": "AlJazeeraMubasherBroadcast2.qa",
-            "before_fingerprint": "3ee13a1efe6ef7c6",
-            "after_fingerprint": "5344e6472a46f829"
-          },
-          {
-            "key": "AlSharqiya.iq",
-            "before_fingerprint": "f84be5c213c85e86",
-            "after_fingerprint": "d3bc62ee770ca2f5"
-          }
-        ],
-        "categories": [
-          {
-            "key": "AmericaTeVe.pr",
-            "before_fingerprint": "c910d474dcd724bf",
-            "after_fingerprint": "f02dfb7da82a40b0"
-          }
-        ]
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/FREE-TV",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
-      "new_source_url": "https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8",
       "added_channels": 0,
       "removed_channels": 0,
       "renamed_channels": 0,
@@ -731,7 +248,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -753,51 +270,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/IPTV-ORG-CATEGORIES",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://iptv-org.github.io/iptv/index.category.m3u",
-      "new_source_url": "https://iptv-org.github.io/iptv/index.category.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/IPTV-ORG-COUNTRIES",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://iptv-org.github.io/iptv/index.country.m3u",
-      "new_source_url": "https://iptv-org.github.io/iptv/index.country.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -819,7 +292,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -841,7 +314,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -863,29 +336,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/IPTV-ORG-TOTAL",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://iptv-org.github.io/iptv/index.m3u",
-      "new_source_url": "https://iptv-org.github.io/iptv/index.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -907,7 +358,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -929,205 +380,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-AR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/AR.m3u",
-      "new_source_url": "https://m3u.cl/lista/AR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-BO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/BO.m3u",
-      "new_source_url": "https://m3u.cl/lista/BO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-BR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/BR.m3u",
-      "new_source_url": "https://m3u.cl/lista/BR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-CL",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CL.m3u",
-      "new_source_url": "https://m3u.cl/lista/CL.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-CO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CO.m3u",
-      "new_source_url": "https://m3u.cl/lista/CO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-CR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CR.m3u",
-      "new_source_url": "https://m3u.cl/lista/CR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-DO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/DO.m3u",
-      "new_source_url": "https://m3u.cl/lista/DO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-EC",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/EC.m3u",
-      "new_source_url": "https://m3u.cl/lista/EC.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-ES",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/ES.m3u",
-      "new_source_url": "https://m3u.cl/lista/ES.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1171,73 +424,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-MX",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/MX.m3u",
-      "new_source_url": "https://m3u.cl/lista/MX.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-PE",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/PE.m3u",
-      "new_source_url": "https://m3u.cl/lista/PE.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-PY",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/PY.m3u",
-      "new_source_url": "https://m3u.cl/lista/PY.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1259,7 +446,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1281,7 +468,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1303,29 +490,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": true
-    },
-    {
-      "source": "GOD/M3UCL-VE",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/VE.m3u",
-      "new_source_url": "https://m3u.cl/lista/VE.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1501,205 +666,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-AR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/AR.m3u",
-      "new_source_url": "https://m3u.cl/lista/AR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-BO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/BO.m3u",
-      "new_source_url": "https://m3u.cl/lista/BO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-BR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/BR.m3u",
-      "new_source_url": "https://m3u.cl/lista/BR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-CL",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CL.m3u",
-      "new_source_url": "https://m3u.cl/lista/CL.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-CO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CO.m3u",
-      "new_source_url": "https://m3u.cl/lista/CO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-CR",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/CR.m3u",
-      "new_source_url": "https://m3u.cl/lista/CR.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-DO",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/DO.m3u",
-      "new_source_url": "https://m3u.cl/lista/DO.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-EC",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/EC.m3u",
-      "new_source_url": "https://m3u.cl/lista/EC.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-ES",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/ES.m3u",
-      "new_source_url": "https://m3u.cl/lista/ES.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1743,73 +710,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-MX",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/MX.m3u",
-      "new_source_url": "https://m3u.cl/lista/MX.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-PE",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/PE.m3u",
-      "new_source_url": "https://m3u.cl/lista/PE.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-PY",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/PY.m3u",
-      "new_source_url": "https://m3u.cl/lista/PY.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1831,7 +732,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1853,7 +754,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1875,29 +776,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
-      "channel_order_changed": false,
-      "samples": {
-        "added": [],
-        "removed": [],
-        "renamed": [],
-        "stream_urls": [],
-        "categories": []
-      },
-      "readonly": false
-    },
-    {
-      "source": "PRINCIPAL/M3UCL-VE",
-      "status": "unchanged",
-      "source_url_changed": false,
-      "old_source_url": "https://m3u.cl/lista/VE.m3u",
-      "new_source_url": "https://m3u.cl/lista/VE.m3u",
-      "added_channels": 0,
-      "removed_channels": 0,
-      "renamed_channels": 0,
-      "changed_stream_urls": 0,
-      "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -1985,7 +864,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
@@ -2029,7 +908,7 @@
       "renamed_channels": 0,
       "changed_stream_urls": 0,
       "changed_categories": 0,
-      "content_hash_changed": false,
+      "content_hash_changed": true,
       "channel_order_changed": false,
       "samples": {
         "added": [],
