@@ -136,19 +136,36 @@ def main() -> int:
     parser.add_argument("--playlist", required=True, type=Path)
     parser.add_argument("--health", required=True, type=Path)
     parser.add_argument(
-        "--candidate", action="append", required=True, metavar="SOURCE=PATH",
+        "--candidate", action="append", default=[], metavar="SOURCE=PATH",
         help="Fuente candidata M3U; se puede repetir.",
+    )
+    parser.add_argument(
+        "--candidate-manifest", type=Path,
+        help="JSON con sources [{name,path}] descargadas y validadas en auditoría.",
     )
     parser.add_argument("--min-failures", type=int, default=3)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.min_failures < 1:
         parser.error("--min-failures debe ser al menos 1")
+    if not args.candidate and not args.candidate_manifest:
+        parser.error("se requiere --candidate o --candidate-manifest")
     current_bytes = args.playlist.read_bytes()
     validate_m3u_bytes(current_bytes, str(args.playlist))
     current = parse_playlist_text(current_bytes.decode("utf-8-sig"))
     health = json.loads(args.health.read_text(encoding="utf-8"))
     sources = []
+    if args.candidate_manifest:
+        manifest = json.loads(args.candidate_manifest.read_text(encoding="utf-8"))
+        for item in manifest.get("sources", []):
+            source_name = str(item.get("name") or "").strip()
+            path = Path(str(item.get("path") or ""))
+            if not source_name or not path.is_file():
+                continue
+            source_bytes = path.read_bytes()
+            validate_m3u_bytes(source_bytes, source_name)
+            records = parse_playlist_text(source_bytes.decode("utf-8-sig"))
+            sources.append((source_name, records))
     for item in args.candidate:
         if "=" not in item:
             parser.error("--candidate debe usar SOURCE=PATH")
