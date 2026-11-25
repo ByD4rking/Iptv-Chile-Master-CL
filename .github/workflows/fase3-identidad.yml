@@ -42,7 +42,7 @@ jobs:
       - name: Descargar repositorio con historial
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:
@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --no-tags origin main
+          git fetch --no-tags --depth=2 origin main
           BASE_SHA="$(git rev-parse origin/main^)"
           git show "${BASE_SHA}:IPTV-CHILE-MAESTRA_CORREGIDO.m3u" > "${RUNNER_TEMP}/principal-before.m3u"
           cp IPTV-CHILE-MAESTRA_CORREGIDO.m3u "${RUNNER_TEMP}/principal-after.m3u"
