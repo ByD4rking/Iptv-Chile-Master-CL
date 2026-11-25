@@ -120,8 +120,8 @@ class ChannelIdentityTests(unittest.TestCase):
 
     def test_placeholder_channel_ids_are_not_identity_aliases(self):
         records = parse_playlist_text(
-            '#EXTM3U\\n#EXTINF:-1 channelId="-1",Canal A\\nhttps://a.example/live\\n'
-            '#EXTINF:-1 channelId="-1",Canal B\\nhttps://b.example/live\\n'
+            '#EXTM3U\n#EXTINF:-1 channelId="-1",Canal A\nhttps://a.example/live\n'
+            '#EXTINF:-1 channelId="-1",Canal B\nhttps://b.example/live\n'
         )
         self.assertEqual(records[0]["channel_id"], "")
         self.assertEqual(records[1]["channel_id"], "")
@@ -132,11 +132,11 @@ class ChannelIdentityTests(unittest.TestCase):
 
     def test_duplicate_tvg_ids_match_distinct_explicit_option_variants(self):
         source = (
-            '#EXTM3U\\n'
-            '#EXTINF:-1 tvg-id="pluto.one" tvg-name="One Piece",One Piece\\n'
-            'https://a.example/live\\n'
-            '#EXTINF:-1 tvg-id="pluto.one" tvg-name="One Piece",One Piece [Opción 2]\\n'
-            'https://b.example/live\\n'
+            '#EXTM3U\n'
+            '#EXTINF:-1 tvg-id="pluto.one" tvg-name="One Piece",One Piece\n'
+            'https://a.example/live\n'
+            '#EXTINF:-1 tvg-id="pluto.one" tvg-name="One Piece",One Piece [Opción 2]\n'
+            'https://b.example/live\n'
         )
         result = compare_snapshots(parse_playlist_text(source), parse_playlist_text(source))
         self.assertEqual(result["matched"], 2)
@@ -146,12 +146,12 @@ class ChannelIdentityTests(unittest.TestCase):
 
     def test_option_variant_survives_base_display_name_change(self):
         before = parse_playlist_text(
-            '#EXTM3U\\n#EXTINF:-1 tvg-id="same" tvg-name="Canal",Canal [Opción 2]\\n'
-            'https://old.example/live\\n'
+            '#EXTM3U\n#EXTINF:-1 tvg-id="same" tvg-name="Canal",Canal [Opción 2]\n'
+            'https://old.example/live\n'
         )
         after = parse_playlist_text(
-            '#EXTM3U\\n#EXTINF:-1 tvg-id="same" tvg-name="Canal",Canal renovado (OPCIÓN 2)\\n'
-            'https://new.example/live\\n'
+            '#EXTM3U\n#EXTINF:-1 tvg-id="same" tvg-name="Canal",Canal renovado (OPCIÓN 2)\n'
+            'https://new.example/live\n'
         )
         result = compare_snapshots(before, after)
         self.assertEqual(result["matched"], 1)
