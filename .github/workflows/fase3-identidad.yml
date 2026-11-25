@@ -86,7 +86,7 @@ jobs:
           python -m scripts.logo_client_compat \
             --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
             --output "${RUNNER_TEMP}/fase3-logos.json"
-          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS REALES:", json.dumps({k:r[k] for k in ("channels","missing_logo_channels","unique_logo_references","invalid_references","references_requiring_review","identity_supported_conflicts","manual_conflicts","field_conflicts")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS REALES:", json.dumps({**{k:r[k] for k in ("channels","unique_logo_references","invalid_references","references_requiring_review","identity_supported_conflicts","manual_conflicts","field_conflicts")}, "missing_logo_count":len(r["missing_logo_channels"])},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos.json"
       - name: Descargar fuentes alternativas configuradas (solo lectura)
         run: |
           python - <<'PY'
