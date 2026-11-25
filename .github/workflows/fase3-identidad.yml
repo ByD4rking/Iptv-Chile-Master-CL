@@ -22,6 +22,8 @@ on:
       - ".github/workflows/fase3-identidad.yml"
   pull_request:
     paths:
+      - "scripts/source_candidate_probe.py"
+      - "scripts/test_source_candidate_probe.py"
       - "scripts/channel_identity.py"
       - "scripts/test_channel_identity.py"
       - "scripts/playlist_regression.py"
@@ -68,7 +70,7 @@ jobs:
       - name: Probar propuestas de logos faltantes sin reemplazar existentes
         run: python -m unittest scripts.test_logo_recovery scripts.test_logo_asset_check -v
       - name: Verificar sintaxis
-        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/source_candidate_probe.py scripts/test_source_candidate_probe.py scripts/logo_recovery.py scripts/test_logo_recovery.py scripts/logo_asset_check.py scripts/test_logo_asset_check.py scripts/source_candidate_probe.py scripts/test_source_candidate_probe.py
+        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/logo_recovery.py scripts/test_logo_recovery.py scripts/logo_asset_check.py scripts/test_logo_asset_check.py scripts/source_candidate_probe.py scripts/test_source_candidate_probe.py
       - name: Revisar diff
         run: git diff --check
       - name: Auditar regresiones con el snapshot real anterior de main
