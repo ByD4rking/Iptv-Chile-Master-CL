@@ -48,6 +48,7 @@ def propose_missing_logos(records: list[dict], candidate_sources: list[tuple[str
     for index in missing:
         target = records[index]
         found: list[dict] = []
+        ambiguous_hits: list[tuple[str, dict]] = []
         for source_name, source_records in candidate_sources:
             source_aliases: dict[str, list[int]] = defaultdict(list)
             source_fallback: dict[str, list[int]] = defaultdict(list)
@@ -59,12 +60,21 @@ def propose_missing_logos(records: list[dict], candidate_sources: list[tuple[str
 
             matches: dict[int, str] = {}
             for alias in target.get("aliases", []):
-                if len(current_aliases[alias]) == 1 and len(source_aliases.get(alias, [])) == 1:
-                    matches[source_aliases[alias][0]] = "strong"
+                if len(current_aliases[alias]) != 1:
+                    continue
+                candidates = source_aliases.get(alias, [])
+                if len(candidates) == 1:
+                    matches[candidates[0]] = "strong"
+                elif len(candidates) > 1:
+                    ambiguous_hits.extend((source_name, source_records[candidate_index]) for candidate_index in candidates)
             if not matches and target.get("fallback"):
                 key = target["fallback"]
-                if len(current_fallback[key]) == 1 and len(source_fallback.get(key, [])) == 1:
-                    matches[source_fallback[key][0]] = "fallback"
+                if len(current_fallback[key]) == 1:
+                    candidates = source_fallback.get(key, [])
+                    if len(candidates) == 1:
+                        matches[candidates[0]] = "fallback"
+                    elif len(candidates) > 1:
+                        ambiguous_hits.extend((source_name, source_records[candidate_index]) for candidate_index in candidates)
 
             for candidate_index, confidence in matches.items():
                 candidate = source_records[candidate_index]
@@ -81,8 +91,20 @@ def propose_missing_logos(records: list[dict], candidate_sources: list[tuple[str
                     "confidence": confidence,
                 })
 
+        for source_name, candidate in ambiguous_hits:
+            logo = _logo_candidate(candidate)
+            if logo:
+                fingerprint, fmt = logo
+                found.append({
+                    "source": source_name,
+                    "candidate_name": candidate.get("name", ""),
+                    "candidate_group": candidate.get("group", ""),
+                    "logo_fingerprint": fingerprint,
+                    "format": fmt,
+                    "confidence": "ambiguous",
+                })
         distinct = {item["logo_fingerprint"] for item in found}
-        if len(distinct) == 1:
+        if len(distinct) == 1 and not any(x["confidence"] == "ambiguous" for x in found):
             best_confidence = "strong" if any(x["confidence"] == "strong" for x in found) else "fallback"
             proposals.append({
                 "index": target.get("index", index + 1),
@@ -93,7 +115,7 @@ def propose_missing_logos(records: list[dict], candidate_sources: list[tuple[str
                 "confidence": best_confidence,
                 "sources": sorted({x["source"] for x in found}),
             })
-        elif len(distinct) > 1:
+        elif len(distinct) > 1 or ambiguous_hits:
             ambiguous.append({
                 "index": target.get("index", index + 1),
                 "channel": target.get("name", ""),
