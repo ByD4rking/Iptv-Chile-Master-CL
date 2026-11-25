@@ -98,6 +98,31 @@ def _probe_with_latency(url: str) -> dict:
     return result
 
 
+def _parse_source_with_urls(path: Path) -> list[dict]:
+    raw = path.read_text(encoding="utf-8-sig", errors="replace")
+    records = parse_playlist_text(raw)
+    lines = raw.splitlines()
+    urls = []
+    for index, line in enumerate(lines):
+        if not line.strip().upper().startswith("#EXTINF:"):
+            continue
+        stream = ""
+        for candidate in lines[index + 1:]:
+            value = candidate.strip()
+            if not value:
+                continue
+            if value.upper().startswith("#EXTINF:"):
+                break
+            if value.startswith("#"):
+                continue
+            stream = value
+            break
+        urls.append(stream)
+    for record, url in zip(records, urls):
+        record["_candidate_url"] = url
+    return records
+
+
 def audit(playlist_path: Path, health_path: Path, manifest_path: Path, extra_candidates: list[str]) -> dict:
     playlist_bytes = playlist_path.read_bytes()
     current = parse_playlist_text(playlist_bytes.decode("utf-8-sig", errors="replace"))
@@ -107,21 +132,21 @@ def audit(playlist_path: Path, health_path: Path, manifest_path: Path, extra_can
     for item in manifest.get("sources", []):
         path = Path(str(item.get("path") or ""))
         if item.get("name") and path.is_file():
-            source_records.append((str(item["name"]), parse_playlist_text(path.read_text(encoding="utf-8-sig", errors="replace"))))
+            source_records.append((str(item["name"]), _parse_source_with_urls(path)))
     for item in extra_candidates:
         if "=" not in item:
             continue
         name, raw_path = item.split("=", 1)
         path = Path(raw_path)
         if name and path.is_file():
-            source_records.append((name, parse_playlist_text(path.read_text(encoding="utf-8-sig", errors="replace"))))
+            source_records.append((name, _parse_source_with_urls(path)))
 
     report = suggest_recoveries(current, source_records, health)
     lookup = {}
     for source_name, records in source_records:
         for record in records:
-            if record.get("stream_url"):
-                lookup[(source_name, record["stream_fingerprint"])] = record["stream_url"]
+            if record.get("_candidate_url"):
+                lookup[(source_name, record["stream_fingerprint"])] = record["_candidate_url"]
 
     pending = []
     for row in report["recommendations"]:
