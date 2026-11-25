@@ -47,6 +47,22 @@ class LogoClientCompatibilityTests(unittest.TestCase):
         self.assertEqual(result["channels"], 2)
         self.assertIn("no descarga", result["policy"])
 
+    def test_pluto_logo_conflict_uses_tvg_id_as_evidence_without_changing_fields(self):
+        channel_id = "5ff4b9ccf938f8000779eb99"
+        other_id = "680ba8992472a7200a183eb5"
+        records = parse_playlist_text(
+            f'#EXTM3U\\n#EXTINF:-1 tvg-id="{channel_id}" '
+            f'tvg-logo="https://images.pluto.tv/channels/{channel_id}/logo.png" '
+            f'logo="https://images.pluto.tv/channels/{other_id}/logo.png",Uno\\n'
+            'https://stream.example/live\\n'
+        )
+        result = audit_logo_compatibility(records)
+        conflict = result["field_conflicts"][0]
+        self.assertEqual(conflict["recommendation"], "revisar_logo_contra_tvg_logo_sin_reemplazo_automatico")
+        self.assertEqual(conflict["identity_evidence"], "tvg-logo coincide con tvg-id; logo usa otro ID Pluto")
+        self.assertEqual(records[0]["tvg_logo"], f"https://images.pluto.tv/channels/{channel_id}/logo.png")
+        self.assertEqual(records[0]["logo"], f"https://images.pluto.tv/channels/{other_id}/logo.png")
+
     def test_http_and_duplicate_references_are_diagnosed(self):
         records = parse_playlist_text(
             '#EXTM3U\n#EXTINF:-1 tvg-logo="http://img.example/logo.jpg",Uno\nhttps://s.example/a\n'
