@@ -23,7 +23,7 @@ SENSITIVE_QUERY_KEYS = {
 }
 PLACEHOLDER_IDS = {"", "-1", "0", "none", "null", "undefined", "unknown", "n/a", "na"}
 OPTION_SUFFIX = re.compile(
-    r"(?:\\[\\s*|\\(\\s*)?(?:opci[oó]n|option|opc)\\s*#?\\s*(\\d+)\\s*(?:\\]|\\))?\\s*$",
+    r"(?:\[\s*|\(\s*)?(?:opci[oó]n|option|opc)\s*#?\s*(\d+)\s*(?:\]|\))?\s*$",
     re.I,
 )
 
