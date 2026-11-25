@@ -60,9 +60,9 @@ jobs:
       - name: Probar propuestas conservadoras de recuperación de fuentes
         run: python -m unittest scripts.test_source_recovery -v
       - name: Probar propuestas de logos faltantes sin reemplazar existentes
-        run: python -m unittest scripts.test_logo_recovery -v
+        run: python -m unittest scripts.test_logo_recovery scripts.test_logo_asset_check -v
       - name: Verificar sintaxis
-        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/logo_recovery.py scripts/test_logo_recovery.py
+        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/logo_recovery.py scripts/test_logo_recovery.py scripts/logo_asset_check.py scripts/test_logo_asset_check.py
       - name: Revisar diff
         run: git diff --check
       - name: Auditar regresiones con el snapshot real anterior de main
@@ -117,9 +117,15 @@ jobs:
               name, url = item.get("name"), item.get("url")
               if name and url:
                   targets.setdefault(url, name)
+          special_names = {
+              "iptvsv": "JMIGUE-IPTVSV",
+              "magma": "RAYDER-MAGMA",
+              "pluto_mx_alternatives": "JMIGUE-PLUTO-MX",
+              "fear_factor": "CERESLABX-US-TV",
+          }
           for name, url in principal.get("special_sources", {}).items():
               if url:
-                  targets.setdefault(url, "SPECIAL-" + name)
+                  targets.setdefault(url, special_names.get(name, "SPECIAL-" + name.upper()))
 
           def fetch(item):
               url, name = item
@@ -173,6 +179,13 @@ jobs:
             --candidate-manifest "${RUNNER_TEMP}/fase3-sources/manifest.json" \
             --output "${RUNNER_TEMP}/fase3-logos-recuperacion.json"
           python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS PROPUESTOS:", json.dumps({"missing_logo_channels":r["missing_logo_channels"],"proposals":r["proposals"],"ambiguous":r["ambiguous"],"unmatched":len(r["unmatched"])},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos-recuperacion.json"
+      - name: Verificar descarga y contenido de logos candidatos (solo lectura)
+        run: |
+          python -m scripts.logo_asset_check \
+            --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            --candidate-manifest "${RUNNER_TEMP}/fase3-sources/manifest.json" \
+            --output "${RUNNER_TEMP}/fase3-logo-assets.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS VERIFICADOS:", json.dumps({k:r[k] for k in ("candidate_assets_checked","valid_assets","failed_assets","status_counts")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logo-assets.json"
       - name: Guardar informes operativos
         if: always()
         uses: actions/upload-artifact@v4
