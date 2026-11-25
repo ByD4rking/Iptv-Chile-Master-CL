@@ -148,7 +148,7 @@ def collect_candidate_urls(playlist: list[dict], sources: list[tuple[str, list[d
                 url = _logo_url(records[i])
                 if url:
                     target_urls[safe_url_fingerprint(url)] = url
-        if not target_ambiguous:
+        if not target_ambiguous and len(target_urls) == 1:
             urls.update(target_urls)
     return urls
 
