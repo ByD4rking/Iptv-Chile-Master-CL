@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import ipaddress
 import json
 import socket
@@ -51,7 +52,22 @@ def _is_public_host(host: str) -> bool:
         return False
 
 
-def inspect_asset(url: str, opener=urllib.request.urlopen) -> dict:
+class PublicRedirectHandler(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        try:
+            target = urlsplit(newurl)
+            if target.scheme.casefold() not in {"http", "https"} or not _is_public_host(target.hostname or ""):
+                return None
+        except ValueError:
+            return None
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _safe_open(request, timeout=TIMEOUT):
+    return urllib.request.build_opener(PublicRedirectHandler()).open(request, timeout=timeout)
+
+
+def inspect_asset(url: str, opener=_safe_open) -> dict:
     fingerprint = safe_url_fingerprint(url)
     try:
         parsed = urlsplit(url)
@@ -146,7 +162,8 @@ def audit(playlist_path: Path, manifest_path: Path) -> dict:
         if path.is_file():
             sources.append((str(item.get("name") or ""), parse_playlist_text(path.read_text(encoding="utf-8-sig", errors="replace"))))
     candidates = collect_candidate_urls(playlist, sources)
-    results = [inspect_asset(url) for url in candidates.values()]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(inspect_asset, candidates.values()))
     counts: dict[str, int] = defaultdict(int)
     for item in results:
         counts[item["status"]] += 1
