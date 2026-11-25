@@ -48,6 +48,20 @@ def evaluate_regressions(
         for row in comparison["changes"]
     )
     stream_changes = comparison["stream_changes"]
+    host_transitions: Counter[tuple[str, str]] = Counter()
+    same_host_path_changes = 0
+    unknown_host_changes = 0
+    for row in comparison["changes"]:
+        if not row["stream_changed"]:
+            continue
+        before_host = row.get("before_stream_host", "")
+        after_host = row.get("after_stream_host", "")
+        if not before_host or not after_host:
+            unknown_host_changes += 1
+        elif before_host == after_host:
+            same_host_path_changes += 1
+        else:
+            host_transitions[(before_host, after_host)] += 1
 
     fingerprints = [
         row["stream_fingerprint"] for row in after if row["stream_fingerprint"]
@@ -110,6 +124,12 @@ def evaluate_regressions(
         ],
         "logo_replacements": logo_replacements,
         "stream_changes": stream_changes,
+        "same_host_path_changes": same_host_path_changes,
+        "unknown_host_changes": unknown_host_changes,
+        "stream_host_transitions": [
+            {"before_host": before, "after_host": after, "count": count}
+            for (before, after), count in host_transitions.most_common()
+        ],
         "duplicate_stream_fingerprints": duplicate_streams,
         "duplicate_stream_details": duplicate_stream_details,
         "stream_change_samples": [
