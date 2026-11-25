@@ -14,7 +14,12 @@ Comparación del snapshot anterior de `main` con la playlist actual:
 - Altas/bajas: **0 / 0**.
 - Ambigüedades: **0**.
 - Cambios de categoría: **1**, aprobado mediante excepción exacta y documentada.
-- Cambios de stream informados: **477**; no se sustituyó ninguna URL.
+- Cambios reales de stream: **0**.
+- Variaciones brutas de query detectadas antes de filtrar IDs efímeros: **477**; las
+  477 correspondían exclusivamente a `sessionid`, `deviceid`, `clientid` y `sid`.
+  Se clasificaron como rotación de sesión/dispositivo; no se modificó ninguna URL.
+- Migraciones de host y cambios de ruta: **0**.
+- Cambios semánticos de query restantes: **0**.
 - Logos reemplazados entre snapshots: **0**.
 - Huellas de stream duplicadas: **1**.
 
@@ -28,8 +33,10 @@ La huella duplicada corresponde a la misma URL usada por `Señal Perú TV (404p)
 no se elimina ninguno de los dos canales sin evidencia adicional.
 
 La identidad fue corregida para descartar IDs placeholder como `channelId="-1"`,
-distinguir variantes explícitas y usar evidencia de stream cuando procede. Resultado:
-4.516/4.516 coincidencias sin altas, bajas ni ambigüedades.
+distinguir variantes explícitas y usar evidencia de stream cuando procede. También
+se separaron huellas de host, ruta y query; el detector ignora solo IDs efímeros de
+sesión/dispositivo, pero conserva cambios de país/región. Resultado: 4.516/4.516
+coincidencias, cero altas/bajas, cero ambigüedades y cero cambios reales de stream.
 
 ## Compatibilidad y recuperación de logos
 
