@@ -13,6 +13,8 @@ on:
       - "scripts/test_logo_client_compat.py"
       - "scripts/source_recovery.py"
       - "scripts/test_source_recovery.py"
+      - "scripts/logo_recovery.py"
+      - "scripts/test_logo_recovery.py"
       - ".github/workflows/fase3-identidad.yml"
   pull_request:
     paths:
@@ -24,6 +26,8 @@ on:
       - "scripts/test_logo_client_compat.py"
       - "scripts/source_recovery.py"
       - "scripts/test_source_recovery.py"
+      - "scripts/logo_recovery.py"
+      - "scripts/test_logo_recovery.py"
       - ".github/workflows/fase3-identidad.yml"
   workflow_dispatch:
 
@@ -55,8 +59,10 @@ jobs:
         run: python -m unittest scripts.test_logo_client_compat -v
       - name: Probar propuestas conservadoras de recuperación de fuentes
         run: python -m unittest scripts.test_source_recovery -v
+      - name: Probar propuestas de logos faltantes sin reemplazar existentes
+        run: python -m unittest scripts.test_logo_recovery -v
       - name: Verificar sintaxis
-        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py
+        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/logo_recovery.py scripts/test_logo_recovery.py
       - name: Revisar diff
         run: git diff --check
       - name: Auditar regresiones con el snapshot real anterior de main
@@ -160,6 +166,13 @@ jobs:
             --candidate PLUTO-MX=pluto/output/playlists/pluto_mx.m3u \
             --output "${RUNNER_TEMP}/fase3-recuperacion.json"
           python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("RECUPERACION REAL:", json.dumps({**{k:r[k] for k in ("current_channels","candidate_channels","channels_needing_recovery","channels_with_candidates","ambiguous_candidates_skipped")}, "candidates": [{"channel":x["channel"],"group":x["group"],"candidates":[{"source":c["source"],"name":c["name"],"group":c["group"],"confidence":c["confidence"]} for c in x["candidates"]]} for x in r["recommendations"] if x["candidates"]][:30]},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-recuperacion.json"
+      - name: Proponer logos para canales sin referencia
+        run: |
+          python -m scripts.logo_recovery \
+            --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            --candidate-manifest "${RUNNER_TEMP}/fase3-sources/manifest.json" \
+            --output "${RUNNER_TEMP}/fase3-logos-recuperacion.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS PROPUESTOS:", json.dumps({"missing_logo_channels":r["missing_logo_channels"],"proposals":r["proposals"],"ambiguous":r["ambiguous"],"unmatched":len(r["unmatched"])},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos-recuperacion.json"
       - name: Guardar informes operativos
         if: always()
         uses: actions/upload-artifact@v4
