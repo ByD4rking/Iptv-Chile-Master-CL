@@ -19,7 +19,8 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 SENSITIVE_QUERY_KEYS = {
     "jwt", "token", "access_token", "auth", "authorization", "signature",
     "sig", "key", "api_key", "apikey", "password", "passwd", "secret",
-    "session", "hdnea", "auth_key", "x-amz-signature", "x-amz-security-token",
+    "session", "sessionid", "sid", "deviceid", "clientid",
+    "hdnea", "auth_key", "x-amz-signature", "x-amz-security-token",
 }
 PLACEHOLDER_IDS = {"", "-1", "0", "none", "null", "undefined", "unknown", "n/a", "na"}
 OPTION_SUFFIX = re.compile(
