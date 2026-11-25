@@ -86,7 +86,7 @@ jobs:
           python -m scripts.logo_client_compat \
             --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
             --output "${RUNNER_TEMP}/fase3-logos.json"
-          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS REALES:", json.dumps({k:r[k] for k in ("channels","unique_logo_references","invalid_references","references_requiring_review","field_conflicts")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS REALES:", json.dumps({k:r[k] for k in ("channels","unique_logo_references","invalid_references","references_requiring_review","identity_supported_conflicts","manual_conflicts","field_conflicts")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos.json"
       - name: Descargar fuentes alternativas configuradas (solo lectura)
         run: |
           python - <<'PY'
@@ -142,7 +142,7 @@ jobs:
             --health scripts/health/principal_health.json \
             "${CANDIDATES[@]}" \
             --output "${RUNNER_TEMP}/fase3-recuperacion.json"
-          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("RECUPERACION REAL:", json.dumps({k:r[k] for k in ("current_channels","candidate_channels","channels_needing_recovery","channels_with_candidates","ambiguous_candidates_skipped")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-recuperacion.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("RECUPERACION REAL:", json.dumps({**{k:r[k] for k in ("current_channels","candidate_channels","channels_needing_recovery","channels_with_candidates","ambiguous_candidates_skipped")}, "candidates": [{"channel":x["channel"],"group":x["group"],"candidates":[{"source":c["source"],"name":c["name"],"group":c["group"],"confidence":c["confidence"]} for c in x["candidates"]]} for x in r["recommendations"] if x["candidates"]][:30]},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-recuperacion.json"
       - name: Guardar informes operativos
         if: always()
         uses: actions/upload-artifact@v4
