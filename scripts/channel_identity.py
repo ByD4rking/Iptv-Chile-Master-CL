@@ -276,6 +276,24 @@ def compare_snapshots(before: list[dict], after: list[dict]) -> dict:
         "matched": len(pairs),
         "added": len(unmatched_new),
         "removed": len(unmatched_old),
+        "added_channels": [
+            {
+                "name": after[index]["name"],
+                "group": after[index]["group"],
+                "tvg_id": after[index]["tvg_id"] or None,
+                "stream_fingerprint": after[index]["stream_fingerprint"],
+            }
+            for index in sorted(unmatched_new)
+        ],
+        "removed_channels": [
+            {
+                "name": before[index]["name"],
+                "group": before[index]["group"],
+                "tvg_id": before[index]["tvg_id"] or None,
+                "stream_fingerprint": before[index]["stream_fingerprint"],
+            }
+            for index in sorted(unmatched_old)
+        ],
         "renamed_or_moved": sum(bool(set(row["changed_fields"]) & {"name", "group"}) for row in changes),
         "stream_changes": sum(row["stream_changed"] for row in changes),
         "ambiguous": ambiguous,
