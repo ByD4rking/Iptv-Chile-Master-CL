@@ -118,6 +118,34 @@ class ChannelIdentityTests(unittest.TestCase):
         self.assertEqual(records[0]["stream_fingerprint"], "")
         self.assertNotEqual(records[1]["stream_fingerprint"], "")
 
+    def test_reused_channel_id_is_disambiguated_by_variant_name(self):
+        source = (
+            '#EXTM3U\n'
+            '#EXTINF:-1 channelId="1745" tvg-name="La Red SD",La Red SD (Nacional)\n'
+            'https://a.example/live\n'
+            '#EXTINF:-1 channelId="1745" tvg-name="La Red",La Red ✪ | CL\n'
+            'https://b.example/live\n'
+        )
+        result = compare_snapshots(parse_playlist_text(source), parse_playlist_text(source))
+        self.assertEqual(result["matched"], 2)
+        self.assertEqual(result["removed"], 0)
+        self.assertEqual(result["added"], 0)
+        self.assertEqual(result["ambiguous"], [])
+
+    def test_reused_tvg_id_is_disambiguated_by_exact_stream_when_names_share_tvg_name(self):
+        source = (
+            '#EXTM3U\n'
+            '#EXTINF:-1 tvg-id="123" tvg-name="Caracol",Caracol | CO\n'
+            'https://a.example/live\n'
+            '#EXTINF:-1 tvg-id="123" tvg-name="Caracol",Caracol HD\n'
+            'https://b.example/live\n'
+        )
+        result = compare_snapshots(parse_playlist_text(source), parse_playlist_text(source))
+        self.assertEqual(result["matched"], 2)
+        self.assertEqual(result["removed"], 0)
+        self.assertEqual(result["added"], 0)
+        self.assertEqual(result["ambiguous"], [])
+
     def test_placeholder_channel_ids_are_not_identity_aliases(self):
         records = parse_playlist_text(
             '#EXTM3U\n#EXTINF:-1 channelId="-1",Canal A\nhttps://a.example/live\n'
