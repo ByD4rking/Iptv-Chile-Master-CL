@@ -108,7 +108,7 @@ class ChannelIdentityTests(unittest.TestCase):
         self.assertEqual(result["added"], 2)
         self.assertEqual(len(result["ambiguous"]), 4)
 
-    def test_category_prevents_unsafe_name_only_match(self):
+    def test_unique_name_only_match_reports_category_change(self):
         before = parse_playlist_text(
             '#EXTM3U\n#EXTINF:-1 group-title="Anime",Canal\nhttps://a.example/live\n'
         )
@@ -116,9 +116,10 @@ class ChannelIdentityTests(unittest.TestCase):
             '#EXTM3U\n#EXTINF:-1 group-title="Deportes",Canal\nhttps://b.example/live\n'
         )
         result = compare_snapshots(before, after)
-        self.assertEqual(result["matched"], 0)
-        self.assertEqual(result["removed"], 1)
-        self.assertEqual(result["added"], 1)
+        self.assertEqual(result["matched"], 1)
+        self.assertEqual(result["removed"], 0)
+        self.assertEqual(result["added"], 0)
+        self.assertEqual(result["changes"][0]["changed_fields"], ["group"])
 
     def test_missing_uri_does_not_borrow_next_channel_stream(self):
         records = parse_playlist_text(
