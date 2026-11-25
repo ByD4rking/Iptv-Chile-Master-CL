@@ -115,10 +115,10 @@ class PlaylistRegressionTests(unittest.TestCase):
 
     def test_separates_query_only_changes_from_path_changes(self):
         before = records(
-            '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://a.example/live.m3u8?region=old\\n'
+            '#EXTM3U\n#EXTINF:-1 tvg-id="one",Uno\nhttps://a.example/live.m3u8?region=old\n'
         )
         after = records(
-            '#EXTM3U\\n#EXTINF:-1 tvg-id="one",Uno\\nhttps://a.example/live.m3u8?region=new\\n'
+            '#EXTM3U\n#EXTINF:-1 tvg-id="one",Uno\nhttps://a.example/live.m3u8?region=new\n'
         )
         result = evaluate_regressions(before, after)
         self.assertEqual(result["stream_changes"], 1)
