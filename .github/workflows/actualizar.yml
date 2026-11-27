@@ -63,7 +63,7 @@ jobs:
             echo "::warning::Pluto no terminó correctamente. Se intentará sincronizar el resto de fuentes con el último catálogo disponible; la barrera JWT bloqueará una publicación insegura."
           fi
 
-      - name: Auditar cambios de canales y URLs de la lista principal (solo lectura)
+      - name: Auditar cambios de canales y URLs de Principal y GOD (solo lectura)
         run: python scripts/auditar_fuentes.py --scope principal
 
       - name: Instalar FFmpeg para verificar resolución y aspecto de MAGMA Cine/Películas
