@@ -5,6 +5,10 @@ on:
     branches:
       - "phase3/**"
     paths:
+      - "scripts/auditar_fuentes.py"
+      - "scripts/test_auditar_fuentes.py"
+      - "scripts/auditar_fuentes.py"
+      - "scripts/test_auditar_fuentes.py"
       - "scripts/channel_identity.py"
       - "scripts/test_channel_identity.py"
       - "scripts/playlist_regression.py"
@@ -73,6 +77,10 @@ jobs:
         run: python -m unittest scripts.test_source_recovery -v
       - name: Probar propuestas de logos faltantes sin reemplazar existentes
         run: python -m unittest scripts.test_logo_recovery scripts.test_logo_asset_check -v
+      - name: Probar auditoría exclusiva de la lista principal y M3U parciales
+        run: |
+          python -m py_compile scripts/auditar_fuentes.py scripts/test_auditar_fuentes.py
+          python -m unittest scripts.test_auditar_fuentes -v
       - name: Verificar sintaxis
         run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/logo_recovery.py scripts/test_logo_recovery.py scripts/logo_asset_check.py scripts/test_logo_asset_check.py scripts/source_candidate_probe.py scripts/test_source_candidate_probe.py
       - name: Revisar diff
