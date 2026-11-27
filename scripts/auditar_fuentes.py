@@ -222,8 +222,9 @@ def configured_sources(scope: str) -> list[dict]:
             # IPTVSV y MAGMA ya están en "sources"; se agregan los especiales restantes.
             if name not in {"iptvsv", "magma"}:
                 result.append({"name": "PRINCIPAL/SPECIAL-" + name.upper(), "url": url, "readonly": False})
-        for item in principal.get("pluto_sources", []):
-            result.append({"name": "PRINCIPAL/" + item["name"], "url": item["url"], "readonly": False})
+        for section in ("pluto_sources", "pluto_catalog_sources", "legacy_pluto_sources"):
+            for item in principal.get(section, []):
+                result.append({"name": "PRINCIPAL/" + item["name"], "url": item["url"], "readonly": False})
     elif scope == "generador":
         config = load_json(ROOT / "IPTV-CHILE-GENERADOR" / "config" / "sources.json", {})
         for item in config.get("sources", []):
