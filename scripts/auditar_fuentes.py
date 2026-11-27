@@ -111,7 +111,7 @@ def validate_partial_m3u_bytes(data: bytes, source: str = "fuente") -> tuple[int
                 continue
             duration_field = line.split(",", 1)[0][len("#EXTINF:"):].strip()
             duration = duration_field.split(maxsplit=1)[0] if duration_field else ""
-            if not re.fullmatch(r"-?\\d+(?:\\.\\d+)?", duration):
+            if not re.fullmatch(r"-?\d+(?:\.\d+)?", duration):
                 warnings.append(f"línea {number}: duración inválida")
                 pending = False
                 continue
