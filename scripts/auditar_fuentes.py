@@ -437,6 +437,7 @@ def audit(scope: str) -> dict:
         "sources_failed": len(errors),
         "sources_partial": sum(1 for item in changes if item.get("status") == "partial"),
         "partial_sources": [item["source"] for item in changes if item.get("status") == "partial"],
+        "partial_warnings_total": sum(len(item.get("partial_warnings", [])) for item in changes),
         "changed_sources": sum(1 for item in changes if item["status"] == "changed"),
         "new_sources": sum(1 for item in changes if item["status"] == "baseline"),
         "total_added_channels": sum(item.get("added_channels", 0) for item in changes),
@@ -465,8 +466,8 @@ def audit(scope: str) -> dict:
         f"canales_nuevos={report['total_added_channels']} "
         f"canales_eliminados={report['total_removed_channels']} "
         f"URLs_stream_cambiadas={report['total_changed_stream_urls']} "
-        f"(publicables={report['writable_changed_stream_urls']}, "
-        f"GOD_solo_lectura={report['readonly_changed_stream_urls']}) "
+        f"(lista_principal={report['writable_changed_stream_urls']}, "
+        f"solo_lectura={report['readonly_changed_stream_urls']}) "
         f"URLs_fuente_cambiadas={report['total_source_url_changes']}"
     )
     for item in changes:
@@ -476,7 +477,8 @@ def audit(scope: str) -> dict:
             print(
                 f"[AUDIT][detalle] {scope_label} {item['source']}: "
                 f"{changed_urls} URLs; altas={item.get('added_channels', 0)}; "
-                f"bajas={item.get('removed_channels', 0)}"
+                f"bajas={item.get('removed_channels', 0)}; "
+                f"advertencias={len(item.get('partial_warnings', []))}"
             )
     print(f"[AUDIT] Informe: {report_path.relative_to(ROOT)}")
     print(f"[AUDIT] Estado: {state_path.relative_to(ROOT)}")
