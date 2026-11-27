@@ -1,0 +1,58 @@
+name: Auditoría exclusiva de fuentes de la lista principal
+
+on:
+  push:
+    branches:
+      - "fix/auditoria-fuentes-principal-20261127"
+    paths:
+      - "scripts/auditar_fuentes.py"
+      - "scripts/test_auditar_fuentes.py"
+      - "config/playlist_sources.json"
+      - ".github/workflows/auditoria-principal-solo-lectura.yml"
+  pull_request:
+    paths:
+      - "scripts/auditar_fuentes.py"
+      - "scripts/test_auditar_fuentes.py"
+      - "config/playlist_sources.json"
+      - ".github/workflows/auditoria-principal-solo-lectura.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  auditoria-principal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probar parser y comparación de fuentes de Principal
+        run: |
+          python -m py_compile scripts/auditar_fuentes.py scripts/test_auditar_fuentes.py
+          python -m unittest scripts.test_auditar_fuentes -v
+      - name: Auditar todas las fuentes configuradas de la lista principal
+        run: python scripts/auditar_fuentes.py --scope principal
+      - name: Verificar cobertura del inventario principal
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report = json.loads(Path("reportes/fuentes/auditoria_principal.json").read_text(encoding="utf-8"))
+          configured = report["sources_configured"]
+          checked = report["sources_checked"]
+          failed = report["sources_failed"]
+          partial = report.get("sources_partial", 0)
+          print(f"Fuentes configuradas: {configured}")
+          print(f"Fuentes examinadas: {checked}")
+          print(f"Fuentes parciales con entradas válidas y advertencias: {partial}")
+          print(f"Fuentes no accesibles o inválidas: {failed}")
+          if checked + failed != configured:
+              raise SystemExit("Cobertura incompleta: hay fuentes sin resultado")
+          if failed:
+              raise SystemExit("Auditoría no completa: hay fuentes que no se pudieron examinar")
+          PY
