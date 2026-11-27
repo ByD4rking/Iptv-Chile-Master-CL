@@ -375,7 +375,7 @@ def diff_source(name: str, old: dict | None, new: dict) -> dict:
     order_changed = list(old_channels) != list(new_channels)
     return {
         "source": name,
-        "status": "partial" if is_partial else ("changed" if (url_changed or added or removed or changed_name or changed_url or changed_group or order_changed) else "unchanged"),
+        "status": "partial" if is_partial else ("changed" if (url_changed or added or removed or changed_name or changed_url or changed_group or order_changed or orphan_added or orphan_removed or orphan_changed) else "unchanged"),
         "source_complete": not is_partial,
         "partial_warnings": new.get("partial_warnings", []),
         "source_url_changed": url_changed,
