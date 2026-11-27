@@ -83,9 +83,10 @@ class AuditSourceTests(unittest.TestCase):
         sources = MODULE.configured_sources("principal")
         principal_sources = [item for item in sources if item["name"].startswith("PRINCIPAL/")]
         urls = {item["url"] for item in principal_sources}
-        self.assertEqual(len(urls), 25)
+        self.assertEqual(len(urls), 26)
         self.assertIn("PRINCIPAL/SPECIAL-PLUTO_MX_ALTERNATIVES", {item["name"] for item in principal_sources})
         self.assertIn("PRINCIPAL/SPECIAL-FEAR_FACTOR", {item["name"] for item in principal_sources})
+        self.assertIn("PRINCIPAL/PLUTO-BR-RENOVACION", {item["name"] for item in principal_sources})
         self.assertFalse(any(item["name"].startswith("GOD/") for item in sources))
         self.assertTrue(all(not item["readonly"] for item in sources))
 
