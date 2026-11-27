@@ -86,7 +86,8 @@ class AuditSourceTests(unittest.TestCase):
         self.assertEqual(len(urls), 25)
         self.assertIn("PRINCIPAL/SPECIAL-PLUTO_MX_ALTERNATIVES", {item["name"] for item in principal_sources})
         self.assertIn("PRINCIPAL/SPECIAL-FEAR_FACTOR", {item["name"] for item in principal_sources})
-        self.assertTrue(any(item["name"].startswith("GOD/") and item["readonly"] for item in sources))
+        self.assertFalse(any(item["name"].startswith("GOD/") for item in sources))
+        self.assertTrue(all(not item["readonly"] for item in sources))
 
 
     def test_rename_without_tvg_id_is_detected_when_stream_url_is_stable(self):
@@ -99,6 +100,57 @@ class AuditSourceTests(unittest.TestCase):
         self.assertEqual(diff["removed_channels"], 0)
         self.assertEqual(diff["renamed_channels"], 1)
         self.assertEqual(diff["changed_categories"], 1)
+
+
+
+    def test_partial_m3u_keeps_valid_pairs_and_reports_orphan_urls(self):
+        raw = (
+            "#EXTM3U\n"
+            "#EXTINF:-1 tvg-id=\"one\",Canal Uno\nhttps://a.example/one.m3u8\n"
+            "https://orphan.example/stream.m3u8\n"
+            "#EXTINF:-1 tvg-id=\"two\",Canal Dos\nhttps://a.example/two.m3u8\n"
+        ).encode()
+        count, warnings = MODULE.validate_partial_m3u_bytes(raw, "https://m3u.cl/lista/CL.m3u")
+        self.assertEqual(count, 2)
+        self.assertTrue(any("URL suelta" in item for item in warnings))
+        snapshot = MODULE.snapshot_entry(raw, "M3UCL-CL", "https://m3u.cl/lista/CL.m3u", allow_partial=True)
+        self.assertTrue(snapshot["partial"])
+        self.assertEqual(snapshot["channel_count"], 2)
+
+    def test_partial_source_never_reports_channel_removals(self):
+        old = {
+            "url": "https://m3u.cl/lista/CL.m3u",
+            "sha256": "old",
+            "channel_count": 2,
+            "channels": {
+                "one": ["uno", "stream1", "cl"],
+                "two": ["dos", "stream2", "cl"],
+            },
+        }
+        new = {
+            "url": "https://m3u.cl/lista/CL.m3u",
+            "sha256": "partial",
+            "channel_count": 1,
+            "channels": {"one": ["uno", "stream1", "cl"]},
+            "partial": True,
+            "partial_warnings": ["URL suelta"],
+        }
+        diff = MODULE.diff_source("M3UCL-CL", old, new)
+        self.assertEqual(diff["status"], "partial")
+        self.assertEqual(diff["removed_channels"], 0)
+        self.assertEqual(diff["added_channels"], 0)
+        self.assertFalse(diff["source_complete"])
+
+    def test_partial_m3u_still_rejects_html_empty_and_unpaired_extinf(self):
+        for raw in (
+            b"<html><body>not m3u</body></html>",
+            b"",
+            b"#EXTM3U\n#EXTINF:-1,Sin URL\n",
+        ):
+            with self.subTest(raw=raw):
+                with self.assertRaises(ValueError):
+                    MODULE.validate_partial_m3u_bytes(raw, "https://m3u.cl/lista/CL.m3u")
+
 
 if __name__ == "__main__":
     unittest.main()
