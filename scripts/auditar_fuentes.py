@@ -72,6 +72,39 @@ def parse_m3u(text: str) -> dict[str, list[str]]:
     return result
 
 
+
+def parse_orphan_streams(text: str) -> dict[str, str]:
+    """Trackea URLs sin EXTINF como endpoints, sin inventarles identidad de canal."""
+    result: dict[str, str] = {}
+    pending = False
+    for raw in text.lstrip("\ufeff").splitlines():
+        line = raw.strip()
+        if line.upper().startswith("#EXTINF:"):
+            pending = True
+            continue
+        if line.startswith("#"):
+            continue
+        if line.lower().startswith(("http://", "https://")):
+            if pending:
+                pending = False
+                continue
+            try:
+                parsed = urlparse(line)
+                if parsed.hostname:
+                    identity = f"orphan:{parsed.hostname.lower()}{parsed.path.rstrip('/')}"
+                    unique = identity
+                    suffix = 2
+                    while unique in result:
+                        unique = f"{identity}#{suffix}"
+                        suffix += 1
+                    result[unique] = line
+            except ValueError:
+                pass
+        elif line:
+            pending = False
+    return result
+
+
 def compact_hash(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -257,11 +290,14 @@ def snapshot_entry(raw: bytes, label: str, url: str, allow_partial: bool = False
         if not allow_partial:
             raise
         _, warnings = validate_partial_m3u_bytes(raw, source=url or label)
-        partial = bool(warnings)
+        # URLs huérfanas se registran aparte como endpoints sin metadatos;
+        # solo el resto de anomalías deja el snapshot incompleto.
+        partial = any("URL suelta" not in warning for warning in warnings)
     text = raw.decode("utf-8-sig", errors="replace")
     parsed = parse_m3u(text)
-    if not parsed:
-        raise ValueError("M3U sin canales válidos")
+    orphan_streams = parse_orphan_streams(text)
+    if not parsed and not orphan_streams:
+        raise ValueError("M3U sin canales ni endpoints válidos")
     # Never persist signed HLS URLs or query tokens in audit snapshots/reports.
     fingerprint = lambda value: compact_hash(str(value).encode("utf-8"))[:16]
     channels = {
@@ -275,6 +311,7 @@ def snapshot_entry(raw: bytes, label: str, url: str, allow_partial: bool = False
         "channels": channels,
         "partial": partial,
         "partial_warnings": warnings[:50],
+        "orphan_endpoints": {key: fingerprint(value) for key, value in orphan_streams.items()},
     }
 
 
@@ -284,6 +321,13 @@ def diff_source(name: str, old: dict | None, new: dict) -> dict:
         return {"source": name, "status": "partial" if is_partial else "baseline", "source_complete": not is_partial, "channels": new["channel_count"], "url": new["url"], "partial_warnings": new.get("partial_warnings", [])}
     old_channels = old.get("channels", {})
     new_channels = new.get("channels", {})
+    old_orphans = old.get("orphan_endpoints", {})
+    new_orphans = new.get("orphan_endpoints", {})
+    orphan_added = sorted(set(new_orphans) - set(old_orphans))
+    orphan_removed = sorted(set(old_orphans) - set(new_orphans))
+    orphan_changed = sorted(key for key in set(old_orphans) & set(new_orphans) if old_orphans[key] != new_orphans[key])
+    if is_partial:
+        orphan_removed = []
     old_keys, new_keys = set(old_channels), set(new_channels)
     added_keys = set(new_keys - old_keys)
     removed_keys = set(old_keys - new_keys)
@@ -342,6 +386,11 @@ def diff_source(name: str, old: dict | None, new: dict) -> dict:
         "renamed_channels": len(changed_name),
         "changed_stream_urls": len(changed_url),
         "changed_categories": len(changed_group),
+        "unassociated_endpoints": len(new_orphans),
+        "unassociated_endpoints_added": len(orphan_added),
+        "unassociated_endpoints_removed": len(orphan_removed),
+        "unassociated_endpoints_url_changed": len(orphan_changed),
+        "unassociated_endpoint_samples": {"added": orphan_added[:20], "removed": orphan_removed[:20], "url_changed": orphan_changed[:20]},
         "content_hash_changed": content_changed,
         "channel_order_changed": order_changed,
         "samples": {
@@ -438,6 +487,10 @@ def audit(scope: str) -> dict:
         "sources_partial": sum(1 for item in changes if item.get("status") == "partial"),
         "partial_sources": [item["source"] for item in changes if item.get("status") == "partial"],
         "partial_warnings_total": sum(len(item.get("partial_warnings", [])) for item in changes),
+        "unassociated_endpoints_total": sum(item.get("unassociated_endpoints", 0) for item in changes),
+        "unassociated_endpoints_added": sum(item.get("unassociated_endpoints_added", 0) for item in changes),
+        "unassociated_endpoints_removed": sum(item.get("unassociated_endpoints_removed", 0) for item in changes),
+        "unassociated_endpoints_url_changed": sum(item.get("unassociated_endpoints_url_changed", 0) for item in changes),
         "changed_sources": sum(1 for item in changes if item["status"] == "changed"),
         "new_sources": sum(1 for item in changes if item["status"] == "baseline"),
         "total_added_channels": sum(item.get("added_channels", 0) for item in changes),
@@ -465,6 +518,8 @@ def audit(scope: str) -> dict:
         f"fuentes_con_cambios={report['changed_sources']} "
         f"canales_nuevos={report['total_added_channels']} "
         f"canales_eliminados={report['total_removed_channels']} "
+        f"endpoints_sin_metadatos={report['unassociated_endpoints_total']} "
+        f"(altas={report['unassociated_endpoints_added']}, bajas={report['unassociated_endpoints_removed']}, URLs_cambiadas={report['unassociated_endpoints_url_changed']}) "
         f"URLs_stream_cambiadas={report['total_changed_stream_urls']} "
         f"(lista_principal={report['writable_changed_stream_urls']}, "
         f"solo_lectura={report['readonly_changed_stream_urls']}) "
@@ -472,13 +527,14 @@ def audit(scope: str) -> dict:
     )
     for item in changes:
         changed_urls = int(item.get("changed_stream_urls", 0))
-        if changed_urls or item.get("status") == "partial":
+        if changed_urls or item.get("status") == "partial" or item.get("unassociated_endpoints_added") or item.get("unassociated_endpoints_removed") or item.get("unassociated_endpoints_url_changed"):
             scope_label = "solo-lectura" if item.get("readonly", False) else "principal"
             print(
                 f"[AUDIT][detalle] {scope_label} {item['source']}: "
                 f"{changed_urls} URLs; altas={item.get('added_channels', 0)}; "
                 f"bajas={item.get('removed_channels', 0)}; "
-                f"advertencias={len(item.get('partial_warnings', []))}"
+                f"advertencias={len(item.get('partial_warnings', []))}; "
+                f"endpoints_sin_metadatos={item.get('unassociated_endpoints', 0)}"
             )
     print(f"[AUDIT] Informe: {report_path.relative_to(ROOT)}")
     print(f"[AUDIT] Estado: {state_path.relative_to(ROOT)}")
