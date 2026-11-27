@@ -1,0 +1,185 @@
+name: FASE 3 - Identidad permanente de canales
+
+on:
+  push:
+    branches:
+      - "phase3/**"
+    paths:
+      - "scripts/channel_identity.py"
+      - "scripts/test_channel_identity.py"
+      - "scripts/playlist_regression.py"
+      - "scripts/test_playlist_regression.py"
+      - "scripts/logo_client_compat.py"
+      - "scripts/test_logo_client_compat.py"
+      - "scripts/source_recovery.py"
+      - "scripts/test_source_recovery.py"
+      - "scripts/logo_recovery.py"
+      - "scripts/test_logo_recovery.py"
+      - ".github/workflows/fase3-identidad.yml"
+  pull_request:
+    paths:
+      - "scripts/channel_identity.py"
+      - "scripts/test_channel_identity.py"
+      - "scripts/playlist_regression.py"
+      - "scripts/test_playlist_regression.py"
+      - "scripts/logo_client_compat.py"
+      - "scripts/test_logo_client_compat.py"
+      - "scripts/source_recovery.py"
+      - "scripts/test_source_recovery.py"
+      - "scripts/logo_recovery.py"
+      - "scripts/test_logo_recovery.py"
+      - ".github/workflows/fase3-identidad.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fase3-identidad-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  identity-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Descargar repositorio con historial
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Probar identidad estable y comparación conservadora
+        run: python -m unittest scripts.test_channel_identity -v
+      - name: Probar detector de regresiones de playlist
+        run: python -m unittest scripts.test_playlist_regression -v
+      - name: Probar auditoría estática de compatibilidad de logos
+        run: python -m unittest scripts.test_logo_client_compat -v
+      - name: Probar propuestas conservadoras de recuperación de fuentes
+        run: python -m unittest scripts.test_source_recovery -v
+      - name: Probar propuestas de logos faltantes sin reemplazar existentes
+        run: python -m unittest scripts.test_logo_recovery -v
+      - name: Verificar sintaxis
+        run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/logo_recovery.py scripts/test_logo_recovery.py
+      - name: Revisar diff
+        run: git diff --check
+      - name: Auditar regresiones con el snapshot real anterior de main
+        id: real_regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=2 origin main
+          BASE_SHA="$(git rev-parse origin/main^)"
+          git show "${BASE_SHA}:IPTV-CHILE-MAESTRA_CORREGIDO.m3u" > "${RUNNER_TEMP}/principal-before.m3u"
+          cp IPTV-CHILE-MAESTRA_CORREGIDO.m3u "${RUNNER_TEMP}/principal-after.m3u"
+          set +e
+          python -m scripts.playlist_regression \
+            --before "${RUNNER_TEMP}/principal-before.m3u" \
+            --after "${RUNNER_TEMP}/principal-after.m3u" \
+            --output "${RUNNER_TEMP}/fase3-regresiones.json"
+          RESULT=$?
+          set -e
+          if [ "$RESULT" -gt 2 ]; then
+            echo "El detector falló técnicamente con código $RESULT"
+            exit "$RESULT"
+          fi
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("AUDITORIA REAL:", json.dumps({k:r[k] for k in ("passed","before_count","after_count","added","removed","matched","category_changes","logo_replacements","stream_changes","duplicate_stream_fingerprints","ambiguous_matches","violations","added_channels","removed_channels","ambiguous_details","duplicate_stream_details","stream_change_samples")},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-regresiones.json"
+          echo "exit_code=$RESULT" >> "$GITHUB_OUTPUT"
+      - name: Auditar logos de la playlist real (solo lectura)
+        run: |
+          python -m scripts.logo_client_compat \
+            --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            --output "${RUNNER_TEMP}/fase3-logos.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS REALES:", json.dumps({**{k:r[k] for k in ("channels","unique_logo_references","invalid_references","references_requiring_review","identity_supported_conflicts","manual_conflicts","field_conflicts")}, "missing_logo_count":len(r["missing_logo_channels"])},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos.json"
+      - name: Descargar todas las fuentes M3U configuradas (solo lectura)
+        run: |
+          python - <<'PY'
+          import concurrent.futures
+          import json
+          import os
+          import re
+          import urllib.request
+          from pathlib import Path
+          from scripts.m3u_structure import validate_m3u_bytes
+
+          root = Path(os.environ["RUNNER_TEMP"]) / "fase3-sources"
+          root.mkdir(parents=True, exist_ok=True)
+          config = json.loads(Path("config/playlist_sources.json").read_text(encoding="utf-8"))
+          principal = config.get("principal", {})
+          targets = {}
+          for item in principal.get("sources", []):
+              name, url = item.get("name"), item.get("url")
+              if name and url:
+                  targets.setdefault(url, name)
+          for item in principal.get("pluto_sources", []) + principal.get("pluto_catalog_sources", []):
+              name, url = item.get("name"), item.get("url")
+              if name and url:
+                  targets.setdefault(url, name)
+          for name, url in principal.get("special_sources", {}).items():
+              if url:
+                  targets.setdefault(url, "SPECIAL-" + name)
+
+          def fetch(item):
+              url, name = item
+              safe = re.sub(r"[^A-Za-z0-9_.-]+", "_", name)[:70] or "SOURCE"
+              try:
+                  request = urllib.request.Request(
+                      url,
+                      headers={"User-Agent": "IPTV-Chile-FASE3-Audit/1.0", "Accept": "*/*"},
+                  )
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      data = response.read(15 * 1024 * 1024 + 1)
+                  if len(data) > 15 * 1024 * 1024:
+                      return (name, None, 0, "size_limit")
+                  count = validate_m3u_bytes(data, name)
+                  path = root / f"{safe}.m3u"
+                  path.write_bytes(data)
+                  return (name, str(path), count, "ok")
+              except Exception as exc:
+                  return (name, None, 0, type(exc).__name__)
+
+          results = []
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+              for result in pool.map(fetch, targets.items()):
+                  results.append(result)
+          valid = [
+              {"name": name, "path": path, "channels": count}
+              for name, path, count, status in results if status == "ok"
+          ]
+          (root / "manifest.json").write_text(
+              json.dumps({"sources": valid}, ensure_ascii=False, indent=2),
+              encoding="utf-8",
+          )
+          print(f"Fuentes configuradas: {len(targets)}; M3U válidas: {len(valid)}")
+          for name, path, count, status in results:
+              print(f"{name}: {count} canales" if status == "ok" else f"{name}: omitida ({status})")
+          PY
+      - name: Proponer recuperación con historial y fuentes reales
+        run: |
+          python -m scripts.source_recovery \
+            --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            --health scripts/health/principal_health.json \
+            --candidate-manifest "${RUNNER_TEMP}/fase3-sources/manifest.json" \
+            --candidate PLUTO-LATAM=pluto/output/playlists/pluto_latam.m3u \
+            --candidate PLUTO-MX=pluto/output/playlists/pluto_mx.m3u \
+            --output "${RUNNER_TEMP}/fase3-recuperacion.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("RECUPERACION REAL:", json.dumps({**{k:r[k] for k in ("current_channels","candidate_channels","channels_needing_recovery","channels_with_candidates","ambiguous_candidates_skipped")}, "candidates": [{"channel":x["channel"],"group":x["group"],"candidates":[{"source":c["source"],"name":c["name"],"group":c["group"],"confidence":c["confidence"]} for c in x["candidates"]]} for x in r["recommendations"] if x["candidates"]][:30]},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-recuperacion.json"
+      - name: Proponer logos para canales sin referencia
+        run: |
+          python -m scripts.logo_recovery \
+            --playlist IPTV-CHILE-MAESTRA_CORREGIDO.m3u \
+            --candidate-manifest "${RUNNER_TEMP}/fase3-sources/manifest.json" \
+            --output "${RUNNER_TEMP}/fase3-logos-recuperacion.json"
+          python -c 'import json,sys; r=json.load(open(sys.argv[1],encoding="utf-8")); print("LOGOS PROPUESTOS:", json.dumps({"missing_logo_channels":r["missing_logo_channels"],"proposals":r["proposals"],"ambiguous":r["ambiguous"],"unmatched":len(r["unmatched"])},ensure_ascii=False))' "${RUNNER_TEMP}/fase3-logos-recuperacion.json"
+      - name: Guardar informes operativos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fase3-auditoria-operativa
+          path: ${{ runner.temp }}/fase3-*.json
+          if-no-files-found: warn
+          retention-days: 14
+
+# Validacion operativa activada sobre snapshot real de main.
