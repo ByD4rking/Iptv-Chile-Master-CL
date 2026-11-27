@@ -76,6 +76,70 @@ def compact_hash(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+
+def validate_partial_m3u_bytes(data: bytes, source: str = "fuente") -> tuple[int, list[str]]:
+    """Acepta pares M3U válidos y reporta líneas defectuosas sin inventar canales.
+
+    Se usa únicamente para auditoría de fuentes M3U.CL. Una fuente parcial nunca
+    puede demostrar bajas ni reemplazar el último snapshot completo.
+    """
+    label = urlparse(str(source)).hostname or "fuente"
+    if not data or not data.strip():
+        raise ValueError(f"{label}: respuesta vacía")
+    text = data.decode("utf-8-sig", errors="replace")
+    lowered = text[:4096].casefold()
+    if "<!doctype html" in lowered or "<html" in lowered or "<body" in lowered:
+        raise ValueError(f"{label}: respuesta HTML, no M3U")
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if not lines or not (lines[0].upper() == "#EXTM3U" or lines[0].upper().startswith("#EXTM3U ")):
+        raise ValueError(f"{label}: falta cabecera #EXTM3U")
+    entries = 0
+    pending = False
+    warnings = []
+    for number, line in enumerate(lines[1:], start=2):
+        upper = line.upper()
+        if upper.startswith("#EXTINF"):
+            if not upper.startswith("#EXTINF:"):
+                warnings.append(f"línea {number}: EXTINF mal formada")
+                pending = False
+                continue
+            if pending:
+                warnings.append(f"línea {number}: EXTINF anterior sin URI")
+            if "," not in line or not line.rsplit(",", 1)[-1].strip():
+                warnings.append(f"línea {number}: EXTINF sin nombre")
+                pending = False
+                continue
+            duration_field = line.split(",", 1)[0][len("#EXTINF:"):].strip()
+            duration = duration_field.split(maxsplit=1)[0] if duration_field else ""
+            if not re.fullmatch(r"-?\\d+(?:\\.\\d+)?", duration):
+                warnings.append(f"línea {number}: duración inválida")
+                pending = False
+                continue
+            pending = True
+            continue
+        if line.startswith("#"):
+            continue
+        if not pending:
+            warnings.append(f"línea {number}: URL suelta")
+            continue
+        try:
+            parsed = urlparse(line)
+            valid = parsed.scheme in {"http", "https", "rtsp", "rtmp", "rtp", "udp", "mms", "mmsh", "mmst", "ftp"} and bool(parsed.hostname)
+        except ValueError:
+            valid = False
+        if not valid:
+            warnings.append(f"línea {number}: URI inválida")
+            pending = False
+            continue
+        entries += 1
+        pending = False
+    if pending:
+        warnings.append("última entrada EXTINF sin URI")
+    if entries == 0:
+        raise ValueError(f"{label}: no contiene pares EXTINF/URI válidos")
+    return entries, warnings
+
+
 def fetch_url(url: str) -> bytes:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
@@ -103,7 +167,12 @@ def fetch_url(url: str) -> bytes:
             if len(data) > MAX_BYTES:
                 raise ValueError(f"fuente supera límite de {MAX_BYTES} bytes")
             data = normalize_m3u_bytes(data)
-            validate_m3u_bytes(data, source=url)
+            try:
+                validate_m3u_bytes(data, source=url)
+            except ValueError:
+                if host != "m3u.cl" and not host.endswith(".m3u.cl"):
+                    raise
+                validate_partial_m3u_bytes(data, source=url)
             return data
         except Exception as exc:
             last_error = exc
@@ -155,9 +224,6 @@ def configured_sources(scope: str) -> list[dict]:
                 result.append({"name": "PRINCIPAL/SPECIAL-" + name.upper(), "url": url, "readonly": False})
         for item in principal.get("pluto_sources", []):
             result.append({"name": "PRINCIPAL/" + item["name"], "url": item["url"], "readonly": False})
-        # GOD is audited on every Principal run but can never be rewritten by this audit.
-        for item in config.get("god", {}).get("sources", []):
-            result.append({"name": "GOD/" + item["name"], "url": item["url"], "readonly": True})
     elif scope == "generador":
         config = load_json(ROOT / "IPTV-CHILE-GENERADOR" / "config" / "sources.json", {})
         for item in config.get("sources", []):
@@ -180,9 +246,17 @@ def local_pluto_sources() -> list[dict]:
     ]
 
 
-def snapshot_entry(raw: bytes, label: str, url: str) -> dict:
+def snapshot_entry(raw: bytes, label: str, url: str, allow_partial: bool = False) -> dict:
     raw = normalize_m3u_bytes(raw)
-    validate_m3u_bytes(raw, source=url or label)
+    partial = False
+    warnings = []
+    try:
+        validate_m3u_bytes(raw, source=url or label)
+    except ValueError:
+        if not allow_partial:
+            raise
+        _, warnings = validate_partial_m3u_bytes(raw, source=url or label)
+        partial = bool(warnings)
     text = raw.decode("utf-8-sig", errors="replace")
     parsed = parse_m3u(text)
     if not parsed:
@@ -198,17 +272,23 @@ def snapshot_entry(raw: bytes, label: str, url: str) -> dict:
         "sha256": compact_hash(raw),
         "channel_count": len(channels),
         "channels": channels,
+        "partial": partial,
+        "partial_warnings": warnings[:50],
     }
 
 
 def diff_source(name: str, old: dict | None, new: dict) -> dict:
+    is_partial = bool(new.get("partial", False))
     if old is None:
-        return {"source": name, "status": "baseline", "channels": new["channel_count"], "url": new["url"]}
+        return {"source": name, "status": "partial" if is_partial else "baseline", "source_complete": not is_partial, "channels": new["channel_count"], "url": new["url"], "partial_warnings": new.get("partial_warnings", [])}
     old_channels = old.get("channels", {})
     new_channels = new.get("channels", {})
     old_keys, new_keys = set(old_channels), set(new_channels)
     added_keys = set(new_keys - old_keys)
     removed_keys = set(old_keys - new_keys)
+    # Una fuente parcial puede demostrar altas/cambios observados, nunca bajas.
+    if is_partial:
+        removed_keys.clear()
     changed_name = []
     changed_url = []
     changed_group = []
@@ -250,7 +330,9 @@ def diff_source(name: str, old: dict | None, new: dict) -> dict:
     order_changed = list(old_channels) != list(new_channels)
     return {
         "source": name,
-        "status": "changed" if (url_changed or added or removed or changed_name or changed_url or changed_group or order_changed) else "unchanged",
+        "status": "partial" if is_partial else ("changed" if (url_changed or added or removed or changed_name or changed_url or changed_group or order_changed) else "unchanged"),
+        "source_complete": not is_partial,
+        "partial_warnings": new.get("partial_warnings", []),
         "source_url_changed": url_changed,
         "old_source_url": old.get("url"),
         "new_source_url": new.get("url"),
@@ -299,7 +381,8 @@ def audit(scope: str) -> dict:
             raw = path.read_bytes()
         else:
             raw = fetch_url(url)
-        item = snapshot_entry(raw, name, url)
+        allow_partial = scope == "principal" and (urlparse(url).hostname or "").lower().endswith("m3u.cl")
+        item = snapshot_entry(raw, name, url, allow_partial=allow_partial)
         return name, item, readonly
 
     results = []
@@ -330,7 +413,8 @@ def audit(scope: str) -> dict:
         change = diff_source(name, old, item)
         change["readonly"] = readonly
         changes.append(change)
-        observed[name] = item
+        if not item.get("partial", False):
+            observed[name] = item
 
     # Failed sources retain their last known-good snapshot; a transient outage
     # must not look like mass channel deletion on the next successful run.
@@ -350,6 +434,8 @@ def audit(scope: str) -> dict:
         "sources_unique_urls": len({job[1] for job in jobs}),
         "sources_checked": len(results),
         "sources_failed": len(errors),
+        "sources_partial": sum(1 for item in changes if item.get("status") == "partial"),
+        "partial_sources": [item["source"] for item in changes if item.get("status") == "partial"],
         "changed_sources": sum(1 for item in changes if item["status"] == "changed"),
         "new_sources": sum(1 for item in changes if item["status"] == "baseline"),
         "total_added_channels": sum(item.get("added_channels", 0) for item in changes),
@@ -372,7 +458,7 @@ def audit(scope: str) -> dict:
     state_path.write_text(json.dumps(state, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        f"[AUDIT][{scope}] fuentes={len(results)} errores={len(errors)} "
+        f"[AUDIT][{scope}] fuentes={len(results)} parciales={report['sources_partial']} errores={len(errors)} "
         f"fuentes_con_cambios={report['changed_sources']} "
         f"canales_nuevos={report['total_added_channels']} "
         f"canales_eliminados={report['total_removed_channels']} "
@@ -383,8 +469,8 @@ def audit(scope: str) -> dict:
     )
     for item in changes:
         changed_urls = int(item.get("changed_stream_urls", 0))
-        if changed_urls:
-            scope_label = "GOD-solo-lectura" if item.get("readonly", False) else "publicable"
+        if changed_urls or item.get("status") == "partial":
+            scope_label = "solo-lectura" if item.get("readonly", False) else "principal"
             print(
                 f"[AUDIT][detalle] {scope_label} {item['source']}: "
                 f"{changed_urls} URLs; altas={item.get('added_channels', 0)}; "
