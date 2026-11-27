@@ -115,8 +115,9 @@ class AuditSourceTests(unittest.TestCase):
         self.assertEqual(count, 2)
         self.assertTrue(any("URL suelta" in item for item in warnings))
         snapshot = MODULE.snapshot_entry(raw, "M3UCL-CL", "https://m3u.cl/lista/CL.m3u", allow_partial=True)
-        self.assertTrue(snapshot["partial"])
+        self.assertFalse(snapshot["partial"])
         self.assertEqual(snapshot["channel_count"], 2)
+        self.assertEqual(snapshot["orphan_endpoints"], {"orphan:orphan.example/stream.m3u8": MODULE.compact_hash(b"https://orphan.example/stream.m3u8")[:16]})
 
     def test_partial_source_never_reports_channel_removals(self):
         old = {
@@ -151,6 +152,30 @@ class AuditSourceTests(unittest.TestCase):
             with self.subTest(raw=raw):
                 with self.assertRaises(ValueError):
                     MODULE.validate_partial_m3u_bytes(raw, "https://m3u.cl/lista/CL.m3u")
+
+
+
+
+    def test_orphan_urls_are_audited_separately_without_becoming_channels(self):
+        before = (
+            "#EXTM3U\n"
+            "#EXTINF:-1 tvg-id=\"one\",Canal Uno\nhttps://a.example/one.m3u8\n"
+            "https://orphan.example/live.m3u8?token=old\n"
+        ).encode()
+        after = (
+            "#EXTM3U\n"
+            "#EXTINF:-1 tvg-id=\"one\",Canal Uno\nhttps://a.example/one.m3u8\n"
+            "https://orphan.example/live.m3u8?token=new\n"
+        ).encode()
+        old = MODULE.snapshot_entry(before, "M3UCL", "https://m3u.cl/lista/CL.m3u", allow_partial=True)
+        new = MODULE.snapshot_entry(after, "M3UCL", "https://m3u.cl/lista/CL.m3u", allow_partial=True)
+        diff = MODULE.diff_source("M3UCL", old, new)
+        self.assertEqual(old["channel_count"], 1)
+        self.assertEqual(new["channel_count"], 1)
+        self.assertEqual(diff["added_channels"], 0)
+        self.assertEqual(diff["removed_channels"], 0)
+        self.assertEqual(diff["unassociated_endpoints"], 1)
+        self.assertEqual(diff["unassociated_endpoints_url_changed"], 1)
 
 
 if __name__ == "__main__":
