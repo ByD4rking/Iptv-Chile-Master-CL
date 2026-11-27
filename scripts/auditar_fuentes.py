@@ -451,7 +451,8 @@ def audit(scope: str) -> dict:
         "removed_sources": removed_sources,
         "errors": errors,
         "changes": changes,
-        "god_read_only": scope == "principal",
+        "god_included": False,
+        "scope_description": "solo lista principal; excluye GOD y Generador",
     }
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     state = {"schema_version": 1, "updated_at": timestamp, "sources": observed}
