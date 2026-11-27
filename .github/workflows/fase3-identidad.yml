@@ -81,6 +81,8 @@ jobs:
         run: |
           python -m py_compile scripts/auditar_fuentes.py scripts/test_auditar_fuentes.py
           python -m unittest scripts.test_auditar_fuentes -v
+      - name: Auditar todas las fuentes configuradas de la lista principal (solo lectura)
+        run: python scripts/auditar_fuentes.py --scope principal
       - name: Verificar sintaxis
         run: python -m py_compile scripts/channel_identity.py scripts/test_channel_identity.py scripts/playlist_regression.py scripts/test_playlist_regression.py scripts/logo_client_compat.py scripts/test_logo_client_compat.py scripts/source_recovery.py scripts/test_source_recovery.py scripts/logo_recovery.py scripts/test_logo_recovery.py scripts/logo_asset_check.py scripts/test_logo_asset_check.py scripts/source_candidate_probe.py scripts/test_source_candidate_probe.py
       - name: Revisar diff
